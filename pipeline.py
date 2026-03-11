@@ -72,16 +72,16 @@ def airtable_get_all(table_id: str, field_ids: list[str]) -> list[dict]:
     """Airtable 테이블 전체 레코드 조회 (페이지네이션 처리)"""
     url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{table_id}"
     headers = {"Authorization": f"Bearer {AIRTABLE_TOKEN}"}
-    params = {
-        "fields[]": field_ids,
-        "pageSize": 100,
-    }
+    # fields[]를 반복 튜플로 전달해야 Airtable API가 올바르게 인식함
+    # (dict로 넘기면 마지막 값 하나만 전달됨)
+    base_params = [("pageSize", 100)] + [("fields[]", fid) for fid in field_ids]
     records = []
     offset = None
 
     while True:
+        params = list(base_params)
         if offset:
-            params["offset"] = offset
+            params.append(("offset", offset))
         resp = requests.get(url, headers=headers, params=params, timeout=30)
         resp.raise_for_status()
         data = resp.json()
@@ -99,17 +99,17 @@ def airtable_get_since(table_id: str, field_ids: list[str], since_date: str) -> 
     url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{table_id}"
     headers = {"Authorization": f"Bearer {AIRTABLE_TOKEN}"}
     # 실제입하일(flduN8khmYwdn7uVD) 기준 필터
-    params = {
-        "fields[]": field_ids,
-        "pageSize": 100,
-        "filterByFormula": f"IS_AFTER({{실제입하일}}, '{since_date}')",
-    }
+    base_params = (
+        [("pageSize", 100), ("filterByFormula", f"IS_AFTER({{실제입하일}}, '{since_date}')")]
+        + [("fields[]", fid) for fid in field_ids]
+    )
     records = []
     offset = None
 
     while True:
+        params = list(base_params)
         if offset:
-            params["offset"] = offset
+            params.append(("offset", offset))
         resp = requests.get(url, headers=headers, params=params, timeout=30)
         resp.raise_for_status()
         data = resp.json()
