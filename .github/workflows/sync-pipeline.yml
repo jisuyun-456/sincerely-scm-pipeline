@@ -17,7 +17,7 @@ jobs:
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
           AIRTABLE_BASE_ID: appLui4ZR5HWcQRri
-          RTABLE_TABLE : tblwq7Kj5Y9nVjlOw
+          ARTABLE_TABLE : tblwq7Kj5Y9nVjlOw
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python pipeline.py
