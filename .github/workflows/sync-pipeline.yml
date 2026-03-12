@@ -16,7 +16,8 @@ jobs:
       - name: 파이프라인 실행
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_BASE_ID: appLui4ZR5HWcQRri
+          AITTABLE_TABLE_ID : tblwq7Kj5Y9nVjlOw
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python pipeline.py
