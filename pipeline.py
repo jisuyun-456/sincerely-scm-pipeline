@@ -62,7 +62,7 @@ def transform(record):
 
 # ── Supabase upsert ────────────────────────────────
 def upsert_to_supabase(rows):
-    url = f"{SUPABASE_URL}/rest/v1/{SUPABASE_TABLE}"
+    url = f"{SUPABASE_URL}/rest/v1/{SUPABASE_TABLE}?on_conflict=airtable_rec_id"
     headers = {
         "apikey":        SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
