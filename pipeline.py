@@ -22,7 +22,7 @@ FIELD_MAP = {
     "movement_id":   "movement_id",       # movement_id
     "이동물품":       "item_desc",          # 이동물품
     "이동목적":       "movement_type",      # 이동목적 (재고이동 / 재고생산)
-    "이동수량(변경)": "qty_change",         # 이동수량(변경)
+    "이동수량(변경)📝": "qty_change",         # 이동수량(변경)
     "입하수량":       "qty_inbound",        # 입하수량
     "출고수량":       "qty_outbound",       # 출고수량
 }
