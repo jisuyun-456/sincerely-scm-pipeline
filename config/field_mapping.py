@@ -178,7 +178,6 @@ PROJECT_TABLE = {
     "supabase_table": "project",
     "fields": {
         "fldnUgnHtKkvdDQuE": {"col": "name", "type": "text"},
-        "fldsFWC5rNO1UR042": {"col": "status", "type": "text"},
         "fldXAiGJ2AqfCJlIB": {"col": "project_status", "type": "text"},
         "fldFZfi69FwM2nui7": {"col": "customer_company", "type": "text"},
         "fldSYwUQeiqKfZd4M": {"col": "first_outbound_date", "type": "date"},
