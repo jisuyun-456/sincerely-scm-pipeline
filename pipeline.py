@@ -269,6 +269,20 @@ if __name__ == "__main__":
 
     snap_date = date.fromisoformat(args.date) if args.date else date.today()
 
+# run_pipeline 함수 내 for loop 수정
+for table_key, table_config in table_configs.items():
+    try:
+        ...
+        records = extractor.fetch_all_records(table_id, field_ids)
+        rows = [transform_record(r, field_mapping) for r in records]
+        record_counts[table_key] = len(rows)
+        if not dry_run:
+            loader.bulk_insert(supabase_table, rows, snapshot_id, snapshot_date)
+    except Exception as e:
+        log.error(f"  {table_key} 실패, 스킵: {e}")
+        record_counts[table_key] = f"ERROR: {e}"
+        continue  # ← 이 테이블 실패해도 다음 테이블 계속 진행
+    
     # 실행 전 최종 환경 변수 점검
     if not (AIRTABLE_TOKEN or os.getenv("AIRTABLE_PAT")):
         log.error("에러: AIRTABLE_PAT 환경 변수가 설정되지 않았습니다.")
