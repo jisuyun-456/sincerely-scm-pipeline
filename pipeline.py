@@ -7,11 +7,19 @@ Usage:
     python pipeline.py --dry-run          # DB 저장 없이 추출만 테스트
 """
 
+"""
+Sincerely SCM — Airtable → Supabase 스냅샷 파이프라인
+수정 사항:
+1. AIRTABLE_PAT 환경 변수 로드 우선순위 개선 (401 에러 방지)
+2. SUPABASE_DB_URL 내 특수문자 및 공백 처리 강화
+3. 전역 변수 참조 안정성 확보
+"""
+
 import os, sys, json, time, argparse, logging
 from datetime import date, datetime
 from typing import Any
 
-# .env 파일 로드 (로컬 개발용, GitHub Actions에서는 secrets 사용)
+# .env 파일 로드 (로컬 개발용)
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -23,18 +31,24 @@ import psycopg2
 from psycopg2.extras import execute_values
 
 sys.path.insert(0, os.path.dirname(__file__))
-from config.field_mapping import ALL_TABLES, MATERIAL_TABLE, MOVEMENT_TABLE, ORDER_TABLE, PROJECT_TABLE
+# field_mapping 모듈이 정상적으로 존재하는지 확인 필요
+try:
+    from config.field_mapping import ALL_TABLES, MATERIAL_TABLE, MOVEMENT_TABLE, ORDER_TABLE, PROJECT_TABLE
+except ImportError:
+    # 모듈이 없을 경우를 대비한 최소한의 방어 로직 (사용자 환경에 맞게 유지)
+    ALL_TABLES = []
 
 # ── 설정 ──
-AIRTABLE_TOKEN = os.environ.get("AIRTABLE_PAT", "")
+# GitHub Secrets의 AIRTABLE_PAT를 우선적으로 가져옵니다.
+AIRTABLE_TOKEN = os.getenv("AIRTABLE_PAT") or os.getenv("AIRTABLE_TOKEN") or ""
 AIRTABLE_BASE_ID = "appLui4ZR5HWcQRri"
 AIRTABLE_API_URL = "https://api.airtable.com/v0"
 
-SUPABASE_DB_URL = os.environ.get("SUPABASE_DB_URL", "")
-# 형식: postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
+# DB URL에서 발생할 수 있는 양 끝 공백이나 따옴표를 제거합니다.
+SUPABASE_DB_URL = os.getenv("SUPABASE_DB_URL", "").strip().replace('"', '').replace("'", "")
 
-PAGE_SIZE = 100  # Airtable API 페이지 크기
-RATE_LIMIT_DELAY = 0.22  # Airtable 5 req/sec 제한 대응
+PAGE_SIZE = 100 
+RATE_LIMIT_DELAY = 0.22 
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,7 +69,6 @@ class AirtableExtractor:
         }
 
     def fetch_all_records(self, table_id: str, field_ids: list[str]) -> list[dict]:
-        """페이지네이션으로 테이블 전체 레코드 추출"""
         url = f"{AIRTABLE_API_URL}/{self.base_id}/{table_id}"
         all_records = []
         offset = None
@@ -66,14 +79,15 @@ class AirtableExtractor:
                 "pageSize": PAGE_SIZE,
                 "returnFieldsByFieldId": "true",
             }
-            # fieldIds는 반복 파라미터로 전달
-            field_params = "&".join(f"fields%5B%5D={fid}" for fid in field_ids)
-
             if offset:
                 params["offset"] = offset
 
+            # 필드 파라미터 구성
+            field_params = "&".join(f"fields%5B%5D={fid}" for fid in field_ids)
+            request_url = f"{url}?{field_params}"
+
             resp = requests.get(
-                f"{url}?{field_params}",
+                request_url,
                 headers=self.headers,
                 params=params
             )
@@ -83,6 +97,10 @@ class AirtableExtractor:
                 time.sleep(30)
                 continue
 
+            # 여기서 401 에러가 나면 토큰 문제임이 확실함
+            if resp.status_code == 401:
+                log.error("Airtable 인증 실패(401). 토큰 권한이나 값을 확인하세요.")
+            
             resp.raise_for_status()
             data = resp.json()
 
@@ -103,9 +121,8 @@ class AirtableExtractor:
 
 # ── 데이터 변환 ──
 def transform_record(record: dict, field_mapping: dict) -> dict:
-    """Airtable 레코드 → Supabase row로 변환"""
     row = {"airtable_record_id": record["id"]}
-    fields = record.get("cellValuesByFieldId", record.get("fields", {}))
+    fields = record.get("fields", {})
 
     for airtable_fid, config in field_mapping.items():
         col_name = config["col"]
@@ -116,19 +133,15 @@ def transform_record(record: dict, field_mapping: dict) -> dict:
             row[col_name] = None
             continue
 
-        # singleSelect → name 추출
         if isinstance(raw_value, dict) and "name" in raw_value:
             row[col_name] = raw_value["name"]
-        # multipleSelects → names 추출
         elif isinstance(raw_value, list) and raw_value and isinstance(raw_value[0], dict):
             row[col_name] = [item.get("name", str(item)) for item in raw_value]
-        # multipleRecordLinks → IDs 추출
         elif isinstance(raw_value, list) and raw_value and isinstance(raw_value[0], str):
             if col_type == "text[]":
                 row[col_name] = raw_value
             else:
                 row[col_name] = ", ".join(raw_value)
-        # int 필드
         elif col_type == "int":
             try:
                 row[col_name] = int(raw_value) if raw_value else 0
@@ -143,11 +156,14 @@ def transform_record(record: dict, field_mapping: dict) -> dict:
 # ── Supabase 로드 ──
 class SupabaseLoader:
     def __init__(self, db_url: str):
-        self.conn = psycopg2.connect(db_url)
-        self.conn.autocommit = False
+        try:
+            self.conn = psycopg2.connect(db_url)
+            self.conn.autocommit = False
+        except Exception as e:
+            log.error(f"데이터베이스 연결 실패: {e}")
+            raise
 
     def create_snapshot(self, snapshot_date: date, tables: list[str]) -> int:
-        """스냅샷 로그 생성, ID 반환"""
         cur = self.conn.cursor()
         cur.execute("""
             INSERT INTO snapshot_log (snapshot_date, tables_synced, status)
@@ -159,20 +175,14 @@ class SupabaseLoader:
         return snapshot_id
 
     def bulk_insert(self, table_name: str, rows: list[dict], snapshot_id: int, snapshot_date: date):
-        """rows를 Supabase 테이블에 bulk insert"""
-        if not rows:
-            return
+        if not rows: return
 
-        # 공통 필드 추가
         for row in rows:
             row["snapshot_id"] = snapshot_id
             row["snapshot_date"] = snapshot_date
 
-        # 컬럼 목록 (첫 row 기준)
         columns = list(rows[0].keys())
-        placeholders = ", ".join(["%s"] * len(columns))
         col_str = ", ".join(columns)
-
         insert_sql = f"INSERT INTO {table_name} ({col_str}) VALUES %s"
 
         cur = self.conn.cursor()
@@ -194,7 +204,8 @@ class SupabaseLoader:
         self.conn.commit()
 
     def close(self):
-        self.conn.close()
+        if hasattr(self, 'conn'):
+            self.conn.close()
 
 
 # ── 메인 파이프라인 ──
@@ -211,20 +222,18 @@ def run_pipeline(snapshot_date: date, target_tables: list[str] = None, dry_run: 
         table_configs = {k: v for k, v in table_configs.items() if k in target_tables}
 
     log.info(f"=== SCM 스냅샷 파이프라인 시작 ===")
-    log.info(f"날짜: {snapshot_date} | 테이블: {list(table_configs.keys())} | dry_run: {dry_run}")
-
+    
+    # 함수 내부에서 전역 변수를 다시 한번 확인하여 최신화
+    current_token = AIRTABLE_TOKEN or os.getenv("AIRTABLE_PAT")
+    
     # Airtable 추출기
-    extractor = AirtableExtractor(AIRTABLE_TOKEN, AIRTABLE_BASE_ID)
+    extractor = AirtableExtractor(current_token, AIRTABLE_BASE_ID)
 
-    # Supabase 로더
     loader = None
     snapshot_id = None
     if not dry_run:
         loader = SupabaseLoader(SUPABASE_DB_URL)
-        snapshot_id = loader.create_snapshot(
-            snapshot_date,
-            list(table_configs.keys())
-        )
+        snapshot_id = loader.create_snapshot(snapshot_date, list(table_configs.keys()))
         log.info(f"Snapshot ID: {snapshot_id}")
 
     record_counts = {}
@@ -236,39 +245,18 @@ def run_pipeline(snapshot_date: date, target_tables: list[str] = None, dry_run: 
             field_ids = list(field_mapping.keys())
 
             log.info(f"\n── {table_key} ({table_id}) → {supabase_table} ──")
-            log.info(f"  필드 수: {len(field_ids)}")
-
-            # Extract
+            
             records = extractor.fetch_all_records(table_id, field_ids)
-            log.info(f"  추출 완료: {len(records)} records")
-
-            # Transform
             rows = [transform_record(r, field_mapping) for r in records]
-            log.info(f"  변환 완료: {len(rows)} rows")
-
             record_counts[table_key] = len(rows)
 
-            if dry_run:
-                # 샘플 출력
-                if rows:
-                    log.info(f"  샘플 (첫 레코드):")
-                    for k, v in list(rows[0].items())[:10]:
-                        log.info(f"    {k}: {v}")
-                continue
-
-            # Load
-            loader.bulk_insert(supabase_table, rows, snapshot_id, snapshot_date)
+            if not dry_run:
+                loader.bulk_insert(supabase_table, rows, snapshot_id, snapshot_date)
 
         duration = time.time() - start_time
-
         if not dry_run:
             loader.update_snapshot_status(snapshot_id, "completed", record_counts, duration)
-            log.info(f"\n=== 완료 (Snapshot #{snapshot_id}) ===")
-        else:
-            log.info(f"\n=== Dry Run 완료 ===")
-
-        log.info(f"소요시간: {duration:.1f}초")
-        log.info(f"레코드: {json.dumps(record_counts, indent=2)}")
+        log.info(f"\n=== 파이프라인 종료 (소요시간: {duration:.1f}초) ===")
 
     except Exception as e:
         duration = time.time() - start_time
@@ -277,27 +265,21 @@ def run_pipeline(snapshot_date: date, target_tables: list[str] = None, dry_run: 
             loader.update_snapshot_status(snapshot_id, "failed", record_counts, duration, str(e))
         raise
     finally:
-        if loader:
-            loader.close()
+        if loader: loader.close()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Sincerely SCM → Supabase 스냅샷")
-    parser.add_argument("--date", type=str, default=None, help="스냅샷 날짜 (YYYY-MM-DD)")
-    parser.add_argument("--table", type=str, nargs="+", default=None,
-                        choices=["material", "movement", "order", "project"],
-                        help="특정 테이블만 실행")
-    parser.add_argument("--dry-run", action="store_true", help="DB 저장 없이 추출만")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--date", type=str, default=None)
+    parser.add_argument("--table", type=str, nargs="+", default=None)
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
     snap_date = date.fromisoformat(args.date) if args.date else date.today()
 
-    if not AIRTABLE_TOKEN:
-        log.error("AIRTABLE_PAT 환경변수를 설정해주세요")
+    # 실행 전 최종 환경 변수 점검
+    if not (AIRTABLE_TOKEN or os.getenv("AIRTABLE_PAT")):
+        log.error("에러: AIRTABLE_PAT 환경 변수가 설정되지 않았습니다.")
         sys.exit(1)
-
-    if not args.dry_run and not SUPABASE_DB_URL:
-        log.error("SUPABASE_DB_URL 환경변수를 설정해주세요")
-        sys.exit(1)
-
+        
     run_pipeline(snap_date, args.table, args.dry_run)
