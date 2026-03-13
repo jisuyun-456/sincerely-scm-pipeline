@@ -23,24 +23,20 @@ import psycopg2
 from psycopg2.extras import execute_values
 
 sys.path.insert(0, os.path.dirname(__file__))
-# field_mapping 모듈이 정상적으로 존재하는지 확인 필요
 try:
     from config.field_mapping import ALL_TABLES, MATERIAL_TABLE, MOVEMENT_TABLE, ORDER_TABLE, PROJECT_TABLE
 except ImportError:
-    # 모듈이 없을 경우를 대비한 최소한의 방어 로직 (사용자 환경에 맞게 유지)
     ALL_TABLES = []
 
 # ── 설정 ──
-# GitHub Secrets의 AIRTABLE_PAT를 우선적으로 가져옵니다.
 AIRTABLE_TOKEN = os.getenv("AIRTABLE_PAT") or os.getenv("AIRTABLE_TOKEN") or ""
 AIRTABLE_BASE_ID = "appLui4ZR5HWcQRri"
 AIRTABLE_API_URL = "https://api.airtable.com/v0"
 
-# DB URL에서 발생할 수 있는 양 끝 공백이나 따옴표를 제거합니다.
 SUPABASE_DB_URL = os.getenv("SUPABASE_DB_URL", "").strip().replace('"', '').replace("'", "")
 
-PAGE_SIZE = 100 
-RATE_LIMIT_DELAY = 0.22 
+PAGE_SIZE = 100
+RATE_LIMIT_DELAY = 0.22
 
 logging.basicConfig(
     level=logging.INFO,
@@ -74,7 +70,6 @@ class AirtableExtractor:
             if offset:
                 params["offset"] = offset
 
-            # 필드 파라미터 구성
             field_params = "&".join(f"fields%5B%5D={fid}" for fid in field_ids)
             request_url = f"{url}?{field_params}"
 
@@ -89,10 +84,13 @@ class AirtableExtractor:
                 time.sleep(30)
                 continue
 
-            # 여기서 401 에러가 나면 토큰 문제임이 확실함
+            # ── 수정 1: 422 상세 로깅 ──
+            if resp.status_code == 422:
+                log.error(f"422 에러 상세: {resp.text}")
+
             if resp.status_code == 401:
                 log.error("Airtable 인증 실패(401). 토큰 권한이나 값을 확인하세요.")
-            
+
             resp.raise_for_status()
             data = resp.json()
 
@@ -167,7 +165,8 @@ class SupabaseLoader:
         return snapshot_id
 
     def bulk_insert(self, table_name: str, rows: list[dict], snapshot_id: int, snapshot_date: date):
-        if not rows: return
+        if not rows:
+            return
 
         for row in rows:
             row["snapshot_id"] = snapshot_id
@@ -214,11 +213,8 @@ def run_pipeline(snapshot_date: date, target_tables: list[str] = None, dry_run: 
         table_configs = {k: v for k, v in table_configs.items() if k in target_tables}
 
     log.info(f"=== SCM 스냅샷 파이프라인 시작 ===")
-    
-    # 함수 내부에서 전역 변수를 다시 한번 확인하여 최신화
+
     current_token = AIRTABLE_TOKEN or os.getenv("AIRTABLE_PAT")
-    
-    # Airtable 추출기
     extractor = AirtableExtractor(current_token, AIRTABLE_BASE_ID)
 
     loader = None
@@ -229,15 +225,18 @@ def run_pipeline(snapshot_date: date, target_tables: list[str] = None, dry_run: 
         log.info(f"Snapshot ID: {snapshot_id}")
 
     record_counts = {}
-    try:
-        for table_key, table_config in table_configs.items():
+    has_error = False
+
+    # ── 수정 2: 테이블별 예외처리 (하나 실패해도 나머지 계속 진행) ──
+    for table_key, table_config in table_configs.items():
+        try:
             table_id = table_config["airtable_table_id"]
             supabase_table = table_config["supabase_table"]
             field_mapping = table_config["fields"]
             field_ids = list(field_mapping.keys())
 
             log.info(f"\n── {table_key} ({table_id}) → {supabase_table} ──")
-            
+
             records = extractor.fetch_all_records(table_id, field_ids)
             rows = [transform_record(r, field_mapping) for r in records]
             record_counts[table_key] = len(rows)
@@ -245,21 +244,24 @@ def run_pipeline(snapshot_date: date, target_tables: list[str] = None, dry_run: 
             if not dry_run:
                 loader.bulk_insert(supabase_table, rows, snapshot_id, snapshot_date)
 
-        duration = time.time() - start_time
-        if not dry_run:
-            loader.update_snapshot_status(snapshot_id, "completed", record_counts, duration)
-        log.info(f"\n=== 파이프라인 종료 (소요시간: {duration:.1f}초) ===")
+        except Exception as e:
+            log.error(f"  {table_key} 실패, 스킵: {e}")
+            record_counts[table_key] = f"ERROR: {str(e)[:100]}"
+            has_error = True
+            continue
 
-    except Exception as e:
-        duration = time.time() - start_time
-        log.error(f"파이프라인 실패: {e}", exc_info=True)
-        if not dry_run and loader and snapshot_id:
-            loader.update_snapshot_status(snapshot_id, "failed", record_counts, duration, str(e))
-        raise
-    finally:
-        if loader: loader.close()
+    duration = time.time() - start_time
+    final_status = "completed_with_errors" if has_error else "completed"
+
+    if not dry_run:
+        loader.update_snapshot_status(snapshot_id, final_status, record_counts, duration)
+        loader.close()
+
+    log.info(f"\n=== 파이프라인 종료 (상태: {final_status}, 소요시간: {duration:.1f}초) ===")
+    log.info(f"레코드 수: {record_counts}")
 
 
+# ── 수정 3: __main__ 블록 정리 ──
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", type=str, default=None)
@@ -269,23 +271,8 @@ if __name__ == "__main__":
 
     snap_date = date.fromisoformat(args.date) if args.date else date.today()
 
-# run_pipeline 함수 내 for loop 수정
-for table_key, table_config in table_configs.items():
-    try:
-        ...
-        records = extractor.fetch_all_records(table_id, field_ids)
-        rows = [transform_record(r, field_mapping) for r in records]
-        record_counts[table_key] = len(rows)
-        if not dry_run:
-            loader.bulk_insert(supabase_table, rows, snapshot_id, snapshot_date)
-    except Exception as e:
-        log.error(f"  {table_key} 실패, 스킵: {e}")
-        record_counts[table_key] = f"ERROR: {e}"
-        continue  # ← 이 테이블 실패해도 다음 테이블 계속 진행
-    
-    # 실행 전 최종 환경 변수 점검
     if not (AIRTABLE_TOKEN or os.getenv("AIRTABLE_PAT")):
         log.error("에러: AIRTABLE_PAT 환경 변수가 설정되지 않았습니다.")
         sys.exit(1)
-        
+
     run_pipeline(snap_date, args.table, args.dry_run)
