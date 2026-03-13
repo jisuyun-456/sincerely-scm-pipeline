@@ -1,0 +1,61 @@
+name: SCM Inventory Snapshot Pipeline
+
+on:
+  # 수동 실행
+  workflow_dispatch:
+    inputs:
+      table:
+        description: '특정 테이블만 실행 (비우면 전체)'
+        required: false
+        type: choice
+        options:
+          - all
+          - material
+          - movement
+          - order
+          - project
+      dry_run:
+        description: 'Dry Run (DB 저장 없이 테스트)'
+        required: false
+        type: boolean
+        default: false
+
+  # 매일 오전 9시 (KST) = UTC 00:00 자동 실행
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Pipeline
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          ARGS=""
+          
+          # 테이블 선택
+          if [ "${{ github.event.inputs.table }}" != "" ] && [ "${{ github.event.inputs.table }}" != "all" ]; then
+            ARGS="$ARGS --table ${{ github.event.inputs.table }}"
+          fi
+          
+          # Dry run
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          
+          python pipeline.py $ARGS
