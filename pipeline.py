@@ -7,14 +7,6 @@ Usage:
     python pipeline.py --dry-run          # DB 저장 없이 추출만 테스트
 """
 
-"""
-Sincerely SCM — Airtable → Supabase 스냅샷 파이프라인
-수정 사항:
-1. AIRTABLE_PAT 환경 변수 로드 우선순위 개선 (401 에러 방지)
-2. SUPABASE_DB_URL 내 특수문자 및 공백 처리 강화
-3. 전역 변수 참조 안정성 확보
-"""
-
 import os, sys, json, time, argparse, logging
 from datetime import date, datetime
 from typing import Any
