@@ -1,26 +1,44 @@
-“””
-Sincerely SCM 주간 출하 리포트 v3
-─────────────────────────────────────────────
-매주 월요일 09:00~09:30 KST 슬랙 DM 자동 발송
+# Sincerely SCM 주간 출하 리포트 v3
 
-CBM 산출 우선순위 (v3 변경):
-1순위: Total_CBM 필드 (수동 입력)
-2순위: 외박스 수량 문자열 파싱 (극소N, 중대N 패턴)
-3순위: Product 테이블 CBM 실시간 매칭 (공백 정규화 후 부분일치)
-※ 매칭 안 되는 건은 CBM 산출에서 제외 (0 추정 없음)
+# ─────────────────────────────────────────────
 
-포함 지표:
-[CBM]    총 CBM / 일별 CBM / 박스 타입별 구성비
-[물동량]  건수 / CBM 산출 건수 / 매칭 제외 건수
-[품질]   당일 등록 비율 / 리드타임
-[손익]   물류매출 / 운송비용 / CBM당 물류비 / 주간 트렌드
+# 매주 월요일 09:00~09:30 KST 슬랙 DM 자동 발송
 
-환경변수:
-AIRTABLE_API_KEY      Airtable PAT
-AIRTABLE_BASE_ID      TMS base (app4x70a8mOrIKsMf)
-SLACK_BOT_TOKEN       Bot Token (xoxb-…)
-SLACK_DM_USER_ID      수신자 Slack User ID (U로 시작)
-“””
+# 
+
+# CBM 산출 우선순위 (v3 변경):
+
+# 1순위: Total_CBM 필드 (수동 입력)
+
+# 2순위: 외박스 수량 문자열 파싱 (극소N, 중대N 패턴)
+
+# 3순위: Product 테이블 CBM 실시간 매칭 (공백 정규화 후 부분일치)
+
+# ※ 매칭 안 되는 건은 CBM 산출에서 제외 (0 추정 없음)
+
+# 
+
+# 포함 지표:
+
+# [CBM]    총 CBM / 일별 CBM / 박스 타입별 구성비
+
+# [물동량]  건수 / CBM 산출 건수 / 매칭 제외 건수
+
+# [품질]   당일 등록 비율 / 리드타임
+
+# [손익]   물류매출 / 운송비용 / CBM당 물류비 / 주간 트렌드
+
+# 
+
+# 환경변수:
+
+# AIRTABLE_API_KEY      Airtable PAT
+
+# AIRTABLE_BASE_ID      TMS base (app4x70a8mOrIKsMf)
+
+# SLACK_BOT_TOKEN       Bot Token (xoxb-…)
+
+# SLACK_DM_USER_ID      수신자 Slack User ID (U로 시작)
 
 import os
 import json
