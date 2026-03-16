@@ -440,7 +440,7 @@ blocks = [
         "type": "header",
         "text": {
             "type": "plain_text",
-            "text": f"📊 SCM 월간 출하 리포트 — {label}",
+            "text": f"📊 SCM 월간 출하 리포트 - {label}",
         },
     },
     {
@@ -591,7 +591,7 @@ data   = analyze_month(records, live_cbm, product_cbm)
 blocks = build_monthly_blocks(data, start)
 
 fallback = (
-    f"📊 SCM 월간 리포트 — {month_label(start)} | "
+    f"📊 SCM 월간 리포트 - {month_label(start)} | "
     f"총 CBM {data['total_cbm']:.1f}m³ / {data['total_count']}건"
 )
 
