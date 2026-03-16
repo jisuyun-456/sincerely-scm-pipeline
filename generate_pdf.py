@@ -319,18 +319,30 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     filename = f"출고확인서_{to_no}.pdf"
 
-    # multipart/form-data 방식 업로드 (테이블명 없이)
-    url = f"https://content.airtable.com/v0/{base_id}/{record_id}/uploadAttachment"
+    # 1단계: file.io에 임시 업로드 → URL 획득
+    print("  file.io 업로드 중...")
+    upload_resp = requests.post(
+        "https://file.io",
+        files={"file": (filename, pdf_bytes, "application/pdf")},
+        data={"expires": "1d"},
+    )
+    upload_resp.raise_for_status()
+    file_url = upload_resp.json()["link"]
+    print(f"  임시 URL: {file_url}")
+
+    # 2단계: Airtable에 URL로 attachment 등록
+    url = f"https://api.airtable.com/v0/{base_id}/Shipment/{record_id}"
     headers = {
         "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
     }
-    files = {
-        "file": (filename, pdf_bytes, "application/pdf"),
-        "fieldName": (None, "출고확인서_python"),
+    payload = {
+        "fields": {
+            "출고확인서_python": [{"url": file_url, "filename": filename}]
+        }
     }
-
-    resp = requests.post(url, headers=headers, files=files)
-    print(f"  Upload status: {resp.status_code}")
+    resp = requests.patch(url, headers=headers, json=payload)
+    print(f"  Airtable 업로드 status: {resp.status_code}")
     print(f"  Response: {resp.text[:300]}")
     resp.raise_for_status()
     print(f"✅ PDF 업로드 완료: {filename}")
