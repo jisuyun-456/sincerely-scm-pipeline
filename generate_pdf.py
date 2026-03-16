@@ -1,9 +1,9 @@
 """
 generate_pdf.py
 출고확인서 PDF 자동 생성 스크립트
-- Airtable Shipment 레코드 읽기 (+ Location, MM 링크 레코드 추가 조회)
+- Airtable Shipment 레코드 읽기
 - reportlab으로 출고확인서 PDF 생성
-- 생성된 PDF를 Airtable Shipment 레코드 첨부파일로 업로드
+- GitHub Release에 PDF 업로드 → Airtable 첨부파일로 등록
 """
 
 import argparse
@@ -73,49 +73,43 @@ def fetch_location_names(api: Api, base_id: str, location_ids: list) -> str:
             pass
     return ", ".join(names)
 
-def fetch_mm_records(api: Api, base_id: str, mm_ids: list) -> list:
-    if not mm_ids:
-        return []
-    table = api.table(base_id, "MM")
-    rows = []
-    for mm_id in mm_ids:
-        try:
-            rec = table.get(mm_id)
-            f = rec["fields"]
-            rows.append({
-                "order_item":  get_field(f, "최종 출하 품목"),
-                "actual_item": get_field(f, "최종 출고 품목 및 수량"),
-            })
-        except Exception:
-            pass
-    return rows
-
 def build_data(api: Api, base_id: str, record_id: str) -> dict:
     f = fetch_shipment_record(api, base_id, record_id)
 
+    # Location linked record → 이름 join
     location_ids = f.get("Location", [])
     if not isinstance(location_ids, list):
         location_ids = []
     location_str = fetch_location_names(api, base_id, location_ids)
 
-    mm_ids = f.get("MM", [])
-    if not isinstance(mm_ids, list):
-        mm_ids = []
-    mm_rows = fetch_mm_records(api, base_id, mm_ids)
+    # 품목은 Shipment 레코드에서 직접 읽기 (줄바꿈으로 행 분리)
+    order_items  = get_field(f, "최종 출하 품목")
+    actual_items = get_field(f, "최종 출고 품목 및 수량")
+
+    order_list  = [x.strip() for x in order_items.split("\n")  if x.strip()]
+    actual_list = [x.strip() for x in actual_items.split("\n") if x.strip()]
+
+    mm_rows = []
+    max_len = max(len(order_list), len(actual_list), 1)
+    for i in range(max_len):
+        mm_rows.append({
+            "order_item":  order_list[i]  if i < len(order_list)  else "",
+            "actual_item": actual_list[i] if i < len(actual_list) else "",
+        })
 
     return {
-        "to_no":           get_field(f, "TO Number"),
+        "to_no":           get_field(f, "배송요청"),
         "sc_id":           get_field(f, "SC id"),
         "location":        location_str,
         "ship_date":       format_date(get_field(f, "출하일자")),
         "delivery_type":   get_field(f, "배송 방식"),
-        "delivery_time":   get_field(f, "배송시간"),
+        "delivery_time":   get_field(f, "배송슬롯"),
         "customer":        get_field(f, "고객사"),
         "recipient":       get_field(f, "수령인"),
         "unload_service":  get_field(f, "하차 서비스"),
-        "recipient_phone": get_field(f, "수령인 연락처"),
-        "delivery_addr":   get_field(f, "배송지"),
-        "box_qty":         get_field(f, "최종 외박스 수량"),
+        "recipient_phone": get_field(f, "수령인(연락처)"),
+        "delivery_addr":   get_field(f, "수령인(주소)"),
+        "box_qty":         get_field(f, "최종 외박스 수량 값"),
         "mm_rows":         mm_rows,
     }
 
@@ -317,31 +311,27 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 
 # ── Airtable 첨부파일 업로드 ──────────────────────────────────────────────────
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
-    import base64
     from datetime import datetime
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     name = to_no if to_no else record_id
     filename = f"출고확인서_{name}_{timestamp}.pdf"
-    # 나머지 코드는 그대로
-    github_token = os.environ["GITHUB_TOKEN"]
-    github_repo = os.environ["GITHUB_REPO"]
 
-    # 1단계: GitHub Release 생성 또는 기존 release 사용
-    release_tag = "pdf-attachments"
+    github_token = os.environ["GITHUB_TOKEN"]
+    github_repo  = os.environ["GITHUB_REPO"]
+
     headers_gh = {
         "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
-    # release 조회
+    # GitHub Release 조회 또는 생성
+    release_tag = "pdf-attachments"
     rel_resp = requests.get(
         f"https://api.github.com/repos/{github_repo}/releases/tags/{release_tag}",
         headers=headers_gh,
     )
-
     if rel_resp.status_code == 404:
-        # release 없으면 생성
         rel_resp = requests.post(
             f"https://api.github.com/repos/{github_repo}/releases",
             headers=headers_gh,
@@ -349,11 +339,10 @@ def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
         )
     rel_resp.raise_for_status()
     release_id = rel_resp.json()["id"]
-    upload_url_base = f"https://uploads.github.com/repos/{github_repo}/releases/{release_id}/assets"
 
-    # 2단계: PDF를 release asset으로 업로드
+    # PDF를 GitHub Release asset으로 업로드
     asset_resp = requests.post(
-        upload_url_base,
+        f"https://uploads.github.com/repos/{github_repo}/releases/{release_id}/assets",
         headers={
             "Authorization": f"Bearer {github_token}",
             "Content-Type": "application/pdf",
@@ -365,10 +354,9 @@ def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     download_url = asset_resp.json()["browser_download_url"]
     print(f"  GitHub URL: {download_url}")
 
-    # 3단계: Airtable에 URL로 attachment 등록
-    url = f"https://api.airtable.com/v0/{base_id}/Shipment/{record_id}"
+    # Airtable에 URL로 attachment 등록
     resp = requests.patch(
-        url,
+        f"https://api.airtable.com/v0/{base_id}/Shipment/{record_id}",
         headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
         json={"fields": {"출고확인서_python": [{"url": download_url, "filename": filename}]}},
     )
@@ -376,6 +364,7 @@ def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     print(f"  Response: {resp.text[:300]}")
     resp.raise_for_status()
     print(f"✅ PDF 업로드 완료: {filename}")
+
 # ── 메인 ──────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser()
