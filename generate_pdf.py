@@ -82,12 +82,16 @@ def build_data(api: Api, base_id: str, record_id: str) -> dict:
         location_ids = []
     location_str = fetch_location_names(api, base_id, location_ids)
 
-    # 품목은 Shipment 레코드에서 직접 읽기 (줄바꿈으로 행 분리)
-    order_items  = get_field(f, "최종 출하 품목")
-    actual_items = get_field(f, "최종 출고 품목 및 수량")
+    # 품목 필드 — 리스트로 오면 각 요소가 한 행, 문자열이면 \n으로 분리
+    def split_items(val) -> list:
+        if isinstance(val, list):
+            return [str(v).strip() for v in val if str(v).strip()]
+        if isinstance(val, str):
+            return [x.strip() for x in val.split("\n") if x.strip()]
+        return []
 
-    order_list  = [x.strip() for x in order_items.split("\n")  if x.strip()]
-    actual_list = [x.strip() for x in actual_items.split("\n") if x.strip()]
+    order_list  = split_items(f.get("최종 출하 품목", ""))
+    actual_list = split_items(f.get("최종 출고 품목 및 수량", ""))
 
     mm_rows = []
     max_len = max(len(order_list), len(actual_list), 1)
@@ -98,7 +102,7 @@ def build_data(api: Api, base_id: str, record_id: str) -> dict:
         })
 
     return {
-        "to_no":           get_field(f, "배송요청"),
+        "to_no":           get_field(f, "배송요청_lookup"),    # lookup 필드로 변경
         "sc_id":           get_field(f, "SC id"),
         "location":        location_str,
         "ship_date":       format_date(get_field(f, "출하일자")),
