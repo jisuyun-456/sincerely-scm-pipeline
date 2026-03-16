@@ -125,36 +125,33 @@ def fetch_box_cbm_live() -> dict:
     return live
 
 
-def fetch_product_cbm() -> list[tuple[str, float]]:
-    """
-    Product 테이블에서 품목명과 CBM/박스 값을 읽어
-    (정규화된 품목명, cbm_per_box) 리스트를 반환.
-    긴 이름 -> 짧은 이름 순으로 정렬해 greedy 매칭 준비.
-
-    Product 테이블 필드:
-      fldx01uKEnCd0J0nP  품목명 (Name)
-      fldN1JrkxIr5m6pXz  박스당 CBM (단품)
-      fld6W5ImO7UeBVMPI  박스당 CBM (키트)
-    """
+def fetch_product_cbm():
+    # Product 테이블 전체 조회 후 field ID로 직접 접근
+    # fldx01uKEnCd0J0nP = 품목명, fldN1JrkxIr5m6pXz = CBM/박스(단품), fld6W5ImO7UeBVMPI = CBM/박스(키트)
     api   = pyairtable.Api(API_KEY)
     table = api.table(BASE_ID, TABLE_PRODUCT)
     result = []
-    for rec in table.all(fields=[
-        "fldx01uKEnCd0J0nP",
-        "fldN1JrkxIr5m6pXz",
-        "fld6W5ImO7UeBVMPI",
-    ]):
-        f    = rec["fields"]
-        name = (f.get("fldx01uKEnCd0J0nP") or "").strip()
-        cbm  = f.get("fldN1JrkxIr5m6pXz") or f.get("fld6W5ImO7UeBVMPI")
+    for rec in table.all():
+        f = rec["fields"]
+        # field ID 또는 field 이름 둘 다 시도
+        name = (
+            f.get("fldx01uKEnCd0J0nP") or
+            f.get("Name") or
+            f.get("품목명") or
+            ""
+        ).strip()
+        cbm = (
+            f.get("fldN1JrkxIr5m6pXz") or
+            f.get("fld6W5ImO7UeBVMPI") or
+            f.get("박스당 CBM") or
+            None
+        )
         if name and cbm:
             try:
-                # 공백 제거 정규화 (매칭 시 사용)
                 norm = re.sub(r"\s+", "", name)
                 result.append((norm, float(cbm)))
             except (ValueError, TypeError):
                 pass
-    # 긴 이름 먼저 - greedy 매칭으로 더 구체적인 품목 우선 적중
     result.sort(key=lambda x: -len(x[0]))
     print(f"  Product CBM 조회 완료: {len(result)}개 품목")
     return result
@@ -509,8 +506,8 @@ def build_slack_blocks(
     fri = week_mon + timedelta(4)
 
     # -- 상태 이모지 ------------------------------------
-    cbm_emoji = "🔴" if s["total_cbm"] > 30 else ("🟡" if s["total_cbm"] > 15 else "🟢")
-    q_emoji   = "🔴" if q["missing_rate"] > 50 else ("🟡" if q["missing_rate"] > 25 else "🟢")
+    cbm_emoji = "" if s["total_cbm"] > 30 else ("" if s["total_cbm"] > 15 else "")
+    q_emoji   = "" if q["missing_rate"] > 50 else ("" if q["missing_rate"] > 25 else "")
 
     # -- 박스 구성비 텍스트 -----------------------------
     box_lines = ""
@@ -565,11 +562,11 @@ def build_slack_blocks(
         )
     if q["same_day_rate"] > 40:
         alerts.append(
-            f"📌  당일 신규 등록 {q['same_day_rate']:.0f}% "
+            f"  당일 신규 등록 {q['same_day_rate']:.0f}% "
             f"- 사전 입력 프로세스 점검 권장"
         )
     if s["total_cbm"] > 25:
-        alerts.append("📌  주간 CBM 25m3 초과 - 차량 용량 사전 조율 권장")
+        alerts.append("  주간 CBM 25m3 초과 - 차량 용량 사전 조율 권장")
     if not alerts:
         alerts.append("[OK]  특이 사항 없음")
 
@@ -589,7 +586,7 @@ def build_slack_blocks(
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": f"📦 SCM 주간 출하 리포트 - {wk_label}",
+                "text": f" SCM 주간 출하 리포트 - {wk_label}",
             },
         },
         {
@@ -611,15 +608,15 @@ def build_slack_blocks(
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                    f"*📊 이번주 핵심 요약*\n"
+                    f"* 이번주 핵심 요약*\n"
                     f"{cbm_emoji}  총 CBM  *{s['total_cbm']:.2f} m3*\n"
-                    f"📦  총 출하  {s['total_count']}건  "
+                    f"  총 출하  {s['total_count']}건  "
                     f"(완료 {s['completed']} / 대기 {s['pending']})\n"
-                    f"📐  건당 평균 CBM  {s['cbm_per_shipment']:.3f} m3\n"
-                    f"💰  물류매출  W{s['revenue']:,.0f}  |  "
+                    f"  건당 평균 CBM  {s['cbm_per_shipment']:.3f} m3\n"
+                    f"  물류매출  W{s['revenue']:,.0f}  |  "
                     f"비용  W{s['cost']:,.0f}  |  "
                     f"손익  W{s['profit']:+,.0f}\n"
-                    f"💵  CBM당 물류비  W{s['cbm_unit_cost']:,.0f} / m3"
+                    f"  CBM당 물류비  W{s['cbm_unit_cost']:,.0f} / m3"
                 ),
             },
         },
@@ -629,7 +626,7 @@ def build_slack_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*📅 일별 CBM 현황*\n{wd_lines}",
+                "text": f"* 일별 CBM 현황*\n{wd_lines}",
             },
         },
         {"type": "divider"},
@@ -639,7 +636,7 @@ def build_slack_blocks(
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                    f"*📦 박스 타입 구성비* (총 {bt['total']}박스)\n"
+                    f"* 박스 타입 구성비* (총 {bt['total']}박스)\n"
                     f"{box_lines}"
                     f"{truck_lines}"
                 ),
@@ -651,7 +648,7 @@ def build_slack_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*🏷 출하 품목 Top (CBM 기준)*\n{item_lines}",
+                "text": f"* 출하 품목 Top (CBM 기준)*\n{item_lines}",
             },
         },
         {"type": "divider"},
@@ -674,10 +671,10 @@ def build_slack_blocks(
                         if q["avg_leadtime_days"] is not None else ""
                     )
                     + f"  CBM 산출 근거  "
-                    f"Manual {this['cbm_sources']['manual']} / "
+                    f"수동 {this['cbm_sources']['manual']} / "
                     f"박스파싱 {this['cbm_sources']['box_parse']} / "
-                    f"품목추정 {this['cbm_sources']['estimate']} / "
-                    f"미산출 {this['cbm_sources']['none']}"
+                    f"품목매칭 {this['cbm_sources']['product_match']} / "
+                    f"미산출 {this['cbm_sources']['unmatched']}"
                 ),
             },
         },
@@ -687,7 +684,7 @@ def build_slack_blocks(
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*📈 최근 4주 물동량 . 손익 트렌드*\n{trend_lines}",
+                "text": f"* 최근 4주 물동량 . 손익 트렌드*\n{trend_lines}",
             },
         },
         {"type": "divider"},
@@ -697,7 +694,7 @@ def build_slack_blocks(
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                    f"*🔭 다음주 예고 "
+                    f"* 다음주 예고 "
                     f"({(week_mon+timedelta(7)).strftime('%m/%d')}~)*\n"
                     f"  예정 건수  {next_s['total_count']}건  |  "
                     f"예상 CBM  {next_s['total_cbm']:.2f} m3"
@@ -708,7 +705,7 @@ def build_slack_blocks(
         # (8) 알림
         {
             "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*🚨 주요 알림*\n{alert_text}"},
+            "text": {"type": "mrkdwn", "text": f"* 주요 알림*\n{alert_text}"},
         },
     ]
 
@@ -790,7 +787,7 @@ def main():
 
     blocks       = build_slack_blocks(this_data, next_data, trend, this_mon)
     fallback_txt = (
-        f"📦 SCM 주간 리포트 - {this_mon.month}월 W"
+        f" SCM 주간 리포트 - {this_mon.month}월 W"
         f"{(this_mon.day-1)//7+1} | "
         f"이번주 CBM {this_data['summary']['total_cbm']:.1f}m3 / "
         f"{this_data['summary']['total_count']}건"
