@@ -318,31 +318,21 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 # ── Airtable 첨부파일 업로드 ──────────────────────────────────────────────────
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     filename = f"출고확인서_{to_no}.pdf"
-    import base64
 
-    # 표준 PATCH API로 base64 업로드
-    url = f"https://api.airtable.com/v0/{base_id}/Shipment/{record_id}"
+    # 테이블명 포함한 올바른 uploadAttachment 엔드포인트
+    url = f"https://content.airtable.com/v0/{base_id}/Shipment/{record_id}/uploadAttachment"
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
+        "Content-Type": "application/octet-stream",
+        "x-airtable-application-id": base_id,
     }
-    payload = {
-        "fields": {
-            "출고확인서_python": [
-                {
-                    "filename": filename,
-                    "contentType": "application/pdf",
-                    "data": "data:application/pdf;base64," + base64.b64encode(pdf_bytes).decode("utf-8"),
-                }
-            ]
-        }
-    }
-    resp = requests.patch(url, headers=headers, json=payload)
+    params = {"fieldName": "출고확인서_python"}
+
+    resp = requests.post(url, headers=headers, params=params, data=pdf_bytes)
     print(f"  Upload status: {resp.status_code}")
     print(f"  Response: {resp.text[:300]}")
     resp.raise_for_status()
     print(f"✅ PDF 업로드 완료: {filename}")
-
 # ── 메인 ──────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser()
