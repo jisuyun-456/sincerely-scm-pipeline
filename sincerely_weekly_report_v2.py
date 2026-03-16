@@ -521,11 +521,7 @@ def build_slack_blocks(
     alerts = []
     if s["pending"] > 0:
         alerts.append(f"⚠️  미완료 출하 {s['pending']}건 — 진행 확인 필요")
-    if q["missing_rate"] > 30:
-        alerts.append(
-            f"⚠️  외박스 수량 미기재율 {q['missing_rate']:.0f}% "
-            f"({q['missing_box_qty']}건) — CBM 신뢰도 저하"
-        )
+  
     if q["same_day_rate"] > 40:
         alerts.append(
             f"📌  당일 신규 등록 {q['same_day_rate']:.0f}% "
