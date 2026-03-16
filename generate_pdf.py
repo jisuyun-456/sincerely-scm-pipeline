@@ -317,23 +317,16 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 
 # ── Airtable 첨부파일 업로드 ──────────────────────────────────────────────────
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
+    import base64
     filename = f"출고확인서_{to_no}.pdf"
 
-    # 1단계: transfer.sh에 임시 업로드 → URL 획득
-    print("  transfer.sh 업로드 중...")
-    upload_resp = requests.put(
-        f"https://transfer.sh/{filename}",
-        data=pdf_bytes,
-        headers={
-            "Content-Type": "application/pdf",
-            "Max-Days": "1",
-        },
-    )
-    upload_resp.raise_for_status()
-    file_url = upload_resp.text.strip()
-    print(f"  임시 URL: {file_url}")
+    # PDF를 로컬에 저장 (GitHub Actions artifact용)
+    with open(filename, "wb") as f:
+        f.write(pdf_bytes)
+    print(f"  PDF 로컬 저장 완료: {filename}")
 
-    # 2단계: Airtable에 URL로 attachment 등록
+    # base64 (data: prefix 없이) 직접 업로드
+    b64 = base64.b64encode(pdf_bytes).decode("utf-8")
     url = f"https://api.airtable.com/v0/{base_id}/Shipment/{record_id}"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -341,7 +334,13 @@ def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     }
     payload = {
         "fields": {
-            "출고확인서_python": [{"url": file_url, "filename": filename}]
+            "출고확인서_python": [
+                {
+                    "filename": filename,
+                    "contentType": "application/pdf",
+                    "data": b64,
+                }
+            ]
         }
     }
     resp = requests.patch(url, headers=headers, json=payload)
