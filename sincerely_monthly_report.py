@@ -1,18 +1,20 @@
-# Sincerely SCM 월간 출하 리포트
-# ---------------------------------------------
-# 매월 1일 09:00 KST 슬랙 DM 자동 발송
-#
-# 포함 지표:
-#   [CBM]     월 총 CBM / 주차별 CBM 추이
-#   [배차]    월 총 배차 건수 / 배송파트너별 배송 비율
-#   [손익]    월 물류매출 / 운송비용 / 물류 손익
-#   [품목]    월 출하 품목 Top 10
-#
-# 환경변수:
-#   AIRTABLE_API_KEY_TMS   Airtable PAT
-#   AIRTABLE_BASE_TMS_ID   TMS base (app4x70a8mOrIKsMf)
-#   SLACK_BOT_TOKEN        Bot Token (xoxb-...)
-#   SLACK_DM_USER_ID       수신자 Slack User ID
+"""
+Sincerely SCM 월간 출하 리포트
+─────────────────────────────────────────────
+매월 1일 09:00 KST 슬랙 DM 자동 발송
+
+포함 지표:
+  [CBM]     월 총 CBM / 주차별 CBM 추이
+  [배차]    월 총 배차 건수 / 배송파트너별 배송 비율
+  [손익]    월 물류매출 / 운송비용 / 물류 손익
+  [품목]    월 출하 품목 Top 10
+
+환경변수:
+  AIRTABLE_API_KEY_TMS   Airtable PAT
+  AIRTABLE_BASE_TMS_ID   TMS base (app4x70a8mOrIKsMf)
+  SLACK_BOT_TOKEN        Bot Token (xoxb-...)
+  SLACK_DM_USER_ID       수신자 Slack User ID
+"""
 
 import os
 import json
@@ -26,19 +28,17 @@ from collections import defaultdict
 import pyairtable
 import requests
 
-# -- 환경변수 ------------------------------------------
+# ── 환경변수 ──────────────────────────────────────────
 API_KEY     = os.environ["AIRTABLE_API_KEY_TMS"]
 BASE_ID     = os.environ.get("AIRTABLE_BASE_TMS_ID", "app4x70a8mOrIKsMf")
 SLACK_TOKEN = os.environ["SLACK_BOT_TOKEN"]
 DM_USER_ID  = os.environ["SLACK_DM_USER_ID"]
 
-# -- Table ID ------------------------------------------
+# ── Table ID ──────────────────────────────────────────
 TABLE_SHIPMENT = "tbllg1JoHclGYer7m"
 TABLE_BOX      = "tbltwH7bHk41rTzhM"
-TABLE_PRODUCT  = "tblBNh6oGDlTKGrdQ"   # Product 테이블 (CBM 기준값)
-TABLE_PRODUCT  = "tblBNh6oGDlTKGrdQ"   # Product 테이블 (CBM 기준값)
 
-# -- Field ID ------------------------------------------
+# ── Field ID ──────────────────────────────────────────
 F_DATE       = "fldQvmEwwzvQW95h9"   # 출하확정일
 F_ITEM       = "fldgSupj5XLjJXYQo"   # 최종 출하 품목
 F_BOX_PARSED = "fldTjLDmw5sNGszeD"   # 최종 외박스 수량 값
@@ -54,7 +54,7 @@ F_BOX_CODE = "fldELrd8bBVjQCHnp"
 F_BOX_NAME = "fldgvlGjLb4FTlQ0v"
 F_BOX_CBM  = "fldjFaXiYzeJ2Zt7M"
 
-# -- 박스 CBM fallback ---------------------------------
+# ── 박스 CBM fallback ─────────────────────────────────
 BOX_CBM = {
     "극소": 0.0098, "S280": 0.0098,
     "소":   0.0117, "S360": 0.0117,
@@ -64,8 +64,8 @@ BOX_CBM = {
     "특대": 0.1663, "L560": 0.1663,
 }
 
-# -- 파트너 그룹 정규화 --------------------------------
-# Airtable 파트너명  리포트 표시명
+# ── 파트너 그룹 정규화 ────────────────────────────────
+# Airtable 파트너명 → 리포트 표시명
 PARTNER_GROUP = {
     "신시어리 (이장훈)":  "신시어리 기사님 (이장훈)",
     "신시어리 (박종성)":  "신시어리 기사님 (박종성)",
@@ -75,17 +75,56 @@ PARTNER_GROUP = {
 }
 # 매핑 안 된 경우 그대로 사용
 
-# -- 품목  CBM 매핑은 Product 테이블에서 실시간 조회 (fetch_product_cbm 참조)
-# 하드코딩 제거  Airtable Product 테이블 사용
+# ── 품목 → (박스규격, 박스당수량, CBM/박스) ───────────
+PRODUCT_CBM = {
+    "스펙트럼컬러펜":           ("중",   300, 0.0201),
+    "올블랙펜":                ("중",   130, 0.0201),
+    "슈가케인펜":               ("중",   100, 0.0201),
+    "플레인USB":                ("중",   100, 0.0201),
+    "브랜디드피규어키링":        ("중",   100, 0.0201),
+    "홈카페코스터":              ("중",   275, 0.0201),
+    "밸류메모큐브(M)":           ("중",    33, 0.0201),
+    "레더스킨다이어리(표준)":    ("중대",  50, 0.0492),
+    "슬로건다이어리(표준)":      ("중대",  50, 0.0492),
+    "트리플컬러펜∣JETSTREAM":   ("중대", 413, 0.0492),
+    "라이트샤오미펜":            ("중대", 333, 0.0492),
+    "커넥트6in1케이블키트":      ("중대", 150, 0.0492),
+    "홀리데이네임택":            ("중대", 200, 0.0492),
+    "리멤버타투스티커":           ("중대", 500, 0.0492),
+    "버티컬무선충전패드":         ("중대", 100, 0.0492),
+    "밸류무선충전마우스패드":     ("중대",  20, 0.0492),
+    "브랜드스트랩단우산":         ("중대",  50, 0.0492),
+    "유니크디퓨저":              ("중대",  40, 0.0492),
+    "오토매틱와인오프너":         ("중대",  19, 0.0492),
+    "리마커블칫솔살균기":         ("중대", 100, 0.0492),
+    "킵세이프마그넷배터리Max":    ("중대",  50, 0.0492),
+    "킵세이프마그넷배터리Slim":   ("중대",  75, 0.0492),
+    "더블업트래블파우치(Large)":  ("대",    50, 0.1066),
+    "로고스트랩파우치(단품)":     ("대",   100, 0.1066),
+    "포시즌블랭킷(무릎담요)":     ("대",    50, 0.1066),
+    "미니멀스텐머그":             ("대",    43, 0.1066),
+    "미스트워터보틀":             ("대",    47, 0.1066),
+    "미르(MiiR)텀블러":          ("대",    50, 0.1066),
+    "메시지캐리어파우치":         ("대",    49, 0.1066),
+    "올웨이즈양우산":             ("중대",  80, 0.0492),
+    "스탠리데일리텀블러":         ("대",    30, 0.1066),
+    "핸디링미니선풍기":           ("중대", 100, 0.0492),
+    "스타트씨드키트":             ("중대",  50, 0.0492),
+    "톤앤톤쿨러백(단품)":         ("특대",  25, 0.1663),
+    "브랜디드타월":               ("대",    50, 0.1066),
+    "Solid스탠다드G형박스(L사이즈)키트": ("대", 18, 0.1066),
+    "Solid스탠다드G형박스(M사이즈)키트": ("대", 20, 0.1066),
+    "브릭메모&캘린더스탠드2.0":   ("중대",  50, 0.0492),
+}
 
 _BOX_RE = re.compile(
     r"(극소|소|중대|중|대|특대|S280|S360|M350|M480|L510|L560)\s*(\d+)"
 )
 
 
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 # 1. 날짜 유틸
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 def prev_month_range() -> tuple[date, date]:
     """전월 1일 ~ 말일"""
     today     = date.today()
@@ -104,9 +143,9 @@ def week_number_of_month(d: date) -> int:
     return (d.day - 1) // 7 + 1
 
 
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 # 2. Airtable 조회
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 def fetch_month_shipments(start: date, end: date) -> list[dict]:
     api   = pyairtable.Api(API_KEY)
     table = api.table(BASE_ID, TABLE_SHIPMENT)
@@ -131,39 +170,9 @@ def fetch_box_cbm_live() -> dict:
     return live
 
 
-def fetch_product_cbm():
-    # Product 테이블 전체 조회 후 field ID로 직접 접근
-    # fldx01uKEnCd0J0nP = 품목명, fldN1JrkxIr5m6pXz = CBM/박스(단품), fld6W5ImO7UeBVMPI = CBM/박스(키트)
-    api   = pyairtable.Api(API_KEY)
-    table = api.table(BASE_ID, TABLE_PRODUCT)
-    result = []
-    for rec in table.all():
-        f = rec["fields"]
-        name = (
-            f.get("fldx01uKEnCd0J0nP") or
-            f.get("Name") or
-            f.get("품목명") or
-            ""
-        ).strip()
-        cbm = (
-            f.get("fldN1JrkxIr5m6pXz") or
-            f.get("fld6W5ImO7UeBVMPI") or
-            f.get("박스당 CBM") or
-            None
-        )
-        if name and cbm:
-            try:
-                norm = re.sub(r"\s+", "", name)
-                result.append((norm, float(cbm)))
-            except (ValueError, TypeError):
-                pass
-    result.sort(key=lambda x: -len(x[0]))
-    print(f"  Product CBM 조회 완료: {len(result)}개 품목")
-    return result
-
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 # 3. CBM 파싱
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 def parse_box_cbm(box_str: str, live: dict) -> float:
     ref   = {**BOX_CBM, **live}
     total = 0.0
@@ -173,70 +182,46 @@ def parse_box_cbm(box_str: str, live: dict) -> float:
     return round(total, 4)
 
 
-def match_cbm_from_product(item_str: str, product_cbm: list[tuple[str, float]]) -> float:
-    """
-    Product 테이블 CBM으로 품목 CBM 산출.
-    - 공백 제거 후 부분 일치 (긴 이름 우선 greedy)
-    - 매칭 안 되면 0.0 반환
-    """
+def estimate_cbm_from_items(item_str: str) -> float:
     total = 0.0
-    matched_any = False
-
     for line in item_str.strip().splitlines():
         line = line.strip()
         if not line:
             continue
-        norm_line = re.sub(r"\s+", "", line)
-        nums = re.findall(r"\d+", norm_line)
-
-        for prod_norm, cbm_per_box in product_cbm:
-            if prod_norm in norm_line:
-                qty = int(nums[-1]) if nums else 1
-                total += cbm_per_box * qty
-                matched_any = True
+        for pname, (_, qpb, cpb) in sorted(
+            PRODUCT_CBM.items(), key=lambda x: -len(x[0])
+        ):
+            if pname in line:
+                nums = re.findall(r"\d+", line.replace(pname, ""))
+                if nums:
+                    total += math.ceil(int(nums[0]) / qpb) * cpb
                 break
+    return round(total, 4)
 
-    return round(total, 4) if matched_any else 0.0
 
-
-def get_cbm(f: dict, live: dict,
-            product_cbm: list[tuple[str, float]] | None = None) -> float:
-    """
-    CBM 산정 우선순위:
-      1순위: Total_CBM 수동 입력
-      2순위: Product 테이블 품목 매칭
-      3순위: 최종 외박스 수량 값 파싱
-       둘 다 없으면 0.0
-    """
-    # 1순위: 수동 입력
+def get_cbm(f: dict, live: dict) -> float:
     total_cbm_f = f.get("Total_CBM")
     if total_cbm_f and total_cbm_f > 0:
-        return float(total_cbm_f)
+        return total_cbm_f
 
-    # 2순위: Product 테이블 매칭
-    item_str = f.get("최종 출하 품목") or ""
-    if item_str.strip() and product_cbm:
-        cbm_val = match_cbm_from_product(item_str, product_cbm)
-        if cbm_val > 0:
-            return cbm_val
-
-    # 3순위: 외박스 수량 파싱
     box_qty = f.get("최종 외박스 수량 값") or f.get("외박스 수량 (직접입력)") or ""
     if isinstance(box_qty, list):
         box_qty = ", ".join(str(x) for x in box_qty)
     box_qty = box_qty.strip()
+
     if box_qty and _BOX_RE.search(box_qty):
         return parse_box_cbm(box_qty, live)
 
-    # 모두 실패
+    item_str = f.get("최종 출하 품목") or ""
+    if item_str.strip():
+        return estimate_cbm_from_items(item_str)
     return 0.0
 
 
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 # 4. 월간 분석
-# -------------------------------------------------------
-def analyze_month(records: list[dict], live_cbm: dict,
-                  product_cbm: list[tuple[str, float]] | None = None) -> dict:
+# ═══════════════════════════════════════════════════════
+def analyze_month(records: list[dict], live_cbm: dict) -> dict:
     total_cbm   = 0.0
     total_count = 0
     total_rev   = 0.0
@@ -261,7 +246,7 @@ def analyze_month(records: list[dict], live_cbm: dict,
 
         ship_date   = date.fromisoformat(d_s)
         week_no     = week_number_of_month(ship_date)
-        cbm_val     = get_cbm(f, live_cbm, product_cbm)
+        cbm_val     = get_cbm(f, live_cbm)
 
         total_count += 1
         total_cbm   += cbm_val
@@ -274,6 +259,7 @@ def analyze_month(records: list[dict], live_cbm: dict,
         # 배송파트너 파싱
         partner_field = f.get("배송파트너 (from 배송파트너)")
         if partner_field:
+            # lookup 필드 구조 처리
             if isinstance(partner_field, dict):
                 names = []
                 for vals in partner_field.get("valuesByLinkedRecordId", {}).values():
@@ -288,7 +274,7 @@ def analyze_month(records: list[dict], live_cbm: dict,
                 partner_cnt[display] += 1
                 partner_cbm[display] += cbm_val
 
-        # 품목 집계 (Product 테이블 CBM 사용)
+        # 품목 집계
         item_str = f.get("최종 출하 품목") or ""
         for line in item_str.strip().splitlines():
             line = line.strip()
@@ -299,12 +285,12 @@ def analyze_month(records: list[dict], live_cbm: dict,
             if iname and nums:
                 qty = int(nums[-1])
                 item_agg[iname]["qty"] += qty
-                if product_cbm:
-                    norm_line = re.sub(r"\s+", "", iname)
-                    for prod_norm, cpb in product_cbm:
-                        if prod_norm in norm_line:
-                            item_agg[iname]["cbm"] += round(cpb * qty, 4)
-                            break
+                for pname, (_, qpb, cpb) in sorted(
+                    PRODUCT_CBM.items(), key=lambda x: -len(x[0])
+                ):
+                    if pname in iname:
+                        item_agg[iname]["cbm"] += round(math.ceil(qty / qpb) * cpb, 4)
+                        break
 
     total_cbm  = round(total_cbm, 2)
     total_rev  = round(total_rev, 0)
@@ -337,32 +323,32 @@ def analyze_month(records: list[dict], live_cbm: dict,
     }
 
 
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 # 5. Slack Block 빌더
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 def _bar(val: float, max_val: float, width: int = 10) -> str:
     filled = round(val / max_val * width) if max_val else 0
-    return "" * filled + "" * (width - filled)
+    return "█" * filled + "░" * (width - filled)
 
 
 def _pct_bar(pct: float, width: int = 8) -> str:
     filled = round(pct / 100 * width)
-    return "" * filled + "" * (width - filled)
+    return "█" * filled + "░" * (width - filled)
 
 
 def build_monthly_blocks(data: dict, month_start: date) -> list[dict]:
     label = month_label(month_start)
 
-    # -- 주차별 CBM ------------------------------------
+    # ── 주차별 CBM ────────────────────────────────────
     max_w_cbm  = max(data["weekly_cbm"].values(), default=1)
     weekly_txt = ""
     for wk in sorted(data["weekly_cbm"].keys()):
         cbm = data["weekly_cbm"][wk]
         cnt = data["weekly_cnt"].get(wk, 0)
         bar = _bar(cbm, max_w_cbm, 10)
-        weekly_txt += f"  `{wk}주차`  {bar}  *{cbm:.1f}m*  ({cnt}건)\n"
+        weekly_txt += f"  `{wk}주차`  {bar}  *{cbm:.1f}m³*  ({cnt}건)\n"
 
-    # -- 배송파트너 비율 -------------------------------
+    # ── 배송파트너 비율 ───────────────────────────────
     partner_txt = ""
     sorted_partners = sorted(
         data["partner_cnt"].items(), key=lambda x: -x[1]
@@ -375,25 +361,25 @@ def build_monthly_blocks(data: dict, month_start: date) -> list[dict]:
         bar = _pct_bar(pct, 8)
         partner_txt += (
             f"  `{name}`\n"
-            f"    {bar}  *{pct:.1f}%*  {cnt}건  |  {cbm:.2f}m\n"
+            f"    {bar}  *{pct:.1f}%*  {cnt}건  |  {cbm:.2f}m³\n"
         )
 
     unassigned = data["total_count"] - total_with_partner
     if unassigned > 0:
         pct = round(unassigned / data["total_count"] * 100, 1)
-        partner_txt += f"  `미배정`  {'' * 8}  {pct:.1f}%  {unassigned}건\n"
+        partner_txt += f"  `미배정`  {'░' * 8}  {pct:.1f}%  {unassigned}건\n"
 
-    # -- Top 품목 --------------------------------------
+    # ── Top 품목 ──────────────────────────────────────
     item_txt = ""
     for i, (name, qty, cbm) in enumerate(data["top_items"][:8], 1):
-        item_txt += f"  {i}. {name}  `{qty:,}개`    *{cbm:.3f}m*\n"
+        item_txt += f"  {i}. {name}  `{qty:,}개`  →  *{cbm:.3f}m³*\n"
 
-    # -- 손익 ------------------------------------------
+    # ── 손익 ──────────────────────────────────────────
     profit_sign = "+" if data["profit"] >= 0 else ""
     rev_txt = (
-        f"  물류매출   {data['total_rev']:,.0f}\n"
-        f"  운송비용   {data['total_cost']:,.0f}\n"
-        f"  물류 손익  *{profit_sign}{data['profit']:,.0f}*"
+        f"  물류매출   ₩{data['total_rev']:,.0f}\n"
+        f"  운송비용   ₩{data['total_cost']:,.0f}\n"
+        f"  물류 손익  *₩{profit_sign}{data['profit']:,.0f}*"
     )
     if data["total_rev"] == 0:
         rev_txt += "\n  _물류매출 필드 입력 필요_"
@@ -403,7 +389,7 @@ def build_monthly_blocks(data: dict, month_start: date) -> list[dict]:
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": f" SCM 월간 출하 리포트 - {label}",
+                "text": f"📊 SCM 월간 출하 리포트 — {label}",
             },
         },
         {
@@ -418,56 +404,56 @@ def build_monthly_blocks(data: dict, month_start: date) -> list[dict]:
             }],
         },
         {"type": "divider"},
-        #  핵심 요약
+        # ① 핵심 요약
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                    f"* 월간 핵심 요약*\n"
-                    f"  총 CBM         *{data['total_cbm']:.2f} m*\n"
+                    f"*📦 월간 핵심 요약*\n"
+                    f"  총 CBM         *{data['total_cbm']:.2f} m³*\n"
                     f"  총 배차 건수    *{data['total_count']}건*\n"
-                    f"  건당 평균 CBM   {data['cbm_per_ship']:.3f} m"
+                    f"  건당 평균 CBM   {data['cbm_per_ship']:.3f} m³"
                 ),
             },
         },
         {"type": "divider"},
-        #  주차별 CBM
+        # ② 주차별 CBM
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"* 주차별 CBM 추이*\n{weekly_txt}",
+                "text": f"*📅 주차별 CBM 추이*\n{weekly_txt}",
             },
         },
         {"type": "divider"},
-        #  배송파트너 비율
+        # ③ 배송파트너 비율
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                    f"* 배송파트너별 배송 비율*  (총 {data['total_count']}건)\n"
+                    f"*🚚 배송파트너별 배송 비율*  (총 {data['total_count']}건)\n"
                     f"{partner_txt}"
                 ),
             },
         },
         {"type": "divider"},
-        #  물류 손익
+        # ④ 물류 손익
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"* 물류 손익*\n{rev_txt}",
+                "text": f"*💰 물류 손익*\n{rev_txt}",
             },
         },
         {"type": "divider"},
-        #  Top 품목
+        # ⑤ Top 품목
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"* 월간 출하 품목 Top (CBM 기준)*\n{item_txt}",
+                "text": f"*🏷️ 월간 출하 품목 Top (CBM 기준)*\n{item_txt}",
             },
         },
         {"type": "divider"},
@@ -482,9 +468,9 @@ def build_monthly_blocks(data: dict, month_start: date) -> list[dict]:
     return blocks
 
 
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 # 6. Slack DM 전송
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 def send_dm(blocks: list[dict], fallback_text: str):
     headers = {
         "Authorization": f"Bearer {SLACK_TOKEN}",
@@ -518,12 +504,12 @@ def send_dm(blocks: list[dict], fallback_text: str):
     if not msg_resp.get("ok"):
         raise RuntimeError(f"chat.postMessage 실패: {msg_resp.get('error')}")
 
-    print(f"[OK] Slack 월간 리포트 DM 전송 완료  {DM_USER_ID}")
+    print(f"[OK] Slack 월간 리포트 DM 전송 완료 → {DM_USER_ID}")
 
 
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 # 7. 메인
-# -------------------------------------------------------
+# ═══════════════════════════════════════════════════════
 def main():
     # 9:00~9:30 랜덤 지연
     skip = os.environ.get("SKIP_DELAY", "0")
@@ -537,17 +523,16 @@ def main():
     start, end = prev_month_range()
     print(f"  대상 기간: {start} ~ {end}  ({month_label(start)})")
 
-    live_cbm    = fetch_box_cbm_live()
-    product_cbm = fetch_product_cbm()
-    records     = fetch_month_shipments(start, end)
+    live_cbm = fetch_box_cbm_live()
+    records  = fetch_month_shipments(start, end)
     print(f"  조회 건수: {len(records)}건")
 
-    data   = analyze_month(records, live_cbm, product_cbm)
+    data   = analyze_month(records, live_cbm)
     blocks = build_monthly_blocks(data, start)
 
     fallback = (
-        f" SCM 월간 리포트 - {month_label(start)} | "
-        f"총 CBM {data['total_cbm']:.1f}m / {data['total_count']}건"
+        f"📊 SCM 월간 리포트 — {month_label(start)} | "
+        f"총 CBM {data['total_cbm']:.1f}m³ / {data['total_count']}건"
     )
 
     send_dm(blocks, fallback)
