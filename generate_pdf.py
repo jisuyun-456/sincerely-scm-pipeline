@@ -318,7 +318,11 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 # ── Airtable 첨부파일 업로드 ──────────────────────────────────────────────────
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     import base64
-    filename = f"출고확인서_{to_no if to_no else record_id}.pdf"
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    name = to_no if to_no else record_id
+    filename = f"출고확인서_{name}_{timestamp}.pdf"
+    # 나머지 코드는 그대로
     github_token = os.environ["GITHUB_TOKEN"]
     github_repo = os.environ["GITHUB_REPO"]
 
