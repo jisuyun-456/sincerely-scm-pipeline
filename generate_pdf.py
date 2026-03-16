@@ -9,6 +9,7 @@ generate_pdf.py
 import argparse
 import os
 import io
+import re
 import requests
 from datetime import datetime
 
@@ -48,23 +49,17 @@ def register_fonts():
 
 # ── 필드값 헬퍼 ───────────────────────────────────────────────────────────────
 def get_field(f: dict, key: str, default: str = "") -> str:
-    """Airtable 필드값이 리스트/dict 등 다양한 타입으로 올 수 있어서 안전하게 변환"""
     val = f.get(key, default)
     if val is None:
         return default
     if isinstance(val, list):
         return ", ".join(str(v) for v in val) if val else default
     if isinstance(val, dict):
-        # singleSelect 오브젝트 → name 꺼내기
         return str(val.get("name", "")) if val else default
     return str(val) if val else default
 
 def get_lookup_first(f: dict, key: str) -> str:
-    """
-    multipleLookupValues 필드 처리
-    구조: {"linkedRecordIds": [...], "valuesByLinkedRecordId": {"recXXX": ["값"]}}
-    첫 번째 값만 꺼냄
-    """
+    """multipleLookupValues 중첩 구조에서 첫 번째 값 꺼내기"""
     val = f.get(key)
     if not val:
         return ""
@@ -77,6 +72,60 @@ def get_lookup_first(f: dict, key: str) -> str:
     if isinstance(val, list):
         return str(val[0]) if val else ""
     return str(val)
+
+def extract_item_name(item_str: str) -> str:
+    """
+    출고 품목 문자열에서 품목명만 추출
+    예: "데일리짐색(단품) 200+2" → "데일리짐색(단품)"
+        "밸류무선충전마우스패드 770" → "밸류무선충전마우스패드"
+    """
+    # 끝의 숫자+추가수량 패턴 제거: " 200+2" 또는 " 770"
+    cleaned = re.sub(r'\s+\d+(\+\d+)?\s*$', '', item_str.strip())
+    return cleaned.strip()
+
+def split_order_items(order_raw: str, actual_list: list) -> list:
+    """
+    출고 품목 리스트를 기준으로 주문 품목 문자열을 각 행으로 분리
+    actual_list: ["데일리짐색(단품) 200+2", "브랜디드피규어키링 200+4", ...]
+    order_raw: "데일리짐색(단품) 200 브랜디드피규어키링 200 밸류무선충전마우스패드 770"
+    """
+    if not actual_list or not order_raw:
+        return [order_raw] if order_raw else [""]
+
+    # 각 출고 품목에서 품목명 추출
+    item_names = [extract_item_name(a) for a in actual_list]
+
+    # order_raw를 품목명 기준으로 분리
+    # 품목명이 나타나는 위치를 찾아서 분리
+    result = []
+    remaining = order_raw.strip()
+
+    for i, name in enumerate(item_names):
+        if not name or name not in remaining:
+            # 품목명을 못 찾으면 빈 문자열
+            result.append("")
+            continue
+
+        idx = remaining.find(name)
+        if idx == -1:
+            result.append("")
+            continue
+
+        # 이 품목명부터 시작하는 부분 추출
+        from_here = remaining[idx:]
+
+        # 다음 품목명이 있으면 그 앞까지만 자르기
+        if i + 1 < len(item_names) and item_names[i + 1] and item_names[i + 1] in from_here:
+            next_idx = from_here.find(item_names[i + 1])
+            chunk = from_here[:next_idx].strip()
+            remaining = from_here[next_idx:]
+        else:
+            chunk = from_here.strip()
+            remaining = ""
+
+        result.append(chunk)
+
+    return result if result else [order_raw]
 
 # ── Airtable 데이터 읽기 ──────────────────────────────────────────────────────
 def fetch_shipment_record(api: Api, base_id: str, record_id: str) -> dict:
@@ -100,34 +149,37 @@ def fetch_location_names(api: Api, base_id: str, location_ids: list) -> str:
 def build_data(api: Api, base_id: str, record_id: str) -> dict:
     f = fetch_shipment_record(api, base_id, record_id)
 
-    # Location linked record → 이름 join
+    # Location
     location_ids = f.get("Location", [])
     if not isinstance(location_ids, list):
         location_ids = []
     location_str = fetch_location_names(api, base_id, location_ids)
 
-    # TO No. — 배송요청_lookup (multipleLookupValues 중첩 구조)
+    # TO No.
     to_no = get_lookup_first(f, "배송요청_lookup")
 
-    # 배송슬롯 — singleSelect 오브젝트
+    # 배송슬롯
     delivery_time = get_field(f, "배송슬롯")
 
-    # 최종 출하 품목 — formula, 공백으로 이어진 한 줄 (분리 불가)
-    # → 출고 품목 행 수만큼 첫 행에만 표시, 나머지는 공백
-    order_raw = get_field(f, "최종 출하 품목")
+    # 최종 출고 품목 및 수량 (\n 기준 분리)
+    actual_raw  = f.get("최종 출고 품목 및 수량", "") or ""
+    actual_list = [x.strip() for x in str(actual_raw).split("\n") if x.strip()]
 
-    # 최종 출고 품목 및 수량 — formula, \n 으로 분리됨
-    actual_raw   = f.get("최종 출고 품목 및 수량", "")
-    actual_list  = [x.strip() for x in str(actual_raw).split("\n") if x.strip()] if actual_raw else []
+    # 최종 출하 품목 (formula, 공백으로 이어진 한 줄) → 출고 기준으로 분리
+    order_raw   = get_field(f, "최종 출하 품목")
+    order_list  = split_order_items(order_raw, actual_list)
 
-    # 품목 행 구성: 출하 품목은 첫 행에만, 나머지는 공백
+    print(f"  주문 품목 파싱: {order_list}")
+    print(f"  출고 품목 파싱: {actual_list}")
+
+    # 품목 행 구성
     mm_rows = []
-    if actual_list:
-        mm_rows.append({"order_item": order_raw, "actual_item": actual_list[0]})
-        for item in actual_list[1:]:
-            mm_rows.append({"order_item": "", "actual_item": item})
-    else:
-        mm_rows = [{"order_item": order_raw, "actual_item": ""}]
+    max_len = max(len(order_list), len(actual_list), 1)
+    for i in range(max_len):
+        mm_rows.append({
+            "order_item":  order_list[i]  if i < len(order_list)  else "",
+            "actual_item": actual_list[i] if i < len(actual_list) else "",
+        })
 
     return {
         "to_no":           to_no,
