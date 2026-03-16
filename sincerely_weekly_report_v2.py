@@ -182,7 +182,7 @@ for rec in table.all(fields=[
             result.append((norm, float(cbm)))
         except (ValueError, TypeError):
             pass
-# 긴 이름 먼저 — greedy 매칭으로 더 구체적인 품목 우선 적중
+# 긴 이름 먼저 - greedy 매칭으로 더 구체적인 품목 우선 적중
 result.sort(key=lambda x: -len(x[0]))
 print(f"  Product CBM 조회 완료: {len(result)}개 품목")
 return result
@@ -228,7 +228,7 @@ for line in item_str.strip().splitlines():
 
     for prod_norm, cbm_per_box in product_cbm:
         if prod_norm in norm_line:
-            # 수량을 찾아 박스 수 환산 — 박스당수량 정보가 없으므로
+            # 수량을 찾아 박스 수 환산 - 박스당수량 정보가 없으므로
             # cbm_per_box가 이미 (1개당 CBM) 기준이라면 곱하기 수량
             # Product 테이블의 fldN1JrkxIr5m6pXz = CBM/박스 (박스당수량으로 나눈 값)
             # → 수량을 곱하면 총 CBM 근사
@@ -572,7 +572,7 @@ for d in sorted(this["by_date"].keys()):
     )
 if wd["variance"] > 0:
     conc = "집중" if wd["variance"] > 10 else "분산"
-    wd_lines += f"  _분산도 {wd['variance']:.1f} — 요일별 물동량 {conc} 패턴_\n"
+    wd_lines += f"  _분산도 {wd['variance']:.1f} - 요일별 물동량 {conc} 패턴_\n"
 
 # ── Top 품목 ───────────────────────────────────────
 item_lines = ""
@@ -595,19 +595,19 @@ if trend:
 # ── 알림 ──────────────────────────────────────────
 alerts = []
 if s["pending"] > 0:
-    alerts.append(f"⚠️  미완료 출하 {s['pending']}건 — 진행 확인 필요")
+    alerts.append(f"⚠️  미완료 출하 {s['pending']}건 - 진행 확인 필요")
 if q["missing_rate"] > 30:
     alerts.append(
         f"⚠️  외박스 수량 미기재율 {q['missing_rate']:.0f}% "
-        f"({q['missing_box_qty']}건) — CBM 신뢰도 저하"
+        f"({q['missing_box_qty']}건) - CBM 신뢰도 저하"
     )
 if q["same_day_rate"] > 40:
     alerts.append(
         f"📌  당일 신규 등록 {q['same_day_rate']:.0f}% "
-        f"— 사전 입력 프로세스 점검 권장"
+        f"- 사전 입력 프로세스 점검 권장"
     )
 if s["total_cbm"] > 25:
-    alerts.append("📌  주간 CBM 25m³ 초과 — 차량 용량 사전 조율 권장")
+    alerts.append("📌  주간 CBM 25m³ 초과 - 차량 용량 사전 조율 권장")
 if not alerts:
     alerts.append("✅  특이 사항 없음")
 
@@ -616,18 +616,18 @@ alert_text = "\n".join(alerts)
 # ── 차량 추천 ──────────────────────────────────────
 truck_lines = ""
 if bt["pct"].get("특대", 0) > 20:
-    truck_lines = "  → 특대 박스 비중 높음 — 5톤 이상 차량 권장"
+    truck_lines = "  → 특대 박스 비중 높음 - 5톤 이상 차량 권장"
 elif bt["pct"].get("대", 0) + bt["pct"].get("특대", 0) > 40:
-    truck_lines = "  → 대형 박스 비중 높음 — 2.5t~5t 검토"
+    truck_lines = "  → 대형 박스 비중 높음 - 2.5t~5t 검토"
 else:
-    truck_lines = "  → 중소형 박스 위주 — 1t 다수 배차 또는 용달 적합"
+    truck_lines = "  → 중소형 박스 위주 - 1t 다수 배차 또는 용달 적합"
 
 blocks = [
     {
         "type": "header",
         "text": {
             "type": "plain_text",
-            "text": f"📦 SCM 주간 출하 리포트 — {wk_label}",
+            "text": f"📦 SCM 주간 출하 리포트 - {wk_label}",
         },
     },
     {
@@ -705,7 +705,7 @@ blocks = [
                 f"({q['missing_box_qty']}/{q['total_records']}건)\n"
                 f"  당일 신규 등록 비율  "
                 f"*{q['same_day_rate']:.1f}%*  "
-                f"({q['same_day_create']}건) — 예측성 지표\n"
+                f"({q['same_day_create']}건) - 예측성 지표\n"
                 + (
                     f"  평균 리드타임  "
                     f"*{q['avg_leadtime_days']:.1f}일*  (등록→출하 완료)\n"
@@ -835,7 +835,7 @@ print(
 
 blocks       = build_slack_blocks(this_data, next_data, trend, this_mon)
 fallback_txt = (
-    f"📦 SCM 주간 리포트 — {this_mon.month}월 W"
+    f"📦 SCM 주간 리포트 - {this_mon.month}월 W"
     f"{(this_mon.day-1)//7+1} | "
     f"이번주 CBM {this_data['summary']['total_cbm']:.1f}m³ / "
     f"{this_data['summary']['total_count']}건"
