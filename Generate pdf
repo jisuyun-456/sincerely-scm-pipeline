@@ -333,7 +333,7 @@ def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
         "Content-Type": "application/octet-stream",
         "x-airtable-application-id": base_id,
     }
-    params = {"fieldName": "출고확인서"}
+    params = {"fieldName": "출고확인서_python"}
 
     resp = requests.post(url, headers=headers, params=params, data=pdf_bytes)
     print(f"  Upload status: {resp.status_code}")
