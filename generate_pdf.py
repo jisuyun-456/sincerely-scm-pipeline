@@ -319,15 +319,18 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     filename = f"출고확인서_{to_no}.pdf"
 
-    # 1단계: file.io에 임시 업로드 → URL 획득
-    print("  file.io 업로드 중...")
-    upload_resp = requests.post(
-        "https://file.io",
-        files={"file": (filename, pdf_bytes, "application/pdf")},
-        data={"expires": "1d"},
+    # 1단계: transfer.sh에 임시 업로드 → URL 획득
+    print("  transfer.sh 업로드 중...")
+    upload_resp = requests.put(
+        f"https://transfer.sh/{filename}",
+        data=pdf_bytes,
+        headers={
+            "Content-Type": "application/pdf",
+            "Max-Days": "1",
+        },
     )
     upload_resp.raise_for_status()
-    file_url = upload_resp.json()["link"]
+    file_url = upload_resp.text.strip()
     print(f"  임시 URL: {file_url}")
 
     # 2단계: Airtable에 URL로 attachment 등록
@@ -342,7 +345,7 @@ def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
         }
     }
     resp = requests.patch(url, headers=headers, json=payload)
-    print(f"  Airtable 업로드 status: {resp.status_code}")
+    print(f"  Airtable status: {resp.status_code}")
     print(f"  Response: {resp.text[:300]}")
     resp.raise_for_status()
     print(f"✅ PDF 업로드 완료: {filename}")
