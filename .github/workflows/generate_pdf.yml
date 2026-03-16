@@ -17,8 +17,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install pyairtable reportlab requests
+     -  name: Install dependencies
+        run: pip install -r TMS_pdf_requirements.txt
 
       - name: Generate PDF
         env:
