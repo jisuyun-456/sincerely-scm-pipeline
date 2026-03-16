@@ -597,4 +597,4 @@ print(f"[{datetime.now().strftime('%H:%M:%S')}] 완료")
 ```
 
 if **name** == “**main**”:
-main()
+main() 
