@@ -23,6 +23,6 @@ jobs:
       - name: Generate PDF
         env:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_TMS_ID }}
         run: |
           python generate_pdf.py --record-id "${{ github.event.client_payload.record_id }}"
