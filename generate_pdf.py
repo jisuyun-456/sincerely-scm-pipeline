@@ -48,11 +48,35 @@ def register_fonts():
 
 # ── 필드값 헬퍼 ───────────────────────────────────────────────────────────────
 def get_field(f: dict, key: str, default: str = "") -> str:
-    """Airtable 필드값이 리스트로 올 수 있어서 안전하게 문자열로 변환"""
+    """Airtable 필드값이 리스트/dict 등 다양한 타입으로 올 수 있어서 안전하게 변환"""
     val = f.get(key, default)
+    if val is None:
+        return default
     if isinstance(val, list):
         return ", ".join(str(v) for v in val) if val else default
+    if isinstance(val, dict):
+        # singleSelect 오브젝트 → name 꺼내기
+        return str(val.get("name", "")) if val else default
     return str(val) if val else default
+
+def get_lookup_first(f: dict, key: str) -> str:
+    """
+    multipleLookupValues 필드 처리
+    구조: {"linkedRecordIds": [...], "valuesByLinkedRecordId": {"recXXX": ["값"]}}
+    첫 번째 값만 꺼냄
+    """
+    val = f.get(key)
+    if not val:
+        return ""
+    if isinstance(val, dict):
+        values_by_id = val.get("valuesByLinkedRecordId", {})
+        for record_values in values_by_id.values():
+            if record_values:
+                return str(record_values[0])
+        return ""
+    if isinstance(val, list):
+        return str(val[0]) if val else ""
+    return str(val)
 
 # ── Airtable 데이터 읽기 ──────────────────────────────────────────────────────
 def fetch_shipment_record(api: Api, base_id: str, record_id: str) -> dict:
@@ -82,32 +106,36 @@ def build_data(api: Api, base_id: str, record_id: str) -> dict:
         location_ids = []
     location_str = fetch_location_names(api, base_id, location_ids)
 
-    # 품목 필드 — 리스트로 오면 각 요소가 한 행, 문자열이면 \n으로 분리
-    def split_items(val) -> list:
-        if isinstance(val, list):
-            return [str(v).strip() for v in val if str(v).strip()]
-        if isinstance(val, str):
-            return [x.strip() for x in val.split("\n") if x.strip()]
-        return []
+    # TO No. — 배송요청_lookup (multipleLookupValues 중첩 구조)
+    to_no = get_lookup_first(f, "배송요청_lookup")
 
-    order_list  = split_items(f.get("최종 출하 품목", ""))
-    actual_list = split_items(f.get("최종 출고 품목 및 수량", ""))
+    # 배송슬롯 — singleSelect 오브젝트
+    delivery_time = get_field(f, "배송슬롯")
 
+    # 최종 출하 품목 — formula, 공백으로 이어진 한 줄 (분리 불가)
+    # → 출고 품목 행 수만큼 첫 행에만 표시, 나머지는 공백
+    order_raw = get_field(f, "최종 출하 품목")
+
+    # 최종 출고 품목 및 수량 — formula, \n 으로 분리됨
+    actual_raw   = f.get("최종 출고 품목 및 수량", "")
+    actual_list  = [x.strip() for x in str(actual_raw).split("\n") if x.strip()] if actual_raw else []
+
+    # 품목 행 구성: 출하 품목은 첫 행에만, 나머지는 공백
     mm_rows = []
-    max_len = max(len(order_list), len(actual_list), 1)
-    for i in range(max_len):
-        mm_rows.append({
-            "order_item":  order_list[i]  if i < len(order_list)  else "",
-            "actual_item": actual_list[i] if i < len(actual_list) else "",
-        })
+    if actual_list:
+        mm_rows.append({"order_item": order_raw, "actual_item": actual_list[0]})
+        for item in actual_list[1:]:
+            mm_rows.append({"order_item": "", "actual_item": item})
+    else:
+        mm_rows = [{"order_item": order_raw, "actual_item": ""}]
 
     return {
-        "to_no":           get_field(f, "배송요청_lookup"),    # lookup 필드로 변경
+        "to_no":           to_no,
         "sc_id":           get_field(f, "SC id"),
         "location":        location_str,
         "ship_date":       format_date(get_field(f, "출하일자")),
         "delivery_type":   get_field(f, "배송 방식"),
-        "delivery_time":   get_field(f, "배송슬롯"),
+        "delivery_time":   delivery_time,
         "customer":        get_field(f, "고객사"),
         "recipient":       get_field(f, "수령인"),
         "unload_service":  get_field(f, "하차 서비스"),
@@ -315,7 +343,6 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 
 # ── Airtable 첨부파일 업로드 ──────────────────────────────────────────────────
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
-    from datetime import datetime
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     name = to_no if to_no else record_id
     filename = f"출고확인서_{name}_{timestamp}.pdf"
@@ -386,6 +413,9 @@ def main():
     print("▶ Airtable 데이터 읽는 중...")
     data = build_data(api, base_id, record_id)
     print(f"  TO No.: {data['to_no']} / 수령인: {data['recipient']}")
+    print(f"  배송지: {data['delivery_addr']}")
+    print(f"  박스: {data['box_qty']}")
+    print(f"  품목 행 수: {len(data['mm_rows'])}")
 
     print("▶ PDF 생성 중...")
     pdf_bytes = build_pdf(data, font, font_bold)
