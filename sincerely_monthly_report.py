@@ -1,20 +1,32 @@
-“””
-Sincerely SCM 월간 출하 리포트
-─────────────────────────────────────────────
-매월 1일 09:00 KST 슬랙 DM 자동 발송
+# Sincerely SCM 월간 출하 리포트
 
-포함 지표:
-[CBM]     월 총 CBM / 주차별 CBM 추이
-[배차]    월 총 배차 건수 / 배송파트너별 배송 비율
-[손익]    월 물류매출 / 운송비용 / 물류 손익
-[품목]    월 출하 품목 Top 10
+# ─────────────────────────────────────────────
 
-환경변수:
-AIRTABLE_API_KEY_TMS   Airtable PAT
-AIRTABLE_BASE_TMS_ID   TMS base (app4x70a8mOrIKsMf)
-SLACK_BOT_TOKEN        Bot Token (xoxb-…)
-SLACK_DM_USER_ID       수신자 Slack User ID
-“””
+# 매월 1일 09:00 KST 슬랙 DM 자동 발송
+
+# 
+
+# 포함 지표:
+
+# [CBM]     월 총 CBM / 주차별 CBM 추이
+
+# [배차]    월 총 배차 건수 / 배송파트너별 배송 비율
+
+# [손익]    월 물류매출 / 운송비용 / 물류 손익
+
+# [품목]    월 출하 품목 Top 10
+
+# 
+
+# 환경변수:
+
+# AIRTABLE_API_KEY_TMS   Airtable PAT
+
+# AIRTABLE_BASE_TMS_ID   TMS base (app4x70a8mOrIKsMf)
+
+# SLACK_BOT_TOKEN        Bot Token (xoxb-…)
+
+# SLACK_DM_USER_ID       수신자 Slack User ID
 
 import os
 import json
