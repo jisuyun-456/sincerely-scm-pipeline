@@ -9,7 +9,6 @@ generate_pdf.py
 import argparse
 import os
 import io
-import base64
 import requests
 from datetime import datetime
 
@@ -47,6 +46,14 @@ def register_fonts():
     except Exception:
         return "Helvetica", "Helvetica-Bold"
 
+# ── 필드값 헬퍼 ───────────────────────────────────────────────────────────────
+def get_field(f: dict, key: str, default: str = "") -> str:
+    """Airtable 필드값이 리스트로 올 수 있어서 안전하게 문자열로 변환"""
+    val = f.get(key, default)
+    if isinstance(val, list):
+        return ", ".join(str(v) for v in val) if val else default
+    return str(val) if val else default
+
 # ── Airtable 데이터 읽기 ──────────────────────────────────────────────────────
 def fetch_shipment_record(api: Api, base_id: str, record_id: str) -> dict:
     table = api.table(base_id, "Shipment")
@@ -76,8 +83,8 @@ def fetch_mm_records(api: Api, base_id: str, mm_ids: list) -> list:
             rec = table.get(mm_id)
             f = rec["fields"]
             rows.append({
-                "order_item":  f.get("최종 출하 품목", ""),
-                "actual_item": f.get("최종 출고 품목 및 수량", ""),
+                "order_item":  get_field(f, "최종 출하 품목"),
+                "actual_item": get_field(f, "최종 출고 품목 및 수량"),
             })
         except Exception:
             pass
@@ -87,27 +94,28 @@ def build_data(api: Api, base_id: str, record_id: str) -> dict:
     f = fetch_shipment_record(api, base_id, record_id)
 
     location_ids = f.get("Location", [])
+    if not isinstance(location_ids, list):
+        location_ids = []
     location_str = fetch_location_names(api, base_id, location_ids)
 
     mm_ids = f.get("MM", [])
+    if not isinstance(mm_ids, list):
+        mm_ids = []
     mm_rows = fetch_mm_records(api, base_id, mm_ids)
 
-    ship_date_raw = f.get("출하일자", "")
-    ship_date_str = format_date(ship_date_raw)
-
     return {
-        "to_no":           f.get("TO Number", ""),
-        "sc_id":           f.get("SC id", ""),
+        "to_no":           get_field(f, "TO Number"),
+        "sc_id":           get_field(f, "SC id"),
         "location":        location_str,
-        "ship_date":       ship_date_str,
-        "delivery_type":   f.get("배송 방식", ""),
-        "delivery_time":   f.get("배송시간", ""),
-        "customer":        f.get("고객사", ""),
-        "recipient":       f.get("수령인", ""),
-        "unload_service":  f.get("하차 서비스", ""),
-        "recipient_phone": f.get("수령인 연락처", ""),
-        "delivery_addr":   f.get("배송지", ""),
-        "box_qty":         f.get("최종 외박스 수량", ""),
+        "ship_date":       format_date(get_field(f, "출하일자")),
+        "delivery_type":   get_field(f, "배송 방식"),
+        "delivery_time":   get_field(f, "배송시간"),
+        "customer":        get_field(f, "고객사"),
+        "recipient":       get_field(f, "수령인"),
+        "unload_service":  get_field(f, "하차 서비스"),
+        "recipient_phone": get_field(f, "수령인 연락처"),
+        "delivery_addr":   get_field(f, "배송지"),
+        "box_qty":         get_field(f, "최종 외박스 수량"),
         "mm_rows":         mm_rows,
     }
 
@@ -271,7 +279,7 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
     ))
     story.append(Spacer(1, 3*mm))
 
-    # 품목 비교표
+    # 품목 비교표 헤더
     story.append(Table(
         [[Paragraph("고객 주문 품목 및 수량", style(9, bold=True, align="CENTER")),
           Paragraph("고객 출고 품목 및 수량", style(9, bold=True, align="CENTER"))]],
@@ -284,8 +292,12 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
         ])
     ))
 
+    # 품목 행
     mm_rows = data["mm_rows"] or [{"order_item": "", "actual_item": ""}]
-    item_rows = [[Paragraph(r["order_item"], style(9)), Paragraph(r["actual_item"], style(9))] for r in mm_rows]
+    item_rows = [
+        [Paragraph(r["order_item"], style(9)), Paragraph(r["actual_item"], style(9))]
+        for r in mm_rows
+    ]
     while len(item_rows) < 8:
         item_rows.append([Paragraph("", style(9)), Paragraph("", style(9))])
 
@@ -305,21 +317,19 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 
 # ── Airtable 첨부파일 업로드 ──────────────────────────────────────────────────
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
-    b64 = base64.b64encode(pdf_bytes).decode("utf-8")
     filename = f"출고확인서_{to_no}.pdf"
-    url = f"https://api.airtable.com/v0/{base_id}/Shipment/{record_id}"
+
+    # content.airtable.com 전용 업로드 엔드포인트
+    url = f"https://content.airtable.com/v0/{base_id}/{record_id}/uploadAttachment"
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
+        "Content-Type": "application/octet-stream",
     }
-    payload = {
-        "fields": {
-            "출고확인서": [
-                {"filename": filename, "contentType": "application/pdf", "data": b64}
-            ]
-        }
-    }
-    resp = requests.patch(url, headers=headers, json=payload)
+    params = {"fieldName": "출고확인서_python"}
+
+    resp = requests.post(url, headers=headers, params=params, data=pdf_bytes)
+    print(f"  Upload status: {resp.status_code}")
+    print(f"  Response: {resp.text[:300]}")
     resp.raise_for_status()
     print(f"✅ PDF 업로드 완료: {filename}")
 
