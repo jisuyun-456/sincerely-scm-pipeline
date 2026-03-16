@@ -1,0 +1,79 @@
+name: 📦 Sincerely SCM 주간 출하 리포트 v2
+
+on:
+  schedule:
+    # 매주 월요일 09:00 KST = UTC 00:00
+    # 스크립트 내부에서 0~30분 랜덤 지연 → 실제 수신 09:00~09:30
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+    inputs:
+      skip_delay:
+        description: '즉시 실행 (지연 없음)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  weekly-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45      # 최대 30분 지연 + 실행 여유
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pyairtable requests
+
+      - name: Override delay (수동 실행 시)
+        if: github.event_name == 'workflow_dispatch' && inputs.skip_delay == 'true'
+        run: echo "SKIP_DELAY=1" >> $GITHUB_ENV
+
+      - name: Run weekly report
+        env:
+          AIRTABLE_API_KEY:   ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID:   ${{ secrets.AIRTABLE_BASE_ID }}
+          SLACK_BOT_TOKEN:    ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:   ${{ secrets.SLACK_DM_USER_ID }}
+          SKIP_DELAY:         ${{ env.SKIP_DELAY || '0' }}
+        run: python sincerely_weekly_report_v2.py
+
+      - name: Upload JSON archive
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scm-report-${{ github.run_id }}
+          path: report_*.json
+          retention-days: 180      # 6개월 보관
+
+      - name: Notify failure via DM
+        if: failure()
+        run: |
+          python - <<'EOF'
+          import os, requests
+          token   = os.environ["SLACK_BOT_TOKEN"]
+          user_id = os.environ["SLACK_DM_USER_ID"]
+          run_url = f"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ch = requests.post(
+              "https://slack.com/api/conversations.open",
+              headers={"Authorization": f"Bearer {token}"},
+              json={"users": user_id}, timeout=10
+          ).json()["channel"]["id"]
+          requests.post(
+              "https://slack.com/api/chat.postMessage",
+              headers={"Authorization": f"Bearer {token}"},
+              json={
+                  "channel": ch,
+                  "text": f"❌ SCM 주간 리포트 생성 실패\n{run_url}",
+              }, timeout=10
+          )
+          EOF
+        env:
+          SLACK_BOT_TOKEN:  ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
