@@ -1,0 +1,28 @@
+name: Generate Outgoing Confirmation PDF
+
+on:
+  repository_dispatch:
+    types: [generate-pdf]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyairtable reportlab requests
+
+      - name: Generate PDF
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          python generate_pdf.py --record-id "${{ github.event.client_payload.record_id }}"
