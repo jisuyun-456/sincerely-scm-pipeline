@@ -318,32 +318,56 @@ def build_pdf(data: dict, font: str, font_bold: str) -> bytes:
 # ── Airtable 첨부파일 업로드 ──────────────────────────────────────────────────
 def upload_pdf_to_airtable(api_key, base_id, record_id, pdf_bytes, to_no):
     import base64
-    filename = f"출고확인서_{to_no}.pdf"
+    filename = f"출고확인서_{to_no if to_no else record_id}.pdf"
+    github_token = os.environ["GITHUB_TOKEN"]
+    github_repo = os.environ["GITHUB_REPO"]
 
-    # PDF를 로컬에 저장 (GitHub Actions artifact용)
-    with open(filename, "wb") as f:
-        f.write(pdf_bytes)
-    print(f"  PDF 로컬 저장 완료: {filename}")
+    # 1단계: GitHub Release 생성 또는 기존 release 사용
+    release_tag = "pdf-attachments"
+    headers_gh = {
+        "Authorization": f"Bearer {github_token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
 
-    # base64 (data: prefix 없이) 직접 업로드
-    b64 = base64.b64encode(pdf_bytes).decode("utf-8")
+    # release 조회
+    rel_resp = requests.get(
+        f"https://api.github.com/repos/{github_repo}/releases/tags/{release_tag}",
+        headers=headers_gh,
+    )
+
+    if rel_resp.status_code == 404:
+        # release 없으면 생성
+        rel_resp = requests.post(
+            f"https://api.github.com/repos/{github_repo}/releases",
+            headers=headers_gh,
+            json={"tag_name": release_tag, "name": "PDF Attachments", "draft": False, "prerelease": True},
+        )
+    rel_resp.raise_for_status()
+    release_id = rel_resp.json()["id"]
+    upload_url_base = f"https://uploads.github.com/repos/{github_repo}/releases/{release_id}/assets"
+
+    # 2단계: PDF를 release asset으로 업로드
+    asset_resp = requests.post(
+        upload_url_base,
+        headers={
+            "Authorization": f"Bearer {github_token}",
+            "Content-Type": "application/pdf",
+        },
+        params={"name": filename},
+        data=pdf_bytes,
+    )
+    asset_resp.raise_for_status()
+    download_url = asset_resp.json()["browser_download_url"]
+    print(f"  GitHub URL: {download_url}")
+
+    # 3단계: Airtable에 URL로 attachment 등록
     url = f"https://api.airtable.com/v0/{base_id}/Shipment/{record_id}"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "fields": {
-            "출고확인서_python": [
-                {
-                    "filename": filename,
-                    "contentType": "application/pdf",
-                    "data": b64,
-                }
-            ]
-        }
-    }
-    resp = requests.patch(url, headers=headers, json=payload)
+    resp = requests.patch(
+        url,
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json={"fields": {"출고확인서_python": [{"url": download_url, "filename": filename}]}},
+    )
     print(f"  Airtable status: {resp.status_code}")
     print(f"  Response: {resp.text[:300]}")
     resp.raise_for_status()
