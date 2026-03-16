@@ -37,8 +37,8 @@ jobs:
 
       - name: Run weekly report
         env:
-          AIRTABLE_API_KEY:   ${{ secrets.AIRTABLE_API_KEY }}
-          AIRTABLE_BASE_ID:   ${{ secrets.AIRTABLE_BASE_ID }}
+          AIRTABLE_API_KEY:   ${{ secrets.AIRTABLE_API_KEY_TMS }}    # ← 수정됨
+          AIRTABLE_BASE_ID:   ${{ secrets.AIRTABLE_BASE_TMS_ID }}    # ← 수정됨
           SLACK_BOT_TOKEN:    ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID:   ${{ secrets.SLACK_DM_USER_ID }}
           SKIP_DELAY:         ${{ env.SKIP_DELAY || '0' }}
