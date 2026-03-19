@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-19T06:30:20",
+  "generated_at": "2026-03-19T07:16:18",
   "report_mode": "weekly_forecast",
   "period_key": "2026-W12_forecast",
   "period": {
@@ -9,76 +9,153 @@
     "end": "2026-03-13"
   },
   "kpi": {
-    "completion_rate": 0.0,
-    "defect_rate": 0.0,
-    "accuracy": 0.0,
-    "neg_avail_cnt": 0
+    "completion_rate": 100.0,
+    "defect_rate": 26.95,
+    "accuracy": 100.0,
+    "neg_avail_cnt": 3
   },
   "inbound": {
     "summary": {
       "total_cnt": 278,
-      "total_in_qty": 0,
-      "total_stock_qty": 0,
-      "completed": 0,
-      "unconfirmed": 278,
-      "completion_rate": 0.0
+      "total_in_qty": 84161,
+      "total_stock_qty": 84069,
+      "completed": 278,
+      "unconfirmed": 0,
+      "completion_rate": 100.0
     },
-    "by_date": {},
-    "by_week": {},
-    "by_purpose": {
-      "미분류": {
+    "by_date": {
+      "2026-03-09": {
+        "cnt": 48,
+        "in_qty": 16583
+      },
+      "2026-03-10": {
+        "cnt": 17,
+        "in_qty": 4001
+      },
+      "2026-03-11": {
+        "cnt": 89,
+        "in_qty": 29367
+      },
+      "2026-03-12": {
+        "cnt": 54,
+        "in_qty": 13226
+      },
+      "2026-03-13": {
+        "cnt": 70,
+        "in_qty": 20984
+      }
+    },
+    "by_week": {
+      "2026-W11": {
         "cnt": 278,
-        "qty": 0
+        "in_qty": 84161
+      }
+    },
+    "by_purpose": {
+      "생산산출": {
+        "cnt": 237,
+        "qty": 60164
+      },
+      "재고이동": {
+        "cnt": 20,
+        "qty": 7724
+      },
+      "재고생산": {
+        "cnt": 14,
+        "qty": 16038
+      },
+      "생산샘플": {
+        "cnt": 5,
+        "qty": 10
+      },
+      "고객물품": {
+        "cnt": 2,
+        "qty": 225
       }
     }
   },
   "qc": {
     "summary": {
-      "qc_cnt": 0,
-      "total_qc_qty": 0,
-      "total_defect": 0,
-      "defect_rate": 0.0,
-      "target_met": true
+      "qc_cnt": 249,
+      "total_qc_qty": 334,
+      "total_defect": 90,
+      "defect_rate": 26.95,
+      "target_met": false
     },
-    "by_week": {},
-    "result_dist": {}
+    "by_week": {
+      "W11": {
+        "qc_qty": 334,
+        "defect": 90,
+        "defect_rate": 26.9
+      }
+    },
+    "result_dist": {
+      "수량 정상": 246,
+      "이슈 발생 후 해결": 3
+    },
+    "defect_by_item": [
+      {
+        "name": "배경지(라이트 샤오미펜)",
+        "qc_qty": 175,
+        "defect": 80,
+        "defect_rate": 45.71
+      },
+      {
+        "name": "실크(Passion 더스트백)",
+        "qc_qty": 51,
+        "defect": 5,
+        "defect_rate": 9.8
+      },
+      {
+        "name": "UV(아트워크 레더 다이어리)",
+        "qc_qty": 6,
+        "defect": 3,
+        "defect_rate": 50.0
+      },
+      {
+        "name": "스타일수면안대",
+        "qc_qty": 102,
+        "defect": 2,
+        "defect_rate": 1.96
+      }
+    ]
   },
   "material": {
     "summary": {
-      "total": 0,
-      "accuracy": 0.0,
+      "total": 297,
+      "accuracy": 100.0,
       "mismatch": 0,
-      "neg_avail": 0,
-      "check_done": 0,
-      "total_phys": 0,
-      "total_avail": 0,
-      "check_rate": 0.0
+      "neg_avail": 3,
+      "check_done": 3,
+      "total_phys": 83492,
+      "total_avail": 30525,
+      "check_rate": 1.0
     }
   },
   "forecast": {
     "this_week_start": "2026-03-16",
     "this_week_end": "2026-03-20",
-    "active_days_last_week": 1,
-    "daily_avg_cnt": 278.0,
-    "daily_avg_qty": 0.0,
+    "active_days_last_week": 5,
+    "daily_avg_cnt": 55.6,
+    "daily_avg_qty": 16832.2,
     "projected": {
-      "inbound_cnt": 1390,
-      "inbound_qty": 0,
-      "completion_rate": 0.0,
-      "defect_rate": 0.0,
-      "neg_avail": 0,
-      "accuracy": 0.0
+      "inbound_cnt": 278,
+      "inbound_qty": 84161,
+      "completion_rate": 100.0,
+      "defect_rate": 26.95,
+      "neg_avail": 3,
+      "accuracy": 100.0
     },
     "kpi_assessment": {
       "completion": {
         "target": 95.0,
-        "projected": 0.0,
-        "achievable": false
+        "projected": 100.0,
+        "achievable": true
       },
       "defect_rate": {
         "target": 1.0,
-        "projected": 0.0,
-        "achievable": true
+        "projected": 26.95,
+        "achievable": false
       },
       "risk_level": "MEDIUM"
     }
