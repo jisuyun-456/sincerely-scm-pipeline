@@ -1,0 +1,86 @@
+{
+  "generated_at": "2026-03-19T06:30:20",
+  "report_mode": "weekly_forecast",
+  "period_key": "2026-W12_forecast",
+  "period": {
+    "label": "W12 (03/16~) 예측",
+    "week_label": "W12 (03/16~)",
+    "start": "2026-03-09",
+    "end": "2026-03-13"
+  },
+  "kpi": {
+    "completion_rate": 0.0,
+    "defect_rate": 0.0,
+    "accuracy": 0.0,
+    "neg_avail_cnt": 0
+  },
+  "inbound": {
+    "summary": {
+      "total_cnt": 278,
+      "total_in_qty": 0,
+      "total_stock_qty": 0,
+      "completed": 0,
+      "unconfirmed": 278,
+      "completion_rate": 0.0
+    },
+    "by_date": {},
+    "by_week": {},
+    "by_purpose": {
+      "미분류": {
+        "cnt": 278,
+        "qty": 0
+      }
+    }
+  },
+  "qc": {
+    "summary": {
+      "qc_cnt": 0,
+      "total_qc_qty": 0,
+      "total_defect": 0,
+      "defect_rate": 0.0,
+      "target_met": true
+    },
+    "by_week": {},
+    "result_dist": {}
+  },
+  "material": {
+    "summary": {
+      "total": 0,
+      "accuracy": 0.0,
+      "mismatch": 0,
+      "neg_avail": 0,
+      "check_done": 0,
+      "total_phys": 0,
+      "total_avail": 0,
+      "check_rate": 0.0
+    }
+  },
+  "forecast": {
+    "this_week_start": "2026-03-16",
+    "this_week_end": "2026-03-20",
+    "active_days_last_week": 1,
+    "daily_avg_cnt": 278.0,
+    "daily_avg_qty": 0.0,
+    "projected": {
+      "inbound_cnt": 1390,
+      "inbound_qty": 0,
+      "completion_rate": 0.0,
+      "defect_rate": 0.0,
+      "neg_avail": 0,
+      "accuracy": 0.0
+    },
+    "kpi_assessment": {
+      "completion": {
+        "target": 95.0,
+        "projected": 0.0,
+        "achievable": false
+      },
+      "defect_rate": {
+        "target": 1.0,
+        "projected": 0.0,
+        "achievable": true
+      },
+      "risk_level": "MEDIUM"
+    }
+  }
+}
