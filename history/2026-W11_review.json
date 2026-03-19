@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-19T07:13:03",
+  "generated_at": "2026-03-19T07:29:48",
   "report_mode": "weekly_review",
   "period_key": "2026-W11_review",
   "period": {
@@ -122,14 +122,16 @@
   },
   "material": {
     "summary": {
-      "total": 298,
+      "total": 297,
       "accuracy": 100.0,
       "mismatch": 0,
       "neg_avail": 3,
-      "check_done": 4,
-      "total_phys": 83518,
-      "total_avail": 30551,
-      "check_rate": 1.3
+      "check_done": 3,
+      "total_phys": 83492,
+      "total_avail": 30525,
+      "check_rate": 1.0
     }
-  }
+  },
+  "products": [],
+  "boxes": {}
 }
