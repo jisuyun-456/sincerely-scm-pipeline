@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-19T06:43:27",
+  "generated_at": "2026-03-19T06:56:51",
   "report_mode": "weekly_review",
   "period_key": "2026-W11_review",
   "period": {
@@ -92,7 +92,33 @@
     "result_dist": {
       "수량 정상": 246,
       "이슈 발생 후 해결": 3
-    }
+    },
+    "defect_by_item": [
+      {
+        "name": "배경지(라이트 샤오미펜)",
+        "qc_qty": 175,
+        "defect": 80,
+        "defect_rate": 45.71
+      },
+      {
+        "name": "실크(Passion 더스트백)",
+        "qc_qty": 51,
+        "defect": 5,
+        "defect_rate": 9.8
+      },
+      {
+        "name": "UV(아트워크 레더 다이어리)",
+        "qc_qty": 6,
+        "defect": 3,
+        "defect_rate": 50.0
+      },
+      {
+        "name": "스타일수면안대",
+        "qc_qty": 102,
+        "defect": 2,
+        "defect_rate": 1.96
+      }
+    ]
   },
   "material": {
     "summary": {
