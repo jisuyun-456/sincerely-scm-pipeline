@@ -163,8 +163,9 @@ TF_ITEM_DETAIL = "fldXXnGOXkm90snKn"  # 최종 출고 품목 및 수량
 TF_BOX_CODE    = "fldELrd8bBVjQCHnp"  # Box Code
 TF_BOX_NAME    = "fldgvlGjLb4FTlQ0v"  # 박스명
 TF_BOX_CBM     = "fldjFaXiYzeJ2Zt7M"  # cbm
+TF_PARTNER     = "fldHZ7yMT3KEu2gSj"  # 배송파트너
 
-TMS_SHIP_FIELDS = [TF_DATE, TF_ITEM, TF_BOX_PARSED, TF_BOX_MANUAL, TF_TOTAL_CBM, TF_STATUS, TF_ITEM_DETAIL]
+TMS_SHIP_FIELDS = [TF_DATE, TF_ITEM, TF_BOX_PARSED, TF_BOX_MANUAL, TF_TOTAL_CBM, TF_STATUS, TF_ITEM_DETAIL, TF_PARTNER]
 TMS_BOX_FIELDS  = [TF_BOX_CODE, TF_BOX_NAME, TF_BOX_CBM]
 
 # Product table
@@ -372,8 +373,9 @@ def _estimate_cbm_from_items(item_str: str) -> float:
 
 def analyze_shipment(records: list, live_cbm: dict) -> dict:
     box_type_all = defaultdict(int)
-    item_agg = defaultdict(lambda: {"qty": 0, "cbm": 0.0})
-    by_date  = defaultdict(lambda: {"cnt": 0, "cbm": 0.0})
+    item_agg     = defaultdict(lambda: {"qty": 0, "cbm": 0.0})
+    by_date      = defaultdict(lambda: {"cnt": 0, "cbm": 0.0})
+    partner_agg: dict = defaultdict(int)
     total_cbm = 0.0
     total_cnt = completed = pending = 0
 
@@ -432,25 +434,39 @@ def analyze_shipment(records: list, live_cbm: dict) -> dict:
                         )
                         break
 
+        # 배송파트너 집계
+        partner_field = c.get(TF_PARTNER)
+        if partner_field and isinstance(partner_field, dict):
+            vals = partner_field.get("valuesByLinkedRecordId", {})
+            for v_list in vals.values():
+                for v in v_list:
+                    partner_agg[str(v)] += 1
+
     total_boxes = sum(box_type_all.values())
     box_pct = {k: round(v / total_boxes * 100, 1) for k, v in box_type_all.items()} if total_boxes else {}
     ordered_counts = {k: box_type_all[k] for k in BOX_SIZE_ORDER if k in box_type_all}
     ordered_pct    = {k: box_pct[k]      for k in BOX_SIZE_ORDER if k in box_pct}
 
     top_items = sorted(
-        [[name, v["qty"], round(v["cbm"], 3)] for name, v in item_agg.items() if v["cbm"] > 0],
-        key=lambda x: -x[2]
+        [{"name": name, "qty": v["qty"], "cbm": round(v["cbm"], 3)}
+         for name, v in item_agg.items() if v["cbm"] > 0],
+        key=lambda x: -x["cbm"]
     )[:8]
 
     return {
         "box_type": {"counts": ordered_counts, "pct": ordered_pct, "total": total_boxes},
         "top_items": top_items,
         "by_date":  dict(sorted(by_date.items())),
+        "partners": [
+            {"name": k, "cnt": v}
+            for k, v in sorted(partner_agg.items(), key=lambda x: -x[1])
+        ],
         "summary": {
-            "total_cbm":   round(total_cbm, 3),
-            "total_count": total_cnt,
-            "completed":   completed,
-            "pending":     pending,
+            "total_cbm":        round(total_cbm, 3),
+            "total_count":      total_cnt,
+            "completed":        completed,
+            "pending":          pending,
+            "cbm_per_shipment": round(total_cbm / total_cnt, 3) if total_cnt else 0,
         },
     }
 
