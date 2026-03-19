@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-19T06:56:51",
+  "generated_at": "2026-03-19T07:05:01",
   "report_mode": "weekly_review",
   "period_key": "2026-W11_review",
   "period": {
@@ -122,13 +122,13 @@
   },
   "material": {
     "summary": {
-      "total": 300,
+      "total": 298,
       "accuracy": 100.0,
       "mismatch": 0,
       "neg_avail": 3,
       "check_done": 4,
-      "total_phys": 83567,
-      "total_avail": 30600,
+      "total_phys": 83518,
+      "total_avail": 30551,
       "check_rate": 1.3
     }
   }
