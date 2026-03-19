@@ -37,6 +37,8 @@ F_DEFECT_S   = "fld3lQvblfrqTl4O8"
 F_DEFECT_F   = "fldsTXzxUeerw4qw2"
 F_QC_RES     = "fldKrjj58HnHKT4SJ"
 F_CANCEL     = "fldwgaM8OnKubM8oE"
+F_ITEM_NAME  = "fldws6Ohz68i3GBPR"   # 입고물품 (primary)
+F_ITEM_ALT   = "fldwZKCYZ4IFOigRp"   # 이동물품 (fallback)
 
 F_MAT_NAME   = "fld7Pfip5zbBTaTdR"
 F_MAT_PHYS   = "fld5XQQv2P9YJZP6n"
@@ -47,7 +49,8 @@ F_MAT_CHECK  = "flddQhs9cuA6G8xmq"
 
 MOVEMENT_FIELDS = [
     F_PURPOSE, F_IN_QTY, F_IN_DATE, F_IN_STATUS, F_STOCK_QTY,
-    F_QC_QTY, F_DEFECT_S, F_DEFECT_F, F_QC_RES, F_CANCEL
+    F_QC_QTY, F_DEFECT_S, F_DEFECT_F, F_QC_RES, F_CANCEL,
+    F_ITEM_NAME, F_ITEM_ALT,
 ]
 MATERIAL_FIELDS = [
     F_MAT_NAME, F_MAT_PHYS, F_MAT_SYS, F_MAT_AVAIL, F_MAT_LOC, F_MAT_CHECK
@@ -440,13 +443,17 @@ def analyze_qc(records):
     total_qc = total_defect = 0
     result_dist = defaultdict(int)
     by_week = defaultdict(lambda: {"qc_qty": 0, "defect": 0})
+    item_acc = defaultdict(lambda: {"qc_qty": 0, "defect": 0})
 
     for r in qc_recs:
         c = r.get("cellValuesByFieldId") or r.get("fields", {})
+        if c.get(F_CANCEL):
+            continue
         qc_qty   = c.get(F_QC_QTY) or 0
         defect   = (c.get(F_DEFECT_S) or 0) + (c.get(F_DEFECT_F) or 0)
         res      = _sel(c.get(F_QC_RES, {}))
         date_val = c.get(F_IN_DATE, "")
+        item_name = (c.get(F_ITEM_NAME) or c.get(F_ITEM_ALT) or "미분류").strip()
 
         total_qc     += qc_qty
         total_defect += defect
@@ -460,12 +467,22 @@ def analyze_qc(records):
                 wk = "기타"
             by_week[wk]["qc_qty"] += qc_qty
             by_week[wk]["defect"] += defect
+        if qc_qty > 0 or defect > 0:
+            item_acc[item_name]["qc_qty"] += qc_qty
+            item_acc[item_name]["defect"] += defect
 
     defect_rate = round(total_defect / total_qc * 100, 2) if total_qc else 0.0
     bw = {}
     for wk, v in sorted(by_week.items()):
         dr = round(v["defect"] / v["qc_qty"] * 100, 1) if v["qc_qty"] > 0 else 0.0
         bw[wk] = {**v, "defect_rate": dr}
+
+    defect_by_item = sorted(
+        [{"name": k, "qc_qty": v["qc_qty"], "defect": v["defect"],
+          "defect_rate": round(v["defect"] / v["qc_qty"] * 100, 2) if v["qc_qty"] else 0.0}
+         for k, v in item_acc.items() if v["defect"] > 0],
+        key=lambda x: x["defect"], reverse=True
+    )
 
     return {
         "summary": {
@@ -475,8 +492,9 @@ def analyze_qc(records):
             "defect_rate":   defect_rate,
             "target_met":    defect_rate <= 1.0,
         },
-        "by_week":    bw,
-        "result_dist": dict(result_dist),
+        "by_week":       bw,
+        "result_dist":   dict(result_dist),
+        "defect_by_item": defect_by_item,
     }
 
 def analyze_material(records):

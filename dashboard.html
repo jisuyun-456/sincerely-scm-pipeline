@@ -213,6 +213,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </table>
     </div>
   </div>
+  <div class="panel" style="grid-column:1/-1">
+    <div class="ph"><h3>불량 품목별 상세</h3><span class="badge b-ng" id="qc-item-cnt-badge">—</span></div>
+    <div class="pb">
+      <table class="wt">
+        <thead><tr><th>품목명</th><th class="tr">검수수량</th><th class="tr">불량수량</th><th class="tr">불량률</th></tr></thead>
+        <tbody id="qc-item-tbody"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- 자재 탭 -->
@@ -448,6 +457,23 @@ function applyData(data) {
       const cls = dr <= 1.0 ? 'ok' : (dr <= 5.0 ? 'warn' : 'ng');
       return `<tr><td>${wk.replace(/^\d{4}-/,'')}</td><td class="tr">${v.qc_qty.toLocaleString()}</td><td class="tr">${v.defect.toLocaleString()}</td><td class="tr ${cls}">${dr}%</td></tr>`;
     }).join('');
+  }
+  // 불량 품목별 상세
+  const qcItemBody = document.getElementById('qc-item-tbody');
+  const qcItemBadge = document.getElementById('qc-item-cnt-badge');
+  const defectItems = (data.qc || {}).defect_by_item || [];
+  if (qcItemBody) {
+    if (defectItems.length) {
+      qcItemBody.innerHTML = defectItems.map(item => {
+        const dr = item.defect_rate;
+        const cls = dr <= 1.0 ? 'ok' : (dr <= 5.0 ? 'warn' : 'ng');
+        return `<tr><td>${item.name}</td><td class="tr">${item.qc_qty.toLocaleString()}개</td><td class="tr">${item.defect.toLocaleString()}개</td><td class="tr ${cls}">${dr}%</td></tr>`;
+      }).join('');
+      if (qcItemBadge) qcItemBadge.textContent = `${defectItems.length}개 품목 불량 발생`;
+    } else {
+      qcItemBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--c-ok)">불량 없음</td></tr>';
+      if (qcItemBadge) { qcItemBadge.textContent = '불량 없음'; qcItemBadge.className = 'badge b-ok'; }
+    }
   }
 
   // 자재 요약
