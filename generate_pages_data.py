@@ -167,6 +167,19 @@ TF_BOX_CBM     = "fldjFaXiYzeJ2Zt7M"  # cbm
 TMS_SHIP_FIELDS = [TF_DATE, TF_ITEM, TF_BOX_PARSED, TF_BOX_MANUAL, TF_TOTAL_CBM, TF_STATUS, TF_ITEM_DETAIL]
 TMS_BOX_FIELDS  = [TF_BOX_CODE, TF_BOX_NAME, TF_BOX_CBM]
 
+# Product table
+TMS_TABLE_PRODUCT = "tblBNh6oGDlTKGrdQ"
+TF_PROD_NAME    = "fldx01uKEnCd0J0nP"   # Name
+TF_PROD_BOX     = "fldqGM1lw2TUpZdKW"   # 박스명칭 (singleSelect)
+TF_PROD_PER_BOX = "fldENIdfxbVn8YnPI"   # 박스당 제품수
+TF_PROD_CBM     = "fldSBWylTZwGf1aEh"   # 박스 당 CBM (formula)
+
+# Box dims
+TF_BOX_W = "fld7qcdN496Gv4ul6"  # 가로
+TF_BOX_D = "fldUX1YyqJL0TvTwl"  # 세로
+TF_BOX_H = "fldIj302AgTAYMLbk"  # 높이
+TMS_BOX_DIM_FIELDS = [TF_BOX_CODE, TF_BOX_NAME, TF_BOX_CBM, TF_BOX_W, TF_BOX_D, TF_BOX_H]
+
 BOX_CBM = {
     "극소": 0.0098, "S280": 0.0098,
     "소":   0.0117, "S360": 0.0117,
@@ -247,6 +260,64 @@ def fetch_box_cbm_live() -> dict:
     return live
 
 
+def fetch_boxes_with_dims() -> dict:
+    url = f"https://api.airtable.com/v0/{TMS_BASE_ID}/{TMS_TABLE_BOX}"
+    field_params = "&".join(f"fields[]={fid}" for fid in TMS_BOX_DIM_FIELDS)
+    all_records, offset = [], None
+    while True:
+        params = {"pageSize": "100", "returnFieldsByFieldId": "true"}
+        if offset:
+            params["offset"] = offset
+        resp = _get_with_retry(url, field_params, params)
+        resp.raise_for_status()
+        d = resp.json()
+        all_records.extend(d.get("records", []))
+        offset = d.get("offset")
+        if not offset:
+            break
+        time.sleep(0.22)
+    boxes = {}
+    for rec in all_records:
+        c = rec.get("cellValuesByFieldId") or rec.get("fields", {})
+        name = c.get(TF_BOX_NAME) or c.get(TF_BOX_CODE) or ""
+        if name:
+            boxes[str(name)] = {
+                "w": c.get(TF_BOX_W), "d": c.get(TF_BOX_D), "h": c.get(TF_BOX_H),
+                "cbm": c.get(TF_BOX_CBM) or 0
+            }
+    return boxes
+
+
+def fetch_products_tms() -> list:
+    url = f"https://api.airtable.com/v0/{TMS_BASE_ID}/{TMS_TABLE_PRODUCT}"
+    fields = [TF_PROD_NAME, TF_PROD_BOX, TF_PROD_PER_BOX, TF_PROD_CBM]
+    field_params = "&".join(f"fields[]={fid}" for fid in fields)
+    all_records, offset = [], None
+    while True:
+        params = {"pageSize": "100", "returnFieldsByFieldId": "true"}
+        if offset:
+            params["offset"] = offset
+        resp = _get_with_retry(url, field_params, params)
+        resp.raise_for_status()
+        d = resp.json()
+        all_records.extend(d.get("records", []))
+        offset = d.get("offset")
+        if not offset:
+            break
+        time.sleep(0.22)
+    result = []
+    for rec in all_records:
+        c = rec.get("cellValuesByFieldId") or rec.get("fields", {})
+        name = c.get(TF_PROD_NAME) or ""
+        box_sel = c.get(TF_PROD_BOX)
+        box_name = box_sel["name"] if isinstance(box_sel, dict) else (box_sel or "")
+        per_box = c.get(TF_PROD_PER_BOX) or 0
+        cbm = c.get(TF_PROD_CBM) or 0
+        if name and per_box:
+            result.append({"name": name, "box_name": box_name, "per_box": per_box, "cbm_per_box": cbm})
+    return sorted(result, key=lambda x: x["name"])
+
+
 def fetch_shipments_tms(start: date, end: date) -> list:
     url = f"https://api.airtable.com/v0/{TMS_BASE_ID}/{TMS_TABLE_SHIPMENT}"
     formula = (
@@ -302,6 +373,7 @@ def _estimate_cbm_from_items(item_str: str) -> float:
 def analyze_shipment(records: list, live_cbm: dict) -> dict:
     box_type_all = defaultdict(int)
     item_agg = defaultdict(lambda: {"qty": 0, "cbm": 0.0})
+    by_date  = defaultdict(lambda: {"cnt": 0, "cbm": 0.0})
     total_cbm = 0.0
     total_cnt = completed = pending = 0
 
@@ -310,6 +382,7 @@ def analyze_shipment(records: list, live_cbm: dict) -> dict:
         if not c.get(TF_DATE):
             continue
         total_cnt += 1
+        date_val = c.get(TF_DATE, "")
 
         status_obj = c.get(TF_STATUS)
         status = (status_obj["name"] if isinstance(status_obj, dict) else (status_obj or ""))
@@ -337,6 +410,9 @@ def analyze_shipment(records: list, live_cbm: dict) -> dict:
                 cbm_val = _estimate_cbm_from_items(str(item_str))
 
         total_cbm = round(total_cbm + cbm_val, 4)
+        if date_val:
+            by_date[date_val]["cnt"] += 1
+            by_date[date_val]["cbm"] = round(by_date[date_val]["cbm"] + cbm_val, 4)
 
         # 품목 집계
         item_str = str(c.get(TF_ITEM) or "")
@@ -369,6 +445,7 @@ def analyze_shipment(records: list, live_cbm: dict) -> dict:
     return {
         "box_type": {"counts": ordered_counts, "pct": ordered_pct, "total": total_boxes},
         "top_items": top_items,
+        "by_date":  dict(sorted(by_date.items())),
         "summary": {
             "total_cbm":   round(total_cbm, 3),
             "total_count": total_cnt,
@@ -624,6 +701,15 @@ def main():
         print(f"[generate] TMS 출하 조회 실패 (무시): {e}")
         shipment = None
 
+    print("[generate] TMS Product/Box 조회 중...")
+    try:
+        boxes_data    = fetch_boxes_with_dims()
+        products_data = fetch_products_tms()
+        print(f"[generate] Products: {len(products_data)}건  Boxes: {len(boxes_data)}건")
+    except Exception as e:
+        print(f"[generate] TMS Product/Box 조회 실패 (무시): {e}")
+        boxes_data, products_data = {}, []
+
     pages_data = {
         "generated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "report_mode":  REPORT_MODE,
@@ -646,6 +732,8 @@ def main():
     }
     if shipment:
         pages_data["shipment"] = shipment
+    pages_data["products"] = products_data
+    pages_data["boxes"]    = boxes_data
 
     # 예측 모드일 때만 forecast 섹션 추가
     if REPORT_MODE == "weekly_forecast":

@@ -294,6 +294,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="chart-wrap" style="height:140px"><canvas id="cShip"></canvas></div>
     </div>
   </div>
+  <div class="panel" style="grid-column:1/-1">
+    <div class="ph"><h3>보관료 계산기</h3><span class="badge b-info">파렛트 1,100×1,100mm · 4,000원/일</span></div>
+    <div class="pb">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <div class="slabel">품목 선택</div>
+          <select id="calc-product" style="width:100%;padding:8px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;color:inherit;font-size:13px">
+            <option value="">-- 품목 선택 --</option>
+          </select>
+        </div>
+        <div>
+          <div class="slabel">총 보관 수량</div>
+          <input id="calc-qty" type="number" value="400" min="1" style="width:100%;padding:8px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;color:inherit;font-size:13px;box-sizing:border-box">
+        </div>
+      </div>
+      <div class="slabel">출고 스케줄 (날짜 + 출고 수량)</div>
+      <div id="calc-schedule" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button onclick="calcAddRow()" style="padding:5px 12px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;color:inherit;cursor:pointer;font-size:12px">+ 출고 추가</button>
+        <button onclick="calcRun()" style="padding:5px 16px;background:#5DCAA5;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:12px;font-weight:600">계산</button>
+      </div>
+      <div id="calc-product-info" style="font-size:11px;color:#aaa;margin-bottom:8px"></div>
+      <div id="calc-result"></div>
+    </div>
+  </div>
 </div>
 
 <div class="footer">Sincerely SCM Dashboard &nbsp;·&nbsp; 데이터 기준: 2026-03-19</div>
@@ -338,6 +363,7 @@ const MODE_CONFIG = {
 // ── 데이터 적용 ──
 function applyData(data) {
   D = data;
+  window._dashData = data;
   const kpi  = data.kpi;
   const inb  = data.inbound.summary;
   const qcs  = data.qc.summary;
@@ -538,6 +564,23 @@ function applyData(data) {
       }
     }
   }
+
+  // 보관료 계산기 드롭다운
+  const calcSel = document.getElementById('calc-product');
+  if (calcSel && data.products?.length) {
+    calcSel.innerHTML = '<option value="">-- 품목 선택 --</option>' +
+      data.products.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    calcSel.addEventListener('change', () => {
+      const p = (data.products || []).find(x => x.name === calcSel.value);
+      const info = document.getElementById('calc-product-info');
+      if (p && info) {
+        const box = (data.boxes || {})[p.box_name] || {};
+        const bpp = calcBoxesPerPallet(box);
+        info.textContent = `박스당 ${p.per_box}개 · 박스CBM ${p.cbm_per_box}m³ · 파렛트당 ${bpp}박스 (${p.box_name || '-'})`;
+      }
+    });
+  }
+  if (!window._calcRowsInit) { window._calcRowsInit = true; calcAddRow(); calcAddRow(); }
 
   // 푸터
   const footer = document.querySelector('.footer');
@@ -744,19 +787,26 @@ function drawChart(cat) {
       });
     }
 
-    // 일별 CBM 차트 (데이터 없으면 빈 차트)
+    // 일별 CBM 차트 (by_date 동적 렌더링)
     const ctx = document.getElementById('cShip');
     if (!ctx) return;
+    const byDate   = data.shipment?.by_date || {};
+    const dateKeys = Object.keys(byDate).sort();
+    const DAY = ['일','월','화','수','목','금','토'];
+    const shipLabels = dateKeys.map(d => { const dt = new Date(d); return `${dt.getMonth()+1}/${dt.getDate()}(${DAY[dt.getDay()]})`; });
+    const cbmData    = dateKeys.map(d => byDate[d].cbm);
+    const cntData    = dateKeys.map(d => byDate[d].cnt);
+    const maxCbm     = Math.max(...cbmData, 0.1);
+    const bgColors   = cbmData.map(v => v >= maxCbm * 0.8 ? '#5DCAA5' : v > 0 ? '#85B7EB' : '#D3D1C7');
     charts.ship = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['월', '화', '수', '목', '금'],
+        labels: shipLabels.length ? shipLabels : ['데이터 없음'],
         datasets: [
-          {
-            label: 'CBM', yAxisID: 'y',
-            data: [0, 0, 0, 0, 0],
-            backgroundColor: '#85B7EB', borderRadius: 3
-          }
+          { label: 'CBM', data: cbmData, backgroundColor: bgColors, borderRadius: 3, yAxisID: 'y' },
+          { label: '건수', data: cntData, type: 'line', borderColor: '#AFA9EC',
+            backgroundColor: 'transparent', pointRadius: 3, pointBackgroundColor: '#AFA9EC',
+            borderWidth: 1.5, yAxisID: 'y2', tension: 0.3 }
         ]
       },
       options: {
@@ -764,12 +814,71 @@ function drawChart(cat) {
         plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-          y: { position: 'left', ticks: { font: { size: 9 }, callback: v => v + 'm³' }, title: { display: true, text: 'CBM', font: { size: 9 } } }
+          y: { position: 'left', ticks: { font: { size: 9 }, callback: v => v + 'm³' }, title: { display: true, text: 'CBM', font: { size: 9 } } },
+          y2: { position: 'right', ticks: { font: { size: 9 } }, grid: { display: false }, title: { display: true, text: '건수', font: { size: 9 } } }
         }
       }
     });
   }
 }
+
+// ── 보관료 계산기 ──────────────────────────────────────────────────────────────
+function calcBoxesPerPallet(box) {
+  const parse = v => parseFloat(String(v || '0').replace(/[^\d.]/g, '')) * 10 || 0;
+  const w = parse(box.w), d = parse(box.d), h = parse(box.h);
+  if (w > 0 && d > 0 && h > 0) {
+    const perLayer = Math.max(Math.floor(1100/w) * Math.floor(1100/d), Math.floor(1100/d) * Math.floor(1100/w), 1);
+    return perLayer * (Math.floor(1800/h) || 1);
+  }
+  return box.cbm > 0 ? (Math.floor(1.331 / box.cbm) || 1) : 5;
+}
+function calcAddRow() {
+  const wrap = document.getElementById('calc-schedule');
+  if (!wrap) return;
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;align-items:center';
+  row.innerHTML = `<input type="date" style="padding:6px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;color:inherit;font-size:12px"><input type="number" placeholder="출고 수량" min="1" style="width:110px;padding:6px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:6px;color:inherit;font-size:12px"><button onclick="this.parentElement.remove()" style="padding:4px 8px;background:var(--c-panel);border:1px solid var(--c-border);border-radius:4px;color:#aaa;cursor:pointer;font-size:11px">×</button>`;
+  wrap.appendChild(row);
+}
+function calcRun() {
+  const Dt = window._dashData;
+  if (!Dt) return;
+  const productName = document.getElementById('calc-product')?.value;
+  const totalQty    = parseInt(document.getElementById('calc-qty')?.value) || 0;
+  const product = (Dt.products || []).find(p => p.name === productName);
+  const resEl = document.getElementById('calc-result');
+  if (!product || totalQty <= 0) { resEl.innerHTML = '<p style="color:#aaa;font-size:12px">품목과 수량을 입력해주세요.</p>'; return; }
+  const box  = (Dt.boxes || {})[product.box_name] || {};
+  const bpp  = calcBoxesPerPallet(box);
+  const perBox = product.per_box || 1;
+  const rows = [...document.querySelectorAll('#calc-schedule > div')];
+  const schedule = [];
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll('input');
+    if (inputs[0]?.value && inputs[1]?.value)
+      schedule.push({ date: new Date(inputs[0].value), qty: parseInt(inputs[1].value) });
+  });
+  schedule.sort((a, b) => a.date - b.date);
+  let remaining = totalQty, rowsHtml = '', grand = 0;
+  for (let i = 0; i < schedule.length; i++) {
+    remaining -= schedule[i].qty;
+    if (remaining < 0) remaining = 0;
+    const next = schedule[i + 1]?.date;
+    if (!next || remaining === 0) {
+      rowsHtml += `<tr><td>제${i+1}구간 (${fmtD(schedule[i].date)}~출고완료)</td><td class="tr">-</td><td class="tr">0박스</td><td class="tr">0개</td><td class="tr">0원</td><td class="tr">0원</td></tr>`;
+      break;
+    }
+    const days = Math.round((next - schedule[i].date) / 86400000);
+    const boxes = Math.ceil(remaining / perBox);
+    const pallets = Math.ceil(boxes / bpp);
+    const daily = pallets * 4000;
+    const sub = daily * days;
+    grand += sub;
+    rowsHtml += `<tr><td>제${i+1}구간 (${fmtD(schedule[i].date)}~${fmtD(new Date(next-86400000))})</td><td class="tr">${days}일</td><td class="tr">${boxes}박스</td><td class="tr">${pallets}개</td><td class="tr">${daily.toLocaleString()}원</td><td class="tr">${sub.toLocaleString()}원</td></tr>`;
+  }
+  resEl.innerHTML = `<div style="font-size:11px;color:#aaa;margin-bottom:6px">박스당 ${perBox}개 · 파렛트당 ${bpp}박스 · 4,000원/파렛트/일</div><table class="wt"><thead><tr><th>구간</th><th class="tr">기간</th><th class="tr">잔여박스</th><th class="tr">파렛트</th><th class="tr">일일보관료</th><th class="tr">구간소계</th></tr></thead><tbody>${rowsHtml}</tbody><tfoot><tr><td colspan="5" style="text-align:right;font-weight:600">합계</td><td class="tr" style="font-weight:600;color:#5DCAA5">${grand.toLocaleString()}원</td></tr></tfoot></table>`;
+}
+function fmtD(d) { return `${d.getMonth()+1}/${d.getDate()}`; }
 
 async function init() {
   await loadData();
