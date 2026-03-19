@@ -136,7 +136,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="ico">WH</div><div class="cn">자재</div><div class="csub" id="cat-mat-sub">음수재고 53종</div>
   </div>
   <div class="cat ship" onclick="setCat('ship',this)">
-    <div class="ico">OUT</div><div class="cn">출하</div><div class="csub">실시간 Airtable</div>
+    <div class="ico">OUT</div><div class="cn">출하</div><div class="csub" id="cat-ship-sub">실시간 Airtable</div>
   </div>
 </div>
 
@@ -270,28 +270,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="tab-ship" class="hidden">
   <div class="two">
     <div class="panel">
-      <div class="ph"><h3>출하 요약</h3><span class="badge b-info">Airtable 실시간</span></div>
+      <div class="ph"><h3>출하 요약</h3><span class="badge b-info">TMS Airtable</span></div>
       <div class="pb">
-        <div class="stat"><span class="sk">총 출하 건수</span><span class="sv2">61건</span></div>
-        <div class="stat"><span class="sk">총 CBM</span><span class="sv2">17.4 m³</span></div>
-        <div class="stat"><span class="sk">완료</span><span class="sv2 ok">28건</span></div>
-        <div class="stat"><span class="sk">대기</span><span class="sv2 warn">33건</span></div>
-        <div class="stat"><span class="sk">건당 평균 CBM</span><span class="sv2">0.29 m³</span></div>
+        <div class="stat"><span class="sk">총 출하 건수</span><span class="sv2" id="ship-total">—</span></div>
+        <div class="stat"><span class="sk">총 CBM</span><span class="sv2" id="ship-cbm">—</span></div>
+        <div class="stat"><span class="sk">완료</span><span class="sv2 ok" id="ship-comp">—</span></div>
+        <div class="stat"><span class="sk">대기</span><span class="sv2 warn" id="ship-pend">—</span></div>
+        <div class="stat"><span class="sk">건당 평균 CBM</span><span class="sv2" id="ship-avg-cbm">—</span></div>
       </div>
     </div>
     <div class="panel">
-      <div class="ph"><h3>배송파트너별</h3></div>
+      <div class="ph"><h3>박스 타입 구성비</h3></div>
       <div class="pb">
-        <div class="sr"><span class="sn">(조희선)</span><div class="bbg"><div class="bf" style="width:100%;background:#85B7EB"></div></div><span class="sv">16건</span></div>
-        <div class="sr"><span class="sn">(이장훈)</span><div class="bbg"><div class="bf" style="width:87%;background:#85B7EB"></div></div><span class="sv">14건</span></div>
-        <div class="sr"><span class="sn">(로젠)</span><div class="bbg"><div class="bf" style="width:81%;background:#85B7EB"></div></div><span class="sv">13건</span></div>
-        <div class="sr"><span class="sn">(박종성)</span><div class="bbg"><div class="bf" style="width:62%;background:#85B7EB"></div></div><span class="sv">10건</span></div>
-        <div class="sr"><span class="sn">베스트원(퀵)</span><div class="bbg"><div class="bf" style="width:31%;background:#85B7EB"></div></div><span class="sv">5건</span></div>
+        <div class="chart-wrap" style="height:130px"><canvas id="cBoxType"></canvas></div>
       </div>
     </div>
   </div>
   <div class="panel">
-    <div class="ph"><h3>일별 CBM (3/16~3/20)</h3></div>
+    <div class="ph"><h3>출하 품목 Top (CBM 기준)</h3></div>
+    <div class="pb">
+      <div id="ship-top-items">
+        <div class="stat" style="color:#aaa;font-size:11px">데이터 로딩 중...</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="ph"><h3>일별 CBM</h3></div>
     <div class="pb">
       <div class="chart-wrap" style="height:140px"><canvas id="cShip"></canvas></div>
     </div>
@@ -417,6 +421,36 @@ function applyData(data) {
     setText('fc-based-on', per.label?.replace(' 예측', '') + ' 실적 기반' || '지난주 실적 기반');
   } else if (fcPanel) {
     fcPanel.classList.add('hidden');
+  }
+
+  // 출하 탭
+  if (data.shipment) {
+    const sh  = data.shipment;
+    const shs = sh.summary;
+    setText('ship-total', shs.total_count + '건');
+    setText('ship-cbm',   shs.total_cbm + ' m³');
+    setText('ship-comp',  shs.completed + '건');
+    setText('ship-pend',  shs.pending + '건');
+    const avgCbm = shs.total_count ? Math.round(shs.total_cbm / shs.total_count * 1000) / 1000 : 0;
+    setText('ship-avg-cbm', avgCbm + ' m³');
+    setText('cat-ship-sub', `${shs.total_count}건 · ${shs.total_cbm}m³`);
+
+    const topEl = document.getElementById('ship-top-items');
+    if (topEl) {
+      if (sh.top_items?.length) {
+        const maxCbm = sh.top_items[0][2] || 1;
+        topEl.innerHTML = sh.top_items.map(([name, qty, cbm]) => {
+          const pct = Math.round(cbm / maxCbm * 100);
+          return `<div class="sr">
+            <span class="sn" title="${name}">${name}</span>
+            <div class="bbg"><div class="bf" style="width:${pct}%;background:#85B7EB"></div></div>
+            <span class="sv">${qty.toLocaleString()}개 · ${cbm}m³</span>
+          </div>`;
+        }).join('');
+      } else {
+        topEl.innerHTML = '<div class="stat" style="color:#aaa;font-size:11px">출하 데이터 없음</div>';
+      }
+    }
   }
 
   // 푸터
@@ -599,24 +633,43 @@ function drawChart(cat) {
   }
 
   if (cat === 'ship') {
+    // 박스 타입 구성비 도넛 차트
+    const ctxBox = document.getElementById('cBoxType');
+    if (ctxBox && data.shipment?.box_type?.counts) {
+      const bt = data.shipment.box_type;
+      const btLabels = Object.keys(bt.counts);
+      const btCounts = Object.values(bt.counts);
+      const pcts     = btLabels.map(k => bt.pct[k] || 0);
+      const boxColors = { '극소':'#B5D4F4','소':'#85B7EB','중':'#5DCAA5','중대':'#AFA9EC','대':'#EF9F27','특대':'#F09595' };
+      charts.boxType = new Chart(ctxBox, {
+        type: 'doughnut',
+        data: {
+          labels: btLabels.map((k, i) => `${k} ${bt.pct[k]}% (${bt.counts[k]}개)`),
+          datasets: [{
+            data: btCounts,
+            backgroundColor: btLabels.map(k => boxColors[k] || '#D3D1C7'),
+            borderWidth: 0, hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { font: { size: 9 }, boxWidth: 10, padding: 6 } } }
+        }
+      });
+    }
+
+    // 일별 CBM 차트 (데이터 없으면 빈 차트)
     const ctx = document.getElementById('cShip');
     if (!ctx) return;
     charts.ship = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['3/16(월)', '3/17(화)', '3/18(수)', '3/19(목)', '3/20(금)'],
+        labels: ['월', '화', '수', '목', '금'],
         datasets: [
           {
             label: 'CBM', yAxisID: 'y',
-            data: [14.77, 2.35, 0, 0, 0],
-            backgroundColor: ['#5DCAA5', '#85B7EB', '#D3D1C7', '#D3D1C7', '#D3D1C7'],
-            borderRadius: 3
-          },
-          {
-            label: '건수', yAxisID: 'y2', type: 'line',
-            data: [12, 14, 13, 14, 8],
-            borderColor: '#AFA9EC', backgroundColor: 'transparent',
-            pointRadius: 3, pointBackgroundColor: '#AFA9EC', borderWidth: 1.5, tension: 0.3
+            data: [0, 0, 0, 0, 0],
+            backgroundColor: '#85B7EB', borderRadius: 3
           }
         ]
       },
@@ -625,8 +678,7 @@ function drawChart(cat) {
         plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-          y: { position: 'left', ticks: { font: { size: 9 }, callback: v => v + 'm³' }, title: { display: true, text: 'CBM', font: { size: 9 } } },
-          y2: { position: 'right', ticks: { font: { size: 9 } }, grid: { display: false }, title: { display: true, text: '건수', font: { size: 9 } } }
+          y: { position: 'left', ticks: { font: { size: 9 }, callback: v => v + 'm³' }, title: { display: true, text: 'CBM', font: { size: 9 } } }
         }
       }
     });

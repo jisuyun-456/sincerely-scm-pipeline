@@ -5,7 +5,7 @@ REPORT_MODE=weekly_forecast → 지난주 기반 이번주 예측 (매주 월요
 REPORT_MODE=monthly         → 지난달 전체 실적 (매월 1일)
 """
 
-import os, sys, json, time
+import os, sys, json, time, math, re
 from datetime import date, datetime, timedelta
 from collections import defaultdict
 
@@ -20,6 +20,7 @@ import requests
 # ── Env ──────────────────────────────────────────────────────────────────────
 AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY_WMS") or os.environ.get("AIRTABLE_PAT", "")
 WMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
+TMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_TMS_ID", "app4x70a8mOrIKsMf")
 REPORT_MODE      = os.environ.get("REPORT_MODE", "weekly_review")  # weekly_review | weekly_forecast | monthly
 
 # ── Airtable Table / Field IDs ───────────────────────────────────────────────
@@ -144,6 +145,235 @@ def fetch_material() -> list:
             break
         time.sleep(0.22)
     return all_records
+
+# ── TMS Table / Field IDs ────────────────────────────────────────────────────
+TMS_TABLE_SHIPMENT = "tbllg1JoHclGYer7m"
+TMS_TABLE_BOX      = "tbltwH7bHk41rTzhM"
+
+TF_DATE        = "fldQvmEwwzvQW95h9"  # 출하확정일
+TF_ITEM        = "fldgSupj5XLjJXYQo"  # 최종 출하 품목
+TF_BOX_PARSED  = "fldTjLDmw5sNGszeD"  # 최종 외박스 수량 값 (formula)
+TF_BOX_MANUAL  = "fldRjMaXa5TdSsGDL"  # 외박스 수량 직접입력
+TF_TOTAL_CBM   = "fldJ9DHjwoRyeUEqE"  # Total_CBM
+TF_STATUS      = "fldOhibgxg6LIpRTi"  # 발송상태_TMS
+TF_ITEM_DETAIL = "fldXXnGOXkm90snKn"  # 최종 출고 품목 및 수량
+TF_BOX_CODE    = "fldELrd8bBVjQCHnp"  # Box Code
+TF_BOX_NAME    = "fldgvlGjLb4FTlQ0v"  # 박스명
+TF_BOX_CBM     = "fldjFaXiYzeJ2Zt7M"  # cbm
+
+TMS_SHIP_FIELDS = [TF_DATE, TF_ITEM, TF_BOX_PARSED, TF_BOX_MANUAL, TF_TOTAL_CBM, TF_STATUS, TF_ITEM_DETAIL]
+TMS_BOX_FIELDS  = [TF_BOX_CODE, TF_BOX_NAME, TF_BOX_CBM]
+
+BOX_CBM = {
+    "극소": 0.0098, "S280": 0.0098,
+    "소":   0.0117, "S360": 0.0117,
+    "중":   0.0201, "M350": 0.0201,
+    "중대": 0.0492, "M480": 0.0492,
+    "대":   0.1066, "L510": 0.1066,
+    "특대": 0.1663, "L560": 0.1663,
+}
+BOX_SIZE_ORDER = ["극소", "소", "중", "중대", "대", "특대"]
+
+PRODUCT_CBM = {
+    "스펙트럼컬러펜":                    ("중",   300, 0.0201),
+    "올블랙펜":                          ("중",   130, 0.0201),
+    "슈가케인펜":                        ("중",   100, 0.0201),
+    "플레인USB":                         ("중",   100, 0.0201),
+    "브랜디드피규어키링":                ("중",   100, 0.0201),
+    "홈카페코스터":                      ("중",   275, 0.0201),
+    "밸류메모큐브(M)":                   ("중",    33, 0.0201),
+    "레더스킨다이어리(표준)":            ("중대",  50, 0.0492),
+    "슬로건다이어리(표준)":              ("중대",  50, 0.0492),
+    "트리플컬러펜∣JETSTREAM":           ("중대", 413, 0.0492),
+    "라이트샤오미펜":                    ("중대", 333, 0.0492),
+    "커넥트6in1케이블키트":              ("중대", 150, 0.0492),
+    "홀리데이네임택":                    ("중대", 200, 0.0492),
+    "리멤버타투스티커":                  ("중대", 500, 0.0492),
+    "버티컬무선충전패드":                ("중대", 100, 0.0492),
+    "밸류무선충전마우스패드":            ("중대",  20, 0.0492),
+    "브랜드스트랩단우산":                ("중대",  50, 0.0492),
+    "유니크디퓨저":                      ("중대",  40, 0.0492),
+    "오토매틱와인오프너":                ("중대",  19, 0.0492),
+    "리마커블칫솔살균기":                ("중대", 100, 0.0492),
+    "킵세이프마그넷배터리Max":           ("중대",  50, 0.0492),
+    "킵세이프마그넷배터리Slim":          ("중대",  75, 0.0492),
+    "더블업트래블파우치(Large)":         ("대",    50, 0.1066),
+    "로고스트랩파우치(단품)":            ("대",   100, 0.1066),
+    "포시즌블랭킷(무릎담요)":           ("대",    50, 0.1066),
+    "미니멀스텐머그":                    ("대",    43, 0.1066),
+    "미스트워터보틀":                    ("대",    47, 0.1066),
+    "미르(MiiR)텀블러":                 ("대",    50, 0.1066),
+    "메시지캐리어파우치":                ("대",    49, 0.1066),
+    "올웨이즈양우산":                    ("중대",  80, 0.0492),
+    "스탠리데일리텀블러":                ("대",    30, 0.1066),
+    "핸디링미니선풍기":                  ("중대", 100, 0.0492),
+    "스타트씨드키트":                    ("중대",  50, 0.0492),
+    "톤앤톤쿨러백(단품)":               ("특대",  25, 0.1663),
+    "브랜디드타월":                      ("대",    50, 0.1066),
+    "Solid스탠다드G형박스(L사이즈)키트": ("대",    18, 0.1066),
+    "Solid스탠다드G형박스(M사이즈)키트": ("대",    20, 0.1066),
+    "브릭메모&캘린더스탠드2.0":         ("중대",  50, 0.0492),
+}
+
+_BOX_RE = re.compile(r"(극소|소|중대|중|대|특대|S280|S360|M350|M480|L510|L560)\s*(\d+)")
+
+
+# ── TMS Airtable 조회 ─────────────────────────────────────────────────────────
+def fetch_box_cbm_live() -> dict:
+    url = f"https://api.airtable.com/v0/{TMS_BASE_ID}/{TMS_TABLE_BOX}"
+    field_params = "&".join(f"fields[]={fid}" for fid in TMS_BOX_FIELDS)
+    all_records, offset = [], None
+    while True:
+        params = {"pageSize": "100", "returnFieldsByFieldId": "true"}
+        if offset:
+            params["offset"] = offset
+        resp = _get_with_retry(url, field_params, params)
+        resp.raise_for_status()
+        data = resp.json()
+        all_records.extend(data.get("records", []))
+        offset = data.get("offset")
+        if not offset:
+            break
+        time.sleep(0.22)
+    live = {}
+    for rec in all_records:
+        c = rec.get("cellValuesByFieldId", {})
+        for key in (c.get(TF_BOX_CODE), c.get(TF_BOX_NAME)):
+            if key:
+                live[str(key)] = c.get(TF_BOX_CBM) or 0
+    return live
+
+
+def fetch_shipments_tms(start: date, end: date) -> list:
+    url = f"https://api.airtable.com/v0/{TMS_BASE_ID}/{TMS_TABLE_SHIPMENT}"
+    formula = (
+        f"AND("
+        f"IS_AFTER({{{TF_DATE}}}, DATEADD('{start.isoformat()}', -1, 'days')), "
+        f"IS_BEFORE({{{TF_DATE}}}, DATEADD('{end.isoformat()}', 1, 'days'))"
+        f")"
+    )
+    field_params = "&".join(f"fields[]={fid}" for fid in TMS_SHIP_FIELDS)
+    all_records, offset = [], None
+    while True:
+        params = {"filterByFormula": formula, "pageSize": "100", "returnFieldsByFieldId": "true"}
+        if offset:
+            params["offset"] = offset
+        resp = _get_with_retry(url, field_params, params)
+        resp.raise_for_status()
+        data = resp.json()
+        all_records.extend(data.get("records", []))
+        offset = data.get("offset")
+        if not offset:
+            break
+        time.sleep(0.22)
+    return all_records
+
+
+def _parse_box_cbm(box_str: str, live: dict):
+    ref = {**BOX_CBM, **live}
+    total = 0.0
+    by_type = {}
+    for m in _BOX_RE.finditer(box_str):
+        btype, cnt = m.group(1), int(m.group(2))
+        total += ref.get(btype, 0) * cnt
+        norm = next((k for k in BOX_CBM if k == btype), btype)
+        by_type[norm] = by_type.get(norm, 0) + cnt
+    return round(total, 4), by_type
+
+
+def _estimate_cbm_from_items(item_str: str) -> float:
+    total = 0.0
+    for line in item_str.strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        for pname, (_, qpb, cpb) in sorted(PRODUCT_CBM.items(), key=lambda x: -len(x[0])):
+            if pname in line:
+                nums = re.findall(r"\d+", line.replace(pname, ""))
+                if nums:
+                    total += math.ceil(int(nums[0]) / qpb) * cpb
+                break
+    return round(total, 4)
+
+
+def analyze_shipment(records: list, live_cbm: dict) -> dict:
+    box_type_all = defaultdict(int)
+    item_agg = defaultdict(lambda: {"qty": 0, "cbm": 0.0})
+    total_cbm = 0.0
+    total_cnt = completed = pending = 0
+
+    for rec in records:
+        c = rec.get("cellValuesByFieldId", {})
+        if not c.get(TF_DATE):
+            continue
+        total_cnt += 1
+
+        status_obj = c.get(TF_STATUS)
+        status = (status_obj["name"] if isinstance(status_obj, dict) else (status_obj or ""))
+        if "완료" in status:
+            completed += 1
+        else:
+            pending += 1
+
+        total_cbm_field = c.get(TF_TOTAL_CBM)
+        box_qty = c.get(TF_BOX_PARSED) or c.get(TF_BOX_MANUAL) or ""
+        if isinstance(box_qty, list):
+            box_qty = ", ".join(str(x) for x in box_qty)
+        box_qty = str(box_qty).strip()
+
+        cbm_val = 0.0
+        if total_cbm_field and total_cbm_field > 0:
+            cbm_val = total_cbm_field
+        elif box_qty and _BOX_RE.search(box_qty):
+            cbm_val, btype_counts = _parse_box_cbm(box_qty, live_cbm)
+            for bt, cnt in btype_counts.items():
+                box_type_all[bt] += cnt
+        else:
+            item_str = c.get(TF_ITEM) or c.get(TF_ITEM_DETAIL) or ""
+            if item_str:
+                cbm_val = _estimate_cbm_from_items(str(item_str))
+
+        total_cbm = round(total_cbm + cbm_val, 4)
+
+        # 품목 집계
+        item_str = str(c.get(TF_ITEM) or "")
+        for line in item_str.strip().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            nums  = re.findall(r"\d+", line)
+            iname = re.sub(r"\s*\d+\s*$", "", line).strip()
+            if iname and nums:
+                qty = int(nums[-1])
+                item_agg[iname]["qty"] += qty
+                for pname, (_, qpb, cpb) in sorted(PRODUCT_CBM.items(), key=lambda x: -len(x[0])):
+                    if pname in iname:
+                        item_agg[iname]["cbm"] = round(
+                            item_agg[iname]["cbm"] + math.ceil(qty / qpb) * cpb, 4
+                        )
+                        break
+
+    total_boxes = sum(box_type_all.values())
+    box_pct = {k: round(v / total_boxes * 100, 1) for k, v in box_type_all.items()} if total_boxes else {}
+    ordered_counts = {k: box_type_all[k] for k in BOX_SIZE_ORDER if k in box_type_all}
+    ordered_pct    = {k: box_pct[k]      for k in BOX_SIZE_ORDER if k in box_pct}
+
+    top_items = sorted(
+        [[name, v["qty"], round(v["cbm"], 3)] for name, v in item_agg.items() if v["cbm"] > 0],
+        key=lambda x: -x[2]
+    )[:8]
+
+    return {
+        "box_type": {"counts": ordered_counts, "pct": ordered_pct, "total": total_boxes},
+        "top_items": top_items,
+        "summary": {
+            "total_cbm":   round(total_cbm, 3),
+            "total_count": total_cnt,
+            "completed":   completed,
+            "pending":     pending,
+        },
+    }
+
 
 # ── 분석 함수 ────────────────────────────────────────────────────────────────
 def _sel(val):
@@ -366,6 +596,16 @@ def main():
         period_key   = start.strftime("%Y-W%V") + "_review"
         week_lbl = last_w_label
 
+    print("[generate] TMS 출하 조회 중...")
+    try:
+        live_cbm     = fetch_box_cbm_live()
+        ship_records = fetch_shipments_tms(start, end)
+        print(f"[generate] TMS 출하: {len(ship_records)}건")
+        shipment = analyze_shipment(ship_records, live_cbm)
+    except Exception as e:
+        print(f"[generate] TMS 출하 조회 실패 (무시): {e}")
+        shipment = None
+
     pages_data = {
         "generated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "report_mode":  REPORT_MODE,
@@ -386,6 +626,8 @@ def main():
         "qc":       qc,
         "material": material,
     }
+    if shipment:
+        pages_data["shipment"] = shipment
 
     # 예측 모드일 때만 forecast 섹션 추가
     if REPORT_MODE == "weekly_forecast":
@@ -396,6 +638,9 @@ def main():
         json.dump(pages_data, f, ensure_ascii=False, indent=2, default=str)
     print(f"[generate] pages_data.json 생성 완료 (period_key: {period_key})")
     print(f"  입하완료율: {inb_s['completion_rate']}%  불량률: {qc_s['defect_rate']}%  재고정확도: {mat_s['accuracy']}%")
+    if shipment:
+        sh_s = shipment["summary"]
+        print(f"  [출하] {sh_s['total_count']}건  총CBM: {sh_s['total_cbm']}m³  완료: {sh_s['completed']}건  대기: {sh_s['pending']}건")
     if REPORT_MODE == "weekly_forecast":
         fc = pages_data["forecast"]
         print(f"  [예측] 이번주 입고 예상: {fc['projected']['inbound_cnt']}건 / 리스크: {fc['kpi_assessment']['risk_level']}")
