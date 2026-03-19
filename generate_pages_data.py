@@ -18,10 +18,11 @@ except ImportError:
 import requests
 
 # ── Env ──────────────────────────────────────────────────────────────────────
-AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY_WMS") or os.environ.get("AIRTABLE_PAT", "")
-WMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
-TMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_TMS_ID") or "app4x70a8mOrIKsMf"
-REPORT_MODE      = os.environ.get("REPORT_MODE", "weekly_review")  # weekly_review | weekly_forecast | monthly
+AIRTABLE_API_KEY_WMS = os.environ.get("AIRTABLE_PAT", "")
+AIRTABLE_API_KEY_TMS = os.environ.get("AIRTABLE_API_KEY_TMS") or AIRTABLE_API_KEY_WMS
+WMS_BASE_ID          = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
+TMS_BASE_ID          = os.environ.get("AIRTABLE_BASE_TMS_ID") or "app4x70a8mOrIKsMf"
+REPORT_MODE          = os.environ.get("REPORT_MODE", "weekly_review")  # weekly_review | weekly_forecast | monthly
 
 # ── Airtable Table / Field IDs ───────────────────────────────────────────────
 TABLE_MOVEMENT = "tblwq7Kj5Y9nVjlOw"
@@ -91,12 +92,16 @@ def week_label_for(monday: date) -> str:
 
 # ── Airtable 조회 ────────────────────────────────────────────────────────────
 def _headers():
-    return {"Authorization": f"Bearer {AIRTABLE_API_KEY}", "Content-Type": "application/json"}
+    return {"Authorization": f"Bearer {AIRTABLE_API_KEY_WMS}", "Content-Type": "application/json"}
 
-def _get_with_retry(url, field_params, params, max_retry=3):
+def _tms_headers():
+    return {"Authorization": f"Bearer {AIRTABLE_API_KEY_TMS}", "Content-Type": "application/json"}
+
+def _get_with_retry(url, field_params, params, max_retry=3, headers=None):
+    h = headers or _headers()
     for attempt in range(max_retry):
         try:
-            resp = requests.get(f"{url}?{field_params}", headers=_headers(), params=params, timeout=60)
+            resp = requests.get(f"{url}?{field_params}", headers=h, params=params, timeout=60)
             if resp.status_code == 429:
                 time.sleep(30)
                 continue
@@ -121,7 +126,7 @@ def fetch_movement(start: date, end: date) -> list:
         params = {"filterByFormula": formula, "pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = _get_with_retry(url, field_params, params)
+        resp = _get_with_retry(url, field_params, params, headers=_tms_headers())
         resp.raise_for_status()
         data = resp.json()
         all_records.extend(data.get("records", []))
@@ -244,7 +249,7 @@ def fetch_box_cbm_live() -> dict:
         params = {"pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = _get_with_retry(url, field_params, params)
+        resp = _get_with_retry(url, field_params, params, headers=_tms_headers())
         resp.raise_for_status()
         data = resp.json()
         all_records.extend(data.get("records", []))
@@ -269,7 +274,7 @@ def fetch_boxes_with_dims() -> dict:
         params = {"pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = _get_with_retry(url, field_params, params)
+        resp = _get_with_retry(url, field_params, params, headers=_tms_headers())
         resp.raise_for_status()
         d = resp.json()
         all_records.extend(d.get("records", []))
@@ -298,7 +303,7 @@ def fetch_products_tms() -> list:
         params = {"pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = _get_with_retry(url, field_params, params)
+        resp = _get_with_retry(url, field_params, params, headers=_tms_headers())
         resp.raise_for_status()
         d = resp.json()
         all_records.extend(d.get("records", []))
@@ -333,7 +338,7 @@ def fetch_shipments_tms(start: date, end: date) -> list:
         params = {"filterByFormula": formula, "pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = _get_with_retry(url, field_params, params)
+        resp = _get_with_retry(url, field_params, params, headers=_tms_headers())
         resp.raise_for_status()
         data = resp.json()
         all_records.extend(data.get("records", []))
@@ -768,7 +773,7 @@ def main():
         print(f"  [예측] 이번주 입고 예상: {fc['projected']['inbound_cnt']}건 / 리스크: {fc['kpi_assessment']['risk_level']}")
 
 if __name__ == "__main__":
-    if not AIRTABLE_API_KEY:
+    if not AIRTABLE_API_KEY_WMS:
         print("ERROR: AIRTABLE_PAT 환경변수 없음", file=sys.stderr)
         sys.exit(1)
     main()
