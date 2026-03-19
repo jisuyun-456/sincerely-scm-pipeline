@@ -144,7 +144,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="tab-inbound">
   <div class="two">
     <div class="panel">
-      <div class="ph"><h3>입고 요약</h3><span class="badge b-ok">완료율 97.2%</span></div>
+      <div class="ph"><h3>입고 요약</h3><span class="badge b-ok" id="inb-compl-badge">완료율 —</span></div>
       <div class="pb">
         <div class="stat"><span class="sk">총 입고 건수</span><span class="sv2" id="inb-cnt">681건</span></div>
         <div class="stat"><span class="sk">총 입고 수량</span><span class="sv2" id="inb-qty">218,868개</span></div>
@@ -157,16 +157,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="ph"><h3>입고 목적별</h3></div>
       <div class="pb">
         <div class="slabel">건수 기준</div>
-        <div class="sr"><span class="sn">생산산출</span><div class="bbg"><div class="bf" style="width:75%;background:#5DCAA5"></div></div><span class="sv">514건 · 127,894</span></div>
-        <div class="sr"><span class="sn">재고이동</span><div class="bbg"><div class="bf" style="width:15%;background:#85B7EB"></div></div><span class="sv">106건 · 23,439</span></div>
-        <div class="sr"><span class="sn">재고생산</span><div class="bbg"><div class="bf" style="width:6%;background:#AFA9EC"></div></div><span class="sv">40건 · 66,594</span></div>
-        <div class="sr"><span class="sn">생산샘플</span><div class="bbg"><div class="bf" style="width:2%;background:#EF9F27"></div></div><span class="sv">15건 · 33</span></div>
-        <div class="sr"><span class="sn">고객물품</span><div class="bbg"><div class="bf" style="width:1%;background:#F09595"></div></div><span class="sv">6건 · 908</span></div>
+        <div id="inb-purpose-list"></div>
       </div>
     </div>
   </div>
   <div class="panel">
-    <div class="ph"><h3>일별 입고 현황</h3><span class="badge b-info">3/2 ~ 3/19</span></div>
+    <div class="ph"><h3>일별 입고 현황</h3><span class="badge b-info" id="inb-date-range">—</span></div>
     <div class="pb">
       <div class="chart-wrap" style="height:160px"><canvas id="cInbound"></canvas></div>
     </div>
@@ -176,11 +172,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="pb">
       <table class="wt">
         <thead><tr><th>주차</th><th class="tr">건수</th><th class="tr">입고 수량</th><th class="tr">건당 평균</th></tr></thead>
-        <tbody>
-          <tr><td>W10 (3/02~)</td><td class="tr">226건</td><td class="tr">71,273</td><td class="tr">315개</td></tr>
-          <tr><td>W11 (3/09~)</td><td class="tr">278건</td><td class="tr">84,161</td><td class="tr">303개</td></tr>
-          <tr><td>W12 (3/16~, 현재)</td><td class="tr">177건</td><td class="tr">63,434</td><td class="tr">358개</td></tr>
-        </tbody>
+        <tbody id="inb-week-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -190,7 +182,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="tab-qc" class="hidden">
   <div class="two">
     <div class="panel">
-      <div class="ph"><h3>검수 요약</h3><span class="badge b-ng">불량률 5.52%</span></div>
+      <div class="ph"><h3>검수 요약</h3><span class="badge b-ng" id="qc-defect-badge">불량률 —</span></div>
       <div class="pb">
         <div class="stat"><span class="sk">검수 건수</span><span class="sv2" id="qc-cnt">611건</span></div>
         <div class="stat"><span class="sk">총 검수 수량</span><span class="sv2" id="qc-qty">2,373개</span></div>
@@ -203,28 +195,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="ph"><h3>주차별 불량률 추이</h3></div>
       <div class="pb">
         <div class="slabel">결과 분포</div>
-        <div class="sr"><span class="sn">수량 정상</span><div class="bbg"><div class="bf" style="width:99%;background:#5DCAA5"></div></div><span class="sv">604건 (98.9%)</span></div>
-        <div class="sr"><span class="sn">이슈 후 해결</span><div class="bbg"><div class="bf" style="width:1%;background:#EF9F27"></div></div><span class="sv">7건 (1.1%)</span></div>
+        <div id="qc-result-dist"></div>
         <div style="margin-top:12px">
           <div class="slabel">주차별 불량률</div>
-          <div class="sr"><span class="sn">W10</span><div class="bbg"><div class="bf" style="width:30%;background:#EF9F27"></div></div><span class="sv warn">8.1%</span></div>
-          <div class="sr"><span class="sn">W11</span><div class="bbg"><div class="bf" style="width:100%;background:#E24B4A"></div></div><span class="sv ng">26.9%</span></div>
-          <div class="sr"><span class="sn">W12</span><div class="bbg"><div class="bf" style="width:3%;background:#5DCAA5"></div></div><span class="sv ok">0.9%</span></div>
+          <div id="qc-week-bars"></div>
         </div>
       </div>
     </div>
   </div>
   <div class="panel">
-    <div class="ph"><h3>주차별 검수 · 불량 현황</h3><span class="badge b-ng">W11 집중 이상</span></div>
+    <div class="ph"><h3>주차별 검수 · 불량 현황</h3><span class="badge b-ng" id="qc-alert-badge">—</span></div>
     <div class="pb">
       <div class="chart-wrap" style="height:160px"><canvas id="cQC"></canvas></div>
       <table class="wt" style="margin-top:10px">
         <thead><tr><th>주차</th><th class="tr">검수 수량</th><th class="tr">불량 수량</th><th class="tr">불량률</th></tr></thead>
-        <tbody>
-          <tr><td>W10</td><td class="tr">310</td><td class="tr">25</td><td class="tr warn">8.1%</td></tr>
-          <tr><td>W11</td><td class="tr">334</td><td class="tr">90</td><td class="tr ng">26.9%</td></tr>
-          <tr><td>W12 (현재)</td><td class="tr">1,729</td><td class="tr">16</td><td class="tr ok">0.9%</td></tr>
-        </tbody>
+        <tbody id="qc-week-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -389,6 +374,81 @@ function applyData(data) {
   setText('qc-qty', qcs.total_qc_qty.toLocaleString() + '개');
   setText('qc-defect', qcs.total_defect.toLocaleString() + '개');
   setText('qc-rate', qcs.defect_rate + '%');
+
+  // ── 입고 탭 동적 섹션 ──
+  const inbBadge = document.getElementById('inb-compl-badge');
+  if (inbBadge) {
+    inbBadge.textContent = `완료율 ${kpi.completion_rate}%`;
+    inbBadge.className = 'badge ' + (kpi.completion_rate >= 95 ? 'b-ok' : 'b-ng');
+  }
+  if (per.start && per.end) setText('inb-date-range', `${per.start.slice(5).replace('-','/')} ~ ${per.end.slice(5).replace('-','/')}`);
+  const purposeEl = document.getElementById('inb-purpose-list');
+  if (purposeEl && data.inbound.by_purpose) {
+    const purposes = Object.entries(data.inbound.by_purpose).sort((a,b) => b[1].cnt - a[1].cnt).slice(0,6);
+    const maxCnt = purposes[0]?.[1]?.cnt || 1;
+    const pColors = ['#5DCAA5','#85B7EB','#AFA9EC','#EF9F27','#F09595','#D3D1C7'];
+    purposeEl.innerHTML = purposes.map(([name, v], i) =>
+      `<div class="sr"><span class="sn">${name}</span><div class="bbg"><div class="bf" style="width:${Math.round(v.cnt/maxCnt*100)}%;background:${pColors[i]}"></div></div><span class="sv">${v.cnt.toLocaleString()}건 · ${v.qty.toLocaleString()}</span></div>`
+    ).join('');
+  }
+  const inbWkBody = document.getElementById('inb-week-tbody');
+  if (inbWkBody && data.inbound.by_week) {
+    const wks = Object.entries(data.inbound.by_week).sort((a,b) => a[0] < b[0] ? -1 : 1);
+    inbWkBody.innerHTML = wks.map(([wk, v]) => {
+      const avg = v.cnt ? Math.round(v.in_qty / v.cnt) : 0;
+      return `<tr><td>${wk.replace(/^\d{4}-/,'')}</td><td class="tr">${v.cnt.toLocaleString()}건</td><td class="tr">${v.in_qty.toLocaleString()}</td><td class="tr">${avg.toLocaleString()}개</td></tr>`;
+    }).join('');
+  }
+
+  // ── 검수 탭 동적 섹션 ──
+  const qcBadge = document.getElementById('qc-defect-badge');
+  if (qcBadge) {
+    qcBadge.textContent = `불량률 ${qcs.defect_rate}%`;
+    qcBadge.className = 'badge ' + (qcs.defect_rate <= 1.0 ? 'b-ok' : 'b-ng');
+  }
+  const qcDistEl = document.getElementById('qc-result-dist');
+  if (qcDistEl && data.qc.result_dist) {
+    const rdTotal = Object.values(data.qc.result_dist).reduce((a,b) => a+b, 1);
+    const rdColors = {'수량 정상':'#5DCAA5','이슈 발생 후 해결':'#EF9F27'};
+    qcDistEl.innerHTML = Object.entries(data.qc.result_dist).map(([name, cnt]) => {
+      const pct = Math.round(cnt/rdTotal*100);
+      return `<div class="sr"><span class="sn">${name}</span><div class="bbg"><div class="bf" style="width:${Math.max(pct,1)}%;background:${rdColors[name]||'#85B7EB'}"></div></div><span class="sv">${cnt.toLocaleString()}건 (${pct}%)</span></div>`;
+    }).join('');
+  }
+  const qcWkBars = document.getElementById('qc-week-bars');
+  if (qcWkBars && data.qc.by_week) {
+    const wkEntries = Object.entries(data.qc.by_week).sort((a,b) => a[0] < b[0] ? -1 : 1);
+    const maxDr = Math.max(...wkEntries.map(([,v]) => v.defect_rate), 1);
+    qcWkBars.innerHTML = wkEntries.map(([wk, v]) => {
+      const dr = v.defect_rate;
+      const color = dr <= 1.0 ? '#5DCAA5' : (dr <= 5.0 ? '#EF9F27' : '#E24B4A');
+      const cls = dr <= 1.0 ? 'ok' : (dr <= 5.0 ? 'warn' : 'ng');
+      return `<div class="sr"><span class="sn">${wk.replace(/^\d{4}-/,'')}</span><div class="bbg"><div class="bf" style="width:${Math.round(dr/maxDr*100)}%;background:${color}"></div></div><span class="sv ${cls}">${dr}%</span></div>`;
+    }).join('');
+  }
+  const qcAlertBadge = document.getElementById('qc-alert-badge');
+  if (qcAlertBadge && data.qc.by_week) {
+    const wkArr = Object.entries(data.qc.by_week);
+    if (wkArr.length) {
+      const worst = wkArr.reduce((a,b) => b[1].defect_rate > a[1].defect_rate ? b : a, wkArr[0]);
+      if (worst[1].defect_rate > 1.0) {
+        qcAlertBadge.textContent = `${worst[0].replace(/^\d{4}-/,'')} 집중 이상`;
+        qcAlertBadge.className = 'badge b-ng';
+      } else {
+        qcAlertBadge.textContent = '불량률 목표 달성';
+        qcAlertBadge.className = 'badge b-ok';
+      }
+    }
+  }
+  const qcWkBody = document.getElementById('qc-week-tbody');
+  if (qcWkBody && data.qc.by_week) {
+    const wkEntries2 = Object.entries(data.qc.by_week).sort((a,b) => a[0] < b[0] ? -1 : 1);
+    qcWkBody.innerHTML = wkEntries2.map(([wk, v]) => {
+      const dr = v.defect_rate;
+      const cls = dr <= 1.0 ? 'ok' : (dr <= 5.0 ? 'warn' : 'ng');
+      return `<tr><td>${wk.replace(/^\d{4}-/,'')}</td><td class="tr">${v.qc_qty.toLocaleString()}</td><td class="tr">${v.defect.toLocaleString()}</td><td class="tr ${cls}">${dr}%</td></tr>`;
+    }).join('');
+  }
 
   // 자재 요약
   setText('mat-total', mat.total.toLocaleString() + '종');
