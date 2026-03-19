@@ -1,12 +1,16 @@
 name: Deploy Dashboard to Pages
 
 on:
-  workflow_run:
-    workflows:
-      - "WMS Weekly Report"
-      - "WMS Monthly Report"
-    types: [completed]
+  schedule:
+    - cron: '0 0 * * 1'   # 매주 월요일 00:00 UTC = 09:00 KST (주간)
+    - cron: '0 0 1 * *'   # 매월 1일  00:00 UTC = 09:00 KST (월간)
   workflow_dispatch:
+    inputs:
+      report_mode:
+        description: 'weekly=이번달, monthly=지난달 전체'
+        type: choice
+        options: ['weekly', 'monthly']
+        default: 'weekly'
 
 permissions:
   contents: read
@@ -19,7 +23,6 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -28,6 +31,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Detect report mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.report_mode }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%d)" = "01" ]; then
+            echo "mode=monthly" >> $GITHUB_OUTPUT
+          else
+            echo "mode=weekly" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -41,6 +55,7 @@ jobs:
         env:
           AIRTABLE_API_KEY_WMS: ${{ secrets.AIRTABLE_PAT }}
           AIRTABLE_BASE_WMS_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          REPORT_MODE: ${{ steps.mode.outputs.mode }}
         run: python generate_pages_data.py
 
       - name: Prepare site

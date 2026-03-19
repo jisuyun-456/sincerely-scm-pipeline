@@ -1,6 +1,7 @@
 """
 Sincerely WMS -- Generate pages_data.json for GitHub Pages dashboard
-Fetches this month's movement + material data from Airtable WMS base.
+REPORT_MODE=weekly  → 이번달 1일~오늘 (매주 월요일)
+REPORT_MODE=monthly → 지난달 전체 (매월 1일)
 """
 
 import os, sys, json, time
@@ -18,6 +19,7 @@ import requests
 # ── Env ──────────────────────────────────────────────────────────────────────
 AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY_WMS") or os.environ.get("AIRTABLE_PAT", "")
 WMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
+REPORT_MODE      = os.environ.get("REPORT_MODE", "weekly")  # weekly | monthly
 
 # ── Airtable Table / Field IDs ───────────────────────────────────────────────
 TABLE_MOVEMENT = "tblwq7Kj5Y9nVjlOw"
@@ -50,9 +52,16 @@ MATERIAL_FIELDS = [
 ]
 
 # ── 날짜 헬퍼 ────────────────────────────────────────────────────────────────
-def this_month_range():
+def get_period_range():
     today = date.today()
-    return today.replace(day=1), today
+    if REPORT_MODE == "monthly":
+        # 지난달 1일 ~ 말일
+        first_this = today.replace(day=1)
+        last_prev  = first_this - timedelta(days=1)
+        return last_prev.replace(day=1), last_prev
+    else:
+        # 이번달 1일 ~ 오늘
+        return today.replace(day=1), today
 
 def current_week_label():
     today = date.today()
@@ -255,9 +264,9 @@ def analyze_material(records):
 
 # ── 메인 ─────────────────────────────────────────────────────────────────────
 def main():
-    start, end = this_month_range()
+    start, end = get_period_range()
     week_label = current_week_label()
-    print(f"[generate] 기간: {start} ~ {end}")
+    print(f"[generate] 모드: {REPORT_MODE} | 기간: {start} ~ {end}")
 
     print("[generate] movement 조회 중...")
     movement_records = fetch_movement(start, end)
@@ -277,12 +286,13 @@ def main():
 
     pages_data = {
         "generated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+        "report_mode": REPORT_MODE,
         "period": {
-            "month":      start.strftime("%Y-%m"),
-            "month_label": start.strftime("%Y년 %m월"),
-            "week_label": week_label,
-            "start":      start.isoformat(),
-            "end":        end.isoformat(),
+            "month":       start.strftime("%Y-%m"),
+            "month_label": start.strftime("%Y년 %m월") + (" (지난달)" if REPORT_MODE == "monthly" else ""),
+            "week_label":  week_label,
+            "start":       start.isoformat(),
+            "end":         end.isoformat(),
         },
         "kpi": {
             "completion_rate": inb_s["completion_rate"],
