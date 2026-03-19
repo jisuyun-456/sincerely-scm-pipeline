@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sincerely SCM Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh;padding:24px 16px}
+.container{max-width:900px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.brand{font-size:16px;font-weight:600;color:#1a1a1a}
+.brand small{font-size:11px;font-weight:400;color:#888;margin-left:6px}
+.live{font-size:10px;padding:3px 10px;background:#E1F5EE;color:#085041;border-radius:20px;border:0.5px solid #9FE1CB}
+.period-row{display:flex;gap:5px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px}
+.period-row::-webkit-scrollbar{display:none}
+.pc{flex-shrink:0;padding:5px 14px;border-radius:20px;font-size:11px;border:0.5px solid #d4d2c8;background:transparent;color:#666;cursor:pointer;white-space:nowrap;transition:all .15s}
+.pc:hover{background:#ebe9e3}
+.pc.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.sep2{color:#bbb;font-size:11px;align-self:center;flex-shrink:0;padding:0 2px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.kc{background:#fff;border-radius:10px;padding:13px 14px;border:0.5px solid #e8e6e0}
+.kl{font-size:10px;color:#888;margin-bottom:4px}
+.kv{font-size:20px;font-weight:600;line-height:1;color:#1a1a1a}
+.ku{font-size:10px;color:#aaa;margin-left:2px;font-weight:400}
+.ks{font-size:10px;margin-top:4px}
+.ok{color:#1D9E75}.ng{color:#E24B4A}.warn{color:#BA7517}
+.cat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
+.cat{padding:10px 6px;border-radius:10px;border:0.5px solid #e8e6e0;background:#fff;cursor:pointer;text-align:center;transition:all .15s}
+.cat:hover{background:#f5f4f0}
+.cat.on.inbound{border-color:#1D9E75;background:#E1F5EE}
+.cat.on.qc{border-color:#BA7517;background:#FAEEDA}
+.cat.on.material{border-color:#7F77DD;background:#EEEDFE}
+.cat.on.ship{border-color:#185FA5;background:#E6F1FB}
+.ico{width:24px;height:24px;border-radius:6px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+.cat.inbound .ico{background:#5DCAA5;color:#085041}
+.cat.qc .ico{background:#EF9F27;color:#633806}
+.cat.material .ico{background:#AFA9EC;color:#26215C}
+.cat.ship .ico{background:#85B7EB;color:#042C53}
+.cn{font-size:12px;font-weight:500;color:#1a1a1a}
+.csub{font-size:10px;color:#888;margin-top:2px}
+.panel{background:#fff;border:0.5px solid #e8e6e0;border-radius:12px;overflow:hidden;margin-bottom:8px}
+.ph{padding:11px 14px;border-bottom:0.5px solid #e8e6e0;display:flex;align-items:center;justify-content:space-between}
+.ph h3{font-size:13px;font-weight:500;color:#1a1a1a}
+.badge{font-size:10px;padding:2px 9px;border-radius:20px}
+.b-ok{background:#E1F5EE;color:#085041}
+.b-ng{background:#FCEBEB;color:#A32D2D}
+.b-info{background:#E6F1FB;color:#185FA5}
+.b-warn{background:#FAEEDA;color:#854F0B}
+.pb{padding:13px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.sub{background:#f9f8f5;border-radius:8px;padding:11px 12px}
+.slabel{font-size:10px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.sr{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.sr:last-child{margin-bottom:0}
+.sn{font-size:11px;color:#1a1a1a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbg{flex:2;height:4px;background:#e8e6e0;border-radius:2px}
+.bf{height:4px;border-radius:2px}
+.sv{font-size:10px;color:#888;min-width:56px;text-align:right;white-space:nowrap}
+.stat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #f0efe9;font-size:11px}
+.stat:last-child{border-bottom:none}
+.sk{color:#888}
+.sv2{font-weight:500;color:#1a1a1a}
+.chart-wrap{position:relative;width:100%}
+.iss{margin-top:8px;padding:9px 12px;border-left:2px solid #E24B4A;background:#fdf2f2;border-radius:0 8px 8px 0}
+.iss p{font-size:11px;color:#A32D2D;margin-bottom:3px}
+.iss p:last-child{margin-bottom:0}
+.wt{width:100%;border-collapse:collapse;font-size:11px}
+.wt th{text-align:left;padding:5px 8px;color:#888;font-weight:400;border-bottom:0.5px solid #f0efe9}
+.wt td{padding:6px 8px;border-bottom:0.5px solid #f0efe9;color:#1a1a1a}
+.wt tr:last-child td{border-bottom:none}
+.wt tr:hover td{background:#f9f8f5}
+.tr{text-align:right}
+.hidden{display:none}
+.footer{margin-top:20px;text-align:center;font-size:10px;color:#bbb}
+@media(max-width:600px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top">
+  <div><span class="brand">Sincerely SCM<small>물류 운영 현황</small></span></div>
+  <span class="live">WMS + Airtable 연동</span>
+</div>
+
+<div class="period-row">
+  <div class="pc on" onclick="setPeriod(this)">3월 (현재)</div>
+  <span class="sep2">|</span>
+  <div class="pc" onclick="setPeriod(this)">W10 (3/2~)</div>
+  <div class="pc" onclick="setPeriod(this)">W11 (3/9~)</div>
+  <div class="pc" onclick="setPeriod(this)">W12 (3/16~)</div>
+</div>
+
+<div class="kpi-row">
+  <div class="kc" id="kpi-compl"><div class="kl">입하완료율</div><div class="kv">97.2<span class="ku">%</span></div><div class="ks ok">목표 95% 달성</div></div>
+  <div class="kc" id="kpi-defect"><div class="kl">불량률</div><div class="kv ng">5.52<span class="ku">%</span></div><div class="ks ng">목표 1.0% 미달</div></div>
+  <div class="kc" id="kpi-acc"><div class="kl">재고정확도</div><div class="kv">100<span class="ku">%</span></div><div class="ks ok">목표 99.5% 달성</div></div>
+  <div class="kc" id="kpi-neg"><div class="kl">가용재고 음수</div><div class="kv ng">53<span class="ku">종</span></div><div class="ks ng">목표 0종 미달</div></div>
+</div>
+
+<div class="cat-row">
+  <div class="cat inbound on" onclick="setCat('inbound',this)">
+    <div class="ico">IN</div><div class="cn">입고</div><div class="csub" id="cat-inbound-sub">681건 · 218,868개</div>
+  </div>
+  <div class="cat qc" onclick="setCat('qc',this)">
+    <div class="ico">QC</div><div class="cn">검수</div><div class="csub" id="cat-qc-sub">불량률 5.52%</div>
+  </div>
+  <div class="cat material" onclick="setCat('material',this)">
+    <div class="ico">WH</div><div class="cn">자재</div><div class="csub" id="cat-mat-sub">음수재고 53종</div>
+  </div>
+  <div class="cat ship" onclick="setCat('ship',this)">
+    <div class="ico">OUT</div><div class="cn">출하</div><div class="csub">실시간 Airtable</div>
+  </div>
+</div>
+
+<!-- 입고 탭 -->
+<div id="tab-inbound">
+  <div class="two">
+    <div class="panel">
+      <div class="ph"><h3>입고 요약</h3><span class="badge b-ok">완료율 97.2%</span></div>
+      <div class="pb">
+        <div class="stat"><span class="sk">총 입고 건수</span><span class="sv2" id="inb-cnt">681건</span></div>
+        <div class="stat"><span class="sk">총 입고 수량</span><span class="sv2" id="inb-qty">218,868개</span></div>
+        <div class="stat"><span class="sk">입하완료</span><span class="sv2 ok" id="inb-comp">662건</span></div>
+        <div class="stat"><span class="sk">미확인</span><span class="sv2 warn" id="inb-unconf">19건</span></div>
+        <div class="stat"><span class="sk">총 재고 수량</span><span class="sv2" id="inb-stock">218,981개</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>입고 목적별</h3></div>
+      <div class="pb">
+        <div class="slabel">건수 기준</div>
+        <div class="sr"><span class="sn">생산산출</span><div class="bbg"><div class="bf" style="width:75%;background:#5DCAA5"></div></div><span class="sv">514건 · 127,894</span></div>
+        <div class="sr"><span class="sn">재고이동</span><div class="bbg"><div class="bf" style="width:15%;background:#85B7EB"></div></div><span class="sv">106건 · 23,439</span></div>
+        <div class="sr"><span class="sn">재고생산</span><div class="bbg"><div class="bf" style="width:6%;background:#AFA9EC"></div></div><span class="sv">40건 · 66,594</span></div>
+        <div class="sr"><span class="sn">생산샘플</span><div class="bbg"><div class="bf" style="width:2%;background:#EF9F27"></div></div><span class="sv">15건 · 33</span></div>
+        <div class="sr"><span class="sn">고객물품</span><div class="bbg"><div class="bf" style="width:1%;background:#F09595"></div></div><span class="sv">6건 · 908</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="ph"><h3>일별 입고 현황</h3><span class="badge b-info">3/2 ~ 3/19</span></div>
+    <div class="pb">
+      <div class="chart-wrap" style="height:160px"><canvas id="cInbound"></canvas></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="ph"><h3>주차별 집계</h3></div>
+    <div class="pb">
+      <table class="wt">
+        <thead><tr><th>주차</th><th class="tr">건수</th><th class="tr">입고 수량</th><th class="tr">건당 평균</th></tr></thead>
+        <tbody>
+          <tr><td>W10 (3/02~)</td><td class="tr">226건</td><td class="tr">71,273</td><td class="tr">315개</td></tr>
+          <tr><td>W11 (3/09~)</td><td class="tr">278건</td><td class="tr">84,161</td><td class="tr">303개</td></tr>
+          <tr><td>W12 (3/16~, 현재)</td><td class="tr">177건</td><td class="tr">63,434</td><td class="tr">358개</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 검수 탭 -->
+<div id="tab-qc" class="hidden">
+  <div class="two">
+    <div class="panel">
+      <div class="ph"><h3>검수 요약</h3><span class="badge b-ng">불량률 5.52%</span></div>
+      <div class="pb">
+        <div class="stat"><span class="sk">검수 건수</span><span class="sv2" id="qc-cnt">611건</span></div>
+        <div class="stat"><span class="sk">총 검수 수량</span><span class="sv2" id="qc-qty">2,373개</span></div>
+        <div class="stat"><span class="sk">총 불량 수량</span><span class="sv2 ng" id="qc-defect">131개</span></div>
+        <div class="stat"><span class="sk">불량률</span><span class="sv2 ng" id="qc-rate">5.52%</span></div>
+        <div class="stat"><span class="sk">목표 불량률</span><span class="sv2">1.0%</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>주차별 불량률 추이</h3></div>
+      <div class="pb">
+        <div class="slabel">결과 분포</div>
+        <div class="sr"><span class="sn">수량 정상</span><div class="bbg"><div class="bf" style="width:99%;background:#5DCAA5"></div></div><span class="sv">604건 (98.9%)</span></div>
+        <div class="sr"><span class="sn">이슈 후 해결</span><div class="bbg"><div class="bf" style="width:1%;background:#EF9F27"></div></div><span class="sv">7건 (1.1%)</span></div>
+        <div style="margin-top:12px">
+          <div class="slabel">주차별 불량률</div>
+          <div class="sr"><span class="sn">W10</span><div class="bbg"><div class="bf" style="width:30%;background:#EF9F27"></div></div><span class="sv warn">8.1%</span></div>
+          <div class="sr"><span class="sn">W11</span><div class="bbg"><div class="bf" style="width:100%;background:#E24B4A"></div></div><span class="sv ng">26.9%</span></div>
+          <div class="sr"><span class="sn">W12</span><div class="bbg"><div class="bf" style="width:3%;background:#5DCAA5"></div></div><span class="sv ok">0.9%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="ph"><h3>주차별 검수 · 불량 현황</h3><span class="badge b-ng">W11 집중 이상</span></div>
+    <div class="pb">
+      <div class="chart-wrap" style="height:160px"><canvas id="cQC"></canvas></div>
+      <table class="wt" style="margin-top:10px">
+        <thead><tr><th>주차</th><th class="tr">검수 수량</th><th class="tr">불량 수량</th><th class="tr">불량률</th></tr></thead>
+        <tbody>
+          <tr><td>W10</td><td class="tr">310</td><td class="tr">25</td><td class="tr warn">8.1%</td></tr>
+          <tr><td>W11</td><td class="tr">334</td><td class="tr">90</td><td class="tr ng">26.9%</td></tr>
+          <tr><td>W12 (현재)</td><td class="tr">1,729</td><td class="tr">16</td><td class="tr ok">0.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 자재 탭 -->
+<div id="tab-material" class="hidden">
+  <div class="two">
+    <div class="panel">
+      <div class="ph"><h3>자재 요약</h3><span class="badge b-ok">재고정확도 100%</span></div>
+      <div class="pb">
+        <div class="stat"><span class="sk">총 품목 수</span><span class="sv2" id="mat-total">500종</span></div>
+        <div class="stat"><span class="sk">실물 수량</span><span class="sv2" id="mat-phys">9,337</span></div>
+        <div class="stat"><span class="sk">전산 수량</span><span class="sv2">9,337</span></div>
+        <div class="stat"><span class="sk">불일치 품목</span><span class="sv2 ok">0종</span></div>
+        <div class="stat"><span class="sk">재고 정확도</span><span class="sv2 ok" id="mat-acc">100.0%</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>실사 현황</h3><span class="badge b-ng">체크율 0.2%</span></div>
+      <div class="pb">
+        <div class="stat"><span class="sk">가용재고 음수 품목</span><span class="sv2 ng" id="mat-neg">53종</span></div>
+        <div class="stat"><span class="sk">총 가용재고 합계</span><span class="sv2 ng">-3,135</span></div>
+        <div class="stat"><span class="sk">실사 체크 완료</span><span class="sv2 ng">1종</span></div>
+        <div class="stat"><span class="sk">체크 완료율</span><span class="sv2 ng" id="mat-check-rate">0.2%</span></div>
+        <div class="stat"><span class="sk">목표 정확도</span><span class="sv2">99.5%</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="ph"><h3>재고 현황 개요</h3></div>
+    <div class="pb">
+      <div class="chart-wrap" style="height:140px"><canvas id="cMat"></canvas></div>
+    </div>
+  </div>
+  <div class="iss">
+    <p>가용재고 음수 53종 — 출고 예약 과다. 품목별 리스트 확인 후 출고 예약 조정 필요</p>
+    <p>실사 체크 완료율 0.2% — 실사가 거의 진행되지 않음. 월별 실사 일정 수립 권고</p>
+  </div>
+</div>
+
+<!-- 출하 탭 -->
+<div id="tab-ship" class="hidden">
+  <div class="two">
+    <div class="panel">
+      <div class="ph"><h3>출하 요약</h3><span class="badge b-info">Airtable 실시간</span></div>
+      <div class="pb">
+        <div class="stat"><span class="sk">총 출하 건수</span><span class="sv2">61건</span></div>
+        <div class="stat"><span class="sk">총 CBM</span><span class="sv2">17.4 m³</span></div>
+        <div class="stat"><span class="sk">완료</span><span class="sv2 ok">28건</span></div>
+        <div class="stat"><span class="sk">대기</span><span class="sv2 warn">33건</span></div>
+        <div class="stat"><span class="sk">건당 평균 CBM</span><span class="sv2">0.29 m³</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>배송파트너별</h3></div>
+      <div class="pb">
+        <div class="sr"><span class="sn">(조희선)</span><div class="bbg"><div class="bf" style="width:100%;background:#85B7EB"></div></div><span class="sv">16건</span></div>
+        <div class="sr"><span class="sn">(이장훈)</span><div class="bbg"><div class="bf" style="width:87%;background:#85B7EB"></div></div><span class="sv">14건</span></div>
+        <div class="sr"><span class="sn">(로젠)</span><div class="bbg"><div class="bf" style="width:81%;background:#85B7EB"></div></div><span class="sv">13건</span></div>
+        <div class="sr"><span class="sn">(박종성)</span><div class="bbg"><div class="bf" style="width:62%;background:#85B7EB"></div></div><span class="sv">10건</span></div>
+        <div class="sr"><span class="sn">베스트원(퀵)</span><div class="bbg"><div class="bf" style="width:31%;background:#85B7EB"></div></div><span class="sv">5건</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="ph"><h3>일별 CBM (3/16~3/20)</h3></div>
+    <div class="pb">
+      <div class="chart-wrap" style="height:140px"><canvas id="cShip"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Sincerely SCM Dashboard &nbsp;·&nbsp; 데이터 기준: 2026-03-19</div>
+
+</div><!-- /container -->
+
+<script>
+let charts = {};
+let D = null; // 로드된 pages_data.json 데이터
+
+// ── Fallback 하드코딩 데이터 ──
+const FALLBACK = {
+  kpi: { completion_rate: 97.2, defect_rate: 5.52, accuracy: 100.0, neg_avail_cnt: 53 },
+  period: { month_label: '2026년 3월', week_label: 'W12 (3/16~)', end: '2026-03-19' },
+  inbound: {
+    summary: { total_cnt: 681, total_in_qty: 218868, total_stock_qty: 218981, completed: 662, unconfirmed: 19, completion_rate: 97.2 },
+    by_date: {
+      '2026-03-02':{cnt:1,in_qty:460},'2026-03-03':{cnt:78,in_qty:11755},'2026-03-04':{cnt:47,in_qty:28176},
+      '2026-03-05':{cnt:38,in_qty:15858},'2026-03-06':{cnt:62,in_qty:15024},'2026-03-09':{cnt:48,in_qty:16583},
+      '2026-03-10':{cnt:17,in_qty:4001},'2026-03-11':{cnt:89,in_qty:29367},'2026-03-12':{cnt:54,in_qty:13226},
+      '2026-03-13':{cnt:70,in_qty:20984},'2026-03-16':{cnt:68,in_qty:22675},'2026-03-17':{cnt:41,in_qty:18555},
+      '2026-03-18':{cnt:66,in_qty:21999},'2026-03-19':{cnt:2,in_qty:205}
+    },
+    by_week: { '2026-W10':{cnt:226,in_qty:71273},'2026-W11':{cnt:278,in_qty:84161},'2026-W12':{cnt:177,in_qty:63434} },
+    by_purpose: { '생산산출':{cnt:514,qty:127894},'재고이동':{cnt:106,qty:23439},'재고생산':{cnt:40,qty:66594},'생산샘플':{cnt:15,qty:33},'고객물품':{cnt:6,qty:908} }
+  },
+  qc: {
+    summary: { qc_cnt:611, total_qc_qty:2373, total_defect:131, defect_rate:5.52, target_met:false },
+    by_week: { 'W10':{qc_qty:310,defect:25,defect_rate:8.1},'W11':{qc_qty:334,defect:90,defect_rate:26.9},'W12':{qc_qty:1729,defect:16,defect_rate:0.9} },
+    result_dist: { '수량 정상':604,'이슈 발생 후 해결':7 }
+  },
+  material: { summary: { total:500, accuracy:100.0, mismatch:0, neg_avail:53, check_done:1, total_phys:9337, check_rate:0.2 } }
+};
+
+// ── 데이터 적용 ──
+function applyData(data) {
+  D = data;
+  const kpi = data.kpi;
+  const inb = data.inbound.summary;
+  const qcs = data.qc.summary;
+  const mat = data.material.summary;
+  const per = data.period;
+
+  // KPI 카드
+  setKpi('kpi-compl', kpi.completion_rate, '%', kpi.completion_rate >= 95, '목표 95% 달성', '목표 95% 미달');
+  setKpi('kpi-defect', kpi.defect_rate, '%', kpi.defect_rate <= 1.0, '목표 1.0% 달성', '목표 1.0% 미달', true);
+  setKpi('kpi-acc', kpi.accuracy, '%', kpi.accuracy >= 99.5, '목표 99.5% 달성', '목표 99.5% 미달');
+  setKpi('kpi-neg', kpi.neg_avail_cnt, '종', kpi.neg_avail_cnt === 0, '목표 0종 달성', '목표 0종 미달', true);
+
+  // 카테고리 서브텍스트
+  setText('cat-inbound-sub', `${inb.total_cnt.toLocaleString()}건 · ${inb.total_in_qty.toLocaleString()}개`);
+  setText('cat-qc-sub', `불량률 ${qcs.defect_rate}%`);
+  setText('cat-mat-sub', `음수재고 ${mat.neg_avail}종`);
+
+  // 입고 요약
+  setText('inb-cnt', inb.total_cnt.toLocaleString() + '건');
+  setText('inb-qty', inb.total_in_qty.toLocaleString() + '개');
+  setText('inb-comp', inb.completed.toLocaleString() + '건');
+  setText('inb-unconf', inb.unconfirmed + '건');
+  setText('inb-stock', inb.total_stock_qty.toLocaleString() + '개');
+
+  // 검수 요약
+  setText('qc-cnt', qcs.qc_cnt.toLocaleString() + '건');
+  setText('qc-qty', qcs.total_qc_qty.toLocaleString() + '개');
+  setText('qc-defect', qcs.total_defect.toLocaleString() + '개');
+  setText('qc-rate', qcs.defect_rate + '%');
+
+  // 자재 요약
+  setText('mat-total', mat.total.toLocaleString() + '종');
+  setText('mat-phys', mat.total_phys.toLocaleString());
+  setText('mat-neg', mat.neg_avail + '종');
+  setText('mat-check-rate', mat.check_rate + '%');
+  setText('mat-acc', mat.accuracy + '%');
+
+  // 푸터 날짜
+  const footer = document.querySelector('.footer');
+  if (footer && per.end) footer.textContent = `Sincerely SCM Dashboard · 데이터 기준: ${per.end}  (${data.generated_at || ''})`;
+}
+
+function setKpi(id, value, unit, isGood, goodMsg, badMsg, invertColor) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.querySelector('.kv').innerHTML = `${value}<span class="ku">${unit}</span>`;
+  const ks = el.querySelector('.ks');
+  ks.textContent = isGood ? goodMsg : badMsg;
+  ks.className = 'ks ' + (isGood ? 'ok' : 'ng');
+}
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+// ── pages_data.json 로드 ──
+async function loadData() {
+  try {
+    const res = await fetch('./pages_data.json?t=' + Date.now());
+    if (!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    applyData(data);
+    console.log('[dashboard] pages_data.json 로드 성공:', data.generated_at);
+  } catch (e) {
+    applyData(FALLBACK);
+    console.log('[dashboard] pages_data.json 없음, fallback 사용');
+  }
+}
+
+function setPeriod(el) {
+  document.querySelectorAll('.pc').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function setCat(cat, el) {
+  ['inbound','qc','material','ship'].forEach(t => {
+    document.getElementById('tab-' + t).classList.add('hidden');
+  });
+  document.querySelectorAll('.cat').forEach(c => c.classList.remove('on'));
+  document.getElementById('tab-' + cat).classList.remove('hidden');
+  el.classList.add('on');
+  setTimeout(() => drawChart(cat), 50);
+}
+
+function drawChart(cat) {
+  if (charts[cat]) { return; }
+  const data = D || FALLBACK;
+
+  if (cat === 'inbound') {
+    const ctx = document.getElementById('cInbound');
+    if (!ctx) return;
+    const byDate = data.inbound.by_date;
+    const labels  = Object.keys(byDate).map(d => d.slice(5));
+    const cntData = Object.values(byDate).map(v => v.cnt);
+    const qtyData = Object.values(byDate).map(v => Math.round(v.in_qty / 1000 * 100) / 100);
+    charts.inbound = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: '건수', yAxisID: 'y', data: cntData, backgroundColor: '#85B7EB', borderRadius: 3 },
+          { label: '수량(천)', yAxisID: 'y2', type: 'line', data: qtyData, borderColor: '#5DCAA5', backgroundColor: 'transparent', pointRadius: 2, pointBackgroundColor: '#5DCAA5', borderWidth: 1.5, tension: 0.3 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font: { size: 9 } }, grid: { display: false } },
+          y: { position: 'left', ticks: { font: { size: 9 } }, title: { display: true, text: '건수', font: { size: 9 } } },
+          y2: { position: 'right', ticks: { font: { size: 9 }, callback: v => v + 'k' }, grid: { display: false }, title: { display: true, text: '수량(천)', font: { size: 9 } } }
+        }
+      }
+    });
+  }
+
+  if (cat === 'qc') {
+    const ctx = document.getElementById('cQC');
+    if (!ctx) return;
+    const byWeek = data.qc.by_week;
+    const wkLabels = Object.keys(byWeek);
+    const qcData  = wkLabels.map(w => byWeek[w].qc_qty);
+    const dfData  = wkLabels.map(w => byWeek[w].defect);
+    const drData  = wkLabels.map(w => byWeek[w].defect_rate);
+    charts.qc = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: wkLabels,
+        datasets: [
+          { label: '검수수량', yAxisID: 'y', data: qcData, backgroundColor: '#B5D4F4', borderRadius: 3 },
+          { label: '불량수량', yAxisID: 'y', data: dfData, backgroundColor: '#F09595', borderRadius: 3 },
+          {
+            label: '불량률(%)', yAxisID: 'y2', type: 'line',
+            data: drData,
+            borderColor: '#E24B4A', backgroundColor: 'transparent',
+            pointRadius: 5, pointBackgroundColor: '#E24B4A', borderWidth: 2, tension: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+          y: { position: 'left', ticks: { font: { size: 9 } }, title: { display: true, text: '수량', font: { size: 9 } } },
+          y2: { position: 'right', min: 0, max: 35, ticks: { font: { size: 9 }, callback: v => v + '%' }, grid: { display: false }, title: { display: true, text: '불량률', font: { size: 9 } } }
+        }
+      }
+    });
+  }
+
+  if (cat === 'material') {
+    const ctx = document.getElementById('cMat');
+    if (!ctx) return;
+    const mat = data.material.summary;
+    const normal = mat.total - mat.neg_avail;
+    charts.material = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [`재고 정상 (${normal}종)`, `음수 가용재고 (${mat.neg_avail}종)`],
+        datasets: [{ data: [normal, mat.neg_avail], backgroundColor: ['#5DCAA5', '#F09595'], borderWidth: 0, hoverOffset: 4 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } }
+        }
+      }
+    });
+  }
+
+  if (cat === 'ship') {
+    const ctx = document.getElementById('cShip');
+    if (!ctx) return;
+    charts.ship = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['3/16(월)', '3/17(화)', '3/18(수)', '3/19(목)', '3/20(금)'],
+        datasets: [
+          {
+            label: 'CBM', yAxisID: 'y',
+            data: [14.77, 2.35, 0, 0, 0],
+            backgroundColor: ['#5DCAA5', '#85B7EB', '#D3D1C7', '#D3D1C7', '#D3D1C7'],
+            borderRadius: 3
+          },
+          {
+            label: '건수', yAxisID: 'y2', type: 'line',
+            data: [12, 14, 13, 14, 8],
+            borderColor: '#AFA9EC', backgroundColor: 'transparent',
+            pointRadius: 3, pointBackgroundColor: '#AFA9EC', borderWidth: 1.5, tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+          y: { position: 'left', ticks: { font: { size: 9 }, callback: v => v + 'm³' }, title: { display: true, text: 'CBM', font: { size: 9 } } },
+          y2: { position: 'right', ticks: { font: { size: 9 } }, grid: { display: false }, title: { display: true, text: '건수', font: { size: 9 } } }
+        }
+      }
+    });
+  }
+}
+
+async function init() {
+  await loadData();
+  drawChart('inbound');
+}
+init();
+</script>
+</body>
+</html>
