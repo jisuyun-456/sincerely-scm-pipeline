@@ -84,16 +84,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="container">
 
 <div class="top">
-  <div><span class="brand">Sincerely SCM<small>물류 운영 현황</small></span></div>
-  <span class="live">WMS + Airtable 연동</span>
+  <div><span class="brand">Sincerely SCM<small id="report-subtitle">물류 운영 현황</small></span></div>
+  <span class="live" id="mode-badge">WMS + Airtable 연동</span>
 </div>
 
 <div class="period-row">
-  <div class="pc on" onclick="setPeriod(this)">3월 (현재)</div>
-  <span class="sep2">|</span>
-  <div class="pc" onclick="setPeriod(this)">W10 (3/2~)</div>
-  <div class="pc" onclick="setPeriod(this)">W11 (3/9~)</div>
-  <div class="pc" onclick="setPeriod(this)">W12 (3/16~)</div>
+  <div class="pc on" id="period-label">데이터 로딩 중...</div>
+  <span class="sep2" id="period-sep" style="display:none">|</span>
+  <div id="period-range" style="font-size:11px;color:#888;align-self:center;padding:0 4px"></div>
+</div>
+
+<!-- 예측 모드 전용 패널 -->
+<div id="forecast-panel" class="hidden" style="margin-bottom:16px">
+  <div class="panel" style="border-left:3px solid #7F77DD">
+    <div class="ph" style="background:#EEEDFE">
+      <h3 style="color:#26215C">이번주 예측 요약</h3>
+      <span class="badge" style="background:#7F77DD;color:#fff" id="fc-risk-badge">리스크 분석 중</span>
+    </div>
+    <div class="pb">
+      <div class="two">
+        <div class="sub">
+          <div class="slabel">이번주 예상 입고</div>
+          <div style="font-size:22px;font-weight:600;color:#1a1a1a" id="fc-proj-cnt">—건</div>
+          <div style="font-size:11px;color:#888;margin-top:4px" id="fc-proj-qty">수량: —개</div>
+          <div style="font-size:10px;color:#aaa;margin-top:2px" id="fc-daily-avg">일평균: —건</div>
+        </div>
+        <div class="sub">
+          <div class="slabel">KPI 달성 가능성</div>
+          <div class="stat"><span class="sk">입하완료율 목표 95%</span><span class="sv2" id="fc-comp-ok">—</span></div>
+          <div class="stat"><span class="sk">불량률 목표 1.0%</span><span class="sv2" id="fc-defect-ok">—</span></div>
+          <div class="stat"><span class="sk">예측 기반 주차</span><span class="sv2" id="fc-based-on">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="kpi-row">
@@ -308,23 +332,46 @@ const FALLBACK = {
   material: { summary: { total:500, accuracy:100.0, mismatch:0, neg_avail:53, check_done:1, total_phys:9337, check_rate:0.2 } }
 };
 
+// ── 모드별 배지/라벨 설정 ──
+const MODE_CONFIG = {
+  weekly_review:   { badge: '주간 실적', badgeCls: 'b-info',  subtitle: '주간 리뷰' },
+  weekly_forecast: { badge: '주간 예측', badgeCls: 'b-warn',  subtitle: '주간 예측' },
+  monthly:         { badge: '월간 실적', badgeCls: 'b-ok',    subtitle: '월간 리뷰' },
+};
+
 // ── 데이터 적용 ──
 function applyData(data) {
   D = data;
-  const kpi = data.kpi;
-  const inb = data.inbound.summary;
-  const qcs = data.qc.summary;
-  const mat = data.material.summary;
-  const per = data.period;
+  const kpi  = data.kpi;
+  const inb  = data.inbound.summary;
+  const qcs  = data.qc.summary;
+  const mat  = data.material.summary;
+  const per  = data.period;
+  const mode = data.report_mode || 'weekly_review';
+  const cfg  = MODE_CONFIG[mode] || MODE_CONFIG.weekly_review;
 
-  // KPI 카드
+  // 모드 배지 & 부제목
+  const badge = document.getElementById('mode-badge');
+  if (badge) { badge.textContent = cfg.badge; badge.className = 'badge ' + cfg.badgeCls; }
+  setText('report-subtitle', cfg.subtitle);
+
+  // 기간 라벨
+  const periodEl = document.getElementById('period-label');
+  if (periodEl) periodEl.textContent = per.label || per.week_label || per.month_label || '';
+  const rangeEl = document.getElementById('period-range');
+  if (rangeEl && per.start && per.end) rangeEl.textContent = `${per.start} ~ ${per.end}`;
+  const sepEl = document.getElementById('period-sep');
+  if (sepEl) sepEl.style.display = '';
+
+  // KPI 카드 (예측 모드에서는 지난주 실적 기준으로 표시)
   setKpi('kpi-compl', kpi.completion_rate, '%', kpi.completion_rate >= 95, '목표 95% 달성', '목표 95% 미달');
   setKpi('kpi-defect', kpi.defect_rate, '%', kpi.defect_rate <= 1.0, '목표 1.0% 달성', '목표 1.0% 미달', true);
   setKpi('kpi-acc', kpi.accuracy, '%', kpi.accuracy >= 99.5, '목표 99.5% 달성', '목표 99.5% 미달');
   setKpi('kpi-neg', kpi.neg_avail_cnt, '종', kpi.neg_avail_cnt === 0, '목표 0종 달성', '목표 0종 미달', true);
 
   // 카테고리 서브텍스트
-  setText('cat-inbound-sub', `${inb.total_cnt.toLocaleString()}건 · ${inb.total_in_qty.toLocaleString()}개`);
+  const inbLabel = mode === 'weekly_forecast' ? `예상 ${data.forecast?.projected?.inbound_cnt?.toLocaleString()}건` : `${inb.total_cnt.toLocaleString()}건 · ${inb.total_in_qty.toLocaleString()}개`;
+  setText('cat-inbound-sub', inbLabel);
   setText('cat-qc-sub', `불량률 ${qcs.defect_rate}%`);
   setText('cat-mat-sub', `음수재고 ${mat.neg_avail}종`);
 
@@ -348,9 +395,35 @@ function applyData(data) {
   setText('mat-check-rate', mat.check_rate + '%');
   setText('mat-acc', mat.accuracy + '%');
 
-  // 푸터 날짜
+  // 예측 패널
+  const fcPanel = document.getElementById('forecast-panel');
+  if (mode === 'weekly_forecast' && data.forecast && fcPanel) {
+    fcPanel.classList.remove('hidden');
+    const fc  = data.forecast;
+    const prj = fc.projected;
+    const kpiA = fc.kpi_assessment;
+    const riskColor = { LOW: '#1D9E75', MEDIUM: '#BA7517', HIGH: '#E24B4A' };
+    const riskLabel = { LOW: '🟢 저위험', MEDIUM: '🟡 주의', HIGH: '🔴 고위험' };
+    const riskBadge = document.getElementById('fc-risk-badge');
+    if (riskBadge) {
+      riskBadge.textContent = riskLabel[kpiA.risk_level] || kpiA.risk_level;
+      riskBadge.style.background = riskColor[kpiA.risk_level] || '#888';
+    }
+    setText('fc-proj-cnt', prj.inbound_cnt.toLocaleString() + '건');
+    setText('fc-proj-qty', `수량: ${prj.inbound_qty.toLocaleString()}개`);
+    setText('fc-daily-avg', `일평균: ${fc.daily_avg_cnt}건 · ${fc.daily_avg_qty.toLocaleString()}개`);
+    const compEl = document.getElementById('fc-comp-ok');
+    if (compEl) { compEl.textContent = `${prj.completion_rate}% (${kpiA.completion.achievable ? '✅ 달성 가능' : '❌ 미달 예상'})`; compEl.className = 'sv2 ' + (kpiA.completion.achievable ? 'ok' : 'ng'); }
+    const defEl = document.getElementById('fc-defect-ok');
+    if (defEl) { defEl.textContent = `${prj.defect_rate}% (${kpiA.defect_rate.achievable ? '✅ 달성 가능' : '❌ 미달 예상'})`; defEl.className = 'sv2 ' + (kpiA.defect_rate.achievable ? 'ok' : 'ng'); }
+    setText('fc-based-on', per.label?.replace(' 예측', '') + ' 실적 기반' || '지난주 실적 기반');
+  } else if (fcPanel) {
+    fcPanel.classList.add('hidden');
+  }
+
+  // 푸터
   const footer = document.querySelector('.footer');
-  if (footer && per.end) footer.textContent = `Sincerely SCM Dashboard · 데이터 기준: ${per.end}  (${data.generated_at || ''})`;
+  if (footer) footer.textContent = `Sincerely SCM Dashboard · ${per.label || ''} · 생성: ${data.generated_at || ''}`;
 }
 
 function setKpi(id, value, unit, isGood, goodMsg, badMsg, invertColor) {

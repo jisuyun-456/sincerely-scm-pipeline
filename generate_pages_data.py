@@ -1,7 +1,8 @@
 """
 Sincerely WMS -- Generate pages_data.json for GitHub Pages dashboard
-REPORT_MODE=weekly  → 이번달 1일~오늘 (매주 월요일)
-REPORT_MODE=monthly → 지난달 전체 (매월 1일)
+REPORT_MODE=weekly_review  → 지난주 월~금 실적 (매주 월요일)
+REPORT_MODE=weekly_forecast → 지난주 기반 이번주 예측 (매주 월요일)
+REPORT_MODE=monthly         → 지난달 전체 실적 (매월 1일)
 """
 
 import os, sys, json, time
@@ -19,7 +20,7 @@ import requests
 # ── Env ──────────────────────────────────────────────────────────────────────
 AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY_WMS") or os.environ.get("AIRTABLE_PAT", "")
 WMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
-REPORT_MODE      = os.environ.get("REPORT_MODE", "weekly")  # weekly | monthly
+REPORT_MODE      = os.environ.get("REPORT_MODE", "weekly_review")  # weekly_review | weekly_forecast | monthly
 
 # ── Airtable Table / Field IDs ───────────────────────────────────────────────
 TABLE_MOVEMENT = "tblwq7Kj5Y9nVjlOw"
@@ -52,22 +53,37 @@ MATERIAL_FIELDS = [
 ]
 
 # ── 날짜 헬퍼 ────────────────────────────────────────────────────────────────
-def get_period_range():
+def last_week_range():
+    """지난주 월요일 ~ 금요일"""
     today = date.today()
-    if REPORT_MODE == "monthly":
-        # 지난달 1일 ~ 말일
-        first_this = today.replace(day=1)
-        last_prev  = first_this - timedelta(days=1)
-        return last_prev.replace(day=1), last_prev
-    else:
-        # 이번달 1일 ~ 오늘
-        return today.replace(day=1), today
+    last_monday = today - timedelta(days=today.weekday() + 7)
+    last_friday = last_monday + timedelta(days=4)
+    return last_monday, last_friday
 
-def current_week_label():
+def this_week_range():
+    """이번주 월요일 ~ 금요일"""
     today = date.today()
-    w = today.isocalendar()[1]
-    mon = today - timedelta(days=today.weekday())
-    return f"W{w:02d} ({mon.strftime('%m/%d')}~)"
+    this_monday = today - timedelta(days=today.weekday())
+    this_friday = this_monday + timedelta(days=4)
+    return this_monday, this_friday
+
+def prev_month_range():
+    """지난달 1일 ~ 말일"""
+    today = date.today()
+    first_this = today.replace(day=1)
+    last_prev  = first_this - timedelta(days=1)
+    return last_prev.replace(day=1), last_prev
+
+def get_period_range():
+    if REPORT_MODE == "monthly":
+        return prev_month_range()
+    else:
+        # weekly_review / weekly_forecast 모두 지난주 데이터 기반
+        return last_week_range()
+
+def week_label_for(monday: date) -> str:
+    w = monday.isocalendar()[1]
+    return f"W{w:02d} ({monday.strftime('%m/%d')}~)"
 
 # ── Airtable 조회 ────────────────────────────────────────────────────────────
 def _headers():
@@ -120,9 +136,6 @@ def fetch_material() -> list:
         if offset:
             params["offset"] = offset
         resp = _get_with_retry(url, field_params, params)
-        if resp.status_code == 429:
-            time.sleep(30)
-            continue
         resp.raise_for_status()
         data = resp.json()
         all_records.extend(data.get("records", []))
@@ -219,7 +232,6 @@ def analyze_qc(records):
             by_week[wk]["defect"] += defect
 
     defect_rate = round(total_defect / total_qc * 100, 2) if total_qc else 0.0
-    # by_week에 defect_rate 추가
     bw = {}
     for wk, v in sorted(by_week.items()):
         dr = round(v["defect"] / v["qc_qty"] * 100, 1) if v["qc_qty"] > 0 else 0.0
@@ -273,10 +285,55 @@ def analyze_material(records):
         }
     }
 
+def build_forecast(inbound, qc, material, this_week_start, this_week_end):
+    """지난주 실적 기반 이번주 예측"""
+    inb_s = inbound["summary"]
+    qc_s  = qc["summary"]
+    mat_s = material["summary"]
+
+    # 지난주 영업일 수 (데이터 있는 날 기준, 최소 1)
+    active_days = max(len(inbound["by_date"]), 1)
+
+    daily_avg_cnt = inb_s["total_cnt"] / active_days
+    daily_avg_qty = inb_s["total_in_qty"] / active_days
+
+    proj_cnt  = round(daily_avg_cnt * 5)
+    proj_qty  = round(daily_avg_qty * 5)
+    proj_comp = inb_s["completion_rate"]   # 같은 완료율 유지 가정
+    proj_def  = qc_s["defect_rate"]        # 같은 불량률 유지 가정
+
+    comp_ok   = proj_comp >= 95.0
+    defect_ok = proj_def  <= 1.0
+    risk = "LOW" if comp_ok and defect_ok else ("HIGH" if not comp_ok and not defect_ok else "MEDIUM")
+
+    return {
+        "this_week_start": this_week_start.isoformat(),
+        "this_week_end":   this_week_end.isoformat(),
+        "active_days_last_week": active_days,
+        "daily_avg_cnt":   round(daily_avg_cnt, 1),
+        "daily_avg_qty":   round(daily_avg_qty, 1),
+        "projected": {
+            "inbound_cnt":       proj_cnt,
+            "inbound_qty":       proj_qty,
+            "completion_rate":   proj_comp,
+            "defect_rate":       proj_def,
+            "neg_avail":         mat_s["neg_avail"],
+            "accuracy":          mat_s["accuracy"],
+        },
+        "kpi_assessment": {
+            "completion": {"target": 95.0,  "projected": proj_comp, "achievable": comp_ok},
+            "defect_rate":{"target":  1.0,  "projected": proj_def,  "achievable": defect_ok},
+            "risk_level": risk,
+        },
+    }
+
 # ── 메인 ─────────────────────────────────────────────────────────────────────
 def main():
     start, end = get_period_range()
-    week_label = current_week_label()
+    this_w_start, this_w_end = this_week_range()
+    last_w_label = week_label_for(start - timedelta(days=start.weekday()))
+    this_w_label = week_label_for(this_w_start)
+
     print(f"[generate] 모드: {REPORT_MODE} | 기간: {start} ~ {end}")
 
     print("[generate] movement 조회 중...")
@@ -295,13 +352,23 @@ def main():
     qc_s  = qc["summary"]
     mat_s = material["summary"]
 
+    # 모드별 period label
+    if REPORT_MODE == "monthly":
+        period_label = start.strftime("%Y년 %m월") + " (지난달)"
+        week_lbl = ""
+    elif REPORT_MODE == "weekly_forecast":
+        period_label = this_w_label + " 예측"
+        week_lbl = this_w_label
+    else:  # weekly_review
+        period_label = last_w_label + " 실적"
+        week_lbl = last_w_label
+
     pages_data = {
         "generated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "report_mode": REPORT_MODE,
         "period": {
-            "month":       start.strftime("%Y-%m"),
-            "month_label": start.strftime("%Y년 %m월") + (" (지난달)" if REPORT_MODE == "monthly" else ""),
-            "week_label":  week_label,
+            "label":       period_label,
+            "week_label":  week_lbl,
             "start":       start.isoformat(),
             "end":         end.isoformat(),
         },
@@ -316,14 +383,21 @@ def main():
         "material": material,
     }
 
+    # 예측 모드일 때만 forecast 섹션 추가
+    if REPORT_MODE == "weekly_forecast":
+        pages_data["forecast"] = build_forecast(inbound, qc, material, this_w_start, this_w_end)
+
     out_path = "pages_data.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(pages_data, f, ensure_ascii=False, indent=2, default=str)
     print(f"[generate] pages_data.json 생성 완료")
     print(f"  입하완료율: {inb_s['completion_rate']}%  불량률: {qc_s['defect_rate']}%  재고정확도: {mat_s['accuracy']}%")
+    if REPORT_MODE == "weekly_forecast":
+        fc = pages_data["forecast"]
+        print(f"  [예측] 이번주 입고 예상: {fc['projected']['inbound_cnt']}건 / 리스크: {fc['kpi_assessment']['risk_level']}")
 
 if __name__ == "__main__":
     if not AIRTABLE_API_KEY:
-        print("ERROR: AIRTABLE_API_KEY_WMS 없음", file=sys.stderr)
+        print("ERROR: AIRTABLE_PAT 환경변수 없음", file=sys.stderr)
         sys.exit(1)
     main()

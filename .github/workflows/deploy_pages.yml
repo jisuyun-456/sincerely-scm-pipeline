@@ -2,15 +2,18 @@ name: Deploy Dashboard to Pages
 
 on:
   schedule:
-    - cron: '0 0 * * 1'   # 매주 월요일 00:00 UTC = 09:00 KST (주간)
-    - cron: '0 0 1 * *'   # 매월 1일  00:00 UTC = 09:00 KST (월간)
+    - cron: '0 0 * * 1'   # 매주 월요일 00:00 UTC = 09:00 KST → weekly_review
+    - cron: '0 0 1 * *'   # 매월  1일  00:00 UTC = 09:00 KST → monthly
   workflow_dispatch:
     inputs:
       report_mode:
-        description: 'weekly=이번달, monthly=지난달 전체'
+        description: '리포트 모드 선택'
         type: choice
-        options: ['weekly', 'monthly']
-        default: 'weekly'
+        options:
+          - weekly_review    # 지난주 월~금 실적
+          - weekly_forecast  # 지난주 기반 이번주 예측
+          - monthly          # 지난달 전체 실적
+        default: weekly_review
 
 permissions:
   contents: read
@@ -40,7 +43,7 @@ jobs:
           elif [ "$(date +%d)" = "01" ]; then
             echo "mode=monthly" >> $GITHUB_OUTPUT
           else
-            echo "mode=weekly" >> $GITHUB_OUTPUT
+            echo "mode=weekly_review" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up Python
