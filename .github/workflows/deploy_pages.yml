@@ -10,13 +10,13 @@ on:
         description: '리포트 모드 선택'
         type: choice
         options:
-          - weekly_review    # 지난주 월~금 실적
-          - weekly_forecast  # 지난주 기반 이번주 예측
-          - monthly          # 지난달 전체 실적
+          - weekly_review
+          - weekly_forecast
+          - monthly
         default: weekly_review
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -61,11 +61,52 @@ jobs:
           REPORT_MODE: ${{ steps.mode.outputs.mode }}
         run: python generate_pages_data.py
 
+      - name: Save to history & build index
+        run: |
+          mkdir -p history
+          PERIOD_KEY=$(python -c "import json; print(json.load(open('pages_data.json'))['period_key'])")
+          cp pages_data.json "history/${PERIOD_KEY}.json"
+          echo "[history] saved: history/${PERIOD_KEY}.json"
+
+          python - <<'EOF'
+          import json, os, glob
+          files = sorted(glob.glob('history/*.json'), reverse=True)
+          periods = []
+          for f in files:
+              if os.path.basename(f) == 'index.json':
+                  continue
+              try:
+                  d = json.load(open(f, encoding='utf-8'))
+                  mode = d.get('report_mode', '')
+                  mode_label = {'weekly_review': '주간 실적', 'weekly_forecast': '주간 예측', 'monthly': '월간 실적'}.get(mode, mode)
+                  periods.append({
+                      'key':          d.get('period_key', ''),
+                      'label':        d.get('period', {}).get('label', ''),
+                      'mode':         mode,
+                      'mode_label':   mode_label,
+                      'generated_at': d.get('generated_at', ''),
+                      'file':         os.path.basename(f),
+                  })
+              except Exception as e:
+                  print(f"skip {f}: {e}")
+          json.dump({'periods': periods}, open('history/index.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+          print(f"[history] index.json: {len(periods)}개 기간")
+          EOF
+
+      - name: Commit history to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add history/
+          git diff --staged --quiet || git commit -m "chore: update history [skip ci]"
+          git push
+
       - name: Prepare site
         run: |
-          mkdir -p site
+          mkdir -p site/history
           cp dashboard.html site/index.html
           cp pages_data.json site/pages_data.json
+          cp history/*.json site/history/
 
       - name: Configure Pages
         uses: actions/configure-pages@v4

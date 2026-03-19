@@ -88,10 +88,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <span class="live" id="mode-badge">WMS + Airtable 연동</span>
 </div>
 
-<div class="period-row">
+<div class="period-row" id="period-tabs">
   <div class="pc on" id="period-label">데이터 로딩 중...</div>
-  <span class="sep2" id="period-sep" style="display:none">|</span>
-  <div id="period-range" style="font-size:11px;color:#888;align-self:center;padding:0 4px"></div>
 </div>
 
 <!-- 예측 모드 전용 패널 -->
@@ -306,7 +304,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 let charts = {};
-let D = null; // 로드된 pages_data.json 데이터
+let D = null;
 
 // ── Fallback 하드코딩 데이터 ──
 const FALLBACK = {
@@ -440,6 +438,53 @@ function setText(id, text) {
   if (el) el.textContent = text;
 }
 
+// ── 히스토리 탭 빌드 ──
+async function loadHistory() {
+  try {
+    const res = await fetch('./history/index.json?t=' + Date.now());
+    if (!res.ok) return;
+    const idx = await res.json();
+    const tabs = document.getElementById('period-tabs');
+    if (!tabs || !idx.periods?.length) return;
+
+    // 최신순 정렬 (이미 정렬돼있지만 보장)
+    const periods = idx.periods.slice(0, 12); // 최대 12개 표시
+
+    tabs.innerHTML = '';
+    periods.forEach((p, i) => {
+      if (i > 0 && i % 4 === 0) {
+        const sep = document.createElement('span');
+        sep.className = 'sep2'; sep.textContent = '|';
+        tabs.appendChild(sep);
+      }
+      const btn = document.createElement('div');
+      btn.className = 'pc' + (i === 0 ? ' on' : '');
+      btn.textContent = p.label;
+      btn.title = `${p.mode_label} · ${p.generated_at}`;
+      btn.onclick = () => loadPeriod(p.file, btn);
+      tabs.appendChild(btn);
+    });
+  } catch (e) {
+    console.log('[dashboard] history/index.json 없음');
+  }
+}
+
+async function loadPeriod(filename, btnEl) {
+  document.querySelectorAll('.pc').forEach(b => b.classList.remove('on'));
+  if (btnEl) btnEl.classList.add('on');
+  // 차트 초기화
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+  try {
+    const res = await fetch('./history/' + filename + '?t=' + Date.now());
+    if (!res.ok) throw new Error();
+    applyData(await res.json());
+    drawChart('inbound');
+  } catch (e) {
+    console.log('[dashboard] history 로드 실패:', filename);
+  }
+}
+
 // ── pages_data.json 로드 ──
 async function loadData() {
   try {
@@ -454,10 +499,7 @@ async function loadData() {
   }
 }
 
-function setPeriod(el) {
-  document.querySelectorAll('.pc').forEach(p => p.classList.remove('on'));
-  el.classList.add('on');
-}
+function setPeriod(el) { /* 동적 탭으로 대체됨 */ }
 
 function setCat(cat, el) {
   ['inbound','qc','material','ship'].forEach(t => {
@@ -594,6 +636,7 @@ function drawChart(cat) {
 async function init() {
   await loadData();
   drawChart('inbound');
+  await loadHistory(); // 탭은 데이터 로드 후 빌드
 }
 init();
 </script>

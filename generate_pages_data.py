@@ -352,20 +352,24 @@ def main():
     qc_s  = qc["summary"]
     mat_s = material["summary"]
 
-    # 모드별 period label
+    # 모드별 period label & period_key (히스토리 파일명용)
     if REPORT_MODE == "monthly":
         period_label = start.strftime("%Y년 %m월") + " (지난달)"
+        period_key   = start.strftime("%Y-%m") + "_monthly"
         week_lbl = ""
     elif REPORT_MODE == "weekly_forecast":
         period_label = this_w_label + " 예측"
+        period_key   = this_w_start.strftime("%Y-W%V") + "_forecast"
         week_lbl = this_w_label
     else:  # weekly_review
         period_label = last_w_label + " 실적"
+        period_key   = start.strftime("%Y-W%V") + "_review"
         week_lbl = last_w_label
 
     pages_data = {
         "generated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
-        "report_mode": REPORT_MODE,
+        "report_mode":  REPORT_MODE,
+        "period_key":   period_key,
         "period": {
             "label":       period_label,
             "week_label":  week_lbl,
@@ -390,7 +394,7 @@ def main():
     out_path = "pages_data.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(pages_data, f, ensure_ascii=False, indent=2, default=str)
-    print(f"[generate] pages_data.json 생성 완료")
+    print(f"[generate] pages_data.json 생성 완료 (period_key: {period_key})")
     print(f"  입하완료율: {inb_s['completion_rate']}%  불량률: {qc_s['defect_rate']}%  재고정확도: {mat_s['accuracy']}%")
     if REPORT_MODE == "weekly_forecast":
         fc = pages_data["forecast"]
