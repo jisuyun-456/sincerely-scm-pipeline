@@ -73,6 +73,20 @@ def current_week_label():
 def _headers():
     return {"Authorization": f"Bearer {AIRTABLE_API_KEY}", "Content-Type": "application/json"}
 
+def _get_with_retry(url, field_params, params, max_retry=3):
+    for attempt in range(max_retry):
+        try:
+            resp = requests.get(f"{url}?{field_params}", headers=_headers(), params=params, timeout=60)
+            if resp.status_code == 429:
+                time.sleep(30)
+                continue
+            return resp
+        except requests.exceptions.ReadTimeout:
+            wait = 10 * (attempt + 1)
+            print(f"[generate] timeout, {wait}초 후 재시도 ({attempt+1}/{max_retry})")
+            time.sleep(wait)
+    raise RuntimeError("Airtable API 요청 최대 재시도 초과")
+
 def fetch_movement(start: date, end: date) -> list:
     url = f"https://api.airtable.com/v0/{WMS_BASE_ID}/{TABLE_MOVEMENT}"
     formula = (
@@ -87,10 +101,7 @@ def fetch_movement(start: date, end: date) -> list:
         params = {"filterByFormula": formula, "pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = requests.get(f"{url}?{field_params}", headers=_headers(), params=params, timeout=30)
-        if resp.status_code == 429:
-            time.sleep(30)
-            continue
+        resp = _get_with_retry(url, field_params, params)
         resp.raise_for_status()
         data = resp.json()
         all_records.extend(data.get("records", []))
@@ -108,7 +119,7 @@ def fetch_material() -> list:
         params = {"pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = requests.get(f"{url}?{field_params}", headers=_headers(), params=params, timeout=30)
+        resp = _get_with_retry(url, field_params, params)
         if resp.status_code == 429:
             time.sleep(30)
             continue
