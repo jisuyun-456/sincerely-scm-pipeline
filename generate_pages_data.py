@@ -237,7 +237,7 @@ def fetch_box_cbm_live() -> dict:
         time.sleep(0.22)
     live = {}
     for rec in all_records:
-        c = rec.get("cellValuesByFieldId", {})
+        c = rec.get("cellValuesByFieldId") or rec.get("fields", {})
         for key in (c.get(TF_BOX_CODE), c.get(TF_BOX_NAME)):
             if key:
                 live[str(key)] = c.get(TF_BOX_CBM) or 0
@@ -303,7 +303,7 @@ def analyze_shipment(records: list, live_cbm: dict) -> dict:
     total_cnt = completed = pending = 0
 
     for rec in records:
-        c = rec.get("cellValuesByFieldId", {})
+        c = rec.get("cellValuesByFieldId") or rec.get("fields", {})
         if not c.get(TF_DATE):
             continue
         total_cnt += 1
@@ -389,7 +389,7 @@ def analyze_inbound(records):
     by_purpose = defaultdict(lambda: {"cnt": 0, "qty": 0})
 
     for r in records:
-        c = r.get("cellValuesByFieldId", {})
+        c = r.get("cellValuesByFieldId") or r.get("fields", {})
         in_qty    = c.get(F_IN_QTY) or 0
         stock_qty = c.get(F_STOCK_QTY) or 0
         date_val  = c.get(F_IN_DATE, "")
@@ -434,15 +434,15 @@ def analyze_inbound(records):
 def analyze_qc(records):
     qc_recs = [
         r for r in records
-        if (r.get("cellValuesByFieldId", {}).get(F_QC_QTY) or 0) > 0
-        or r.get("cellValuesByFieldId", {}).get(F_QC_RES)
+        if (r.get("cellValuesByFieldId") or r.get("fields", {}).get(F_QC_QTY) or 0) > 0
+        or r.get("cellValuesByFieldId") or r.get("fields", {}).get(F_QC_RES)
     ]
     total_qc = total_defect = 0
     result_dist = defaultdict(int)
     by_week = defaultdict(lambda: {"qc_qty": 0, "defect": 0})
 
     for r in qc_recs:
-        c = r.get("cellValuesByFieldId", {})
+        c = r.get("cellValuesByFieldId") or r.get("fields", {})
         qc_qty   = c.get(F_QC_QTY) or 0
         defect   = (c.get(F_DEFECT_S) or 0) + (c.get(F_DEFECT_F) or 0)
         res      = _sel(c.get(F_QC_RES, {}))
@@ -480,13 +480,13 @@ def analyze_qc(records):
     }
 
 def analyze_material(records):
-    has_stock = [r for r in records if (r.get("cellValuesByFieldId", {}).get(F_MAT_PHYS) or 0) > 0]
+    has_stock = [r for r in records if (r.get("cellValuesByFieldId") or r.get("fields", {}).get(F_MAT_PHYS) or 0) > 0]
     total = len(has_stock)
     match = neg_avail = check_done = 0
     total_phys = total_avail = 0
 
     for r in has_stock:
-        c = r.get("cellValuesByFieldId", {})
+        c = r.get("cellValuesByFieldId") or r.get("fields", {})
         phys  = c.get(F_MAT_PHYS) or 0
         sys_  = c.get(F_MAT_SYS) or 0
         avail = c.get(F_MAT_AVAIL) or 0
