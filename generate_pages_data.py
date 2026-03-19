@@ -20,7 +20,7 @@ import requests
 # ── Env ──────────────────────────────────────────────────────────────────────
 AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY_WMS") or os.environ.get("AIRTABLE_PAT", "")
 WMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
-TMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_TMS_ID", "app4x70a8mOrIKsMf")
+TMS_BASE_ID      = os.environ.get("AIRTABLE_BASE_TMS_ID") or "app4x70a8mOrIKsMf"
 REPORT_MODE      = os.environ.get("REPORT_MODE", "weekly_review")  # weekly_review | weekly_forecast | monthly
 
 # ── Airtable Table / Field IDs ───────────────────────────────────────────────
