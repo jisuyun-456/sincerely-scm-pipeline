@@ -617,7 +617,9 @@ def main():
     print("[generate] TMS 출하 조회 중...")
     try:
         live_cbm     = fetch_box_cbm_live()
-        ship_records = fetch_shipments_tms(start, end)
+        tms_start = date.today()
+        tms_end   = date.today() + timedelta(days=90)
+        ship_records = fetch_shipments_tms(tms_start, tms_end)
         print(f"[generate] TMS 출하: {len(ship_records)}건")
         shipment = analyze_shipment(ship_records, live_cbm)
     except Exception as e:
