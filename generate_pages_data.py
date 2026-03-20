@@ -126,7 +126,7 @@ def fetch_movement(start: date, end: date) -> list:
         params = {"filterByFormula": formula, "pageSize": "100", "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
-        resp = _get_with_retry(url, field_params, params, headers=_tms_headers())
+        resp = _get_with_retry(url, field_params, params)
         resp.raise_for_status()
         data = resp.json()
         all_records.extend(data.get("records", []))
