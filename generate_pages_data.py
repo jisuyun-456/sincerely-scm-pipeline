@@ -405,12 +405,13 @@ def analyze_shipment(records: list, live_cbm: dict) -> dict:
         box_qty = str(box_qty).strip()
 
         cbm_val = 0.0
-        if total_cbm_field and total_cbm_field > 0:
-            cbm_val = total_cbm_field
-        elif box_qty and _BOX_RE.search(box_qty):
-            cbm_val, btype_counts = _parse_box_cbm(box_qty, live_cbm)
+        if box_qty and _BOX_RE.search(box_qty):
+            parsed_cbm, btype_counts = _parse_box_cbm(box_qty, live_cbm)
+            cbm_val = total_cbm_field if (total_cbm_field and total_cbm_field > 0) else parsed_cbm
             for bt, cnt in btype_counts.items():
                 box_type_all[bt] += cnt
+        elif total_cbm_field and total_cbm_field > 0:
+            cbm_val = total_cbm_field
         else:
             item_str = c.get(TF_ITEM) or c.get(TF_ITEM_DETAIL) or ""
             if item_str:
