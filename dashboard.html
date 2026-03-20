@@ -162,6 +162,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
   <div class="panel">
+    <div class="ph"><h3>미입하 발생 현황</h3><span class="badge b-ng" id="inb-notrecv-badge">—</span></div>
+    <div class="pb">
+      <div class="slabel">협력사별 건수</div>
+      <div id="inb-notrecv-list"></div>
+    </div>
+  </div>
+  <div class="panel">
     <div class="ph"><h3>일별 입고 현황</h3><span class="badge b-info" id="inb-date-range">—</span></div>
     <div class="pb">
       <div class="chart-wrap" style="height:160px"><canvas id="cInbound"></canvas></div>
@@ -401,6 +408,22 @@ function applyData(data) {
       `<div class="sr"><span class="sn">${name}</span><div class="bbg"><div class="bf" style="width:${Math.round(v.cnt/maxCnt*100)}%;background:${pColors[i]}"></div></div><span class="sv">${v.cnt.toLocaleString()}건 · ${v.qty.toLocaleString()}</span></div>`
     ).join('');
   }
+  const notRecvEl = document.getElementById('inb-notrecv-list');
+  const notRecvBadge = document.getElementById('inb-notrecv-badge');
+  if (notRecvEl && data.inbound.not_recv_by_partner) {
+    const entries = Object.entries(data.inbound.not_recv_by_partner);
+    const total = entries.reduce((s, [, v]) => s + v, 0);
+    if (notRecvBadge) notRecvBadge.textContent = `총 ${total}건`;
+    if (entries.length === 0) {
+      notRecvEl.innerHTML = '<div class="slabel">없음</div>';
+    } else {
+      const maxCnt = entries[0]?.[1] || 1;
+      notRecvEl.innerHTML = entries.map(([name, cnt]) =>
+        `<div class="sr"><span class="sn">${name}</span><div class="bbg"><div class="bf" style="width:${Math.round(cnt/maxCnt*100)}%;background:#F09595"></div></div><span class="sv">${cnt}건</span></div>`
+      ).join('');
+    }
+  }
+
   const inbWkBody = document.getElementById('inb-week-tbody');
   if (inbWkBody && data.inbound.by_week) {
     const wks = Object.entries(data.inbound.by_week).sort((a,b) => a[0] < b[0] ? -1 : 1);

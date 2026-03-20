@@ -38,8 +38,10 @@ F_DEFECT_S   = "fld3lQvblfrqTl4O8"
 F_DEFECT_F   = "fldsTXzxUeerw4qw2"
 F_QC_RES     = "fldKrjj58HnHKT4SJ"
 F_CANCEL     = "fldwgaM8OnKubM8oE"
-F_ITEM_NAME  = "fldws6Ohz68i3GBPR"   # 입고물품 (primary)
-F_ITEM_ALT   = "fldwZKCYZ4IFOigRp"   # 이동물품 (fallback)
+F_ITEM_NAME      = "fldws6Ohz68i3GBPR"   # 입고물품 (primary)
+F_ITEM_ALT       = "fldwZKCYZ4IFOigRp"   # 이동물품 (fallback)
+F_NOT_RECV_HIST  = "fldjZYoxIe1GI4DGa"   # 미입하 발생이력 (checkbox)
+F_SHIP_FROM      = "fldz7ZLrZw7inalHz"   # 출하장소 (협력사명)
 
 F_MAT_NAME   = "fld7Pfip5zbBTaTdR"
 F_MAT_PHYS   = "fld5XQQv2P9YJZP6n"
@@ -51,7 +53,7 @@ F_MAT_CHECK  = "flddQhs9cuA6G8xmq"
 MOVEMENT_FIELDS = [
     F_PURPOSE, F_IN_QTY, F_IN_DATE, F_IN_STATUS, F_STOCK_QTY,
     F_QC_QTY, F_DEFECT_S, F_DEFECT_F, F_QC_RES, F_CANCEL,
-    F_ITEM_NAME, F_ITEM_ALT,
+    F_ITEM_NAME, F_ITEM_ALT, F_NOT_RECV_HIST, F_SHIP_FROM,
 ]
 MATERIAL_FIELDS = [
     F_MAT_NAME, F_MAT_PHYS, F_MAT_SYS, F_MAT_AVAIL, F_MAT_LOC, F_MAT_CHECK
@@ -486,9 +488,10 @@ def _sel(val):
 def analyze_inbound(records):
     total_cnt = len(records)
     total_in_qty = total_stock_qty = completed = unconfirmed = 0
-    by_date    = defaultdict(lambda: {"cnt": 0, "in_qty": 0})
-    by_week    = defaultdict(lambda: {"cnt": 0, "in_qty": 0})
-    by_purpose = defaultdict(lambda: {"cnt": 0, "qty": 0})
+    by_date           = defaultdict(lambda: {"cnt": 0, "in_qty": 0})
+    by_week           = defaultdict(lambda: {"cnt": 0, "in_qty": 0})
+    by_purpose        = defaultdict(lambda: {"cnt": 0, "qty": 0})
+    not_recv_by_partner = defaultdict(int)
 
     for r in records:
         c = r.get("cellValuesByFieldId") or r.get("fields", {})
@@ -504,6 +507,10 @@ def analyze_inbound(records):
             completed += 1
         elif not stat:
             unconfirmed += 1
+
+        if c.get(F_NOT_RECV_HIST):
+            partner = c.get(F_SHIP_FROM) or "미상"
+            not_recv_by_partner[partner] += 1
 
         if date_val:
             by_date[date_val]["cnt"]    += 1
@@ -528,9 +535,10 @@ def analyze_inbound(records):
             "unconfirmed":     unconfirmed,
             "completion_rate": round(completed / total_cnt * 100, 1) if total_cnt else 0,
         },
-        "by_date":    dict(sorted(by_date.items())),
-        "by_week":    dict(sorted(by_week.items())),
-        "by_purpose": dict(sorted(by_purpose.items(), key=lambda x: -x[1]["cnt"])),
+        "by_date":              dict(sorted(by_date.items())),
+        "by_week":              dict(sorted(by_week.items())),
+        "by_purpose":           dict(sorted(by_purpose.items(), key=lambda x: -x[1]["cnt"])),
+        "not_recv_by_partner":  dict(sorted(not_recv_by_partner.items(), key=lambda x: -x[1])),
     }
 
 def analyze_qc(records):
