@@ -29,8 +29,8 @@ except ImportError:
     ALL_TABLES = []
 
 # ── 설정 ──
-AIRTABLE_TOKEN = os.getenv("AIRTABLE_PAT") or os.getenv("AIRTABLE_TOKEN") or ""
-AIRTABLE_BASE_ID = "appLui4ZR5HWcQRri"
+AIRTABLE_TOKEN = os.getenv("AIRTABLE_API_KEY_WMS") or os.getenv("AIRTABLE_PAT") or os.getenv("AIRTABLE_TOKEN") or ""
+AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_WMS_ID") or "appLui4ZR5HWcQRri"
 AIRTABLE_API_URL = "https://api.airtable.com/v0"
 
 SUPABASE_DB_URL = os.getenv("SUPABASE_DB_URL", "").strip().replace('"', '').replace("'", "")
@@ -214,7 +214,7 @@ def run_pipeline(snapshot_date: date, target_tables: list[str] = None, dry_run: 
 
     log.info(f"=== SCM 스냅샷 파이프라인 시작 ===")
 
-    current_token = AIRTABLE_TOKEN or os.getenv("AIRTABLE_PAT")
+    current_token = AIRTABLE_TOKEN or os.getenv("AIRTABLE_API_KEY_WMS") or os.getenv("AIRTABLE_PAT")
     extractor = AirtableExtractor(current_token, AIRTABLE_BASE_ID)
 
     loader = None
@@ -271,8 +271,8 @@ if __name__ == "__main__":
 
     snap_date = date.fromisoformat(args.date) if args.date else date.today()
 
-    if not (AIRTABLE_TOKEN or os.getenv("AIRTABLE_PAT")):
-        log.error("에러: AIRTABLE_PAT 환경 변수가 설정되지 않았습니다.")
+    if not (AIRTABLE_TOKEN or os.getenv("AIRTABLE_API_KEY_WMS") or os.getenv("AIRTABLE_PAT")):
+        log.error("에러: AIRTABLE_API_KEY_WMS 환경 변수가 설정되지 않았습니다.")
         sys.exit(1)
 
     run_pipeline(snap_date, args.table, args.dry_run)

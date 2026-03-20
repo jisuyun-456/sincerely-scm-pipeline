@@ -41,7 +41,8 @@ jobs:
 
       - name: Run Pipeline
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_API_KEY_WMS: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+          AIRTABLE_BASE_WMS_ID: ${{ secrets.AIRTABLE_BASE_WMS_ID }}
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           ARGS=""
