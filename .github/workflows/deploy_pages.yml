@@ -56,7 +56,7 @@ jobs:
 
       - name: Generate pages_data.json
         env:
-          AIRTABLE_API_KEY_WMS: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_API_KEY_WMS: ${{ secrets.AIRTABLE_API_KEY_WMS }}
           AIRTABLE_API_KEY_TMS: ${{ secrets.AIRTABLE_API_KEY_TMS }}
           AIRTABLE_BASE_WMS_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_BASE_TMS_ID: ${{ secrets.AIRTABLE_BASE_TMS_ID }}
