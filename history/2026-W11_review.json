@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-20T02:06:22",
+  "generated_at": "2026-03-20T02:29:58",
   "report_mode": "weekly_review",
   "period_key": "2026-W11_review",
   "period": {
@@ -72,6 +72,12 @@
         "cnt": 2,
         "qty": 225
       }
+    },
+    "not_recv_by_partner": {
+      "강천FNT": 1,
+      "(주)홍기씨앤디": 1,
+      "하이온": 1,
+      "주식회사 라이클": 1
     }
   },
   "qc": {
@@ -128,13 +134,13 @@
   },
   "material": {
     "summary": {
-      "total": 271,
+      "total": 270,
       "accuracy": 99.6,
       "mismatch": 1,
       "neg_avail": 2,
       "check_done": 3,
-      "total_phys": 79699,
-      "total_avail": 35369,
+      "total_phys": 79098,
+      "total_avail": 34418,
       "check_rate": 1.1
     }
   },
