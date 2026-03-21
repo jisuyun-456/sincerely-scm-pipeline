@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-20T02:29:58",
+  "generated_at": "2026-03-21T13:49:18",
   "report_mode": "weekly_review",
   "period_key": "2026-W11_review",
   "period": {
@@ -11,8 +11,8 @@
   "kpi": {
     "completion_rate": 100.0,
     "defect_rate": 11.85,
-    "accuracy": 99.6,
-    "neg_avail_cnt": 2
+    "accuracy": 98.4,
+    "neg_avail_cnt": 9
   },
   "inbound": {
     "summary": {
@@ -134,14 +134,14 @@
   },
   "material": {
     "summary": {
-      "total": 270,
-      "accuracy": 99.6,
-      "mismatch": 1,
-      "neg_avail": 2,
-      "check_done": 3,
-      "total_phys": 79098,
-      "total_avail": 34418,
-      "check_rate": 1.1
+      "total": 428,
+      "accuracy": 98.4,
+      "mismatch": 7,
+      "neg_avail": 9,
+      "check_done": 420,
+      "total_phys": 533495,
+      "total_avail": 479208,
+      "check_rate": 98.1
     }
   },
   "shipment": {
