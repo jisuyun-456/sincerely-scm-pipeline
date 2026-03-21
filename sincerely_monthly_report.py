@@ -1,24 +1,24 @@
 """
 Sincerely SCM 월간 출하 리포트
 ─────────────────────────────────────────────
-매월 1일 09:00 KST 슬랙 DM 자동 발송
+매월 1일 09:00 KST GitHub Actions 자동 실행
+결과는 GitHub Pages (JSON 아카이브)로 조회
 
 포함 지표:
   [CBM]     월 총 CBM / 주차별 CBM 추이
   [배차]    월 총 배차 건수 / 배송파트너별 배송 비율
   [손익]    월 물류매출 / 운송비용 / 물류 손익
   [품목]    월 출하 품목 Top 10
+  [기사님]  기사님별 월간 처리 CBM / 배송 거리 km
 
 환경변수:
   AIRTABLE_API_KEY_TMS   Airtable PAT
   AIRTABLE_BASE_TMS_ID   TMS base (app4x70a8mOrIKsMf)
-  SLACK_BOT_TOKEN        Bot Token (xoxb-...)
-  SLACK_DM_USER_ID       수신자 Slack User ID
+  KAKAO_REST_API_KEY     카카오 REST API 키 (라우팅 km 계산)
 """
 
 import os
 import json
-import math
 import re
 import time
 import random
@@ -26,17 +26,15 @@ from datetime import datetime, timedelta, date
 from collections import defaultdict
 
 import pyairtable
-import requests
 
 # ── 환경변수 ──────────────────────────────────────────
-API_KEY     = os.environ["AIRTABLE_API_KEY_TMS"]
-BASE_ID     = os.environ.get("AIRTABLE_BASE_TMS_ID", "app4x70a8mOrIKsMf")
-SLACK_TOKEN = os.environ["SLACK_BOT_TOKEN"]
-DM_USER_ID  = os.environ["SLACK_DM_USER_ID"]
+API_KEY = os.environ["AIRTABLE_API_KEY_TMS"]
+BASE_ID = os.environ.get("AIRTABLE_BASE_TMS_ID", "app4x70a8mOrIKsMf")
 
 # ── Table ID ──────────────────────────────────────────
 TABLE_SHIPMENT = "tbllg1JoHclGYer7m"
 TABLE_BOX      = "tbltwH7bHk41rTzhM"
+TABLE_PRODUCT  = "tblBNh6oGDlTKGrdQ"
 
 # ── Field ID ──────────────────────────────────────────
 F_DATE       = "fldQvmEwwzvQW95h9"   # 출하확정일
@@ -49,11 +47,6 @@ F_REVENUE    = "fldOFuvqBT0iXItcT"   # 물류매출
 F_COST       = "fldRT95SC88KSBATT"   # 운송비용
 F_PARTNER    = "fldHZ7yMT3KEu2gSj"   # 배송파트너
 
-# Box 테이블
-F_BOX_CODE = "fldELrd8bBVjQCHnp"
-F_BOX_NAME = "fldgvlGjLb4FTlQ0v"
-F_BOX_CBM  = "fldjFaXiYzeJ2Zt7M"
-
 # ── 박스 CBM fallback ─────────────────────────────────
 BOX_CBM = {
     "극소": 0.0098, "S280": 0.0098,
@@ -65,7 +58,6 @@ BOX_CBM = {
 }
 
 # ── 파트너 그룹 정규화 ────────────────────────────────
-# Airtable 파트너명 → 리포트 표시명
 PARTNER_GROUP = {
     "신시어리 (이장훈)":  "신시어리 기사님 (이장훈)",
     "신시어리 (박종성)":  "신시어리 기사님 (박종성)",
@@ -73,49 +65,14 @@ PARTNER_GROUP = {
     "신시어리 (로젠)":    "로젠 택배",
     "고객":               "고객 직접수령",
 }
-# 매핑 안 된 경우 그대로 사용
 
-# ── 품목 → (박스규격, 박스당수량, CBM/박스) ───────────
-PRODUCT_CBM = {
-    "스펙트럼컬러펜":           ("중",   300, 0.0201),
-    "올블랙펜":                ("중",   130, 0.0201),
-    "슈가케인펜":               ("중",   100, 0.0201),
-    "플레인USB":                ("중",   100, 0.0201),
-    "브랜디드피규어키링":        ("중",   100, 0.0201),
-    "홈카페코스터":              ("중",   275, 0.0201),
-    "밸류메모큐브(M)":           ("중",    33, 0.0201),
-    "레더스킨다이어리(표준)":    ("중대",  50, 0.0492),
-    "슬로건다이어리(표준)":      ("중대",  50, 0.0492),
-    "트리플컬러펜∣JETSTREAM":   ("중대", 413, 0.0492),
-    "라이트샤오미펜":            ("중대", 333, 0.0492),
-    "커넥트6in1케이블키트":      ("중대", 150, 0.0492),
-    "홀리데이네임택":            ("중대", 200, 0.0492),
-    "리멤버타투스티커":           ("중대", 500, 0.0492),
-    "버티컬무선충전패드":         ("중대", 100, 0.0492),
-    "밸류무선충전마우스패드":     ("중대",  20, 0.0492),
-    "브랜드스트랩단우산":         ("중대",  50, 0.0492),
-    "유니크디퓨저":              ("중대",  40, 0.0492),
-    "오토매틱와인오프너":         ("중대",  19, 0.0492),
-    "리마커블칫솔살균기":         ("중대", 100, 0.0492),
-    "킵세이프마그넷배터리Max":    ("중대",  50, 0.0492),
-    "킵세이프마그넷배터리Slim":   ("중대",  75, 0.0492),
-    "더블업트래블파우치(Large)":  ("대",    50, 0.1066),
-    "로고스트랩파우치(단품)":     ("대",   100, 0.1066),
-    "포시즌블랭킷(무릎담요)":     ("대",    50, 0.1066),
-    "미니멀스텐머그":             ("대",    43, 0.1066),
-    "미스트워터보틀":             ("대",    47, 0.1066),
-    "미르(MiiR)텀블러":          ("대",    50, 0.1066),
-    "메시지캐리어파우치":         ("대",    49, 0.1066),
-    "올웨이즈양우산":             ("중대",  80, 0.0492),
-    "스탠리데일리텀블러":         ("대",    30, 0.1066),
-    "핸디링미니선풍기":           ("중대", 100, 0.0492),
-    "스타트씨드키트":             ("중대",  50, 0.0492),
-    "톤앤톤쿨러백(단품)":         ("특대",  25, 0.1663),
-    "브랜디드타월":               ("대",    50, 0.1066),
-    "Solid스탠다드G형박스(L사이즈)키트": ("대", 18, 0.1066),
-    "Solid스탠다드G형박스(M사이즈)키트": ("대", 20, 0.1066),
-    "브릭메모&캘린더스탠드2.0":   ("중대",  50, 0.0492),
+# ── 기사님 차량 CBM 용량 ───────────────────────────────
+VEHICLE_CBM = {
+    "신시어리 (이장훈)": 5.4,   # 스타리아 카고
+    "신시어리 (조희선)": 7.6,   # 1톤 트럭
+    "신시어리 (박종성)": 9.5,   # 1.4톤 트럭
 }
+A1_WAREHOUSE_CBM = 44.4   # 에이원센터 총 창고 CBM
 
 _BOX_RE = re.compile(
     r"(극소|소|중대|중|대|특대|S280|S360|M350|M480|L510|L560)\s*(\d+)"
@@ -139,7 +96,6 @@ def month_label(d: date) -> str:
 
 
 def week_number_of_month(d: date) -> int:
-    """해당 날짜가 월의 몇째주인지"""
     return (d.day - 1) // 7 + 1
 
 
@@ -170,6 +126,33 @@ def fetch_box_cbm_live() -> dict:
     return live
 
 
+def fetch_product_cbm() -> list[tuple[str, float]]:
+    api   = pyairtable.Api(API_KEY)
+    table = api.table(BASE_ID, TABLE_PRODUCT)
+    result = []
+    for rec in table.all():
+        f    = rec["fields"]
+        name = (
+            f.get("fldx01uKEnCd0J0nP") or
+            f.get("Name") or
+            f.get("품목명") or ""
+        ).strip()
+        cbm = (
+            f.get("fldN1JrkxIr5m6pXz") or
+            f.get("fld6W5ImO7UeBVMPI") or
+            f.get("박스당 CBM") or None
+        )
+        if name and cbm:
+            try:
+                norm = re.sub(r"\s+", "", name)
+                result.append((norm, float(cbm)))
+            except (ValueError, TypeError):
+                pass
+    result.sort(key=lambda x: -len(x[0]))
+    print(f"  Product CBM 조회 완료: {len(result)}개 품목")
+    return result
+
+
 # ═══════════════════════════════════════════════════════
 # 3. CBM 파싱
 # ═══════════════════════════════════════════════════════
@@ -182,24 +165,26 @@ def parse_box_cbm(box_str: str, live: dict) -> float:
     return round(total, 4)
 
 
-def estimate_cbm_from_items(item_str: str) -> float:
+def match_cbm_from_product(item_str: str, product_cbm: list[tuple[str, float]]) -> float:
     total = 0.0
+    matched_any = False
     for line in item_str.strip().splitlines():
         line = line.strip()
         if not line:
             continue
-        for pname, (_, qpb, cpb) in sorted(
-            PRODUCT_CBM.items(), key=lambda x: -len(x[0])
-        ):
-            if pname in line:
-                nums = re.findall(r"\d+", line.replace(pname, ""))
-                if nums:
-                    total += math.ceil(int(nums[0]) / qpb) * cpb
+        norm_line = re.sub(r"\s+", "", line)
+        nums = re.findall(r"\d+", norm_line)
+        for prod_norm, cbm_per_box in product_cbm:
+            if prod_norm in norm_line:
+                qty = int(nums[-1]) if nums else 1
+                total += cbm_per_box * qty
+                matched_any = True
                 break
-    return round(total, 4)
+    return round(total, 4) if matched_any else 0.0
 
 
-def get_cbm(f: dict, live: dict) -> float:
+def get_cbm(f: dict, live: dict,
+            product_cbm: list[tuple[str, float]] | None = None) -> float:
     total_cbm_f = f.get("Total_CBM")
     if total_cbm_f and total_cbm_f > 0:
         return total_cbm_f
@@ -209,33 +194,33 @@ def get_cbm(f: dict, live: dict) -> float:
         box_qty = ", ".join(str(x) for x in box_qty)
     box_qty = box_qty.strip()
 
+    item_str = f.get("최종 출하 품목") or f.get("최종 출고 품목 및 수량") or ""
+
+    if item_str.strip() and product_cbm:
+        cv = match_cbm_from_product(item_str, product_cbm)
+        if cv > 0:
+            return cv
+
     if box_qty and _BOX_RE.search(box_qty):
         return parse_box_cbm(box_qty, live)
 
-    item_str = f.get("최종 출하 품목") or ""
-    if item_str.strip():
-        return estimate_cbm_from_items(item_str)
     return 0.0
 
 
 # ═══════════════════════════════════════════════════════
 # 4. 월간 분석
 # ═══════════════════════════════════════════════════════
-def analyze_month(records: list[dict], live_cbm: dict) -> dict:
+def analyze_month(records: list[dict], live_cbm: dict,
+                  product_cbm: list[tuple[str, float]] | None = None) -> dict:
     total_cbm   = 0.0
     total_count = 0
     total_rev   = 0.0
     total_cost  = 0.0
 
-    # 주차별 집계 {1: cbm, 2: cbm, ...}
     weekly_cbm: dict[int, float]  = defaultdict(float)
     weekly_cnt: dict[int, int]    = defaultdict(int)
-
-    # 파트너별 집계
     partner_cnt: dict[str, int]   = defaultdict(int)
     partner_cbm: dict[str, float] = defaultdict(float)
-
-    # 품목별 집계
     item_agg: dict = defaultdict(lambda: {"qty": 0, "cbm": 0.0})
 
     for rec in records:
@@ -244,9 +229,9 @@ def analyze_month(records: list[dict], live_cbm: dict) -> dict:
         if not d_s:
             continue
 
-        ship_date   = date.fromisoformat(d_s)
-        week_no     = week_number_of_month(ship_date)
-        cbm_val     = get_cbm(f, live_cbm)
+        ship_date = date.fromisoformat(d_s)
+        week_no   = week_number_of_month(ship_date)
+        cbm_val   = get_cbm(f, live_cbm, product_cbm)
 
         total_count += 1
         total_cbm   += cbm_val
@@ -256,10 +241,9 @@ def analyze_month(records: list[dict], live_cbm: dict) -> dict:
         weekly_cbm[week_no] += cbm_val
         weekly_cnt[week_no] += 1
 
-        # 배송파트너 파싱
+        # 배송파트너 파싱 (lookup 필드)
         partner_field = f.get("배송파트너 (from 배송파트너)")
         if partner_field:
-            # lookup 필드 구조 처리
             if isinstance(partner_field, dict):
                 names = []
                 for vals in partner_field.get("valuesByLinkedRecordId", {}).values():
@@ -285,27 +269,33 @@ def analyze_month(records: list[dict], live_cbm: dict) -> dict:
             if iname and nums:
                 qty = int(nums[-1])
                 item_agg[iname]["qty"] += qty
-                for pname, (_, qpb, cpb) in sorted(
-                    PRODUCT_CBM.items(), key=lambda x: -len(x[0])
-                ):
-                    if pname in iname:
-                        item_agg[iname]["cbm"] += round(math.ceil(qty / qpb) * cpb, 4)
-                        break
+                if product_cbm:
+                    norm_line = re.sub(r"\s+", "", iname)
+                    for prod_norm, cpb in product_cbm:
+                        if prod_norm in norm_line:
+                            item_agg[iname]["cbm"] += round(cpb * qty, 4)
+                            break
 
     total_cbm  = round(total_cbm, 2)
     total_rev  = round(total_rev, 0)
     total_cost = round(total_cost, 0)
 
-    # 파트너별 비율
-    partner_pct = {}
-    for p, cnt in partner_cnt.items():
-        partner_pct[p] = round(cnt / total_count * 100, 1) if total_count else 0
+    partner_pct = {
+        p: round(cnt / total_count * 100, 1) if total_count else 0
+        for p, cnt in partner_cnt.items()
+    }
 
-    # Top 품목 (CBM 기준)
     top_items = sorted(
-        [(k, v["qty"], round(v["cbm"], 3)) for k, v in item_agg.items()],
-        key=lambda x: -x[2],
+        [{"name": k, "qty": v["qty"], "cbm": round(v["cbm"], 3)}
+         for k, v in item_agg.items() if v["cbm"] > 0],
+        key=lambda x: -x["cbm"],
     )[:10]
+
+    # 기사님별 월간 CBM (raw 파트너명 → 표시명 역매핑으로 partner_cbm 조회)
+    driver_cbm = {}
+    for raw_key in VEHICLE_CBM:
+        display_key = PARTNER_GROUP.get(raw_key, raw_key)
+        driver_cbm[raw_key] = round(partner_cbm.get(display_key, 0.0), 2)
 
     return {
         "total_cbm":    total_cbm,
@@ -320,198 +310,48 @@ def analyze_month(records: list[dict], live_cbm: dict) -> dict:
         "partner_pct":  partner_pct,
         "partner_cbm":  dict(partner_cbm),
         "top_items":    top_items,
+        "driver_cbm":   driver_cbm,
     }
 
 
 # ═══════════════════════════════════════════════════════
-# 5. Slack Block 빌더
+# 5. 라우팅 주간 km 분해
 # ═══════════════════════════════════════════════════════
-def _bar(val: float, max_val: float, width: int = 10) -> str:
-    filled = round(val / max_val * width) if max_val else 0
-    return "█" * filled + "░" * (width - filled)
+def _calc_weekly_km_breakdown(
+    driver_daily_routes: dict,
+    month_start: date,
+    month_end:   date,
+) -> dict:
+    """
+    driver_daily_routes[기사][날짜]["total_km"] 을
+    월요일 기준 주간 단위로 묶어 합산.
 
-
-def _pct_bar(pct: float, width: int = 8) -> str:
-    filled = round(pct / 100 * width)
-    return "█" * filled + "░" * (width - filled)
-
-
-def build_monthly_blocks(data: dict, month_start: date) -> list[dict]:
-    label = month_label(month_start)
-
-    # ── 주차별 CBM ────────────────────────────────────
-    max_w_cbm  = max(data["weekly_cbm"].values(), default=1)
-    weekly_txt = ""
-    for wk in sorted(data["weekly_cbm"].keys()):
-        cbm = data["weekly_cbm"][wk]
-        cnt = data["weekly_cnt"].get(wk, 0)
-        bar = _bar(cbm, max_w_cbm, 10)
-        weekly_txt += f"  `{wk}주차`  {bar}  *{cbm:.1f}m³*  ({cnt}건)\n"
-
-    # ── 배송파트너 비율 ───────────────────────────────
-    partner_txt = ""
-    sorted_partners = sorted(
-        data["partner_cnt"].items(), key=lambda x: -x[1]
-    )
-    total_with_partner = sum(data["partner_cnt"].values())
-
-    for name, cnt in sorted_partners:
-        pct = data["partner_pct"].get(name, 0)
-        cbm = round(data["partner_cbm"].get(name, 0), 2)
-        bar = _pct_bar(pct, 8)
-        partner_txt += (
-            f"  `{name}`\n"
-            f"    {bar}  *{pct:.1f}%*  {cnt}건  |  {cbm:.2f}m³\n"
-        )
-
-    unassigned = data["total_count"] - total_with_partner
-    if unassigned > 0:
-        pct = round(unassigned / data["total_count"] * 100, 1)
-        partner_txt += f"  `미배정`  {'░' * 8}  {pct:.1f}%  {unassigned}건\n"
-
-    # ── Top 품목 ──────────────────────────────────────
-    item_txt = ""
-    for i, (name, qty, cbm) in enumerate(data["top_items"][:8], 1):
-        item_txt += f"  {i}. {name}  `{qty:,}개`  →  *{cbm:.3f}m³*\n"
-
-    # ── 손익 ──────────────────────────────────────────
-    profit_sign = "+" if data["profit"] >= 0 else ""
-    rev_txt = (
-        f"  물류매출   ₩{data['total_rev']:,.0f}\n"
-        f"  운송비용   ₩{data['total_cost']:,.0f}\n"
-        f"  물류 손익  *₩{profit_sign}{data['profit']:,.0f}*"
-    )
-    if data["total_rev"] == 0:
-        rev_txt += "\n  _물류매출 필드 입력 필요_"
-
-    blocks = [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": f"📊 SCM 월간 출하 리포트 — {label}",
-            },
-        },
-        {
-            "type": "context",
-            "elements": [{
-                "type": "mrkdwn",
-                "text": (
-                    f"{month_start.strftime('%Y-%m-%d')} ~ "
-                    f"{(month_start.replace(month=month_start.month % 12 + 1, day=1) - timedelta(1)).strftime('%m-%d')}  |  "
-                    f"생성: {datetime.now().strftime('%m/%d %H:%M')}"
-                ),
-            }],
-        },
-        {"type": "divider"},
-        # ① 핵심 요약
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": (
-                    f"*📦 월간 핵심 요약*\n"
-                    f"  총 CBM         *{data['total_cbm']:.2f} m³*\n"
-                    f"  총 배차 건수    *{data['total_count']}건*\n"
-                    f"  건당 평균 CBM   {data['cbm_per_ship']:.3f} m³"
-                ),
-            },
-        },
-        {"type": "divider"},
-        # ② 주차별 CBM
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*📅 주차별 CBM 추이*\n{weekly_txt}",
-            },
-        },
-        {"type": "divider"},
-        # ③ 배송파트너 비율
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": (
-                    f"*🚚 배송파트너별 배송 비율*  (총 {data['total_count']}건)\n"
-                    f"{partner_txt}"
-                ),
-            },
-        },
-        {"type": "divider"},
-        # ④ 물류 손익
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*💰 물류 손익*\n{rev_txt}",
-            },
-        },
-        {"type": "divider"},
-        # ⑤ Top 품목
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*🏷️ 월간 출하 품목 Top (CBM 기준)*\n{item_txt}",
-            },
-        },
-        {"type": "divider"},
-        {
-            "type": "context",
-            "elements": [{
-                "type": "mrkdwn",
-                "text": "_sincerely-scm-pipeline  |  월간 리포트_",
-            }],
-        },
-    ]
-    return blocks
-
-
-# ═══════════════════════════════════════════════════════
-# 6. Slack DM 전송
-# ═══════════════════════════════════════════════════════
-def send_dm(blocks: list[dict], fallback_text: str):
-    headers = {
-        "Authorization": f"Bearer {SLACK_TOKEN}",
-        "Content-Type": "application/json; charset=utf-8",
+    반환 예:
+    {
+        "신시어리 (이장훈)": {"3/2주": 45.2, "3/9주": 52.1, ...},
+        ...
     }
-
-    ch_resp = requests.post(
-        "https://slack.com/api/conversations.open",
-        headers=headers,
-        json={"users": DM_USER_ID},
-        timeout=15,
-    ).json()
-
-    if not ch_resp.get("ok"):
-        raise RuntimeError(f"conversations.open 실패: {ch_resp.get('error')}")
-
-    channel = ch_resp["channel"]["id"]
-
-    msg_resp = requests.post(
-        "https://slack.com/api/chat.postMessage",
-        headers=headers,
-        json={
-            "channel":     channel,
-            "text":        fallback_text,
-            "blocks":      blocks,
-            "unfurl_links": False,
-        },
-        timeout=15,
-    ).json()
-
-    if not msg_resp.get("ok"):
-        raise RuntimeError(f"chat.postMessage 실패: {msg_resp.get('error')}")
-
-    print(f"[OK] Slack 월간 리포트 DM 전송 완료 → {DM_USER_ID}")
+    """
+    result = {}
+    for driver, daily in driver_daily_routes.items():
+        weekly: dict = defaultdict(float)
+        for day_str, route_data in daily.items():
+            try:
+                d   = date.fromisoformat(day_str)
+                mon = d - timedelta(days=d.weekday())
+                wk_label = f"{mon.month}/{mon.day}주"
+                km = route_data.get("total_km", 0)
+                weekly[wk_label] = round(weekly[wk_label] + km, 2)
+            except Exception:
+                pass
+        result[driver] = dict(sorted(weekly.items()))
+    return result
 
 
 # ═══════════════════════════════════════════════════════
-# 7. 메인
+# 6. 메인
 # ═══════════════════════════════════════════════════════
 def main():
-    # 9:00~9:30 랜덤 지연
     skip = os.environ.get("SKIP_DELAY", "0")
     if skip != "1":
         delay = random.randint(0, 29 * 60)
@@ -523,25 +363,62 @@ def main():
     start, end = prev_month_range()
     print(f"  대상 기간: {start} ~ {end}  ({month_label(start)})")
 
-    live_cbm = fetch_box_cbm_live()
-    records  = fetch_month_shipments(start, end)
+    live_cbm    = fetch_box_cbm_live()
+    product_cbm = fetch_product_cbm()
+    records     = fetch_month_shipments(start, end)
     print(f"  조회 건수: {len(records)}건")
 
-    data   = analyze_month(records, live_cbm)
-    blocks = build_monthly_blocks(data, start)
+    data = analyze_month(records, live_cbm, product_cbm)
 
-    fallback = (
-        f"📊 SCM 월간 리포트 — {month_label(start)} | "
-        f"총 CBM {data['total_cbm']:.1f}m³ / {data['total_count']}건"
-    )
+    # 월간 기사님 배송 라우팅 km 계산
+    print("  [라우팅] 월간 기사님 배송 거리 계산 중...")
+    routing_monthly: dict = {}
 
-    send_dm(blocks, fallback)
+    try:
+        from delivery_routing import (
+            fetch_routing_records,
+            calc_driver_routing,
+            routing_to_json,
+            format_routing_log,
+            SINCERELY_DRIVERS,
+        )
 
-    # JSON 아카이브
+        routing_recs   = fetch_routing_records(start, end)
+        routing_result = calc_driver_routing(routing_recs)
+        print(format_routing_log(routing_result))
+
+        weekly_km_by_driver = _calc_weekly_km_breakdown(
+            routing_result["driver_daily_routes"], start, end
+        )
+
+        routing_monthly = {
+            "driver_monthly_km":          routing_result["driver_weekly_km"],
+            "driver_weekly_km_breakdown": weekly_km_by_driver,
+            "driver_daily_routes":        routing_to_json(routing_result)["driver_daily_routes"],
+        }
+
+        print("\n  [기사님별 월간 총 km]")
+        for driver in SINCERELY_DRIVERS:
+            monthly_km = routing_result["driver_weekly_km"].get(driver, 0)
+            weekly_bk  = weekly_km_by_driver.get(driver, {})
+            name = driver.replace("신시어리 ", "")
+            print(f"    {name}: 월간 {monthly_km}km")
+            for wk_label, km in weekly_bk.items():
+                print(f"      {wk_label}: {km}km")
+
+    except Exception as e:
+        print(f"  [라우팅 실패] {e} — 라우팅 데이터 없이 계속 진행")
+
     fname = f"monthly_report_{start.strftime('%Y-%m')}.json"
     with open(fname, "w", encoding="utf-8") as fp:
         json.dump(
-            {"generated_at": datetime.now().isoformat(), "month": start.isoformat(), **data},
+            {
+                "generated_at": datetime.now().isoformat(),
+                "month":        start.isoformat(),
+                "month_label":  month_label(start),
+                **data,
+                "routing": routing_monthly,
+            },
             fp, ensure_ascii=False, indent=2, default=str,
         )
     print(f"[OK] {fname} 저장 완료")

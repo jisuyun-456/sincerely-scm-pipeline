@@ -37,9 +37,10 @@ jobs:
 
       - name: Run weekly report
         env:
-          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY_TMS }}
-          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_TMS_ID }}
-          SKIP_DELAY:       ${{ env.SKIP_DELAY || '0' }}
+          AIRTABLE_API_KEY:   ${{ secrets.AIRTABLE_API_KEY_TMS }}
+          AIRTABLE_BASE_ID:   ${{ secrets.AIRTABLE_BASE_TMS_ID }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          SKIP_DELAY:         ${{ env.SKIP_DELAY || '0' }}
         run: python sincerely_weekly_report_v2.py
 
       - name: Upload JSON archive

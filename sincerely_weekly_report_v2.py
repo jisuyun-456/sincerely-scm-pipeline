@@ -786,7 +786,7 @@ def main():
         print(f"[{datetime.now().strftime('%H:%M:%S')}] {delay_sec//60}분 {delay_sec%60}초 후 실행")
         time.sleep(delay_sec)
 
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] 리포트 생성 시작")
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] 주간 리포트 생성 시작")
 
     this_mon, this_fri = week_range(0)
     next_mon, next_fri = week_range(1)
@@ -812,33 +812,62 @@ def main():
     prev_data = analyze(prev_recs, live_cbm, prev_mon, product_cbm)
     trend     = build_trend(trend_recs, live_cbm, product_cbm)
 
+    # CBM 소스 로그
     src = this_data["cbm_sources"]
-    total_matched = src["manual"] + src["product_match"] + src["box_parse"]
     print(
-        f"  CBM 산출: 수동{src['manual']} + 품목매칭{src['product_match']} + "
-        f"박스파싱{src['box_parse']} = {total_matched}건 / 미산출 {src['unmatched']}건"
+        f"  CBM 산출: 수동{src['manual']} + 박스파싱{src['box_parse']} "
+        f"+ 품목매칭{src['product_match']} = "
+        f"{src['manual']+src['box_parse']+src['product_match']}건 / "
+        f"미산출 {src['unmatched']}건"
     )
 
+    # 이전주 기사님 배송 라우팅 km 계산
+    print("  [라우팅] 이전주 기사님 배송 거리 계산 중...")
+    try:
+        from delivery_routing import (
+            fetch_routing_records,
+            calc_driver_routing,
+            routing_to_json,
+            format_routing_log,
+        )
+        routing_recs   = fetch_routing_records(prev_mon, prev_fri)
+        routing_result = calc_driver_routing(routing_recs)
+        print(format_routing_log(routing_result))
+        routing_json   = routing_to_json(routing_result)
+    except Exception as e:
+        print(f"  [라우팅 실패] {e} — 라우팅 데이터 없이 계속 진행")
+        routing_json = {}
+
+    # 기사님 CBM 달성율 로그
     print("  [기사님 CBM 달성율 - 이전주]")
-    for driver, pct in prev_data["driver_pct"].items():
+    for driver, pct in prev_data.get("driver_pct", {}).items():
         wd_info = prev_data["driver_work_days"][driver]
         wmax    = prev_data["driver_weekly_max"][driver]
         wact    = prev_data["driver_weekly"].get(driver, 0)
+        km      = routing_json.get("driver_weekly_km", {}).get(driver)
+        km_str  = f" / {km}km" if km else ""
         name    = driver.replace("신시어리 ", "")
         print(
             f"    {name}: {wact:.2f}m3 / {wmax}m3 "
-            f"({VEHICLE_CBM[driver]}m3 x {wd_info['count']}일) = {pct}%"
+            f"({VEHICLE_CBM[driver]}m3 x {wd_info['count']}일) = {pct}%{km_str}"
         )
 
-    a1 = prev_data["a1_utilization"]
-    print(f"  [에이원 창고 가동율 - 이전주] {a1['total_cbm']}m3 / {a1['capacity']}m3 = {a1['pct']}%")
+    a1 = prev_data.get("a1_utilization", {})
+    if a1:
+        print(
+            f"  [에이원 창고 가동율 - 이전주] "
+            f"{a1['total_cbm']}m3 / {a1['capacity']}m3 = {a1['pct']}%"
+        )
 
     archive = {
         "generated_at": datetime.now().isoformat(),
         "week_start":   this_mon.isoformat(),
         "this_week": {
             "summary":     this_data["summary"],
-            "by_date":     this_data["by_date"],
+            "by_date":     {
+                k.isoformat() if hasattr(k, "isoformat") else k: v
+                for k, v in this_data["by_date"].items()
+            },
             "box_type":    this_data["box_type"],
             "quality":     this_data["quality"],
             "top_items":   this_data["top_items"],
@@ -847,16 +876,21 @@ def main():
         },
         "prev_week": {
             "summary":           prev_data["summary"],
+            "week_start":        prev_mon.isoformat(),
             "driver_daily":      prev_data["driver_daily"],
             "driver_weekly":     prev_data["driver_weekly"],
             "driver_weekly_max": prev_data["driver_weekly_max"],
             "driver_pct":        prev_data["driver_pct"],
             "driver_work_days":  prev_data["driver_work_days"],
-            "a1_utilization":    prev_data["a1_utilization"],
+            "a1_utilization":    prev_data.get("a1_utilization", {}),
+            "routing":           routing_json,
         },
         "next_week": {
             "summary": next_data["summary"],
-            "by_date": next_data["by_date"],
+            "by_date": {
+                k.isoformat() if hasattr(k, "isoformat") else k: v
+                for k, v in next_data["by_date"].items()
+            },
         },
         "trend": trend,
     }

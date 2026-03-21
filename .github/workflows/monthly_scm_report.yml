@@ -38,8 +38,7 @@ jobs:
         env:
           AIRTABLE_API_KEY_TMS:  ${{ secrets.AIRTABLE_API_KEY_TMS }}
           AIRTABLE_BASE_TMS_ID:  ${{ secrets.AIRTABLE_BASE_TMS_ID }}
-          SLACK_BOT_TOKEN:       ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_DM_USER_ID:      ${{ secrets.SLACK_DM_USER_ID }}
+          KAKAO_REST_API_KEY:    ${{ secrets.KAKAO_REST_API_KEY }}
           SKIP_DELAY:            ${{ env.SKIP_DELAY || '0' }}
         run: python sincerely_monthly_report.py
 
@@ -50,27 +49,3 @@ jobs:
           name: monthly-report-${{ github.run_id }}
           path: monthly_report_*.json
           retention-days: 365   # 1년 보관
-
-      - name: Notify failure via DM
-        if: failure()
-        run: |
-          python - <<'EOF'
-          import os, requests
-          token   = os.environ["SLACK_BOT_TOKEN"]
-          user_id = os.environ["SLACK_DM_USER_ID"]
-          run_url = f"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          ch = requests.post(
-              "https://slack.com/api/conversations.open",
-              headers={"Authorization": f"Bearer {token}"},
-              json={"users": user_id}, timeout=10
-          ).json()["channel"]["id"]
-          requests.post(
-              "https://slack.com/api/chat.postMessage",
-              headers={"Authorization": f"Bearer {token}"},
-              json={"channel": ch, "text": f"❌ SCM 월간 리포트 생성 실패\n{run_url}"},
-              timeout=10,
-          )
-          EOF
-        env:
-          SLACK_BOT_TOKEN:  ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
