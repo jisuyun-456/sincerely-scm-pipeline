@@ -27,13 +27,10 @@ from datetime import datetime, timedelta, date
 from collections import defaultdict
 
 import pyairtable
-import requests
 
 # ── 환경변수 ──────────────────────────────────────────
-API_KEY     = os.environ["AIRTABLE_API_KEY"]
-BASE_ID     = os.environ.get("AIRTABLE_BASE_ID", "app4x70a8mOrIKsMf")
-SLACK_TOKEN = os.environ["SLACK_BOT_TOKEN"]
-DM_USER_ID  = os.environ["SLACK_DM_USER_ID"]
+API_KEY = os.environ["AIRTABLE_API_KEY"]
+BASE_ID = os.environ.get("AIRTABLE_BASE_ID", "app4x70a8mOrIKsMf")
 
 # ── Table ID ──────────────────────────────────────────
 TABLE_SHIPMENT = "tbllg1JoHclGYer7m"
@@ -781,39 +778,7 @@ def build_slack_blocks(
 
 
 # ═══════════════════════════════════════════════════════
-# 6. Slack DM 전송
-# ═══════════════════════════════════════════════════════
-def _slack_api(endpoint: str, payload: dict) -> dict:
-    resp = requests.post(
-        f"https://slack.com/api/{endpoint}",
-        headers={
-            "Authorization": f"Bearer {SLACK_TOKEN}",
-            "Content-Type": "application/json; charset=utf-8",
-        },
-        json=payload,
-        timeout=15,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    if not data.get("ok"):
-        raise RuntimeError(f"Slack API error [{endpoint}]: {data.get('error')}")
-    return data
-
-
-def send_dm(blocks: list[dict], fallback_text: str):
-    ch_data = _slack_api("conversations.open", {"users": DM_USER_ID})
-    channel = ch_data["channel"]["id"]
-    _slack_api("chat.postMessage", {
-        "channel":      channel,
-        "text":         fallback_text,
-        "blocks":       blocks,
-        "unfurl_links": False,
-    })
-    print(f"[OK] Slack DM 전송 완료 → {DM_USER_ID} (채널 {channel})")
-
-
-# ═══════════════════════════════════════════════════════
-# 7. 메인
+# 6. 메인
 # ═══════════════════════════════════════════════════════
 def main():
     if not os.environ.get("SKIP_DELAY"):
@@ -867,16 +832,6 @@ def main():
 
     a1 = prev_data["a1_utilization"]
     print(f"  [에이원 창고 가동율 - 이전주] {a1['total_cbm']}m3 / {a1['capacity']}m3 = {a1['pct']}%")
-
-    blocks = build_slack_blocks(this_data, next_data, trend, this_mon, prev=prev_data)
-    fallback_txt = (
-        f"📦 SCM 주간 리포트 — {this_mon.month}월 W"
-        f"{(this_mon.day-1)//7+1} | "
-        f"이번주 CBM {this_data['summary']['total_cbm']:.1f}m³ / "
-        f"{this_data['summary']['total_count']}건"
-    )
-
-    send_dm(blocks, fallback_txt)
 
     archive = {
         "generated_at": datetime.now().isoformat(),
