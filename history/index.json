@@ -2,10 +2,10 @@
   "periods": [
     {
       "key": "2026-W12_review",
-      "label": "W12 (03/16~) 실적",
+      "label": "W12 (3/16~) 실적",
       "mode": "weekly_review",
       "mode_label": "주간 실적",
-      "generated_at": "2026-03-23T02:31:23",
+      "generated_at": "2026-03-23T07:01:46",
       "file": "2026-W12_review.json"
     },
     {
