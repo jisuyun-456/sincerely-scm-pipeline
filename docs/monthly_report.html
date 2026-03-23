@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sincerely SCM — 월간 출하 리포트</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:#f5f4f0;--surface:#fff;--border:#e8e5de;--border-light:#f0ede6;
+  --text:#1a1917;--text2:#6b6860;--text3:#a09d97;
+  --green:#1D9E75;--green-bg:#E1F5EE;--green-dk:#085041;
+  --red:#E24B4A;--red-bg:#fdf2f2;--red-dk:#A32D2D;
+  --amber:#BA7517;--amber-bg:#FAEEDA;--amber-dk:#633806;
+  --blue:#185FA5;--blue-bg:#E6F1FB;--blue-dk:#0C447C;
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text)}
+.page{max-width:980px;margin:0 auto;padding:28px 20px 60px}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}
+.hdr h1{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.hdr p{font-size:11px;color:var(--text3);margin-top:3px}
+.pill{font-size:10px;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.pill-green{background:var(--green-bg);color:var(--green-dk);border:.5px solid #9FE1CB}
+.pill-gray{background:#f0ede6;color:var(--text2);border:.5px solid var(--border)}
+.pill-amber{background:var(--amber-bg);color:var(--amber-dk);border:.5px solid #FAC775}
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+.kc{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);padding:14px 15px}
+.kl{font-size:10px;color:var(--text2);margin-bottom:5px}
+.kv{font-size:22px;font-weight:600;line-height:1}
+.ku{font-size:11px;font-weight:400;color:var(--text3);margin-left:2px}
+.ks{font-size:10px;margin-top:5px}
+.ok{color:var(--green)}.ng{color:var(--red)}.warn{color:var(--amber)}
+.sec{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.sh{padding:11px 16px;border-bottom:.5px solid var(--border-light);display:flex;align-items:center;justify-content:space-between}
+.sh h2{font-size:13px;font-weight:500}
+.sb{padding:14px 16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.stat{display:flex;justify-content:space-between;padding:5px 0;border-bottom:.5px solid var(--border-light);font-size:12px}
+.stat:last-child{border-bottom:none}
+.sk{color:var(--text2)}.sv{font-weight:500}
+.cw{position:relative;width:100%}
+.br{display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:11px}
+.br:last-child{margin-bottom:0}
+.bn{flex:0 0 140px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.bt{flex:1;height:5px;background:var(--border-light);border-radius:3px;overflow:hidden}
+.bf{height:5px;border-radius:3px}
+.bv{font-size:10px;color:var(--text2);min-width:56px;text-align:right;white-space:nowrap}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{text-align:left;padding:5px 8px;color:var(--text2);font-weight:400;border-bottom:.5px solid var(--border-light)}
+.tbl td{padding:6px 8px;border-bottom:.5px solid var(--border-light)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg)}
+.tr{text-align:right}
+.dc{background:var(--bg);border-radius:var(--rs);padding:11px 12px;margin-bottom:8px}
+.dc:last-child{margin-bottom:0}
+.dch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.dname{font-size:12px;font-weight:500}
+.dprog{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.dpf{height:5px;border-radius:3px}
+.wk-rows{margin-top:6px}
+.footer{text-align:center;font-size:10px;color:var(--text3);margin-top:28px}
+@media(max-width:600px){.kgrid{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hdr">
+  <div>
+    <h1>Sincerely SCM — 월간 출하 리포트</h1>
+    <p id="hdrsub">로드 중...</p>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <span class="pill pill-amber" id="monthlabel">-</span>
+    <span class="pill pill-gray" id="gentime">-</span>
+  </div>
+</div>
+
+<div class="kgrid" id="kgrid"></div>
+
+<div class="two">
+  <!-- 주차별 CBM -->
+  <div class="sec">
+    <div class="sh"><h2>주차별 CBM 추이</h2></div>
+    <div class="sb"><div class="cw" style="height:160px"><canvas id="cWeekly"></canvas></div></div>
+  </div>
+  <!-- 배송파트너 비율 -->
+  <div class="sec">
+    <div class="sh"><h2>배송파트너별 비율</h2></div>
+    <div class="sb"><div style="height:160px;position:relative"><canvas id="cPartner"></canvas></div></div>
+  </div>
+</div>
+
+<!-- 출하 품목 Top 10 -->
+<div class="sec">
+  <div class="sh"><h2>월간 출하 품목 Top 10 (CBM 기준)</h2></div>
+  <div class="sb" id="items"></div>
+</div>
+
+<!-- 월간 손익 -->
+<div class="sec">
+  <div class="sh"><h2>월간 손익</h2></div>
+  <div class="sb">
+    <div class="three" style="margin-bottom:0" id="profit"></div>
+  </div>
+</div>
+
+<!-- 기사님 월간 km -->
+<div class="two">
+  <div class="sec">
+    <div class="sh"><h2>기사님 월간 총 배송거리</h2><span class="pill pill-gray">Kakao 라우팅</span></div>
+    <div class="sb" id="monthlyKm"></div>
+  </div>
+  <div class="sec">
+    <div class="sh"><h2>기사님 주간별 km 상세</h2></div>
+    <div class="sb"><div class="cw" style="height:180px"><canvas id="cDriverKm"></canvas></div></div>
+  </div>
+</div>
+
+<!-- 파트너별 건수 상세 -->
+<div class="sec">
+  <div class="sh"><h2>배송파트너별 건수 · CBM 상세</h2></div>
+  <div class="sb" id="partnerDetail"></div>
+</div>
+
+<div class="footer">Sincerely SCM Monthly Report · <span id="footdate">-</span> · TMS Airtable (app4x70a8mOrIKsMf)</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ============================================================
+// MONTHLY_DATA: GitHub Actions Python이 아래 null을 실제 JSON으로 교체
+// sed -i 's/const MONTHLY_DATA = null/const MONTHLY_DATA = {...}/' monthly_report.html
+// ============================================================
+const MONTHLY_DATA = null;
+
+const SAMPLE_M = {
+  generated_at:"2026-04-01T09:00:00",
+  month:"2026-03-01",month_label:"2026년 3월",
+  total_cbm:85.6,total_count:175,
+  total_rev:12500000,total_cost:9800000,
+  profit:2700000,cbm_per_ship:0.489,
+  weekly_cbm:{1:8.4,2:49.8,3:17.4,4:10.0},
+  weekly_cnt:{1:35,2:57,3:61,4:22},
+  weekly_labels:{1:"3/2주",2:"3/9주",3:"3/16주",4:"3/23주"},
+  partner_cnt:{
+    "신시어리 기사님 (이장훈)":32,"신시어리 기사님 (조희선)":28,
+    "신시어리 기사님 (박종성)":35,"로젠 택배":62,"고객 직접수령":18
+  },
+  partner_pct:{"신시어리 기사님 (이장훈)":18.3,"신시어리 기사님 (조희선)":16.0,"신시어리 기사님 (박종성)":20.0,"로젠 택배":35.4,"고객 직접수령":10.3},
+  partner_cbm:{"신시어리 기사님 (이장훈)":22.4,"신시어리 기사님 (조희선)":18.9,"신시어리 기사님 (박종성)":26.3,"로젠 택배":14.2,"고객 직접수령":3.8},
+  top_items:[
+    ["밸류무선충전마우스패드",1540,21.4],["레더스킨다이어리(표준)",2100,14.5],
+    ["톤앤톤쿨러백(단품)",250,10.0],["Eco페이퍼박스(T사이즈)키트",300,6.3],
+    ["브랜드스트랩단우산",400,4.9],["스타트씨드키트",350,4.6],
+    ["밸류메모큐브(M)",700,3.2],["커넥트6in1케이블키트",900,2.8]
+  ],
+  routing:{
+    driver_monthly_km:{"신시어리 (이장훈)":712.3,"신시어리 (조희선)":532.8,"신시어리 (박종성)":841.5},
+    driver_weekly_km_breakdown:{
+      "신시어리 (이장훈)":{"3/2주":152.4,"3/9주":198.4,"3/16주":211.2,"3/23주":150.3},
+      "신시어리 (조희선)":{"3/2주":98.5,"3/9주":145.2,"3/16주":178.4,"3/23주":110.7},
+      "신시어리 (박종성)":{"3/2주":178.3,"3/9주":221.7,"3/16주":245.6,"3/23주":195.9}
+    }
+  }
+};
+
+const D = MONTHLY_DATA || SAMPLE_M;
+const fmt = n => isNaN(n)?'—':Math.round(n).toLocaleString('ko-KR');
+
+// header
+document.getElementById('hdrsub').textContent = `${D.month_label} 전체 출하 현황`;
+document.getElementById('monthlabel').textContent = D.month_label;
+document.getElementById('gentime').textContent = new Date(D.generated_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+document.getElementById('footdate').textContent = new Date(D.generated_at).toLocaleDateString('ko-KR');
+
+// KPI
+document.getElementById('kgrid').innerHTML = `
+  <div class="kc"><div class="kl">월간 총 CBM</div><div class="kv">${D.total_cbm.toFixed(1)}<span class="ku">m³</span></div><div class="ks">건당 ${D.cbm_per_ship.toFixed(3)}m³</div></div>
+  <div class="kc"><div class="kl">월간 출하 건수</div><div class="kv">${D.total_count}<span class="ku">건</span></div><div class="ks">주당 평균 ${Math.round(D.total_count/4)}건</div></div>
+  <div class="kc"><div class="kl">물류매출</div><div class="kv">${D.total_rev>0?Math.round(D.total_rev/10000)+'<span class="ku">만원</span>':'—'}</div><div class="ks ${D.profit>=0?'ok':'ng'}">${D.profit!==0?'손익 '+(D.profit>=0?'+':'')+fmt(D.profit)+'원':'매출 미입력'}</div></div>
+  <div class="kc"><div class="kl">월간 총 km</div><div class="kv">${D.routing&&D.routing.driver_monthly_km?Math.round(Object.values(D.routing.driver_monthly_km).reduce((a,b)=>a+b,0))+'<span class="ku">km</span>':'—'}</div><div class="ks" style="color:var(--blue)">기사님 3인 합산</div></div>`;
+
+// weekly chart
+const wkeys = Object.keys(D.weekly_cbm).sort((a,b)=>+a-+b);
+const wlabels = wkeys.map(k=>D.weekly_labels[k]||`${k}주차`);
+const wcbms = wkeys.map(k=>D.weekly_cbm[k]||0);
+const wcnts = wkeys.map(k=>D.weekly_cnt[k]||0);
+new Chart(document.getElementById('cWeekly'),{
+  type:'bar',
+  data:{labels:wlabels,datasets:[
+    {label:'CBM',data:wcbms,backgroundColor:wcbms.map((v,i)=>v===Math.max(...wcbms)?'#1D9E75':'#85B7EB'),borderRadius:4,yAxisID:'y'},
+    {label:'건수',data:wcnts,type:'line',borderColor:'#AFA9EC',backgroundColor:'transparent',pointRadius:3,pointBackgroundColor:'#AFA9EC',borderWidth:1.5,yAxisID:'y2',tension:0.3}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{position:'left',ticks:{font:{size:9},callback:v=>v+'m³'},grid:{color:'#f0ede6'}},y2:{position:'right',ticks:{font:{size:9}},grid:{display:false}}}}
+});
+
+// partner chart
+const pnames = Object.keys(D.partner_cnt);
+const pcnts = pnames.map(p=>D.partner_cnt[p]);
+const pcolors = ['#5DCAA5','#85B7EB','#1D9E75','#EF9F27','#AFA9EC','#F09595','#B5D4F4'];
+new Chart(document.getElementById('cPartner'),{
+  type:'doughnut',
+  data:{labels:pnames.map(n=>n.replace('신시어리 기사님','기사님')),datasets:[{data:pcnts,backgroundColor:pcolors,borderWidth:0,hoverOffset:4}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:10,padding:6}},tooltip:{callbacks:{label:c=>`${c.label}: ${D.partner_pct[pnames[c.dataIndex]]||0}% (${c.raw}건)`}}}}
+});
+
+// items
+const iEl = document.getElementById('items');
+if(D.top_items&&D.top_items.length){
+  const maxICbm = Math.max(...D.top_items.map(i=>i[2]),1);
+  iEl.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">` +
+    D.top_items.map((item,i)=>`
+    <div class="br">
+      <span class="bn">${i+1}. ${item[0]}</span>
+      <div class="bt"><div class="bf" style="width:${Math.round(item[2]/maxICbm*100)}%;background:${i<3?'#1D9E75':'#85B7EB'}"></div></div>
+      <span class="bv">${item[2].toFixed(3)}m³</span>
+    </div>`).join('') + '</div>';
+}
+
+// profit
+document.getElementById('profit').innerHTML = `
+  <div><div class="stat"><span class="sk">물류매출</span></div><div class="stat" style="border:none"><span style="font-size:22px;font-weight:600">${D.total_rev>0?fmt(D.total_rev):'—'}<span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:2px">${D.total_rev>0?'원':''}</span></span></div></div>
+  <div><div class="stat"><span class="sk">운송비용</span></div><div class="stat" style="border:none"><span style="font-size:22px;font-weight:600">${D.total_cost>0?fmt(D.total_cost):'—'}<span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:2px">${D.total_cost>0?'원':''}</span></span></div></div>
+  <div><div class="stat"><span class="sk">물류 손익</span></div><div class="stat" style="border:none"><span style="font-size:22px;font-weight:600;color:${D.profit>=0?'var(--green)':'var(--red)'}">${D.profit!==0?(D.profit>=0?'+':'')+fmt(D.profit):'—'}<span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:2px">${D.profit!==0?'원':''}</span></span></div></div>`;
+
+// monthly km
+const VCBM = {"신시어리 (이장훈)":5.4,"신시어리 (조희선)":7.6,"신시어리 (박종성)":9.5};
+const kmEl = document.getElementById('monthlyKm');
+if(D.routing&&D.routing.driver_monthly_km){
+  const mkm = D.routing.driver_monthly_km;
+  const maxKm = Math.max(...Object.values(mkm),1);
+  kmEl.innerHTML = Object.entries(VCBM).map(([driver,cap])=>{
+    const km = mkm[driver]||0;
+    const name = driver.replace('신시어리 ','');
+    const color = '#185FA5';
+    return `<div class="dc">
+      <div class="dch">
+        <span class="dname">${name} <span style="font-size:10px;font-weight:400;color:var(--text3)">(${cap}m³/일)</span></span>
+        <span style="font-size:20px;font-weight:500;color:${color}">${km.toFixed(1)}<span style="font-size:10px;color:var(--text3);margin-left:2px">km</span></span>
+      </div>
+      <div class="dprog"><div class="dpf" style="width:${Math.round(km/maxKm*100)}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+} else { kmEl.innerHTML='<p style="font-size:12px;color:var(--text3)">라우팅 데이터 없음</p>'; }
+
+// driver km chart (주간별)
+if(D.routing&&D.routing.driver_weekly_km_breakdown){
+  const bkd = D.routing.driver_weekly_km_breakdown;
+  const allWks = [...new Set(Object.values(bkd).flatMap(v=>Object.keys(v)))].sort();
+  const dcolors = {"신시어리 (이장훈)":"#5DCAA5","신시어리 (조희선)":"#85B7EB","신시어리 (박종성)":"#1D9E75"};
+  const datasets = Object.entries(VCBM).map(([driver])=>({
+    label: driver.replace('신시어리 ',''),
+    data: allWks.map(w=>(bkd[driver]||{})[w]||0),
+    backgroundColor: dcolors[driver]||'#aaa',
+    borderRadius: 4,
+  }));
+  new Chart(document.getElementById('cDriverKm'),{
+    type:'bar',
+    data:{labels:allWks,datasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:10,padding:8}}},
+      scales:{x:{ticks:{font:{size:10}},grid:{display:false},stacked:false},y:{ticks:{font:{size:9},callback:v=>v+'km'},grid:{color:'#f0ede6'}}}}
+  });
+} else { document.getElementById('cDriverKm').parentElement.innerHTML='<p style="font-size:12px;color:var(--text3);text-align:center;padding-top:60px">라우팅 데이터 없음</p>'; }
+
+// partner detail table
+const pdEl = document.getElementById('partnerDetail');
+const sortedP = Object.entries(D.partner_cnt).sort((a,b)=>b[1]-a[1]);
+const totalP = Object.values(D.partner_cnt).reduce((a,b)=>a+b,0);
+pdEl.innerHTML = `<table class="tbl">
+  <thead><tr><th>배송파트너</th><th class="tr">건수</th><th class="tr">비율</th><th class="tr">총 CBM</th><th class="tr">건당 CBM</th></tr></thead>
+  <tbody>${sortedP.map(([name,cnt])=>{
+    const pct = totalP>0?((cnt/totalP)*100).toFixed(1):0;
+    const cbm = (D.partner_cbm[name]||0).toFixed(2);
+    const perShip = cnt>0?((D.partner_cbm[name]||0)/cnt).toFixed(3):0;
+    return `<tr><td>${name}</td><td class="tr">${cnt}건</td><td class="tr">${pct}%</td><td class="tr">${cbm}m³</td><td class="tr">${perShip}m³</td></tr>`;
+  }).join('')}
+  <tr style="font-weight:500;background:var(--bg)"><td>합계</td><td class="tr">${totalP}건</td><td class="tr">100%</td><td class="tr">${D.total_cbm.toFixed(2)}m³</td><td class="tr">${D.cbm_per_ship.toFixed(3)}m³</td></tr>
+  </tbody></table>`;
+</script>
+</body>
+</html>

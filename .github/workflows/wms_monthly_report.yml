@@ -34,7 +34,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
           SKIP_DELAY: ${{ inputs.skip_delay == true && '1' || '0' }}
-        run: python sincerely_wms_monthly_report.py
+        run: python wms/sincerely_wms_monthly_report.py
 
       - name: Upload report artifact
         if: always()

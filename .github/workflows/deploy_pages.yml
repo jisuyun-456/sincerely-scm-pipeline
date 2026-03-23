@@ -61,7 +61,7 @@ jobs:
           AIRTABLE_BASE_WMS_ID: ${{ secrets.AIRTABLE_BASE_WMS_ID }}
           AIRTABLE_BASE_TMS_ID: ${{ secrets.AIRTABLE_BASE_TMS_ID }}
           REPORT_MODE: ${{ steps.mode.outputs.mode }}
-        run: python generate_pages_data.py
+        run: python pages/generate_pages_data.py
 
       - name: Save to history & build index
         run: |
@@ -106,7 +106,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site/history
-          cp dashboard.html site/index.html
+          cp pages/dashboard.html site/index.html
           cp pages_data.json site/pages_data.json
           cp history/*.json site/history/
 

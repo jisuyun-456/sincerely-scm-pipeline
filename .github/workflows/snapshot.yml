@@ -37,7 +37,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r snapshot/requirements.txt
 
       - name: Run Pipeline
         env:
@@ -52,4 +52,4 @@ jobs:
           if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
-          python pipeline.py $ARGS
+          python snapshot/pipeline.py $ARGS

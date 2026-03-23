@@ -25,9 +25,7 @@ jobs:
           cp /usr/share/fonts/truetype/nanum/NanumGothicBold.ttf ./NanumGothicBold.ttf
 
       - name: Install dependencies
-        run: pip install -r TMS_pdf_requirements.txt
-      - name: Install dependencies
-        run: pip install -r TMS_pdf_requirements.txt
+        run: pip install -r pdf/TMS_pdf_requirements.txt
 
       - name: Generate PDF
         env:
@@ -36,4 +34,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
         run: |
-          python generate_pdf.py --record-id "${{ github.event.client_payload.record_id }}"
+          python pdf/generate_pdf.py --record-id "${{ github.event.client_payload.record_id }}"

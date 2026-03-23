@@ -40,7 +40,7 @@ jobs:
           AIRTABLE_BASE_TMS_ID:  ${{ secrets.AIRTABLE_BASE_TMS_ID }}
           KAKAO_REST_API_KEY:    ${{ secrets.KAKAO_REST_API_KEY }}
           SKIP_DELAY:            ${{ env.SKIP_DELAY || '0' }}
-        run: python sincerely_monthly_report.py
+        run: python tms/sincerely_monthly_report.py
 
       - name: Upload JSON archive
         uses: actions/upload-artifact@v4
