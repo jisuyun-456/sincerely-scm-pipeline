@@ -1,9 +1,9 @@
-name: Deploy Dashboard to Pages
+name: Deploy SCM Dashboard to Pages
 
 on:
   schedule:
-    - cron: '0 0 * * 1'   # 매주 월요일 00:00 UTC = 09:00 KST → weekly_review
-    - cron: '0 0 1 * *'   # 매월  1일  00:00 UTC = 09:00 KST → monthly
+    - cron: '0 0 * * 1'   # 매주 월요일 09:00 KST (weekly_review)
+    - cron: '0 0 1 * *'   # 매월  1일  09:00 KST (monthly)
   workflow_dispatch:
     inputs:
       report_mode:
@@ -14,6 +14,10 @@ on:
           - weekly_forecast
           - monthly
         default: weekly_review
+      skip_delay:
+        description: '즉시 실행 (지연 없음)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -52,16 +56,22 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install requests
+        run: pip install requests pyairtable
 
-      - name: Generate pages_data.json
+      - name: Override delay (수동 실행 시)
+        if: github.event_name == 'workflow_dispatch' && inputs.skip_delay == true
+        run: echo "SKIP_DELAY=1" >> $GITHUB_ENV
+
+      - name: Run unified SCM report generator
         env:
           AIRTABLE_API_KEY_WMS: ${{ secrets.AIRTABLE_API_KEY_WMS }}
           AIRTABLE_API_KEY_TMS: ${{ secrets.AIRTABLE_API_KEY_TMS }}
           AIRTABLE_BASE_WMS_ID: ${{ secrets.AIRTABLE_BASE_WMS_ID }}
           AIRTABLE_BASE_TMS_ID: ${{ secrets.AIRTABLE_BASE_TMS_ID }}
-          REPORT_MODE: ${{ steps.mode.outputs.mode }}
-        run: python pages/generate_pages_data.py
+          KAKAO_REST_API_KEY:   ${{ secrets.KAKAO_REST_API_KEY }}
+          REPORT_MODE:          ${{ steps.mode.outputs.mode }}
+          SKIP_DELAY:           ${{ env.SKIP_DELAY || '0' }}
+        run: python pages/generate_scm_report.py
 
       - name: Save to history & build index
         run: |
@@ -80,7 +90,11 @@ jobs:
               try:
                   d = json.load(open(f, encoding='utf-8'))
                   mode = d.get('report_mode', '')
-                  mode_label = {'weekly_review': '주간 실적', 'weekly_forecast': '주간 예측', 'monthly': '월간 실적'}.get(mode, mode)
+                  mode_label = {
+                      'weekly_review':   '주간 실적',
+                      'weekly_forecast': '주간 예측',
+                      'monthly':         '월간 실적',
+                  }.get(mode, mode)
                   periods.append({
                       'key':          d.get('period_key', ''),
                       'label':        d.get('period', {}).get('label', ''),
@@ -91,24 +105,37 @@ jobs:
                   })
               except Exception as e:
                   print(f"skip {f}: {e}")
-          json.dump({'periods': periods}, open('history/index.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
-          print(f"[history] index.json: {len(periods)}개 기간")
+          json.dump({'periods': periods},
+                    open('history/index.json', 'w', encoding='utf-8'),
+                    ensure_ascii=False, indent=2)
+          print(f"[history] index.json: {len(periods)}개")
           EOF
 
       - name: Commit history to repo
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add history/
-          git diff --staged --quiet || git commit -m "chore: update history [skip ci]"
+          git add history/ docs/weekly.html docs/monthly.html
+          git diff --staged --quiet || git commit -m "chore: update scm report [skip ci]"
           git push
 
       - name: Prepare site
         run: |
           mkdir -p site/history
-          cp pages/dashboard.html site/index.html
-          cp pages_data.json site/pages_data.json
+
+          # 메인 대시보드 (4탭 통합)
+          cp pages/dashboard.html    site/index.html
+          cp pages_data.json         site/pages_data.json
+
+          # 주간/월간 전용 리포트 페이지 (JSON 이미 주입됨)
+          [ -f docs/weekly.html  ] && cp docs/weekly.html  site/weekly.html  || echo "[skip] weekly.html 없음"
+          [ -f docs/monthly.html ] && cp docs/monthly.html site/monthly.html || echo "[skip] monthly.html 없음"
+
+          # 히스토리
           cp history/*.json site/history/
+
+          echo "site/ 구조:"
+          ls -la site/
 
       - name: Configure Pages
         uses: actions/configure-pages@v4

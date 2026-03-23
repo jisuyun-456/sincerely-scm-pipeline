@@ -82,16 +82,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </head>
 <body>
 <div class="container">
-
+ 
 <div class="top">
   <div><span class="brand">Sincerely SCM<small id="report-subtitle">물류 운영 현황</small></span></div>
   <span class="live" id="mode-badge">WMS + Airtable 연동</span>
 </div>
-
+ 
 <div class="period-row" id="period-tabs">
   <div class="pc on" id="period-label">데이터 로딩 중...</div>
 </div>
-
+ 
 <!-- 예측 모드 전용 패널 -->
 <div id="forecast-panel" class="hidden" style="margin-bottom:16px">
   <div class="panel" style="border-left:3px solid #7F77DD">
@@ -117,14 +117,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 </div>
-
+ 
 <div class="kpi-row">
   <div class="kc" id="kpi-compl"><div class="kl">입하완료율</div><div class="kv">97.2<span class="ku">%</span></div><div class="ks ok">목표 95% 달성</div></div>
   <div class="kc" id="kpi-defect"><div class="kl">불량률</div><div class="kv ng">5.52<span class="ku">%</span></div><div class="ks ng">목표 1.0% 미달</div></div>
   <div class="kc" id="kpi-acc"><div class="kl">재고정확도</div><div class="kv">100<span class="ku">%</span></div><div class="ks ok">목표 99.5% 달성</div></div>
   <div class="kc" id="kpi-neg"><div class="kl">가용재고 음수</div><div class="kv ng">53<span class="ku">종</span></div><div class="ks ng">목표 0종 미달</div></div>
 </div>
-
+ 
 <div class="cat-row">
   <div class="cat inbound on" onclick="setCat('inbound',this)">
     <div class="ico">IN</div><div class="cn">입고</div><div class="csub" id="cat-inbound-sub">681건 · 218,868개</div>
@@ -139,7 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="ico">OUT</div><div class="cn">출하</div><div class="csub" id="cat-ship-sub">실시간 Airtable</div>
   </div>
 </div>
-
+ 
 <!-- 입고 탭 -->
 <div id="tab-inbound">
   <div class="two">
@@ -184,7 +184,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 </div>
-
+ 
 <!-- 검수 탭 -->
 <div id="tab-qc" class="hidden">
   <div class="two">
@@ -230,7 +230,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 </div>
-
+ 
 <!-- 자재 탭 -->
 <div id="tab-material" class="hidden">
   <div class="two">
@@ -266,51 +266,95 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <p>실사 체크 완료율 0.2% — 실사가 거의 진행되지 않음. 월별 실사 일정 수립 권고</p>
   </div>
 </div>
-
-<!-- 출하 탭 -->
+ 
+<!-- 출하 탭 (이번주 + 이전주 + 트렌드 통합) -->
 <div id="tab-ship" class="hidden">
+ 
+  <!-- KPI 4칸 -->
+  <div class="kpi-row" id="ship-kpi-row" style="margin-bottom:10px">
+    <div class="kc"><div class="kl">총 출하 건수</div><div class="kv" id="ship-total">—</div><div class="ks" id="ship-comppend">—</div></div>
+    <div class="kc"><div class="kl">총 CBM</div><div class="kv" id="ship-cbm">—</div><div class="ks" id="ship-avgcbm">—</div></div>
+    <div class="kc"><div class="kl">완료율</div><div class="kv" id="ship-comprate">—</div><div class="ks" id="ship-compsub">—</div></div>
+    <div class="kc"><div class="kl">CBM 신뢰도</div><div class="kv" id="ship-conf">—</div><div class="ks" id="ship-confsub">—</div></div>
+  </div>
+ 
+  <!-- 일별 CBM + 박스 구성비 -->
   <div class="two">
     <div class="panel">
-      <div class="ph"><h3>출하 요약</h3><span class="badge b-info">TMS Airtable</span></div>
+      <div class="ph"><h3>일별 CBM</h3><span class="badge b-info" id="ship-wk-range">—</span></div>
       <div class="pb">
-        <div class="stat"><span class="sk">총 출하 건수</span><span class="sv2" id="ship-total">—</span></div>
-        <div class="stat"><span class="sk">총 CBM</span><span class="sv2" id="ship-cbm">—</span></div>
-        <div class="stat"><span class="sk">완료</span><span class="sv2 ok" id="ship-comp">—</span></div>
-        <div class="stat"><span class="sk">대기</span><span class="sv2 warn" id="ship-pend">—</span></div>
-        <div class="stat"><span class="sk">건당 평균 CBM</span><span class="sv2" id="ship-avg-cbm">—</span></div>
+        <div class="chart-wrap" style="height:150px"><canvas id="cShip"></canvas></div>
       </div>
     </div>
     <div class="panel">
-      <div class="ph"><h3>박스 타입 구성비</h3></div>
+      <div class="ph"><h3>박스 타입 구성비</h3><span class="badge" id="ship-boxtotal">—</span></div>
       <div class="pb">
-        <div class="chart-wrap" style="height:130px"><canvas id="cBoxType"></canvas></div>
+        <div class="chart-wrap" style="height:150px"><canvas id="cBoxType"></canvas></div>
       </div>
     </div>
   </div>
-  <div class="panel">
-    <div class="ph"><h3>출하 품목 Top (CBM 기준)</h3></div>
-    <div class="pb">
-      <div id="ship-top-items">
-        <div class="stat" style="color:#aaa;font-size:11px">데이터 로딩 중...</div>
-      </div>
+ 
+  <!-- 품목 Top + 운영 품질 -->
+  <div class="two">
+    <div class="panel">
+      <div class="ph"><h3>출하 품목 Top (CBM 기준)</h3></div>
+      <div class="pb"><div id="ship-top-items"><div class="stat" style="color:#aaa;font-size:11px">로딩 중...</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>운영 품질 KPI</h3></div>
+      <div class="pb" id="ship-quality"></div>
     </div>
   </div>
+ 
+  <!-- 4주 트렌드 -->
   <div class="panel">
-    <div class="ph"><h3>일별 CBM</h3></div>
+    <div class="ph"><h3>최근 4주 물동량 · 손익 트렌드</h3></div>
     <div class="pb">
-      <div class="chart-wrap" style="height:140px"><canvas id="cShip"></canvas></div>
+      <div class="chart-wrap" style="height:140px"><canvas id="cTrend"></canvas></div>
+      <div id="ship-trendtbl" style="margin-top:10px"></div>
     </div>
   </div>
+ 
+  <!-- 기사님 CBM 달성율 + 라우팅 km (이전주) -->
+  <div class="two">
+    <div class="panel">
+      <div class="ph"><h3>기사님 CBM 달성율</h3><span class="badge b-info" id="ship-prevwk">이전주</span></div>
+      <div class="pb" id="ship-drivers"></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><h3>기사님 배송 거리 km</h3><span class="badge b-info">이전주 · Kakao 라우팅</span></div>
+      <div class="pb" id="ship-routing"></div>
+    </div>
+  </div>
+ 
+  <!-- 에이원 창고 가동율 -->
+  <div class="panel">
+    <div class="ph"><h3>에이원센터 창고 가동율 (이전주)</h3></div>
+    <div class="pb" id="ship-a1"></div>
+  </div>
+ 
+  <!-- 다음주 예고 -->
+  <div class="panel" id="ship-next-panel">
+    <div class="ph"><h3>다음주 예고</h3><span class="badge" id="ship-nextwk">—</span></div>
+    <div class="pb" id="ship-next"></div>
+  </div>
+ 
+  <!-- 알림 -->
+  <div class="panel">
+    <div class="ph"><h3>주요 알림</h3></div>
+    <div class="pb" id="ship-alerts"></div>
+  </div>
+ 
 </div>
-
+ 
 <div class="footer">Sincerely SCM Dashboard &nbsp;·&nbsp; 데이터 기준: 2026-03-19</div>
-
+ 
 </div><!-- /container -->
-
+ 
 <script>
 let charts = {};
 let D = null;
-
+ 
 // ── Fallback 하드코딩 데이터 ──
 const FALLBACK = {
   kpi: { completion_rate: 97.2, defect_rate: 5.52, accuracy: 100.0, neg_avail_cnt: 53 },
@@ -334,18 +378,21 @@ const FALLBACK = {
   },
   material: { summary: { total:500, accuracy:100.0, mismatch:0, neg_avail:53, check_done:1, total_phys:9337, check_rate:0.2 } }
 };
-
+ 
 // ── 모드별 배지/라벨 설정 ──
 const MODE_CONFIG = {
   weekly_review:   { badge: '주간 실적', badgeCls: 'b-info',  subtitle: '주간 리뷰' },
   weekly_forecast: { badge: '주간 예측', badgeCls: 'b-warn',  subtitle: '주간 예측' },
   monthly:         { badge: '월간 실적', badgeCls: 'b-ok',    subtitle: '월간 리뷰' },
 };
-
+ 
 // ── 데이터 적용 ──
 function applyData(data) {
   D = data;
   window._dashData = data;
+  // 데이터 교체 시 기존 차트 모두 파괴 (스테일 차트 방지)
+  Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} });
+  charts = {};
   const kpi  = data.kpi;
   const inb  = data.inbound.summary;
   const qcs  = data.qc.summary;
@@ -353,12 +400,12 @@ function applyData(data) {
   const per  = data.period;
   const mode = data.report_mode || 'weekly_review';
   const cfg  = MODE_CONFIG[mode] || MODE_CONFIG.weekly_review;
-
+ 
   // 모드 배지 & 부제목
   const badge = document.getElementById('mode-badge');
   if (badge) { badge.textContent = cfg.badge; badge.className = 'badge ' + cfg.badgeCls; }
   setText('report-subtitle', cfg.subtitle);
-
+ 
   // 기간 라벨
   const periodEl = document.getElementById('period-label');
   if (periodEl) periodEl.textContent = per.label || per.week_label || per.month_label || '';
@@ -366,32 +413,32 @@ function applyData(data) {
   if (rangeEl && per.start && per.end) rangeEl.textContent = `${per.start} ~ ${per.end}`;
   const sepEl = document.getElementById('period-sep');
   if (sepEl) sepEl.style.display = '';
-
+ 
   // KPI 카드 (예측 모드에서는 지난주 실적 기준으로 표시)
   setKpi('kpi-compl', kpi.completion_rate, '%', kpi.completion_rate >= 95, '목표 95% 달성', '목표 95% 미달');
   setKpi('kpi-defect', kpi.defect_rate, '%', kpi.defect_rate <= 1.0, '목표 1.0% 달성', '목표 1.0% 미달', true);
   setKpi('kpi-acc', kpi.accuracy, '%', kpi.accuracy >= 99.5, '목표 99.5% 달성', '목표 99.5% 미달');
   setKpi('kpi-neg', kpi.neg_avail_cnt, '종', kpi.neg_avail_cnt === 0, '목표 0종 달성', '목표 0종 미달', true);
-
+ 
   // 카테고리 서브텍스트
   const inbLabel = mode === 'weekly_forecast' ? `예상 ${data.forecast?.projected?.inbound_cnt?.toLocaleString()}건` : `${inb.total_cnt.toLocaleString()}건 · ${inb.total_in_qty.toLocaleString()}개`;
   setText('cat-inbound-sub', inbLabel);
   setText('cat-qc-sub', `불량률 ${qcs.defect_rate}%`);
   setText('cat-mat-sub', `음수재고 ${mat.neg_avail}종`);
-
+ 
   // 입고 요약
   setText('inb-cnt', inb.total_cnt.toLocaleString() + '건');
   setText('inb-qty', inb.total_in_qty.toLocaleString() + '개');
   setText('inb-comp', inb.completed.toLocaleString() + '건');
   setText('inb-unconf', inb.unconfirmed + '건');
   setText('inb-stock', inb.total_stock_qty.toLocaleString() + '개');
-
+ 
   // 검수 요약
   setText('qc-cnt', qcs.qc_cnt.toLocaleString() + '건');
   setText('qc-qty', qcs.total_qc_qty.toLocaleString() + '개');
   setText('qc-defect', qcs.total_defect.toLocaleString() + '개');
   setText('qc-rate', qcs.defect_rate + '%');
-
+ 
   // ── 입고 탭 동적 섹션 ──
   const inbBadge = document.getElementById('inb-compl-badge');
   if (inbBadge) {
@@ -423,7 +470,7 @@ function applyData(data) {
       ).join('');
     }
   }
-
+ 
   const inbWkBody = document.getElementById('inb-week-tbody');
   if (inbWkBody && data.inbound.by_week) {
     const wks = Object.entries(data.inbound.by_week).sort((a,b) => a[0] < b[0] ? -1 : 1);
@@ -432,7 +479,7 @@ function applyData(data) {
       return `<tr><td>${wk.replace(/^\d{4}-/,'')}</td><td class="tr">${v.cnt.toLocaleString()}건</td><td class="tr">${v.in_qty.toLocaleString()}</td><td class="tr">${avg.toLocaleString()}개</td></tr>`;
     }).join('');
   }
-
+ 
   // ── 검수 탭 동적 섹션 ──
   const qcBadge = document.getElementById('qc-defect-badge');
   if (qcBadge) {
@@ -499,14 +546,14 @@ function applyData(data) {
       if (qcItemBadge) { qcItemBadge.textContent = '불량 없음'; qcItemBadge.className = 'badge b-ok'; }
     }
   }
-
+ 
   // 자재 요약
   setText('mat-total', mat.total.toLocaleString() + '종');
   setText('mat-phys', mat.total_phys.toLocaleString());
   setText('mat-neg', mat.neg_avail + '종');
   setText('mat-check-rate', mat.check_rate + '%');
   setText('mat-acc', mat.accuracy + '%');
-
+ 
   // 예측 패널
   const fcPanel = document.getElementById('forecast-panel');
   if (mode === 'weekly_forecast' && data.forecast && fcPanel) {
@@ -532,42 +579,202 @@ function applyData(data) {
   } else if (fcPanel) {
     fcPanel.classList.add('hidden');
   }
-
-  // 출하 탭
-  if (data.shipment) {
-    const sh  = data.shipment;
-    const shs = sh.summary;
-    setText('ship-total', shs.total_count + '건');
-    setText('ship-cbm',   shs.total_cbm + ' m³');
-    setText('ship-comp',  shs.completed + '건');
-    setText('ship-pend',  shs.pending + '건');
-    const avgCbm = shs.total_count ? Math.round(shs.total_cbm / shs.total_count * 1000) / 1000 : 0;
-    setText('ship-avg-cbm', avgCbm + ' m³');
-    setText('cat-ship-sub', `${shs.total_count}건 · ${shs.total_cbm}m³`);
-
-    const topEl = document.getElementById('ship-top-items');
-    if (topEl) {
-      if (sh.top_items?.length) {
-        const maxCbm = sh.top_items[0].cbm || 1;
-        topEl.innerHTML = sh.top_items.map(({name, qty, cbm}) => {
-          const pct = Math.round(cbm / maxCbm * 100);
-          return `<div class="sr">
-            <span class="sn" title="${name}">${name}</span>
-            <div class="bbg"><div class="bf" style="width:${pct}%;background:#85B7EB"></div></div>
-            <span class="sv">${qty.toLocaleString()}개 · ${cbm}m³</span>
-          </div>`;
-        }).join('');
-      } else {
-        topEl.innerHTML = '<div class="stat" style="color:#aaa;font-size:11px">출하 데이터 없음</div>';
-      }
+ 
+  // ── 출하 탭 전체 렌더 ──────────────────────────────────────────
+  const sh  = data.shipment || {};
+  const shs = sh.summary   || {};
+  const wk  = data.weekly  || {};   // 주간 상세 (prev_week, next_week, trend, quality 등)
+  const thisW = wk.this_week || sh;  // 이번주 TMS 데이터
+  const prevW = wk.prev_week || {};
+  const nextW = wk.next_week || {};
+  const trend = wk.trend     || [];
+  const thisQ = thisW.quality || {};
+  const thisSrc = thisW.cbm_sources || {};
+  const thisConf = typeof thisW.confidence === 'number' ? thisW.confidence : sh.confidence || 0;
+ 
+  // KPI
+  const tCnt  = shs.total_count || 0;
+  const tCbm  = shs.total_cbm   || 0;
+  const tComp = shs.completed   || 0;
+  const tPend = shs.pending     || 0;
+  const compRate = tCnt ? Math.round(tComp/tCnt*100) : 0;
+  const avgCbm = tCnt ? (tCbm/tCnt).toFixed(3) : '—';
+  const confColor = thisConf>=70?'ok':thisConf>=40?'warn':'ng';
+  setText('ship-total',    `${tCnt}건`);
+  setText('ship-cbm',      `${tCbm} m³`);
+  setText('ship-comppend', `완료 ${tComp} / 대기 ${tPend}`);
+  setText('ship-avgcbm',   `건당 ${avgCbm}m³`);
+  const crEl=document.getElementById('ship-comprate');
+  if(crEl){crEl.innerHTML=`${compRate}<span class="ku">%</span>`;crEl.className='kv '+(compRate>=80?'ok':'warn');}
+  setText('ship-compsub',  compRate>=80?'양호':'진행 중');
+  const cfEl=document.getElementById('ship-conf');
+  if(cfEl){cfEl.innerHTML=`${thisConf.toFixed(1)}<span class="ku">%</span>`;cfEl.className='kv '+confColor;}
+  setText('ship-confsub',  thisConf>=70?'양호':thisConf>=40?'보통':'낮음');
+  setText('cat-ship-sub',  `${tCnt}건 · ${tCbm}m³`);
+// 박스 합계 배지
+  const btTotal=(sh.box_type||{}).total||0;
+  const btBadge=document.getElementById('ship-boxtotal');
+  if(btBadge){btBadge.textContent=`총 ${btTotal}박스`;btBadge.className='badge '+(btTotal>0?'b-info':'b-warn');}
+ 
+  // 주간 범위 배지
+  const wkRange=document.getElementById('ship-wk-range');
+  if(wkRange&&per.start&&per.end){
+    wkRange.textContent=`${per.start.slice(5).replace('-','/')}~${per.end.slice(5).replace('-','/')}`;
+  }
+ 
+  // 품목 Top
+  const topEl=document.getElementById('ship-top-items');
+  const topItems=(thisW.top_items||sh.top_items||[]);
+  if(topEl){
+    if(topItems.length){
+      const maxCbm2=topItems[0].cbm||1;
+      topEl.innerHTML=topItems.map(({name,qty,cbm},i)=>{
+        const pct=Math.round(cbm/maxCbm2*100);
+        return `<div class="sr"><span class="sn" title="${name}">${i+1}. ${name}</span><div class="bbg"><div class="bf" style="width:${pct}%;background:#85B7EB"></div></div><span class="sv">${qty?qty.toLocaleString()+'개 · ':''}${cbm}m³</span></div>`;
+      }).join('');
+    } else {
+      topEl.innerHTML='<div class="stat" style="color:#aaa;font-size:11px">출하 데이터 없음</div>';
     }
   }
-
+ 
+  // 운영 품질 KPI
+  const qualEl=document.getElementById('ship-quality');
+  if(qualEl&&thisQ.total_records){
+    qualEl.innerHTML=`
+      <div class="stat"><span class="sk">외박스 미기재율</span><span class="sv2 ${thisQ.missing_rate>50?'ng':thisQ.missing_rate>25?'warn':'ok'}">${thisQ.missing_rate}% (${thisQ.missing_box_qty}/${thisQ.total_records}건)</span></div>
+      <div class="stat"><span class="sk">당일 등록 비율</span><span class="sv2">${thisQ.same_day_rate}% (${thisQ.same_day_create}건)</span></div>
+      <div class="stat"><span class="sk">평균 리드타임</span><span class="sv2">${thisQ.avg_leadtime_days!=null?thisQ.avg_leadtime_days+'일':'—'}</span></div>
+      <div class="stat"><span class="sk">CBM 신뢰도</span><span class="sv2 ${confColor}">${thisConf.toFixed(1)}%</span></div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">
+        <span style="font-size:9px;padding:2px 7px;border-radius:4px;background:#E1F5EE;color:#085041">수동 ${thisSrc.manual||0}건</span>
+        <span style="font-size:9px;padding:2px 7px;border-radius:4px;background:#FAEEDA;color:#633806">품목매칭 ${thisSrc.product_match||0}건</span>
+        <span style="font-size:9px;padding:2px 7px;border-radius:4px;background:#E6F1FB;color:#185FA5">박스파싱 ${thisSrc.box_parse||0}건</span>
+        <span style="font-size:9px;padding:2px 7px;border-radius:4px;background:#f0ede6;color:#6b6860">미산출 ${thisSrc.unmatched||0}건</span>
+      </div>`;
+  } else if(qualEl){
+    qualEl.innerHTML='<div style="color:#aaa;font-size:11px">품질 데이터 없음</div>';
+  }
+ 
+  // 기사님 CBM 달성율 (이전주)
+  const VCBM2={'신시어리 (이장훈)':5.4,'신시어리 (조희선)':7.6,'신시어리 (박종성)':9.5};
+  const drvEl=document.getElementById('ship-drivers');
+  const prevWk=document.getElementById('ship-prevwk');
+  if(prevW.week_start&&prevWk){
+    const pw=new Date(prevW.week_start+'T00:00:00');
+    const pf=new Date(pw); pf.setDate(pf.getDate()+4);
+    prevWk.textContent=`${pw.getMonth()+1}/${pw.getDate()}(월)~${pf.getMonth()+1}/${pf.getDate()}(금)`;
+  }
+  if(drvEl&&prevW.driver_pct&&Object.keys(prevW.driver_pct).length){
+    drvEl.innerHTML=Object.entries(VCBM2).map(([driver,cap])=>{
+      const pct=prevW.driver_pct[driver]||0;
+      const wact=((prevW.driver_weekly||{})[driver]||0).toFixed(2);
+      const wmax=(prevW.driver_weekly_max||{})[driver]||cap;
+      const wdays=(prevW.driver_work_days||{})[driver]||{};
+      const color=pct>100?'#E24B4A':pct>70?'#1D9E75':'#EF9F27';
+      const name=driver.replace('신시어리 ','');
+      return `<div style="background:#f9f8f5;border-radius:6px;padding:10px 12px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:500">${name}</span>
+          <span style="font-size:10px;color:#aaa">${cap}m³/일 × ${wdays.count||0}일 = ${wmax}m³</span>
+        </div>
+        <div style="width:100%;height:5px;background:#e8e6e0;border-radius:3px;overflow:hidden;margin-bottom:5px">
+          <div style="height:5px;border-radius:3px;width:${Math.min(pct,100)}%;background:${color}"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-size:11px;color:#888">${wact}m³ / ${wmax}m³</span>
+          <span style="font-size:17px;font-weight:500;color:${color}">${pct.toFixed(1)}%${pct>100?' 초과':''}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } else if(drvEl){
+    drvEl.innerHTML='<div style="color:#aaa;font-size:11px">이전주 기사님 데이터 없음</div>';
+  }
+ 
+  // 라우팅 km (이전주)
+  const rtEl=document.getElementById('ship-routing');
+  const rtg=prevW.routing||{};
+  if(rtEl&&rtg.driver_weekly_km&&Object.keys(rtg.driver_weekly_km).length){
+    const wkm=rtg.driver_weekly_km;
+    const dr=rtg.driver_daily_routes||{};
+    const maxKm=Math.max(...Object.values(wkm),1);
+    const DAY3=['일','월','화','수','목','금','토'];
+    rtEl.innerHTML=Object.entries(VCBM2).map(([driver])=>{
+      const km=wkm[driver]||0;
+      const dailyData=dr[driver]||{};
+      const name=driver.replace('신시어리 ','');
+      const dayRows=Object.entries(dailyData).sort().map(([d,info])=>{
+        const dt=new Date(d+'T00:00:00');
+        const lbl=`${dt.getMonth()+1}/${dt.getDate()}(${DAY3[dt.getDay()]})`;
+        return `<div class="sr"><span class="sn" style="flex:0 0 80px;font-size:10px">${lbl}</span><div class="bbg"><div class="bf" style="width:${maxKm>0?Math.round(info.total_km/maxKm*100):0}%;background:#85B7EB"></div></div><span class="sv">${info.total_km.toFixed(1)}km · ${info.stops}곳</span></div>`;
+      }).join('');
+      return `<div style="background:#f9f8f5;border-radius:6px;padding:10px 12px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:500">${name}</span>
+          <span style="font-size:18px;font-weight:500;color:#185FA5">${km.toFixed(1)}<span style="font-size:10px;color:#aaa;margin-left:2px">km</span></span>
+        </div>${dayRows}</div>`;
+    }).join('');
+  } else if(rtEl){
+    rtEl.innerHTML='<div style="color:#aaa;font-size:11px">라우팅 데이터 없음 (KAKAO_REST_API_KEY 확인)</div>';
+  }
+ 
+  // 에이원 창고 가동율
+  const a1El=document.getElementById('ship-a1');
+  const a1=prevW.a1_utilization||{};
+  if(a1El&&a1.capacity){
+    const pct=a1.pct||0;
+    const clr=pct>120?'#E24B4A':pct>100?'#EF9F27':pct>70?'#1D9E75':'#85B7EB';
+    a1El.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <div class="stat"><span class="sk">창고 용량</span><span class="sv2">${a1.capacity} m³</span></div>
+        <div class="stat"><span class="sk">주간 총 출하</span><span class="sv2" style="color:${clr}">${(a1.total_cbm||0).toFixed(2)} m³</span></div>
+        <div class="stat"><span class="sk">가동율</span><span class="sv2" style="color:${clr}">${pct.toFixed(1)}%</span></div>
+        ${pct>100?`<div class="stat"><span class="sk">초과분</span><span class="sv2 ng">+${((a1.total_cbm||0)-a1.capacity).toFixed(2)} m³</span></div>`:''}
+      </div>
+      <div>
+        <div style="font-size:10px;color:#888;margin-bottom:5px">가동율</div>
+        <div style="width:100%;height:10px;background:#e8e6e0;border-radius:5px;overflow:hidden;margin:6px 0">
+          <div style="height:10px;border-radius:5px;width:${Math.min(pct,100)}%;background:${clr}"></div>
+        </div>
+        <div style="font-size:28px;font-weight:600;color:${clr}">${pct.toFixed(1)}<span style="font-size:11px;color:#aaa;margin-left:2px">%</span></div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">에이원센터 44.4m³</div>
+      </div>
+    </div>`;
+  } else if(a1El){
+    a1El.innerHTML='<div style="color:#aaa;font-size:11px">이전주 데이터 없음</div>';
+  }
+ 
+  // 다음주 예고
+  const nxtEl=document.getElementById('ship-next');
+  const nxtPanel=document.getElementById('ship-next-panel');
+  const nxtBadge=document.getElementById('ship-nextwk');
+  if(nextW.summary&&nextW.summary.total_count>0){
+    if(nxtPanel) nxtPanel.style.display='';
+    if(nxtBadge) nxtBadge.textContent=`예정 ${nextW.summary.total_count}건 · ${(nextW.summary.total_cbm||0).toFixed(1)}m³`;
+    if(nxtEl) nxtEl.innerHTML=`<div class="stat"><span class="sk">예정 건수</span><span class="sv2">${nextW.summary.total_count}건</span></div><div class="stat"><span class="sk">예상 CBM</span><span class="sv2">${(nextW.summary.total_cbm||0).toFixed(2)} m³</span></div>`;
+  } else if(nxtPanel){
+    nxtPanel.style.display='none';
+  }
+ 
+  // 알림
+  const altEl=document.getElementById('ship-alerts');
+  if(altEl){
+    const alts=[];
+    if(tPend>5) alts.push({t:'warn',m:`미완료 출하 ${tPend}건 — 진행 상황 확인 필요`});
+    if(thisQ.missing_rate>50) alts.push({t:'warn',m:`외박스 수량 미기재율 ${thisQ.missing_rate}% (${thisQ.missing_box_qty}건) — CBM 신뢰도 저하`});
+    if(tCbm>25) alts.push({t:'info',m:`주간 CBM ${tCbm}m³ 초과 — 차량 용량 사전 조율 권장`});
+    if(a1.pct>100) alts.push({t:'warn',m:`이전주 에이원 창고 가동율 ${a1.pct.toFixed(1)}% — 용량 초과 확인 필요`});
+    if(!alts.length) alts.push({t:'ok',m:'특이 사항 없음'});
+    const borderMap={warn:'#BA7517',ok:'#1D9E75',info:'#185FA5'};
+    const bgMap={warn:'#FAEEDA',ok:'#E1F5EE',info:'#E6F1FB'};
+    const txtMap={warn:'#633806',ok:'#085041',info:'#0C447C'};
+    altEl.innerHTML=alts.map(a=>`<div style="padding:8px 12px;border-left:2px solid ${borderMap[a.t]};background:${bgMap[a.t]};border-radius:0 6px 6px 0;margin-bottom:5px;font-size:11px;color:${txtMap[a.t]}">${a.m}</div>`).join('');
+  }
+ 
   // 푸터
   const footer = document.querySelector('.footer');
   if (footer) footer.textContent = `Sincerely SCM Dashboard · ${per.label || ''} · 생성: ${data.generated_at || ''}`;
 }
-
+ 
 function setKpi(id, value, unit, isGood, goodMsg, badMsg, invertColor) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -576,12 +783,12 @@ function setKpi(id, value, unit, isGood, goodMsg, badMsg, invertColor) {
   ks.textContent = isGood ? goodMsg : badMsg;
   ks.className = 'ks ' + (isGood ? 'ok' : 'ng');
 }
-
+ 
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
 }
-
+ 
 // ── 히스토리 탭 빌드 ──
 async function loadHistory() {
   try {
@@ -590,10 +797,10 @@ async function loadHistory() {
     const idx = await res.json();
     const tabs = document.getElementById('period-tabs');
     if (!tabs || !idx.periods?.length) return;
-
+ 
     // 최신순 정렬 (이미 정렬돼있지만 보장)
     const periods = idx.periods.slice(0, 12); // 최대 12개 표시
-
+ 
     tabs.innerHTML = '';
     periods.forEach((p, i) => {
       if (i > 0 && i % 4 === 0) {
@@ -612,7 +819,7 @@ async function loadHistory() {
     console.log('[dashboard] history/index.json 없음');
   }
 }
-
+ 
 async function loadPeriod(filename, btnEl) {
   document.querySelectorAll('.pc').forEach(b => b.classList.remove('on'));
   if (btnEl) btnEl.classList.add('on');
@@ -628,7 +835,7 @@ async function loadPeriod(filename, btnEl) {
     console.log('[dashboard] history 로드 실패:', filename);
   }
 }
-
+ 
 // ── pages_data.json 로드 ──
 async function loadData() {
   try {
@@ -642,9 +849,9 @@ async function loadData() {
     console.log('[dashboard] pages_data.json 없음, fallback 사용');
   }
 }
-
+ 
 function setPeriod(el) { /* 동적 탭으로 대체됨 */ }
-
+ 
 function setCat(cat, el) {
   ['inbound','qc','material','ship'].forEach(t => {
     document.getElementById('tab-' + t).classList.add('hidden');
@@ -654,11 +861,11 @@ function setCat(cat, el) {
   el.classList.add('on');
   setTimeout(() => drawChart(cat), 50);
 }
-
+ 
 function drawChart(cat) {
   if (charts[cat]) { return; }
   const data = D || FALLBACK;
-
+ 
   if (cat === 'inbound') {
     const ctx = document.getElementById('cInbound');
     if (!ctx) return;
@@ -686,7 +893,7 @@ function drawChart(cat) {
       }
     });
   }
-
+ 
   if (cat === 'qc') {
     const ctx = document.getElementById('cQC');
     if (!ctx) return;
@@ -721,7 +928,7 @@ function drawChart(cat) {
       }
     });
   }
-
+ 
   if (cat === 'material') {
     const ctx = document.getElementById('cMat');
     if (!ctx) return;
@@ -741,48 +948,83 @@ function drawChart(cat) {
       }
     });
   }
-
+ 
   if (cat === 'ship') {
-    // 박스 타입 구성비 도넛 차트
+    // ── 박스 타입 도넛 (counts가 비어있으면 파트너별로 대체) ──
     const ctxBox = document.getElementById('cBoxType');
-    if (ctxBox && data.shipment?.box_type?.counts) {
-      const bt = data.shipment.box_type;
-      const btLabels = Object.keys(bt.counts);
-      const btCounts = Object.values(bt.counts);
-      const pcts     = btLabels.map(k => bt.pct[k] || 0);
-      const boxColors = { '극소':'#B5D4F4','소':'#85B7EB','중':'#5DCAA5','중대':'#AFA9EC','대':'#EF9F27','특대':'#F09595' };
-      charts.boxType = new Chart(ctxBox, {
-        type: 'doughnut',
-        data: {
-          labels: btLabels.map((k, i) => `${k} ${bt.pct[k]}% (${bt.counts[k]}개)`),
-          datasets: [{
-            data: btCounts,
-            backgroundColor: btLabels.map(k => boxColors[k] || '#D3D1C7'),
-            borderWidth: 0, hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { position: 'right', labels: { font: { size: 9 }, boxWidth: 10, padding: 6 } } }
+    const bt = data.shipment?.box_type || {};
+    const btCounts = bt.counts || {};
+    const btPct    = bt.pct    || {};
+    const btLabels = Object.keys(btCounts);
+ 
+    if (ctxBox) {
+      if (btLabels.length > 0) {
+        // 박스 규격별 도넛
+        const boxColors = {'극소':'#B5D4F4','소':'#85B7EB','중':'#5DCAA5','중대':'#AFA9EC','대':'#EF9F27','특대':'#F09595'};
+        charts.boxType = new Chart(ctxBox, {
+          type: 'doughnut',
+          data: {
+            labels: btLabels.map(k => `${k} ${btPct[k]||0}% (${btCounts[k]}개)`),
+            datasets: [{ data: btLabels.map(k => btCounts[k]),
+              backgroundColor: btLabels.map(k => boxColors[k] || '#D3D1C7'),
+              borderWidth: 0, hoverOffset: 4 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'right', labels: { font:{size:9}, boxWidth:10, padding:6 } } } }
+        });
+      } else {
+        // 박스 파싱 데이터 없음 → 배송파트너별 도넛으로 대체
+        const partners = (data.shipment?.partners || []).slice(0, 6);
+        if (partners.length > 0) {
+          const pColors = ['#5DCAA5','#85B7EB','#AFA9EC','#EF9F27','#F09595','#D3D1C7'];
+          charts.boxType = new Chart(ctxBox, {
+            type: 'doughnut',
+            data: {
+              labels: partners.map(p => p.name.replace('신시어리 기사님','기사님')),
+              datasets: [{ data: partners.map(p => p.cnt),
+                backgroundColor: pColors, borderWidth: 0, hoverOffset: 4 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'right', labels: { font:{size:9}, boxWidth:10, padding:6 } },
+                title: { display: true, text: '배송파트너별 건수 (박스규격 데이터 없음)',
+                  font:{size:9}, color:'#aaa', padding:{bottom:4} }
+              } }
+          });
+        } else {
+          ctxBox.parentElement.innerHTML =
+            '<div style="text-align:center;padding:38px 0;font-size:11px;color:#aaa">박스 규격 데이터 없음<br><span style="font-size:10px">CBM 수동입력 건이 대부분인 경우</span></div>';
         }
-      });
+      }
     }
-
-    // 일별 CBM 차트 (by_date 동적 렌더링)
+ 
+    // ── 일별 CBM 바 차트 ──
     const ctx = document.getElementById('cShip');
     if (!ctx) return;
     const byDate   = data.shipment?.by_date || {};
     const dateKeys = Object.keys(byDate).sort();
     const DAY = ['일','월','화','수','목','금','토'];
-    const shipLabels = dateKeys.map(d => { const dt = new Date(d); return `${dt.getMonth()+1}/${dt.getDate()}(${DAY[dt.getDay()]})`; });
-    const cbmData    = dateKeys.map(d => byDate[d].cbm);
-    const cntData    = dateKeys.map(d => byDate[d].cnt);
-    const maxCbm     = Math.max(...cbmData, 0.1);
-    const bgColors   = cbmData.map(v => v >= maxCbm * 0.8 ? '#5DCAA5' : v > 0 ? '#85B7EB' : '#D3D1C7');
+ 
+    if (dateKeys.length === 0) {
+      ctx.parentElement.innerHTML =
+        '<div style="text-align:center;padding:48px 0;font-size:11px;color:#aaa">일별 출하 데이터 없음</div>';
+      return;
+    }
+ 
+    // 'T00:00:00' 붙여서 로컬 타임존으로 파싱 (UTC 파싱 시 KST 요일 오류 방지)
+    const shipLabels = dateKeys.map(d => {
+      const dt = new Date(d + 'T00:00:00');
+      return `${dt.getMonth()+1}/${dt.getDate()}(${DAY[dt.getDay()]})`;
+    });
+    const cbmData = dateKeys.map(d => byDate[d].cbm || 0);
+    const cntData = dateKeys.map(d => byDate[d].cnt  || 0);
+    const maxCbm  = Math.max(...cbmData, 0.1);
+    const bgColors = cbmData.map(v => v >= maxCbm * 0.8 ? '#5DCAA5' : v > 0 ? '#85B7EB' : '#D3D1C7');
+ 
     charts.ship = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: shipLabels.length ? shipLabels : ['데이터 없음'],
+        labels: shipLabels,
         datasets: [
           { label: 'CBM', data: cbmData, backgroundColor: bgColors, borderRadius: 3, yAxisID: 'y' },
           { label: '건수', data: cntData, type: 'line', borderColor: '#AFA9EC',
@@ -795,14 +1037,48 @@ function drawChart(cat) {
         plugins: { legend: { display: false } },
         scales: {
           x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-          y: { position: 'left', ticks: { font: { size: 9 }, callback: v => v + 'm³' }, title: { display: true, text: 'CBM', font: { size: 9 } } },
-          y2: { position: 'right', ticks: { font: { size: 9 } }, grid: { display: false }, title: { display: true, text: '건수', font: { size: 9 } } }
+          y: { position: 'left', min: 0,
+               ticks: { font: { size: 9 }, callback: v => v + 'm³' },
+               title: { display: true, text: 'CBM', font: { size: 9 } } },
+          y2: { position: 'right', min: 0,
+                ticks: { font: { size: 9 } }, grid: { display: false },
+                title: { display: true, text: '건수', font: { size: 9 } } }
         }
       }
     });
+ 
+    // ── 4주 트렌드 차트 ──
+    const trendData = (data.weekly || {}).trend || [];
+    const ctxTrend  = document.getElementById('cTrend');
+    if (ctxTrend && trendData.length) {
+      charts.trend = new Chart(ctxTrend, {
+        type: 'bar',
+        data: { labels: trendData.map(t => t.week), datasets: [
+          { label:'CBM', data:trendData.map(t=>t.cbm), backgroundColor:'#85B7EB', borderRadius:3, yAxisID:'y' },
+          { label:'건수', data:trendData.map(t=>t.count), type:'line', borderColor:'#5DCAA5',
+            backgroundColor:'transparent', pointRadius:3, pointBackgroundColor:'#5DCAA5',
+            borderWidth:1.5, yAxisID:'y2', tension:0.3 }
+        ]},
+        options: { responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false} },
+          scales:{
+            x:{ticks:{font:{size:10}},grid:{display:false}},
+            y:{position:'left',min:0,ticks:{font:{size:9},callback:v=>v+'m³'},grid:{color:'#f0ede6'}},
+            y2:{position:'right',min:0,ticks:{font:{size:9}},grid:{display:false}}
+          } }
+      });
+      const tblEl=document.getElementById('ship-trendtbl');
+      if (tblEl) {
+        const fmt3=n=>isNaN(n)?'—':Math.round(n).toLocaleString('ko-KR');
+        tblEl.innerHTML=`<table class="wt"><thead><tr><th>주차</th><th class="tr">건수</th><th class="tr">CBM</th><th class="tr">비용</th><th class="tr">손익</th></tr></thead>
+          <tbody>${trendData.map(t=>`<tr><td>${t.week}</td><td class="tr">${t.count}건</td><td class="tr">${t.cbm.toFixed(1)}m³</td><td class="tr">${t.cost>0?fmt3(t.cost)+'원':'—'}</td><td class="tr" style="color:${t.profit>=0?'#1D9E75':'#E24B4A'}">${t.profit!==0?(t.profit>=0?'+':'')+fmt3(t.profit)+'원':'—'}</td></tr>`).join('')}</tbody></table>`;
+      }
+    } else if (ctxTrend) {
+      ctxTrend.parentElement.innerHTML='<div style="text-align:center;padding:48px 0;font-size:11px;color:#aaa">트렌드 데이터 없음</div>';
+    }
   }
 }
-
+ 
 async function init() {
   await loadData();
   drawChart('inbound');
