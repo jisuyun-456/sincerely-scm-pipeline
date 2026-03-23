@@ -115,7 +115,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add history/ docs/weekly.html docs/monthly.html
+          git add history/
+          [ -f docs/weekly.html  ] && git add docs/weekly.html  || true
+          [ -f docs/monthly.html ] && git add docs/monthly.html || true
           git diff --staged --quiet || git commit -m "chore: update scm report [skip ci]"
           git push
 
