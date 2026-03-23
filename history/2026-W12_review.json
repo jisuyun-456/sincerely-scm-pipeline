@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-23T01:24:57",
+  "generated_at": "2026-03-23T02:31:23",
   "report_mode": "weekly_review",
   "period_key": "2026-W12_review",
   "period": {
@@ -11,7 +11,7 @@
   "kpi": {
     "completion_rate": 99.6,
     "defect_rate": 1.69,
-    "accuracy": 98.6,
+    "accuracy": 98.1,
     "neg_avail_cnt": 9
   },
   "inbound": {
@@ -97,8 +97,7 @@
     },
     "result_dist": {
       "수량 정상": 264,
-      "이슈 발생 후 해결": 2,
-      "이슈 발생": 2
+      "이슈 발생 후 해결": 4
     },
     "defect_by_item": [
       {
@@ -136,12 +135,12 @@
   "material": {
     "summary": {
       "total": 432,
-      "accuracy": 98.6,
-      "mismatch": 6,
+      "accuracy": 98.1,
+      "mismatch": 8,
       "neg_avail": 9,
       "check_done": 424,
-      "total_phys": 547055,
-      "total_avail": 492501,
+      "total_phys": 546904,
+      "total_avail": 492157,
       "check_rate": 98.1
     }
   },
