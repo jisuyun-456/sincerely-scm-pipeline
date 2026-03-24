@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-24T03:49:16",
+  "generated_at": "2026-03-24T05:30:20",
   "report_mode": "weekly_review",
   "period_key": "2026-W12_review",
   "period": {
@@ -12,7 +12,7 @@
     "completion_rate": 99.7,
     "defect_rate": 0.49,
     "accuracy": 98.5,
-    "neg_avail_cnt": 26
+    "neg_avail_cnt": 19
   },
   "inbound": {
     "summary": {
@@ -153,10 +153,10 @@
   "material": {
     "summary": {
       "total": 717,
-      "total_phys": 512461,
+      "total_phys": 518454,
       "mismatch": 11,
       "accuracy": 98.5,
-      "neg_avail": 26,
+      "neg_avail": 19,
       "check_done": 694,
       "check_rate": 96.8
     }
@@ -747,9 +747,9 @@
     "next_week": {
       "summary": {
         "total_cbm": 0.0,
-        "total_count": 41,
+        "total_count": 42,
         "completed": 0,
-        "pending": 41,
+        "pending": 42,
         "revenue": 0.0,
         "cost": 0.0,
         "profit": 0.0,
@@ -782,10 +782,10 @@
           "cost": 0.0
         },
         "2026-04-02": {
-          "cnt": 4,
+          "cnt": 5,
           "cbm": 0.0,
           "completed": 0,
-          "pending": 4,
+          "pending": 5,
           "revenue": 0.0,
           "cost": 0.0
         },
