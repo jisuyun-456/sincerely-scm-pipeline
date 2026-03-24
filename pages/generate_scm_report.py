@@ -717,7 +717,7 @@ def calc_routing(records):
             total_km=_route_km(origin,stop_xys) if stop_xys else 0.0
             driver_daily_routes[driver][d_str]={"total_km":total_km,"stops":len(stop_xys),"depot":depot_key,
                                                   "route":[{"address":a,"leg_km":0} for a in valid_addrs]}
-            driver_weekly_km[driver]=round(driver_weekly_km[driver]+total_km,2
+            driver_weekly_km[driver]=round(driver_weekly_km[driver]+total_km,2)
             name=driver.replace("신시어리","").strip()
             print(f"  [{name}] {d_str}: {total_km}km / {len(stop_xys)}정류장 ({depot_key})")
 
@@ -737,6 +737,23 @@ def _calc_weekly_km_breakdown(routing):
             except Exception: pass
         result[driver]=dict(sorted(weekly.items()))
     return result
+
+# ================================================================
+# HTML JSON 주입
+# ================================================================
+def inject_html(html_path, data, placeholder):
+    p=pathlib.Path(html_path)
+    if not p.exists():
+        print(f"  [HTML 스킵] {html_path} 없음")
+        return
+    src=p.read_text(encoding="utf-8")
+    json_str=json.dumps(data,ensure_ascii=False,default=str)
+    new_src=src.replace(placeholder,f"const {placeholder.split('=')[0].strip()} = {json_str}")
+    if new_src==src:
+        print(f"  [HTML 경고] {html_path} - placeholder 없음: {placeholder[:40]}")
+        return
+    p.write_text(new_src,encoding="utf-8")
+    print(f"  [OK] {html_path} 주입 완료")
 
 # ================================================================
 # 메인
