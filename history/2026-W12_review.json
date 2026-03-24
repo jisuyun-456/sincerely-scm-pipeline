@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-24T01:46:45",
+  "generated_at": "2026-03-24T03:49:16",
   "report_mode": "weekly_review",
   "period_key": "2026-W12_review",
   "period": {
@@ -10,16 +10,16 @@
   },
   "kpi": {
     "completion_rate": 99.7,
-    "defect_rate": 1.69,
+    "defect_rate": 0.49,
     "accuracy": 98.5,
-    "neg_avail_cnt": 25
+    "neg_avail_cnt": 26
   },
   "inbound": {
     "summary": {
-      "total_cnt": 286,
-      "total_in_qty": 106490,
+      "total_cnt": 287,
+      "total_in_qty": 111565,
       "total_stock_qty": 106427,
-      "completed": 285,
+      "completed": 286,
       "unconfirmed": 0,
       "completion_rate": 99.7
     },
@@ -41,20 +41,20 @@
         "in_qty": 7559
       },
       "2026-03-20": {
-        "cnt": 80,
-        "in_qty": 35601
+        "cnt": 81,
+        "in_qty": 40676
       }
     },
     "by_week": {
       "2026-W12": {
-        "cnt": 286,
-        "in_qty": 106490
+        "cnt": 287,
+        "in_qty": 111565
       }
     },
     "by_purpose": {
       "생산산출": {
-        "cnt": 207,
-        "qty": 57395
+        "cnt": 208,
+        "qty": 62470
       },
       "생산샘플": {
         "cnt": 12,
@@ -82,22 +82,25 @@
   },
   "qc": {
     "summary": {
-      "qc_cnt": 5,
-      "total_qc_qty": 1830,
-      "total_defect": 31,
-      "defect_rate": 1.69,
-      "target_met": false
+      "qc_cnt": 287,
+      "total_qc_qty": 8367,
+      "sample_rate": 0.075,
+      "actual_qc_cnt": 6,
+      "total_defect": 41,
+      "defect_rate": 0.49,
+      "target_met": true
     },
     "by_week": {
       "W12": {
-        "qc_qty": 1830,
-        "defect": 31,
-        "defect_rate": 1.69
+        "cnt": 287,
+        "qc_qty": 8232,
+        "defect": 41,
+        "defect_rate": 0.5
       }
     },
     "result_dist": {
-      "수량 정상": 4,
-      "이슈 발생 후 해결": 1
+      "수량 정상": 282,
+      "이슈 발생 후 해결": 5
     },
     "defect_by_item": [
       {
@@ -119,6 +122,12 @@
         "defect_rate": 6.0
       },
       {
+        "name": "Solid커스텀G형박스",
+        "qc_qty": 380,
+        "defect": 10,
+        "defect_rate": 2.63
+      },
+      {
         "name": "알류미늄플레이트(클래시방향제_전사)",
         "qc_qty": 132,
         "defect": 3,
@@ -130,15 +139,24 @@
         "defect": 1,
         "defect_rate": 0.07
       }
-    ]
+    ],
+    "issue_summary": {
+      "total_cnt": 287,
+      "issue_cnt": 11,
+      "cat_counts": {
+        "품질이슈": 6,
+        "운영이슈": 2,
+        "수량이슈": 4
+      }
+    }
   },
   "material": {
     "summary": {
       "total": 717,
-      "total_phys": 519002,
+      "total_phys": 512461,
       "mismatch": 11,
       "accuracy": 98.5,
-      "neg_avail": 25,
+      "neg_avail": 26,
       "check_done": 694,
       "check_rate": 96.8
     }
@@ -729,9 +747,9 @@
     "next_week": {
       "summary": {
         "total_cbm": 0.0,
-        "total_count": 42,
+        "total_count": 41,
         "completed": 0,
-        "pending": 42,
+        "pending": 41,
         "revenue": 0.0,
         "cost": 0.0,
         "profit": 0.0,
@@ -740,10 +758,10 @@
       },
       "by_date": {
         "2026-03-30": {
-          "cnt": 11,
+          "cnt": 10,
           "cbm": 0.0,
           "completed": 0,
-          "pending": 11,
+          "pending": 10,
           "revenue": 0.0,
           "cost": 0.0
         },
