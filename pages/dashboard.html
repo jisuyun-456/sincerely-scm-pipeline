@@ -742,12 +742,15 @@ function applyData(data) {
       const dayRows=Object.entries(dailyData).sort().map(([d,info])=>{
         const dt=new Date(d+'T00:00:00');
         const lbl=`${dt.getMonth()+1}/${dt.getDate()}(${DAY3[dt.getDay()]})`;
-        return `<div class="sr"><span class="sn" style="flex:0 0 80px;font-size:10px">${lbl}</span><div class="bbg"><div class="bf" style="width:${maxKm>0?Math.round(info.total_km/maxKm*100):0}%;background:#85B7EB"></div></div><span class="sv">${info.total_km.toFixed(1)}km · ${info.stops}곳</span></div>`;
+        const minStr = info.total_min ? ` · ${info.total_min}분` : '';
+        return `<div class="sr"><span class="sn" style="flex:0 0 80px;font-size:10px">${lbl}</span><div class="bbg"><div class="bf" style="width:${maxKm>0?Math.round(info.total_km/maxKm*100):0}%;background:#85B7EB"></div></div><span class="sv">${info.total_km.toFixed(1)}km · ${info.stops}곳${minStr}</span></div>`;
       }).join('');
+      const totalMin = Object.values(dailyData).reduce((s,d)=>s+(d.total_min||0),0);
+      const totalTimeStr = totalMin>0 ? ` · ${Math.floor(totalMin/60)}시간 ${totalMin%60}분` : '';
       return `<div style="background:#f9f8f5;border-radius:6px;padding:10px 12px;margin-bottom:6px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
           <span style="font-size:12px;font-weight:500">${name}</span>
-          <span style="font-size:18px;font-weight:500;color:#185FA5">${km.toFixed(1)}<span style="font-size:10px;color:#aaa;margin-left:2px">km</span></span>
+          <span style="font-size:18px;font-weight:500;color:#185FA5">${km.toFixed(1)}<span style="font-size:10px;color:#aaa;margin-left:2px">km</span><span style="font-size:10px;color:#888;margin-left:5px">${totalTimeStr}</span></span>
         </div>${dayRows}</div>`;
     }).join('');
   } else if(rtEl){
