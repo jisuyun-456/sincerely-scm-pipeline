@@ -618,142 +618,594 @@ def analyze_tms(records, live_cbm, product_cbm=None):
     }
 
 # ================================================================
-# 라우팅 km (Kakao API)
+# 기사님별 배송 라우팅 거리 계산
 # ================================================================
-_geocode_cache = {}
-_depot_coords  = {}
-DEPOT_ADDRESSES = {
-    "에이원센터": "서울시 성동구 성수동 1가 13-209 서울숲 에이원지식산업센터",
-    "다영기획":   "경기도 성남시 중원구 둔촌대로 555 선일 테크노피아",
-}
+# 적용 파일: sincerely_weekly_report_v2.py 에 함수 추가
+#
+# [구조]
+# 1. fetch_routing_records()  - 배송슬롯 + 수령인주소 + 희망시간 조회
+# 2. group_by_slot()          - 오전/오후/무관 그룹 분리
+# 3. sort_by_time()           - 슬롯 내 희망시간 기준 정렬
+# 4. geocode_kakao()          - 주소 -> 좌표 변환 (카카오 로컬 API)
+# 5. route_distance_kakao()   - 경유지 포함 총 거리 계산 (카카오 모빌리티)
+# 6. calc_driver_routing()    - 기사님별 일간/주간 km 집계
+#
+# [수식]
+# 총 거리 = 에이원 -> 1번지 -> 2번지 -> ... -> N번지 (편도)
+# 왕복 여부는 설정값으로 조절 (INCLUDE_RETURN_TRIP)
+#
+# [GitHub Secrets]
+# KAKAO_REST_API_KEY  : 카카오 REST API 키
+# ================================================================
+
+import os
+import re
+import time
+import requests
+from collections import defaultdict
+from datetime import date, timedelta
+
+# ----------------------------------------------------------------
+# 설정값
+# ----------------------------------------------------------------
+KAKAO_API_KEY = os.environ.get("KAKAO_REST_API_KEY", "")
+
+# 출발지 (에이원지식산업센터)
+ORIGIN_ADDRESS = "서울시 성동구 성수동1가 13-209 에이원지식산업센터"
+ORIGIN_COORDS  = None  # 최초 1회 geocode 후 캐시
+
+# 다영기획 (협력사 출발지) - 박종성 기사님 출하장소가 다영기획일 때 출발지 변경
+DAYOUNG_ADDRESS = "경기도 성남시 중원구 둔촌대로 555"
+DAYOUNG_ORIGIN_COORDS = None  # 최초 1회 geocode 후 캐시
+
+# 다영기획 출발지 적용 기사님
 DAYOUNG_DRIVER = "신시어리 (박종성)"
 
-def _kakao_headers():
-    return {"Authorization": f"KakaoAK {KAKAO_KEY}"}
+# 왕복 포함 여부 (True: 에이원 복귀 거리 포함)
+INCLUDE_RETURN_TRIP = False
 
-def _geocode(address):
-    if address in _geocode_cache: return _geocode_cache[address]
-    if not KAKAO_KEY: return None
+# 슬롯 분류
+SLOT_MORNING   = "오전"
+SLOT_AFTERNOON = "오후"
+SLOT_FLEXIBLE  = "무관"
+
+# 기사님 목록
+SINCERELY_DRIVERS = [
+    "신시어리 (이장훈)",
+    "신시어리 (조희선)",
+    "신시어리 (박종성)",
+]
+
+# Field ID 상수
+F_DATE        = "fldQvmEwwzvQW95h9"   # 출하확정일
+F_PARTNER     = "fldHZ7yMT3KEu2gSj"   # 배송파트너 (from 배송파트너)
+F_SLOT        = "fldcSrlxCngYQHtSV"   # 배송슬롯 (오전/오후/무관)
+F_ADDRESS     = "fldyJHUh9gN44Ggnh"   # 수령인(주소)
+F_WISH_TIME   = "fldFweNu3dASPv93N"   # 고객 희망 수령 시간
+F_STATUS      = "fldOhibgxg6LIpRTi"   # 발송상태_TMS
+F_TOTAL_CBM   = "fldJ9DHjwoRyeUEqE"   # Total_CBM
+F_DEPARTURE   = "fldGZyp4KJNCSWWUr"   # 출하장소명 (multipleLookupValues)
+
+
+# ----------------------------------------------------------------
+# 1. 카카오 API 유틸
+# ----------------------------------------------------------------
+def _kakao_headers() -> dict:
+    return {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
+
+
+def geocode_kakao(address: str) -> tuple[float, float] | None:
+    """
+    주소 -> (위도, 경도) 변환
+    반환: (lat, lng) 또는 None
+    """
+    if not address or not KAKAO_API_KEY:
+        return None
     try:
-        resp=requests.get("https://dapi.kakao.com/v2/local/search/address.json",
-                          headers=_kakao_headers(),params={"query":address,"size":1},timeout=5)
+        resp = requests.get(
+            "https://dapi.kakao.com/v2/local/search/address.json",
+            headers=_kakao_headers(),
+            params={"query": address.strip(), "analyze_type": "similar"},
+            timeout=5,
+        )
         resp.raise_for_status()
-        docs=resp.json().get("documents",[])
-        if not docs:
-            resp2=requests.get("https://dapi.kakao.com/v2/local/search/keyword.json",
-                               headers=_kakao_headers(),params={"query":address,"size":1},timeout=5)
-            resp2.raise_for_status()
-            docs=resp2.json().get("documents",[])
-        xy={"x":float(docs[0]["x"]),"y":float(docs[0]["y"])} if docs else None
+        docs = resp.json().get("documents", [])
+        if docs:
+            d = docs[0]
+            return float(d["y"]), float(d["x"])  # (lat, lng)
     except Exception as e:
-        print(f"  [geocode 실패] {address[:30]}: {e}"); xy=None
-    _geocode_cache[address]=xy; return xy
+        print(f"  [geocode 실패] {address[:30]}... : {e}")
+    return None
 
-def _route_km(origin_xy, stop_xys):
-    if not stop_xys or not KAKAO_KEY: return 0.0
-    dest=stop_xys[-1]
-    waypoints=[{"name":f"경유{i+1}","x":s["x"],"y":s["y"]} for i,s in enumerate(stop_xys[:-1])]
-    body={"origin":{"x":origin_xy["x"],"y":origin_xy["y"]},"destination":{"x":dest["x"],"y":dest["y"]}}
-    if waypoints: body["waypoints"]=waypoints
+
+def route_distance_kakao(coords: list[tuple[float, float]]) -> float:
+    """
+    경유지 포함 총 주행거리 계산 (카카오 모빌리티 다중경유 API)
+    coords: [(lat, lng), ...] - 출발지 포함, 순서대로
+    반환: 총 거리 (km), 실패시 직선거리 fallback
+    """
+    if len(coords) < 2 or not KAKAO_API_KEY:
+        return 0.0
+
+    origin = coords[0]
+    dest   = coords[-1]
+    waypoints = coords[1:-1]  # 중간 경유지
+
     try:
-        resp=requests.post("https://apis-navi.kakaomobility.com/v1/waypoints/directions",
-                           headers={**_kakao_headers(),"Content-Type":"application/json"},
-                           json=body,timeout=15)
+        params = {
+            "origin":      f"{origin[1]},{origin[0]}",   # lng,lat
+            "destination": f"{dest[1]},{dest[0]}",
+            "priority":    "RECOMMEND",
+            "car_fuel":    "GASOLINE",
+            "car_hipass":  "false",
+            "alternatives": "false",
+            "road_details": "false",
+        }
+        # 경유지 최대 3개 (카카오 무료 기준)
+        for i, wp in enumerate(waypoints[:3], 1):
+            params[f"waypoint{i}"] = f"{wp[1]},{wp[0]}"  # lng,lat
+
+        resp = requests.get(
+            "https://apis-navi.kakaomobility.com/v1/directions",
+            headers=_kakao_headers(),
+            params=params,
+            timeout=10,
+        )
         resp.raise_for_status()
-        routes=resp.json().get("routes",[])
-        if routes and routes[0].get("result_code",1)==0:
-            return round(sum(s.get("distance",0) for s in routes[0].get("sections",[]))/1000,2)
+        data = resp.json()
+
+        routes = data.get("routes", [])
+        if routes and routes[0].get("result_code") == 0:
+            summary = routes[0]["summary"]
+            distance_m = summary["distance"]
+            return round(distance_m / 1000, 2)  # km
+
     except Exception as e:
-        print(f"  [route 실패] {e}")
-    return 0.0
+        print(f"  [route API 실패] {e} -> 직선거리 fallback 사용")
 
-def calc_routing(records):
-    if not KAKAO_KEY:
-        print("  [라우팅] KAKAO_REST_API_KEY 없음, 스킵")
-        return {}
+    # fallback: 직선거리 합산 (Haversine)
+    return _haversine_total(coords)
 
-    for depot_name, addr in DEPOT_ADDRESSES.items():
-        xy=_geocode(addr)
-        _depot_coords[depot_name]=xy
-        print(f"  [depot] {depot_name}: {'OK' if xy else '실패'}")
 
-    groups=defaultdict(lambda:defaultdict(list))
-    for rec in records:
-        f=_c(rec)
-        d_s=f.get(TF_DATE,"")
-        pf=f.get(TF_PARTNER)
-        pname=None
-        if isinstance(pf,dict):
-            for vals in pf.get("valuesByLinkedRecordId",{}).values():
-                if vals: pname=vals[0]; break
-        elif isinstance(pf,list) and pf: pname=str(pf[0])
-        elif pf: pname=str(pf)
-        if pname in SINCERELY_DRIVERS and d_s:
-            addr=f.get(TF_ADDRESS)
-            if isinstance(addr,list): addr=addr[0] if addr else ""
-            dep=f.get(TF_DEPARTURE) or ""
-            if isinstance(dep,list): dep=dep[0] if dep else ""
-            groups[pname][d_s].append({"addr":str(addr or ""),"dep":str(dep)})
+def _haversine(lat1, lng1, lat2, lng2) -> float:
+    """두 좌표 간 직선거리 (km)"""
+    import math
+    R = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1))
+         * math.cos(math.radians(lat2))
+         * math.sin(dlng / 2) ** 2)
+    return round(R * 2 * math.asin(math.sqrt(a)), 2)
 
-    driver_weekly_km=defaultdict(float)
-    driver_daily_routes=defaultdict(dict)
 
-    for driver in SINCERELY_DRIVERS:
-        for d_str in sorted(groups[driver]):
-            recs_day=groups[driver][d_str]
-            is_dayoung=(driver==DAYOUNG_DRIVER and any("다영기획" in r["dep"] for r in recs_day))
-            depot_key="다영기획" if is_dayoung else "에이원센터"
-            origin=_depot_coords.get(depot_key)
-            if not origin:
-                driver_daily_routes[driver][d_str]={"total_km":0.0,"stops":len(recs_day),"depot":depot_key,"route":[]}
-                continue
-            stop_xys=[]; valid_addrs=[]
-            for r in recs_day:
-                if not r["addr"]: continue
-                time.sleep(0.05)
-                xy=_geocode(r["addr"])
-                if xy: stop_xys.append(xy); valid_addrs.append(r["addr"])
-            time.sleep(0.1)
-            total_km=_route_km(origin,stop_xys) if stop_xys else 0.0
-            driver_daily_routes[driver][d_str]={"total_km":total_km,"stops":len(stop_xys),"depot":depot_key,
-                                                  "route":[{"address":a,"leg_km":0} for a in valid_addrs]}
-            driver_weekly_km[driver]=round(driver_weekly_km[driver]+total_km,2)
-            name=driver.replace("신시어리","").strip()
-            print(f"  [{name}] {d_str}: {total_km}km / {len(stop_xys)}정류장 ({depot_key})")
+def _haversine_total(coords: list[tuple[float, float]]) -> float:
+    total = 0.0
+    for i in range(len(coords) - 1):
+        total += _haversine(*coords[i], *coords[i + 1])
+    return round(total, 2)
 
-    return {"driver_weekly_km":dict(driver_weekly_km),
-            "driver_daily_routes":{k:dict(v) for k,v in driver_daily_routes.items()}}
 
-def _calc_weekly_km_breakdown(routing):
-    result={}
-    for driver,daily in routing.get("driver_daily_routes",{}).items():
-        weekly=defaultdict(float)
-        for day_str,info in daily.items():
-            try:
-                d=date.fromisoformat(day_str)
-                mon=d-timedelta(days=d.weekday())
-                wk=f"{mon.month}/{mon.day}주"
-                weekly[wk]=round(weekly[wk]+info.get("total_km",0),2)
-            except Exception: pass
-        result[driver]=dict(sorted(weekly.items()))
+# ----------------------------------------------------------------
+# 2. 슬롯 / 시간 파싱
+# ----------------------------------------------------------------
+_TIME_RE = re.compile(r"(\d{1,2})[:\s시](\d{0,2})")
+
+def _parse_time_minutes(time_str: str | None) -> int:
+    """
+    희망수령시간 문자열 -> 분 단위 정수 (정렬용)
+    예: "10:00", "오전 10시", "14시 30분" -> 600, 600, 870
+    인식 실패시 999 (가장 마지막으로 배치)
+    """
+    if not time_str:
+        return 999
+    m = _TIME_RE.search(str(time_str))
+    if m:
+        h = int(m.group(1))
+        mn = int(m.group(2)) if m.group(2) else 0
+        # "오전/오후" 보정
+        if "오후" in str(time_str) and h < 12:
+            h += 12
+        return h * 60 + mn
+    return 999
+
+
+def _parse_slot(slot_val) -> str:
+    """singleSelect 값 -> 슬롯 문자열"""
+    if isinstance(slot_val, dict):
+        return slot_val.get("name", SLOT_FLEXIBLE)
+    if isinstance(slot_val, list) and slot_val:
+        first = slot_val[0]
+        return first.get("name", SLOT_FLEXIBLE) if isinstance(first, dict) else str(first)
+    return str(slot_val) if slot_val else SLOT_FLEXIBLE
+
+
+def _parse_departure(departure_val) -> str:
+    """출하장소명 (multipleLookupValues) -> 출하장소 문자열"""
+    if isinstance(departure_val, list):
+        return departure_val[0] if departure_val else ""
+    return str(departure_val) if departure_val else ""
+
+
+def _is_dayoung_departure(departure_str: str) -> bool:
+    """출하장소명에 다영기획 포함 여부"""
+    return "다영기획" in departure_str
+    if isinstance(addr_val, list):
+        return addr_val[0] if addr_val else ""
+    return str(addr_val) if addr_val else ""
+
+
+def _parse_wish_time(wt_val) -> str:
+    """rollup -> 희망시간 문자열"""
+    if isinstance(wt_val, list):
+        return wt_val[0] if wt_val else ""
+    return str(wt_val) if wt_val else ""
+
+
+# ----------------------------------------------------------------
+# 3. Airtable에서 라우팅용 레코드 조회
+# ----------------------------------------------------------------
+def fetch_routing_records(start: date, end: date) -> list[dict]:
+    """
+    배송슬롯 + 수령인주소 + 희망시간 + 배송파트너 + 출하장소명 조회
+    기사님 배송 건만 (신시어리 기사님 3분)
+    """
+    import pyairtable
+    from sincerely_weekly_report_v2 import API_KEY, BASE_ID, TABLE_SHIPMENT
+
+    api   = pyairtable.Api(API_KEY)
+    table = api.table(BASE_ID, TABLE_SHIPMENT)
+    formula = (
+        f"AND("
+        f"IS_AFTER({{출하확정일}}, DATEADD('{start.isoformat()}', -1, 'days')), "
+        f"IS_BEFORE({{출하확정일}}, DATEADD('{end.isoformat()}',  1, 'days'))"
+        f")"
+    )
+    all_recs = table.all(formula=formula)
+
+    result = []
+    for rec in all_recs:
+        f = rec["fields"]
+        partner_raw = f.get("배송파트너 (from 배송파트너)")
+        pname = None
+        if isinstance(partner_raw, dict):
+            for vals in partner_raw.get("valuesByLinkedRecordId", {}).values():
+                if vals:
+                    pname = vals[0]
+                    break
+        elif isinstance(partner_raw, list) and partner_raw:
+            pname = str(partner_raw[0])
+
+        if pname and pname in SINCERELY_DRIVERS:
+            addr = _parse_address(f.get("수령인(주소)") or f.get(F_ADDRESS))
+            if addr:
+                departure = _parse_departure(
+                    f.get("출하장소명") or f.get(F_DEPARTURE)
+                )
+                result.append({
+                    "date":       f.get("출하확정일", ""),
+                    "partner":    pname,
+                    "slot":       _parse_slot(f.get("배송슬롯") or f.get(F_SLOT)),
+                    "address":    addr,
+                    "wish_time":  _parse_wish_time(
+                                    f.get("고객 희망 수령 시간") or
+                                    f.get(F_WISH_TIME)
+                                  ),
+                    "cbm":        f.get(F_TOTAL_CBM) or 0,
+                    "departure":  departure,       # 출하장소명 (다영기획 여부 판단용)
+                    "is_dayoung": _is_dayoung_departure(departure),
+                })
     return result
 
-# ================================================================
-# HTML JSON 주입
-# ================================================================
-def inject_html(html_path, data, placeholder):
-    p=pathlib.Path(html_path)
-    if not p.exists():
-        print(f"  [HTML 스킵] {html_path} 없음")
-        return
-    src=p.read_text(encoding="utf-8")
-    json_str=json.dumps(data,ensure_ascii=False,default=str)
-    new_src=src.replace(placeholder,f"const {placeholder.split('=')[0].strip()} = {json_str}")
-    if new_src==src:
-        print(f"  [HTML 경고] {html_path} - placeholder 없음: {placeholder[:40]}")
-        return
-    p.write_text(new_src,encoding="utf-8")
-    print(f"  [OK] {html_path} 주입 완료")
+
+# ----------------------------------------------------------------
+# 4. 슬롯별 정렬 + 라우팅 순서 결정
+# ----------------------------------------------------------------
+def build_route_order(deliveries: list[dict]) -> list[dict]:
+    """
+    단일 기사님 + 단일 날짜의 배송 목록을 받아
+    슬롯 -> 희망시간 순서로 정렬하여 반환
+
+    순서:
+      1) 오전 슬롯 (희망시간 빠른 순)
+      2) 무관 슬롯 (오전 마지막에 끼워넣기 - 에이원 근처 기준)
+      3) 오후 슬롯 (희망시간 빠른 순)
+
+    무관 배치 전략:
+      - 무관 건의 주소를 geocode 후 오전/오후 경로 중
+        앞 건 -> 무관 -> 뒷 건 거리가 최소인 위치에 삽입
+      - geocode 비용 절감을 위해 오전 마지막에 기본 배치
+    """
+    morning   = [d for d in deliveries if d["slot"] == SLOT_MORNING]
+    afternoon = [d for d in deliveries if d["slot"] == SLOT_AFTERNOON]
+    flexible  = [d for d in deliveries if d["slot"] == SLOT_FLEXIBLE]
+
+    # 슬롯 내 희망시간 정렬
+    morning.sort(key=lambda d: _parse_time_minutes(d["wish_time"]))
+    afternoon.sort(key=lambda d: _parse_time_minutes(d["wish_time"]))
+
+    # 무관은 오전 마지막 + 오후 첫 사이에 배치 (희망시간 없으므로 근접성 기준 간단 배치)
+    # 더 정밀한 최적화는 geocode 후 삽입 위치 계산
+    ordered = morning + flexible + afternoon
+    return ordered
+
+
+# ----------------------------------------------------------------
+# 5. 기사님별 일간 라우팅 거리 계산
+# ----------------------------------------------------------------
+_geocode_cache: dict[str, tuple[float, float] | None] = {}
+
+def _get_coords(address: str) -> tuple[float, float] | None:
+    """geocode with cache"""
+    if address not in _geocode_cache:
+        time.sleep(0.05)  # API rate limit 방지
+        _geocode_cache[address] = geocode_kakao(address)
+    return _geocode_cache.get(address)
+
+
+def calc_daily_route(deliveries: list[dict], origin_coords) -> dict:
+    """
+    단일 기사님 + 단일 날짜 라우팅 거리 계산
+
+    반환:
+    {
+        "total_km":    float,    # 총 주행거리
+        "return_km":   float,    # 복귀 거리 (옵션)
+        "route":       [         # 경유 순서
+            {"address": str, "slot": str, "wish_time": str,
+             "coords": (lat, lng), "leg_km": float}
+        ],
+        "stops":       int,      # 배송 건수
+        "unresolved":  int,      # 주소 변환 실패 건수
+    }
+    """
+    ordered = build_route_order(deliveries)
+
+    route_stops  = []
+    unresolved   = 0
+    coords_chain = [origin_coords]
+
+    for d in ordered:
+        coords = _get_coords(d["address"])
+        if coords:
+            route_stops.append({
+                "address":   d["address"][:40],
+                "slot":      d["slot"],
+                "wish_time": d["wish_time"],
+                "coords":    coords,
+                "cbm":       d["cbm"],
+            })
+            coords_chain.append(coords)
+        else:
+            unresolved += 1
+            print(f"  [주소 변환 실패] {d['address'][:40]}")
+
+    if len(coords_chain) < 2:
+        return {"total_km": 0, "return_km": 0, "route": route_stops,
+                "stops": 0, "unresolved": unresolved}
+
+    # 복귀 포함 여부
+    if INCLUDE_RETURN_TRIP:
+        coords_chain.append(origin_coords)
+
+    # 경유지 포함 총 거리 계산
+    total_km = route_distance_kakao(coords_chain)
+
+    # 구간별 거리 계산 (표시용)
+    for i, stop in enumerate(route_stops):
+        prev = coords_chain[i]
+        curr = coords_chain[i + 1]
+        stop["leg_km"] = _haversine(*prev, *curr)  # 직선거리 표시용
+
+    return_km = 0.0
+    if not INCLUDE_RETURN_TRIP and route_stops:
+        last = route_stops[-1]["coords"]
+        return_km = _haversine(*last, *origin_coords)
+
+    return {
+        "total_km":   total_km,
+        "return_km":  return_km,
+        "route":      route_stops,
+        "stops":      len(route_stops),
+        "unresolved": unresolved,
+    }
+
+
+# ----------------------------------------------------------------
+# 6. 전체 집계 (일간 / 주간 / 월간)
+# ----------------------------------------------------------------
+def calc_driver_routing(records: list[dict]) -> dict:
+    """
+    fetch_routing_records() 결과를 받아
+    기사님별 일간 / 주간 km 집계
+
+    [출발지 로직]
+    - 기본: 에이원지식산업센터 (서울 성동구 성수동1가 13-209)
+    - 박종성 기사님 + 해당 날 배송 건 중 1건이라도 출하장소=다영기획이면
+      -> 해당 날 출발지를 다영기획 (경기도 성남시 중원구 둔촌대로 555) 으로 변경
+      -> 같은 날 에이원 출발 건도 있을 경우 다영기획 출발 후 에이원 경유 처리
+
+    반환:
+    {
+        "driver_daily_routes": {
+            "신시어리 (이장훈)": {
+                "2026-03-09": {
+                    "total_km": 45.2, "return_km": 8.1, "stops": 3,
+                    "route": [...], "unresolved": 0,
+                    "origin_label": "에이원",
+                }, ...
+            }, ...
+        },
+        "driver_weekly_km":    {"신시어리 (이장훈)": 198.4, ...},
+        "origin_coords":       (lat, lng),
+        "dayoung_coords":      (lat, lng),
+    }
+    """
+    global ORIGIN_COORDS, DAYOUNG_ORIGIN_COORDS
+
+    # 에이원 좌표 캐시
+    if ORIGIN_COORDS is None:
+        ORIGIN_COORDS = geocode_kakao(ORIGIN_ADDRESS)
+        if ORIGIN_COORDS:
+            print(f"  [출발지] 에이원 {ORIGIN_COORDS}")
+        else:
+            print("  [경고] 에이원 좌표 변환 실패 - fallback 사용")
+            ORIGIN_COORDS = (37.5443, 127.0557)
+
+    # 다영기획 좌표 캐시
+    if DAYOUNG_ORIGIN_COORDS is None:
+        DAYOUNG_ORIGIN_COORDS = geocode_kakao(DAYOUNG_ADDRESS)
+        if DAYOUNG_ORIGIN_COORDS:
+            print(f"  [출발지] 다영기획 {DAYOUNG_ORIGIN_COORDS}")
+        else:
+            print("  [경고] 다영기획 좌표 변환 실패 - 에이원 좌표로 대체")
+            DAYOUNG_ORIGIN_COORDS = ORIGIN_COORDS
+
+    # 기사님별 날짜별 그룹핑
+    grouped: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
+    for rec in records:
+        grouped[rec["partner"]][rec["date"]].append(rec)
+
+    driver_daily_routes: dict[str, dict] = {}
+    driver_weekly_km:    dict[str, float] = {}
+
+    for driver in SINCERELY_DRIVERS:
+        driver_daily_routes[driver] = {}
+        driver_weekly_km[driver]    = 0.0
+
+        daily_data = grouped.get(driver, {})
+        for day_str in sorted(daily_data.keys()):
+            deliveries = daily_data[day_str]
+
+            # 박종성 기사님 + 다영기획 출발 조건 판단
+            # 해당 날 배송 건 중 1건이라도 is_dayoung=True 이면 다영기획 출발
+            is_dayoung_day = (
+                driver == DAYOUNG_DRIVER
+                and any(d.get("is_dayoung") for d in deliveries)
+            )
+            origin         = DAYOUNG_ORIGIN_COORDS if is_dayoung_day else ORIGIN_COORDS
+            origin_label   = "다영기획" if is_dayoung_day else "에이원"
+
+            print(
+                f"  [{driver.replace('신시어리 ', '')}] "
+                f"{day_str} - {len(deliveries)}건 "
+                f"출발지: {origin_label}"
+            )
+
+            result = calc_daily_route(deliveries, origin)
+            result["origin_label"] = origin_label
+            result["is_dayoung"]   = is_dayoung_day
+
+            driver_daily_routes[driver][day_str] = result
+            driver_weekly_km[driver] = round(
+                driver_weekly_km[driver] + result["total_km"], 2
+            )
+
+            print(
+                f"    -> 총 {result['total_km']}km "
+                f"({result['stops']}건 / 미해결 {result['unresolved']}건)"
+            )
+
+    return {
+        "driver_daily_routes": driver_daily_routes,
+        "driver_weekly_km":    driver_weekly_km,
+        "origin_coords":       ORIGIN_COORDS,
+        "dayoung_coords":      DAYOUNG_ORIGIN_COORDS,
+    }
+
+
+# ----------------------------------------------------------------
+# 7. analyze() 반환값에 라우팅 결과 합산하는 래퍼
+# ----------------------------------------------------------------
+def enrich_with_routing(analysis_result: dict,
+                        routing_result: dict) -> dict:
+    """
+    analyze() 반환 dict에 라우팅 결과를 추가
+
+    추가 키:
+      driver_daily_routes  - 기사님별 일간 경로 상세
+      driver_weekly_km     - 기사님별 주간 총 km
+    """
+    analysis_result["driver_daily_routes"] = routing_result["driver_daily_routes"]
+    analysis_result["driver_weekly_km"]    = routing_result["driver_weekly_km"]
+    return analysis_result
+
+
+# ----------------------------------------------------------------
+# 8. 리포트 출력 포맷터 (로그 / JSON 아카이브용)
+# ----------------------------------------------------------------
+def format_routing_log(routing_result: dict) -> str:
+    """
+    터미널 출력용 라우팅 요약 텍스트
+    """
+    lines = ["", "=== 기사님 배송 라우팅 요약 ==="]
+    for driver in SINCERELY_DRIVERS:
+        weekly_km = routing_result["driver_weekly_km"].get(driver, 0)
+        lines.append(f"\n{driver.replace('신시어리 ', '')}  주간 {weekly_km}km")
+        daily = routing_result["driver_daily_routes"].get(driver, {})
+        for day_str, result in sorted(daily.items()):
+            d = date.fromisoformat(day_str)
+            wd = ["월", "화", "수", "목", "금", "토", "일"][d.weekday()]
+            slots = []
+            for stop in result["route"]:
+                slots.append(f"[{stop['slot']}]{stop['address'][:15]}")
+            route_str = " -> ".join(slots) if slots else "(경로 없음)"
+            lines.append(
+                f"  {day_str[5:]}({wd})  {result['total_km']}km  "
+                f"{result['stops']}건  {route_str}"
+            )
+    return "\n".join(lines)
+
+
+def routing_to_json(routing_result: dict) -> dict:
+    """
+    JSON 아카이브용 직렬화 (coords tuple -> list 변환)
+    """
+    result = {
+        "driver_weekly_km": routing_result["driver_weekly_km"],
+        "driver_daily_routes": {},
+    }
+    for driver, daily in routing_result["driver_daily_routes"].items():
+        result["driver_daily_routes"][driver] = {}
+        for day_str, data in daily.items():
+            result["driver_daily_routes"][driver][day_str] = {
+                "total_km":   data["total_km"],
+                "return_km":  data["return_km"],
+                "stops":      data["stops"],
+                "unresolved": data["unresolved"],
+                "route": [
+                    {
+                        "address":   s["address"],
+                        "slot":      s["slot"],
+                        "wish_time": s["wish_time"],
+                        "leg_km":    s.get("leg_km", 0),
+                        "cbm":       s.get("cbm", 0),
+                    }
+                    for s in data["route"]
+                ],
+            }
+    return result
+
+
+# ----------------------------------------------------------------
+# main() 에서 호출 예시
+# ----------------------------------------------------------------
+# 기존 main() 안에 아래 코드 추가:
+#
+# from delivery_routing import (
+#     fetch_routing_records, calc_driver_routing,
+#     enrich_with_routing, format_routing_log, routing_to_json
+# )
+#
+# # 이전주 라우팅 계산
+# routing_recs  = fetch_routing_records(prev_mon, prev_fri)
+# routing_result = calc_driver_routing(routing_recs)
+# prev_data = enrich_with_routing(prev_data, routing_result)
+# print(format_routing_log(routing_result))
+#
+# # JSON 아카이브에 추가
+# archive["prev_week"]["routing"] = routing_to_json(routing_result)
 
 # ================================================================
 # 메인
