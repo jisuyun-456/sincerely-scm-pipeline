@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-23T07:01:46",
+  "generated_at": "2026-03-24T01:46:45",
   "report_mode": "weekly_review",
   "period_key": "2026-W12_review",
   "period": {
@@ -9,19 +9,19 @@
     "end": "2026-03-20"
   },
   "kpi": {
-    "completion_rate": 99.6,
+    "completion_rate": 99.7,
     "defect_rate": 1.69,
-    "accuracy": 98.9,
-    "neg_avail_cnt": 24
+    "accuracy": 98.5,
+    "neg_avail_cnt": 25
   },
   "inbound": {
     "summary": {
-      "total_cnt": 285,
+      "total_cnt": 286,
       "total_in_qty": 106490,
       "total_stock_qty": 106427,
-      "completed": 284,
+      "completed": 285,
       "unconfirmed": 0,
-      "completion_rate": 99.6
+      "completion_rate": 99.7
     },
     "by_date": {
       "2026-03-16": {
@@ -41,19 +41,19 @@
         "in_qty": 7559
       },
       "2026-03-20": {
-        "cnt": 79,
+        "cnt": 80,
         "in_qty": 35601
       }
     },
     "by_week": {
       "2026-W12": {
-        "cnt": 285,
+        "cnt": 286,
         "in_qty": 106490
       }
     },
     "by_purpose": {
       "생산산출": {
-        "cnt": 206,
+        "cnt": 207,
         "qty": 57395
       },
       "생산샘플": {
@@ -135,25 +135,25 @@
   "material": {
     "summary": {
       "total": 717,
-      "total_phys": 524859,
-      "mismatch": 8,
-      "accuracy": 98.9,
-      "neg_avail": 24,
+      "total_phys": 519002,
+      "mismatch": 11,
+      "accuracy": 98.5,
+      "neg_avail": 25,
       "check_done": 694,
       "check_rate": 96.8
     }
   },
   "shipment": {
     "summary": {
-      "total_cbm": 142.997,
+      "total_cbm": 44.947,
       "total_count": 77,
       "completed": 77,
       "pending": 0,
       "revenue": 0.0,
-      "cost": 3414350.0,
-      "profit": -3414350.0,
-      "cbm_per_shipment": 1.857,
-      "cbm_unit_cost": 23877.0
+      "cost": 3504350.0,
+      "profit": -3504350.0,
+      "cbm_per_shipment": 0.584,
+      "cbm_unit_cost": 77966.0
     },
     "by_date": {
       "2026-03-16": {
@@ -166,7 +166,7 @@
       },
       "2026-03-17": {
         "cnt": 13,
-        "cbm": 7.871,
+        "cbm": 2.316,
         "completed": 13,
         "pending": 0,
         "revenue": 0.0,
@@ -174,11 +174,11 @@
       },
       "2026-03-18": {
         "cnt": 19,
-        "cbm": 8.1538,
+        "cbm": 8.095,
         "completed": 19,
         "pending": 0,
         "revenue": 0.0,
-        "cost": 725500.0
+        "cost": 815500.0
       },
       "2026-03-19": {
         "cnt": 16,
@@ -190,7 +190,7 @@
       },
       "2026-03-20": {
         "cnt": 18,
-        "cbm": 99.7185,
+        "cbm": 7.282,
         "completed": 18,
         "pending": 0,
         "revenue": 0.0,
@@ -273,7 +273,7 @@
       {
         "name": "신시어리 기사님 (박종성)",
         "cnt": 10,
-        "cbm": 103.1
+        "cbm": 5.11
       },
       {
         "name": "베스트원 (퀵)",
@@ -283,7 +283,7 @@
       {
         "name": "신시어리 (고고엑스)",
         "cnt": 6,
-        "cbm": 0.76
+        "cbm": 0.7
       },
       {
         "name": "고객 직접수령",
@@ -302,15 +302,15 @@
     "confidence": 74.0,
     "cbm_sources": {
       "manual": 57,
-      "product_match": 4,
+      "product_match": 0,
       "box_parse": 0,
-      "unmatched": 16
+      "unmatched": 20
     },
     "driver_daily": {
       "신시어리 (박종성)": {
-        "2026-03-17": 6.868,
+        "2026-03-17": 1.313,
         "2026-03-18": 2.626,
-        "2026-03-20": 92.4365,
+        "2026-03-20": 0.0,
         "2026-03-16": 1.173
       },
       "신시어리 (이장훈)": {
@@ -329,19 +329,19 @@
       }
     },
     "driver_weekly": {
-      "신시어리 (박종성)": 103.1035,
+      "신시어리 (박종성)": 5.112,
       "신시어리 (이장훈)": 16.722,
       "신시어리 (조희선)": 10.784
     },
     "driver_weekly_max": {
       "신시어리 (이장훈)": 27.0,
       "신시어리 (조희선)": 38.0,
-      "신시어리 (박종성)": 38.0
+      "신시어리 (박종성)": 28.5
     },
     "driver_pct": {
       "신시어리 (이장훈)": 61.9,
       "신시어리 (조희선)": 28.4,
-      "신시어리 (박종성)": 271.3
+      "신시어리 (박종성)": 17.9
     },
     "driver_work_days": {
       "신시어리 (이장훈)": {
@@ -379,39 +379,37 @@
         ]
       },
       "신시어리 (박종성)": {
-        "count": 4,
+        "count": 3,
         "dates": [
           "2026-03-16",
           "2026-03-17",
-          "2026-03-18",
-          "2026-03-20"
+          "2026-03-18"
         ],
         "labels": [
           "03/16(월)",
           "03/17(화)",
-          "03/18(수)",
-          "03/20(금)"
+          "03/18(수)"
         ]
       }
     },
     "a1_utilization": {
-      "total_cbm": 142.997,
+      "total_cbm": 44.947,
       "capacity": 44.4,
-      "pct": 322.1
+      "pct": 101.2
     }
   },
   "weekly": {
     "this_week": {
       "summary": {
-        "total_cbm": 142.997,
+        "total_cbm": 44.947,
         "total_count": 77,
         "completed": 77,
         "pending": 0,
         "revenue": 0.0,
-        "cost": 3414350.0,
-        "profit": -3414350.0,
-        "cbm_per_shipment": 1.857,
-        "cbm_unit_cost": 23877.0
+        "cost": 3504350.0,
+        "profit": -3504350.0,
+        "cbm_per_shipment": 0.584,
+        "cbm_unit_cost": 77966.0
       },
       "by_date": {
         "2026-03-16": {
@@ -424,7 +422,7 @@
         },
         "2026-03-17": {
           "cnt": 13,
-          "cbm": 7.871,
+          "cbm": 2.316,
           "completed": 13,
           "pending": 0,
           "revenue": 0.0,
@@ -432,11 +430,11 @@
         },
         "2026-03-18": {
           "cnt": 19,
-          "cbm": 8.1538,
+          "cbm": 8.095,
           "completed": 19,
           "pending": 0,
           "revenue": 0.0,
-          "cost": 725500.0
+          "cost": 815500.0
         },
         "2026-03-19": {
           "cnt": 16,
@@ -448,7 +446,7 @@
         },
         "2026-03-20": {
           "cnt": 18,
-          "cbm": 99.7185,
+          "cbm": 7.282,
           "completed": 18,
           "pending": 0,
           "revenue": 0.0,
@@ -522,30 +520,30 @@
       },
       "cbm_sources": {
         "manual": 57,
-        "product_match": 4,
+        "product_match": 0,
         "box_parse": 0,
-        "unmatched": 16
+        "unmatched": 20
       },
       "confidence": 74.0
     },
     "prev_week": {
       "summary": {
-        "total_cbm": 142.997,
+        "total_cbm": 44.947,
         "total_count": 77,
         "completed": 77,
         "pending": 0,
         "revenue": 0.0,
-        "cost": 3414350.0,
-        "profit": -3414350.0,
-        "cbm_per_shipment": 1.857,
-        "cbm_unit_cost": 23877.0
+        "cost": 3504350.0,
+        "profit": -3504350.0,
+        "cbm_per_shipment": 0.584,
+        "cbm_unit_cost": 77966.0
       },
       "week_start": "2026-03-16",
       "driver_daily": {
         "신시어리 (박종성)": {
-          "2026-03-17": 6.868,
+          "2026-03-17": 1.313,
           "2026-03-18": 2.626,
-          "2026-03-20": 92.4365,
+          "2026-03-20": 0.0,
           "2026-03-16": 1.173
         },
         "신시어리 (이장훈)": {
@@ -564,19 +562,19 @@
         }
       },
       "driver_weekly": {
-        "신시어리 (박종성)": 103.1035,
+        "신시어리 (박종성)": 5.112,
         "신시어리 (이장훈)": 16.722,
         "신시어리 (조희선)": 10.784
       },
       "driver_weekly_max": {
         "신시어리 (이장훈)": 27.0,
         "신시어리 (조희선)": 38.0,
-        "신시어리 (박종성)": 38.0
+        "신시어리 (박종성)": 28.5
       },
       "driver_pct": {
         "신시어리 (이장훈)": 61.9,
         "신시어리 (조희선)": 28.4,
-        "신시어리 (박종성)": 271.3
+        "신시어리 (박종성)": 17.9
       },
       "driver_work_days": {
         "신시어리 (이장훈)": {
@@ -614,25 +612,23 @@
           ]
         },
         "신시어리 (박종성)": {
-          "count": 4,
+          "count": 3,
           "dates": [
             "2026-03-16",
             "2026-03-17",
-            "2026-03-18",
-            "2026-03-20"
+            "2026-03-18"
           ],
           "labels": [
             "03/16(월)",
             "03/17(화)",
-            "03/18(수)",
-            "03/20(금)"
+            "03/18(수)"
           ]
         }
       },
       "a1_utilization": {
-        "total_cbm": 142.997,
+        "total_cbm": 44.947,
         "capacity": 44.4,
-        "pct": 322.1
+        "pct": 101.2
       },
       "routing": {
         "driver_weekly_km": {},
@@ -732,52 +728,52 @@
     },
     "next_week": {
       "summary": {
-        "total_cbm": 212.457,
-        "total_count": 39,
+        "total_cbm": 0.0,
+        "total_count": 42,
         "completed": 0,
-        "pending": 39,
+        "pending": 42,
         "revenue": 0.0,
         "cost": 0.0,
         "profit": 0.0,
-        "cbm_per_shipment": 5.448,
-        "cbm_unit_cost": 0.0
+        "cbm_per_shipment": 0.0,
+        "cbm_unit_cost": 0
       },
       "by_date": {
         "2026-03-30": {
-          "cnt": 10,
-          "cbm": 47.711,
+          "cnt": 11,
+          "cbm": 0.0,
           "completed": 0,
-          "pending": 10,
+          "pending": 11,
           "revenue": 0.0,
           "cost": 0.0
         },
         "2026-03-31": {
           "cnt": 10,
-          "cbm": 41.4465,
+          "cbm": 0.0,
           "completed": 0,
           "pending": 10,
           "revenue": 0.0,
           "cost": 0.0
         },
         "2026-04-01": {
-          "cnt": 11,
-          "cbm": 27.796,
+          "cnt": 12,
+          "cbm": 0.0,
           "completed": 0,
-          "pending": 11,
+          "pending": 12,
           "revenue": 0.0,
           "cost": 0.0
         },
         "2026-04-02": {
-          "cnt": 3,
-          "cbm": 39.503,
+          "cnt": 4,
+          "cbm": 0.0,
           "completed": 0,
-          "pending": 3,
+          "pending": 4,
           "revenue": 0.0,
           "cost": 0.0
         },
         "2026-04-03": {
           "cnt": 5,
-          "cbm": 56.0,
+          "cbm": 0.0,
           "completed": 0,
           "pending": 5,
           "revenue": 0.0,
@@ -788,7 +784,7 @@
     "trend": [
       {
         "week": "2/23주",
-        "cbm": 270.6,
+        "cbm": 81.72,
         "revenue": 0,
         "cost": 3838100,
         "profit": -3838100,
@@ -796,7 +792,7 @@
       },
       {
         "week": "3/2주",
-        "cbm": 53.5,
+        "cbm": 22.94,
         "revenue": 0,
         "cost": 2988500,
         "profit": -2988500,
@@ -804,7 +800,7 @@
       },
       {
         "week": "3/9주",
-        "cbm": 68.49,
+        "cbm": 51.04,
         "revenue": 0,
         "cost": 3087350,
         "profit": -3087350,
@@ -812,10 +808,10 @@
       },
       {
         "week": "3/16주",
-        "cbm": 143.0,
+        "cbm": 44.95,
         "revenue": 0,
-        "cost": 3414350,
-        "profit": -3414350,
+        "cost": 3504350,
+        "profit": -3504350,
         "count": 77
       }
     ]
