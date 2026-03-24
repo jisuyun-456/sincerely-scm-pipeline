@@ -650,7 +650,8 @@ def _geocode(address):
     _geocode_cache[address]=xy; return xy
 
 def _route_km(origin_xy, stop_xys):
-    if not stop_xys or not KAKAO_KEY: return 0.0
+    """카카오 길찾기 API -> (km, minutes) 튜플 반환. 실패시 (0.0, 0)."""
+    if not stop_xys or not KAKAO_KEY: return 0.0, 0
     dest=stop_xys[-1]
     waypoints=[{"name":f"경유{i+1}","x":s["x"],"y":s["y"]} for i,s in enumerate(stop_xys[:-1])]
     body={"origin":{"x":origin_xy["x"],"y":origin_xy["y"]},"destination":{"x":dest["x"],"y":dest["y"]}}
@@ -662,10 +663,13 @@ def _route_km(origin_xy, stop_xys):
         resp.raise_for_status()
         routes=resp.json().get("routes",[])
         if routes and routes[0].get("result_code",1)==0:
-            return round(sum(s.get("distance",0) for s in routes[0].get("sections",[]))/1000,2)
+            sections=routes[0].get("sections",[])
+            total_m=sum(s.get("distance",0) for s in sections)
+            total_sec=sum(s.get("duration",0) for s in sections)
+            return round(total_m/1000,2), round(total_sec/60)
     except Exception as e:
         print(f"  [route 실패] {e}")
-    return 0.0
+    return 0.0, 0
 
 def calc_routing(records):
     if not KAKAO_KEY:
@@ -714,12 +718,13 @@ def calc_routing(records):
                 xy=_geocode(r["addr"])
                 if xy: stop_xys.append(xy); valid_addrs.append(r["addr"])
             time.sleep(0.1)
-            total_km=_route_km(origin,stop_xys) if stop_xys else 0.0
-            driver_daily_routes[driver][d_str]={"total_km":total_km,"stops":len(stop_xys),"depot":depot_key,
+            total_km,total_min=_route_km(origin,stop_xys) if stop_xys else (0.0,0)
+            driver_daily_routes[driver][d_str]={"total_km":total_km,"total_min":total_min,"stops":len(stop_xys),"depot":depot_key,
                                                   "route":[{"address":a,"leg_km":0} for a in valid_addrs]}
             driver_weekly_km[driver]=round(driver_weekly_km[driver]+total_km,2)
             name=driver.replace("신시어리","").strip()
-            print(f"  [{name}] {d_str}: {total_km}km / {len(stop_xys)}정류장 ({depot_key})")
+            min_str=f" / {total_min}분" if total_min else ""
+            print(f"  [{name}] {d_str}: {total_km}km{min_str} / {len(stop_xys)}정류장 ({depot_key})")
 
     return {"driver_weekly_km":dict(driver_weekly_km),
             "driver_daily_routes":{k:dict(v) for k,v in driver_daily_routes.items()}}
