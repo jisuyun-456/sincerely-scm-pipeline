@@ -97,7 +97,8 @@ TF_ADDRESS     = "fldyJHUh9gN44Ggnh"
 TF_WISH_TIME   = "fldFweNu3dASPv93N"
 
 TMS_SHIP_FIELDS = [TF_DATE,TF_ITEM,TF_BOX_PARSED,TF_BOX_MANUAL,TF_TOTAL_CBM,
-                   TF_STATUS,TF_ITEM_DETAIL,TF_REVENUE,TF_COST,TF_PARTNER,TF_DEPARTURE]
+                   TF_STATUS,TF_ITEM_DETAIL,TF_REVENUE,TF_COST,TF_PARTNER,TF_DEPARTURE,
+                   TF_ADDRESS,TF_SLOT,TF_WISH_TIME]  # 버그픽스: 라우팅 주소/슬롯 필드 추가
 TMS_BOX_FIELDS  = ["fldELrd8bBVjQCHnp","fldgvlGjLb4FTlQ0v","fldjFaXiYzeJ2Zt7M"]
 TMS_PROD_FIELDS = ["fldx01uKEnCd0J0nP","fldN1JrkxIr5m6pXz","fld6W5ImO7UeBVMPI"]
 
@@ -290,12 +291,17 @@ def match_cbm_from_product(item_str, product_cbm):
     return round(total,4) if matched else 0.0
 
 def get_cbm_tms(f, live, product_cbm=None):
+    """
+    CBM 우선순위: Total_CBM(수동) > 박스파싱 > 0 (unmatched)
+
+    버그 수정: product_match 제거.
+    이유: 품목문자열의 수량(qty)은 개수(EA)이지 박스 수가 아님.
+    cbm_per_box × qty(개수)로 계산하면 수량이 클 때 CBM이 수십~수백배 뻥튀기됨.
+    예) 브릭메모 1000개 × 0.05m³/박스 = 50m³ (실제는 ~1m³)
+    product_cbm은 top_items 표시용 item_agg에서만 사용.
+    """
     v = f.get(TF_TOTAL_CBM)
     if v and v>0: return float(v), "manual"
-    item = f.get(TF_ITEM) or f.get(TF_ITEM_DETAIL) or ""
-    if item.strip() and product_cbm:
-        cv = match_cbm_from_product(item, product_cbm)
-        if cv>0: return cv, "product_match"
     box = f.get(TF_BOX_PARSED) or f.get(TF_BOX_MANUAL) or ""
     if isinstance(box,list): box=", ".join(str(x) for x in box)
     box=box.strip()
@@ -811,6 +817,7 @@ def main():
                "accuracy":mat_s["accuracy"],"neg_avail_cnt":mat_s["neg_avail"]},
         "inbound":inbound,"qc":qc,"material":material,
         "shipment":tms_data,
+        # weekly 섹션: 출하 탭에서 이전주/다음주/트렌드/품질/기사님 등 상세 표시용
         "weekly": {
             "this_week": {
                 "summary":    tms_data["summary"],
@@ -881,6 +888,7 @@ def main():
         with open(fname,"w",encoding="utf-8") as fp:
             json.dump(weekly_archive,fp,ensure_ascii=False,indent=2,default=str)
         print(f"[OK] {fname} 저장")
+        # docs/weekly.html에 주입
         inject_html("docs/weekly.html", weekly_archive, "const REPORT_DATA = null")
 
     # ================================================================
@@ -894,7 +902,7 @@ def main():
             "total_cbm":sh_s["total_cbm"],"total_count":sh_s["total_count"],
             "total_rev":sh_s["revenue"],"total_cost":sh_s["cost"],
             "profit":sh_s["profit"],"cbm_per_ship":sh_s["cbm_per_shipment"],
-            "weekly_cbm":{},
+            "weekly_cbm":{},  # 월간 주차별 (아래서 채움)
             "weekly_cnt":{},
             "weekly_labels":{},
             "partner_cnt":{p["name"]:p["cnt"] for p in tms_data["partners"]},
@@ -908,6 +916,7 @@ def main():
                 "driver_daily_routes":routing.get("driver_daily_routes",{}),
             },
         }
+        # 주차별 CBM 집계
         for d_str,v in tms_data["by_date"].items():
             try:
                 d=date.fromisoformat(d_str)
