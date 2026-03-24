@@ -62,6 +62,10 @@ F_ITEM_NAME     = "fldws6Ohz68i3GBPR"
 F_ITEM_ALT      = "fldwZKCYZ4IFOigRp"
 F_NOT_RECV_HIST = "fldjZYoxIe1GI4DGa"
 F_SHIP_FROM     = "fldz7ZLrZw7inalHz"
+F_ISSUE_CAT     = "fldudxogG53VjQmvX"   # 이슈카테고리 (multipleSelects)
+F_QC_ISSUE_FLAG = "fld9eE4YZZWTDsfUC"   # 품질 이슈 리포팅 (checkbox)
+F_OPS_ISSUE_FLAG= "fldVJnnvOYW2vR4ur"   # 운영이슈 (checkbox)
+F_QTY_ISSUE_FLAG= "fld6XIcRIu6HTePBL"   # 수량이슈공유 (checkbox)
 F_MAT_NAME  = "fld7Pfip5zbBTaTdR"
 F_MAT_PHYS  = "fld5XQQv2P9YJZP6n"
 F_MAT_SYS   = "fldAFkM4HtGJsitOk"
@@ -71,7 +75,8 @@ F_MAT_CHECK = "flddQhs9cuA6G8xmq"
 
 MOVEMENT_FIELDS = [F_PURPOSE,F_IN_QTY,F_IN_DATE,F_IN_STATUS,F_STOCK_QTY,
                    F_QC_QTY,F_DEFECT_S,F_DEFECT_F,F_QC_RES,F_CANCEL,
-                   F_ITEM_NAME,F_ITEM_ALT,F_NOT_RECV_HIST,F_SHIP_FROM]
+                   F_ITEM_NAME,F_ITEM_ALT,F_NOT_RECV_HIST,F_SHIP_FROM,
+                   F_ISSUE_CAT,F_QC_ISSUE_FLAG,F_OPS_ISSUE_FLAG,F_QTY_ISSUE_FLAG]
 MATERIAL_FIELDS = [F_MAT_NAME,F_MAT_PHYS,F_MAT_SYS,F_MAT_AVAIL,F_MAT_LOC,F_MAT_CHECK]
 
 # ================================================================
@@ -293,7 +298,7 @@ def match_cbm_from_product(item_str, product_cbm):
 def get_cbm_tms(f, live, product_cbm=None):
     """
     CBM 우선순위: Total_CBM(수동) > 박스파싱 > 0 (unmatched)
-
+    
     버그 수정: product_match 제거.
     이유: 품목문자열의 수량(qty)은 개수(EA)이지 박스 수가 아님.
     cbm_per_box × qty(개수)로 계산하면 수량이 클 때 CBM이 수십~수백배 뻥튀기됨.
@@ -355,44 +360,93 @@ def analyze_inbound(records):
     }
 
 def analyze_qc(records):
-    qc_cnt=total_qc_qty=total_defect=0
-    by_week=defaultdict(lambda:{"qc_qty":0,"defect":0,"defect_rate":0.0})
-    defect_by_item=defaultdict(lambda:{"qc_qty":0,"defect":0})
-    result_dist=defaultdict(int)
+    """
+    검수 로직 반영:
+    - 검수 건수 = 전체 입하건수 (표본 검수 방식이므로 모든 건에 대해 검수 진행)
+    - 검수 수량 = 전체 입하수량의 7.5% (5~10% 표본 검수 비율 중간값)
+    - 불량 수량/불량률은 실제 QC 기록에서 집계
+    - 이슈카테고리 집계 (수량이슈/품질이슈/운영이슈)
+    """
+    total_cnt = len(records)  # 전체 입하건수 = 검수 건수
+    total_in_qty = sum((_c(r).get(F_IN_QTY) or 0) for r in records)
+    sample_rate = 0.075        # 5~10% 표본 검수 중간값 7.5%
+    total_qc_qty = int(total_in_qty * sample_rate)
+
+    total_defect = 0
+    actual_qc_cnt = 0
+    by_week = defaultdict(lambda:{"cnt":0,"qc_qty":0,"defect":0,"defect_rate":0.0})
+    defect_by_item = defaultdict(lambda:{"qc_qty":0,"defect":0})
+    result_dist = defaultdict(int)
+
+    # 이슈카테고리 집계
+    issue_cnt = 0
+    issue_cat_counts = defaultdict(int)
+
     for r in records:
-        c=_c(r)
-        qc_qty=c.get(F_QC_QTY) or 0
-        defect_s=c.get(F_DEFECT_S) or 0
-        defect_f=c.get(F_DEFECT_F) or 0
-        defect=defect_s+defect_f
-        if qc_qty==0: continue
-        qc_cnt+=1; total_qc_qty+=qc_qty; total_defect+=defect
-        qc_res=_sel(c.get(F_QC_RES,{})) or "수량 정상"
-        result_dist[qc_res]+=1
-        date_val=c.get(F_IN_DATE,"")
+        c = _c(r)
+        in_qty = c.get(F_IN_QTY) or 0
+        qc_qty = c.get(F_QC_QTY) or 0
+        defect_s = c.get(F_DEFECT_S) or 0
+        defect_f = c.get(F_DEFECT_F) or 0
+        defect = defect_s + defect_f
+        total_defect += defect
+        if qc_qty > 0:
+            actual_qc_cnt += 1
+        qc_res = _sel(c.get(F_QC_RES, {})) or "수량 정상"
+        result_dist[qc_res] += 1
+
+        # 이슈카테고리
+        cats = c.get(F_ISSUE_CAT) or []
+        if cats:
+            issue_cnt += 1
+            for cat in cats:
+                cat_name = _sel(cat) if isinstance(cat, dict) else str(cat)
+                if cat_name:
+                    issue_cat_counts[cat_name] += 1
+
+        date_val = c.get(F_IN_DATE, "")
         if date_val:
             try:
-                d=datetime.strptime(date_val,"%Y-%m-%d")
-                wk=f"W{d.isocalendar()[1]}"
-                by_week[wk]["qc_qty"]+=qc_qty; by_week[wk]["defect"]+=defect
+                d = datetime.strptime(date_val, "%Y-%m-%d")
+                wk = f"W{d.isocalendar()[1]}"
+                by_week[wk]["cnt"] += 1
+                by_week[wk]["qc_qty"] += int(in_qty * sample_rate)
+                by_week[wk]["defect"] += defect
             except Exception: pass
-        item_name=_sel(c.get(F_ITEM_NAME)) or _sel(c.get(F_ITEM_ALT)) or ""
-        if item_name and defect>0:
-            defect_by_item[item_name]["qc_qty"]+=qc_qty; defect_by_item[item_name]["defect"]+=defect
+        item_name = _sel(c.get(F_ITEM_NAME)) or _sel(c.get(F_ITEM_ALT)) or ""
+        if item_name and defect > 0:
+            defect_by_item[item_name]["qc_qty"] += max(qc_qty, int(in_qty * sample_rate))
+            defect_by_item[item_name]["defect"] += defect
+
     for wk in by_week:
-        q=by_week[wk]["qc_qty"]; d=by_week[wk]["defect"]
-        by_week[wk]["defect_rate"]=round(d/q*100,2) if q else 0.0
-    defect_rate=round(total_defect/total_qc_qty*100,2) if total_qc_qty else 0.0
-    defect_items=sorted(
-        [{"name":k,"qc_qty":v["qc_qty"],"defect":v["defect"],
-          "defect_rate":round(v["defect"]/v["qc_qty"]*100,2) if v["qc_qty"] else 0}
-         for k,v in defect_by_item.items()],key=lambda x:-x["defect_rate"])[:10]
+        q = by_week[wk]["qc_qty"]
+        d = by_week[wk]["defect"]
+        by_week[wk]["defect_rate"] = round(d / q * 100, 2) if q else 0.0
+
+    defect_rate = round(total_defect / total_qc_qty * 100, 2) if total_qc_qty else 0.0
+    defect_items = sorted(
+        [{"name": k, "qc_qty": v["qc_qty"], "defect": v["defect"],
+          "defect_rate": round(v["defect"] / v["qc_qty"] * 100, 2) if v["qc_qty"] else 0}
+         for k, v in defect_by_item.items()], key=lambda x: -x["defect_rate"])[:10]
+
     return {
-        "summary":{"qc_cnt":qc_cnt,"total_qc_qty":total_qc_qty,"total_defect":total_defect,
-                   "defect_rate":defect_rate,"target_met":defect_rate<=1.0},
-        "by_week":dict(sorted(by_week.items())),
-        "result_dist":dict(result_dist),
-        "defect_by_item":defect_items,
+        "summary": {
+            "qc_cnt": total_cnt,           # 검수 건수 = 전체 입하건수
+            "total_qc_qty": total_qc_qty,  # 검수 수량 = 입하수량 × 7.5%
+            "sample_rate": sample_rate,
+            "actual_qc_cnt": actual_qc_cnt, # 실제 QC 기록 건수
+            "total_defect": total_defect,
+            "defect_rate": defect_rate,
+            "target_met": defect_rate <= 1.0,
+        },
+        "by_week": dict(sorted(by_week.items())),
+        "result_dist": dict(result_dist),
+        "defect_by_item": defect_items,
+        "issue_summary": {
+            "total_cnt": total_cnt,
+            "issue_cnt": issue_cnt,
+            "cat_counts": dict(issue_cat_counts),
+        },
     }
 
 def analyze_material(records):
