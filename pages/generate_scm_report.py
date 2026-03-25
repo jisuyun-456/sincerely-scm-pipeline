@@ -65,6 +65,10 @@ F_ITEM_NAME     = "fldws6Ohz68i3GBPR"
 F_ITEM_ALT      = "fldwZKCYZ4IFOigRp"   # 이동물품
 F_NOT_RECV_HIST = "fldjZYoxIe1GI4DGa"
 F_SHIP_FROM     = "fldz7ZLrZw7inalHz"   # 출하장소
+F_ISSUE_CAT     = "fldudxogG53VjQmvX"   # 이슈카테고리 (multipleSelects)
+F_QC_ISSUE_FLAG = "fld9eE4YZZWTDsfUC"   # 품질 이슈 리포팅 (checkbox)
+F_OPS_ISSUE_FLAG= "fldVJnnvOYW2vR4ur"   # 운영이슈 (checkbox)
+F_QTY_ISSUE_FLAG= "fld6XIcRIu6HTePBL"   # 수량이슈공유 (checkbox)
 
 # 피킹 전용 필드
 F_MAT_STATUS    = "fld8dqGaGuLHefQUs"   # 자재투입현황 singleSelect
@@ -80,7 +84,8 @@ SEL_자재투입완료 = "selt0CWNOSqUoL56A"
 
 MOVEMENT_FIELDS = [F_PURPOSE,F_IN_QTY,F_IN_DATE,F_IN_STATUS,F_STOCK_QTY,
                    F_QC_QTY,F_DEFECT_S,F_DEFECT_F,F_QC_RES,F_CANCEL,
-                   F_ITEM_NAME,F_ITEM_ALT,F_NOT_RECV_HIST,F_SHIP_FROM]
+                   F_ITEM_NAME,F_ITEM_ALT,F_NOT_RECV_HIST,F_SHIP_FROM,
+                   F_ISSUE_CAT,F_QC_ISSUE_FLAG,F_OPS_ISSUE_FLAG,F_QTY_ISSUE_FLAG]
 
 # 피킹 조회용 필드 목록
 PICKING_FIELDS = [F_PURPOSE,F_IN_DATE,F_MAT_STATUS,F_OUTGOING_ITEM,
