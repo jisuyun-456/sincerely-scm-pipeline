@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-25T04:48:28",
+  "generated_at": "2026-03-25T06:40:34",
   "report_mode": "weekly_review",
   "period_key": "2026-W12_review",
   "period": {
@@ -11,7 +11,7 @@
   "kpi": {
     "completion_rate": 99.7,
     "defect_rate": 0.94,
-    "picking_total": 0,
+    "picking_total": 93,
     "issue_total": 14
   },
   "inbound": {
@@ -164,8 +164,14 @@
         "view": "project"
       },
       "a1_to_partner": {
-        "count": 0,
-        "by_date": {},
+        "count": 93,
+        "by_date": {
+          "2026-03-16": 12,
+          "2026-03-17": 37,
+          "2026-03-18": 29,
+          "2026-03-19": 5,
+          "2026-03-20": 10
+        },
         "view": "a1_to_partner"
       }
     },
@@ -674,15 +680,15 @@
       },
       "routing": {
         "driver_weekly_km": {
-          "신시어리 (이장훈)": 130.6,
-          "신시어리 (조희선)": 469.45,
-          "신시어리 (박종성)": 350.12
+          "신시어리 (이장훈)": 128.0,
+          "신시어리 (조희선)": 466.19,
+          "신시어리 (박종성)": 349.6
         },
         "driver_daily_routes": {
           "신시어리 (이장훈)": {
             "2026-03-16": {
-              "total_km": 18.16,
-              "total_min": 55,
+              "total_km": 17.82,
+              "total_min": 63,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -698,7 +704,7 @@
             },
             "2026-03-17": {
               "total_km": 5.73,
-              "total_min": 21,
+              "total_min": 20,
               "stops": 1,
               "depot": "에이원센터",
               "route": [
@@ -709,8 +715,8 @@
               ]
             },
             "2026-03-18": {
-              "total_km": 57.89,
-              "total_min": 120,
+              "total_km": 57.84,
+              "total_min": 134,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -729,8 +735,8 @@
               ]
             },
             "2026-03-19": {
-              "total_km": 27.18,
-              "total_min": 83,
+              "total_km": 27.52,
+              "total_min": 87,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -749,8 +755,8 @@
               ]
             },
             "2026-03-20": {
-              "total_km": 21.64,
-              "total_min": 55,
+              "total_km": 19.09,
+              "total_min": 66,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -771,8 +777,8 @@
           },
           "신시어리 (조희선)": {
             "2026-03-16": {
-              "total_km": 56.74,
-              "total_min": 92,
+              "total_km": 56.99,
+              "total_min": 110,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -791,8 +797,8 @@
               ]
             },
             "2026-03-17": {
-              "total_km": 96.62,
-              "total_min": 134,
+              "total_km": 97.09,
+              "total_min": 153,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -807,8 +813,8 @@
               ]
             },
             "2026-03-18": {
-              "total_km": 161.08,
-              "total_min": 219,
+              "total_km": 159.32,
+              "total_min": 246,
               "stops": 5,
               "depot": "에이원센터",
               "route": [
@@ -835,8 +841,8 @@
               ]
             },
             "2026-03-19": {
-              "total_km": 86.96,
-              "total_min": 213,
+              "total_km": 85.27,
+              "total_min": 242,
               "stops": 5,
               "depot": "에이원센터",
               "route": [
@@ -863,8 +869,8 @@
               ]
             },
             "2026-03-20": {
-              "total_km": 68.05,
-              "total_min": 176,
+              "total_km": 67.52,
+              "total_min": 200,
               "stops": 5,
               "depot": "에이원센터",
               "route": [
@@ -893,8 +899,8 @@
           },
           "신시어리 (박종성)": {
             "2026-03-16": {
-              "total_km": 10.15,
-              "total_min": 20,
+              "total_km": 10.71,
+              "total_min": 28,
               "stops": 1,
               "depot": "에이원센터",
               "route": [
@@ -905,7 +911,7 @@
               ]
             },
             "2026-03-17": {
-              "total_km": 250.15,
+              "total_km": 250.89,
               "total_min": 219,
               "stops": 3,
               "depot": "다영기획",
@@ -925,8 +931,8 @@
               ]
             },
             "2026-03-18": {
-              "total_km": 27.3,
-              "total_min": 40,
+              "total_km": 25.48,
+              "total_min": 48,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -942,7 +948,7 @@
             },
             "2026-03-20": {
               "total_km": 62.52,
-              "total_min": 94,
+              "total_min": 102,
               "stops": 2,
               "depot": "다영기획",
               "route": [
@@ -963,9 +969,9 @@
     "next_week": {
       "summary": {
         "total_cbm": 0.0,
-        "total_count": 43,
+        "total_count": 44,
         "completed": 0,
-        "pending": 43,
+        "pending": 44,
         "revenue": 0.0,
         "cost": 0.0,
         "profit": 0.0,
@@ -1006,10 +1012,10 @@
           "cost": 0.0
         },
         "2026-04-03": {
-          "cnt": 5,
+          "cnt": 6,
           "cbm": 0.0,
           "completed": 0,
-          "pending": 5,
+          "pending": 6,
           "revenue": 0.0,
           "cost": 0.0
         }
