@@ -1,0 +1,57 @@
+name: Deploy Meeting Notes
+
+on:
+  push:
+    paths:
+      - 'sincerely-meeting-notes/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare site
+        run: |
+          mkdir -p site/history
+
+          # 메인 대시보드 (정적 파일만, Airtable 호출 없음)
+          cp pages/dashboard.html site/index.html
+
+          # 히스토리 JSON (레포에 커밋된 최신본 사용)
+          if ls history/*.json 1> /dev/null 2>&1; then
+            cp history/*.json site/history/
+          fi
+
+          # 회의록 페이지
+          cp -r sincerely-meeting-notes site/sincerely-meeting-notes
+
+          echo "site/ 구조:"
+          ls -la site/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
