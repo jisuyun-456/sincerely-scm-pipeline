@@ -499,7 +499,7 @@ def analyze_qc(records):
         },
     }
 
-def analyze_picking(records, view_type):
+def analyze_picking(records, view_type, start=None, end=None):
     """피킹 레코드 → 건수 + 날짜별 건수 (project: 임가공예정일 파싱 후 범위 필터링)"""
     by_date = defaultdict(int)
     filtered = []
@@ -885,8 +885,8 @@ def main():
     print("[자재 피킹] 조회 중...")
     pick_proj_recs = fetch_picking(start, end, "project")
     pick_a1_recs   = fetch_picking(start, end, "a1_to_partner")
-    picking_proj   = analyze_picking(pick_proj_recs, "project")
-    picking_a1     = analyze_picking(pick_a1_recs, "a1_to_partner")
+    picking_proj   = analyze_picking(pick_proj_recs, "project", start, end)
+    picking_a1     = analyze_picking(pick_a1_recs, "a1_to_partner", start, end)
     print(f"  프로젝트 피킹: {picking_proj['count']}건  에이원→협력사: {picking_a1['count']}건")
 
     # -- 자재관리 base 조회 (연결 시에만) ----------------------
