@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-24T07:46:53",
+  "generated_at": "2026-03-25T04:48:28",
   "report_mode": "weekly_review",
   "period_key": "2026-W12_review",
   "period": {
@@ -10,15 +10,15 @@
   },
   "kpi": {
     "completion_rate": 99.7,
-    "defect_rate": 0.49,
-    "accuracy": 98.3,
-    "neg_avail_cnt": 23
+    "defect_rate": 0.94,
+    "picking_total": 0,
+    "issue_total": 14
   },
   "inbound": {
     "summary": {
       "total_cnt": 287,
-      "total_in_qty": 111565,
-      "total_stock_qty": 106427,
+      "total_in_qty": 111588,
+      "total_stock_qty": 106450,
       "completed": 286,
       "unconfirmed": 0,
       "completion_rate": 99.7
@@ -26,7 +26,7 @@
     "by_date": {
       "2026-03-16": {
         "cnt": 68,
-        "in_qty": 22675
+        "in_qty": 22698
       },
       "2026-03-17": {
         "cnt": 41,
@@ -48,13 +48,13 @@
     "by_week": {
       "2026-W12": {
         "cnt": 287,
-        "in_qty": 111565
+        "in_qty": 111588
       }
     },
     "by_purpose": {
       "생산산출": {
         "cnt": 208,
-        "qty": 62470
+        "qty": 62493
       },
       "생산샘플": {
         "cnt": 12,
@@ -83,19 +83,19 @@
   "qc": {
     "summary": {
       "qc_cnt": 287,
-      "total_qc_qty": 8367,
+      "total_qc_qty": 8369,
       "sample_rate": 0.075,
-      "actual_qc_cnt": 6,
-      "total_defect": 41,
-      "defect_rate": 0.49,
+      "actual_qc_cnt": 7,
+      "total_defect": 79,
+      "defect_rate": 0.94,
       "target_met": true
     },
     "by_week": {
       "W12": {
         "cnt": 287,
-        "qc_qty": 8232,
-        "defect": 41,
-        "defect_rate": 0.5
+        "qc_qty": 8233,
+        "defect": 79,
+        "defect_rate": 0.96
       }
     },
     "result_dist": {
@@ -114,6 +114,12 @@
         "qc_qty": 101,
         "defect": 15,
         "defect_rate": 14.85
+      },
+      {
+        "name": "커버(브랜드-잇_인쇄포함)",
+        "qc_qty": 453,
+        "defect": 38,
+        "defect_rate": 8.39
       },
       {
         "name": "커넥트6in1케이블키트",
@@ -142,23 +148,41 @@
     ],
     "issue_summary": {
       "total_cnt": 287,
-      "issue_cnt": 11,
+      "issue_cnt": 12,
       "cat_counts": {
-        "품질이슈": 6,
+        "품질이슈": 7,
         "운영이슈": 2,
         "수량이슈": 4
       }
     }
   },
   "material": {
-    "summary": {
-      "total": 717,
-      "total_phys": 514639,
-      "mismatch": 12,
-      "accuracy": 98.3,
-      "neg_avail": 23,
-      "check_done": 695,
-      "check_rate": 96.9
+    "picking": {
+      "project": {
+        "count": 0,
+        "by_date": {},
+        "view": "project"
+      },
+      "a1_to_partner": {
+        "count": 0,
+        "by_date": {},
+        "view": "a1_to_partner"
+      }
+    },
+    "issues": {
+      "total": 14,
+      "by_type": {
+        "이동수량부족": 8,
+        "품질불량": 2,
+        "품목추가": 1,
+        "이동누락": 1,
+        "재제작추가투입": 1,
+        "지시서누락": 1
+      },
+      "usage_total": 0.0
+    },
+    "usage": {
+      "cumulative_2026": 10694925.0
     }
   },
   "shipment": {
@@ -650,15 +674,15 @@
       },
       "routing": {
         "driver_weekly_km": {
-          "신시어리 (이장훈)": 124.88,
-          "신시어리 (조희선)": 463.28,
-          "신시어리 (박종성)": 358.01
+          "신시어리 (이장훈)": 130.6,
+          "신시어리 (조희선)": 469.45,
+          "신시어리 (박종성)": 350.12
         },
         "driver_daily_routes": {
           "신시어리 (이장훈)": {
             "2026-03-16": {
-              "total_km": 17.82,
-              "total_min": 71,
+              "total_km": 18.16,
+              "total_min": 55,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -674,7 +698,7 @@
             },
             "2026-03-17": {
               "total_km": 5.73,
-              "total_min": 20,
+              "total_min": 21,
               "stops": 1,
               "depot": "에이원센터",
               "route": [
@@ -685,8 +709,8 @@
               ]
             },
             "2026-03-18": {
-              "total_km": 55.78,
-              "total_min": 163,
+              "total_km": 57.89,
+              "total_min": 120,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -705,8 +729,8 @@
               ]
             },
             "2026-03-19": {
-              "total_km": 27.52,
-              "total_min": 102,
+              "total_km": 27.18,
+              "total_min": 83,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -725,8 +749,8 @@
               ]
             },
             "2026-03-20": {
-              "total_km": 18.03,
-              "total_min": 70,
+              "total_km": 21.64,
+              "total_min": 55,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -747,8 +771,8 @@
           },
           "신시어리 (조희선)": {
             "2026-03-16": {
-              "total_km": 56.67,
-              "total_min": 127,
+              "total_km": 56.74,
+              "total_min": 92,
               "stops": 3,
               "depot": "에이원센터",
               "route": [
@@ -767,8 +791,8 @@
               ]
             },
             "2026-03-17": {
-              "total_km": 97.24,
-              "total_min": 170,
+              "total_km": 96.62,
+              "total_min": 134,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -783,8 +807,8 @@
               ]
             },
             "2026-03-18": {
-              "total_km": 159.95,
-              "total_min": 265,
+              "total_km": 161.08,
+              "total_min": 219,
               "stops": 5,
               "depot": "에이원센터",
               "route": [
@@ -811,8 +835,8 @@
               ]
             },
             "2026-03-19": {
-              "total_km": 82.39,
-              "total_min": 232,
+              "total_km": 86.96,
+              "total_min": 213,
               "stops": 5,
               "depot": "에이원센터",
               "route": [
@@ -839,8 +863,8 @@
               ]
             },
             "2026-03-20": {
-              "total_km": 67.03,
-              "total_min": 204,
+              "total_km": 68.05,
+              "total_min": 176,
               "stops": 5,
               "depot": "에이원센터",
               "route": [
@@ -869,8 +893,8 @@
           },
           "신시어리 (박종성)": {
             "2026-03-16": {
-              "total_km": 10.59,
-              "total_min": 37,
+              "total_km": 10.15,
+              "total_min": 20,
               "stops": 1,
               "depot": "에이원센터",
               "route": [
@@ -882,7 +906,7 @@
             },
             "2026-03-17": {
               "total_km": 250.15,
-              "total_min": 213,
+              "total_min": 219,
               "stops": 3,
               "depot": "다영기획",
               "route": [
@@ -901,8 +925,8 @@
               ]
             },
             "2026-03-18": {
-              "total_km": 25.74,
-              "total_min": 52,
+              "total_km": 27.3,
+              "total_min": 40,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -917,8 +941,8 @@
               ]
             },
             "2026-03-20": {
-              "total_km": 71.53,
-              "total_min": 115,
+              "total_km": 62.52,
+              "total_min": 94,
               "stops": 2,
               "depot": "다영기획",
               "route": [
@@ -939,9 +963,9 @@
     "next_week": {
       "summary": {
         "total_cbm": 0.0,
-        "total_count": 42,
+        "total_count": 43,
         "completed": 0,
-        "pending": 42,
+        "pending": 43,
         "revenue": 0.0,
         "cost": 0.0,
         "profit": 0.0,
@@ -958,10 +982,10 @@
           "cost": 0.0
         },
         "2026-03-31": {
-          "cnt": 10,
+          "cnt": 11,
           "cbm": 0.0,
           "completed": 0,
-          "pending": 10,
+          "pending": 11,
           "revenue": 0.0,
           "cost": 0.0
         },
