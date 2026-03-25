@@ -264,13 +264,12 @@ def fetch_picking(start, end, view_type):
     fp  = "&".join(f"fields[]={f}" for f in PICKING_FIELDS)
     ds, de = start.isoformat(), end.isoformat()
     if view_type == "project":
-        # 임가공 예정일은 singleLineText (YYYY-MM-DD 형식) → 문자열 범위 비교
+        # 임가공 예정일은 "March 17, 2026" 형식(영어 월 이름) → 날짜 범위 필터 불가
+        # Airtable에서는 not empty만 체크, Python에서 strptime으로 파싱 후 범위 필터링
         formula = (
             f"AND({{{F_PURPOSE}}}='조립투입',"
             f"{{{F_MAT_STATUS}}}='자재투입완료',"
-            f"NOT({{{F_PKG_DATE}}}=''),"
-            f"{{{F_PKG_DATE}}}>='{ds}',"
-            f"{{{F_PKG_DATE}}}<='{de}')"
+            f"NOT({{{F_PKG_DATE}}}=''))"
         )
     else:  # a1_to_partner
         # 출하희망일은 date 필드 → IS_AFTER/IS_BEFORE 사용
@@ -501,16 +500,29 @@ def analyze_qc(records):
     }
 
 def analyze_picking(records, view_type):
-    """피킹 레코드 → 건수 + 날짜별 건수"""
-    # 날짜 기준 필드: project=임가공예정일(singleLineText), a1=출하희망일(date)
-    date_field = F_PKG_DATE if view_type == "project" else F_SHIP_DATE
+    """피킹 레코드 → 건수 + 날짜별 건수 (project: 임가공예정일 파싱 후 범위 필터링)"""
     by_date = defaultdict(int)
+    filtered = []
     for r in records:
         c = _c(r)
-        d_s = (c.get(date_field) or "")[:10]  # date 필드는 datetime이므로 앞 10자만
-        if d_s:
-            by_date[d_s] += 1
-    return {"count": len(records), "by_date": dict(sorted(by_date.items())), "view": view_type}
+        if view_type == "project":
+            # 임가공예정일: "March 17, 2026" 형식 → strptime 파싱 후 범위 체크
+            raw = (c.get(F_PKG_DATE) or "").strip()
+            try:
+                d = datetime.strptime(raw, "%B %d, %Y").date()
+            except ValueError:
+                continue
+            if not (start <= d <= end):
+                continue
+            d_s = d.isoformat()
+        else:
+            # 출하희망일: "2026-03-17T..." 형식 → 앞 10자
+            d_s = (c.get(F_SHIP_DATE) or "")[:10]
+            if not d_s:
+                continue
+        filtered.append(r)
+        by_date[d_s] += 1
+    return {"count": len(filtered), "by_date": dict(sorted(by_date.items())), "view": view_type}
 
 def _mat_headers():
     return {"Authorization": f"Bearer {MAT_KEY}"}
