@@ -76,11 +76,15 @@ F_OUTGOING_ITEM = "fldQevLGnuqIuFRVO"  # 출고자재
 F_IN_PLACE      = "fldCvFgo3U6mdufWB"  # 입하장소
 F_PKG_PLACE     = "fldZgtRTVWTn7x68S"  # 임가공장소
 F_QC_STATUS     = "fldLpIDZBmq9jKYCh"  # 검수 status
+F_SHIP_DATE     = "fldwLMVDhcmbmZu6A"  # 출하희망일 (date) — a1_to_partner 날짜 기준
+F_SHIP_STATUS   = "fldM02LfC3lLpgFdW"  # 출하여부 singleSelect
+F_PKG_DATE      = "fldzcoImWg5tdot7C"   # 임가공 예정일 from pkg_task — project 날짜 기준
 
 # 피킹 singleSelect choice IDs
 SEL_조립투입    = "selwGJ94MwL0h4m39"
 SEL_재고이동    = "selSvPegmBE29miNf"
 SEL_자재투입완료 = "selt0CWNOSqUoL56A"
+SEL_출하완료    = "selGBDuEK9NSOdqwi"   # 출하여부 → 출하 완료
 
 MOVEMENT_FIELDS = [F_PURPOSE,F_IN_QTY,F_IN_DATE,F_IN_STATUS,F_STOCK_QTY,
                    F_QC_QTY,F_DEFECT_S,F_DEFECT_F,F_QC_RES,F_CANCEL,
@@ -88,8 +92,9 @@ MOVEMENT_FIELDS = [F_PURPOSE,F_IN_QTY,F_IN_DATE,F_IN_STATUS,F_STOCK_QTY,
                    F_ISSUE_CAT,F_QC_ISSUE_FLAG,F_OPS_ISSUE_FLAG,F_QTY_ISSUE_FLAG]
 
 # 피킹 조회용 필드 목록
-PICKING_FIELDS = [F_PURPOSE,F_IN_DATE,F_MAT_STATUS,F_OUTGOING_ITEM,
-                  F_IN_PLACE,F_SHIP_FROM,F_PKG_PLACE,F_QC_STATUS,F_ITEM_ALT,F_CANCEL]
+PICKING_FIELDS = [F_PURPOSE,F_MAT_STATUS,F_OUTGOING_ITEM,F_IN_PLACE,F_SHIP_FROM,
+                  F_PKG_PLACE,F_QC_STATUS,F_ITEM_ALT,F_CANCEL,
+                  F_SHIP_DATE,F_SHIP_STATUS,F_PKG_DATE]
 
 # ================================================================
 # 자재관리 base Field IDs (연결 후 채움)
@@ -252,40 +257,29 @@ def fetch_movement(start, end):
 def fetch_picking(start, end, view_type):
     """
     view_type: "project" | "a1_to_partner"
-    project:      출고자재 not empty + 검수status contains '재고' + 자재투입현황=완료 + 임가공장소 contains 에이원/다영기획
-    a1_to_partner: 출하장소 contains 에이원 + 입하장소 not 다영/베스트원 + 이동물품 not empty
-                  + 이동목적=재고이동 + 취소여부≠취소 + 출고자재 not empty
+    project:       이동목적=조립투입 + 자재투입현황=자재투입완료 + 임가공예정일(F_PKG_DATE) in range
+    a1_to_partner: 이동목적=재고이동 + 출하여부=출하완료 + 출하희망일(F_SHIP_DATE) in range
     """
     url = f"https://api.airtable.com/v0/{WMS_BASE_ID}/{TABLE_MOVEMENT}"
     fp  = "&".join(f"fields[]={f}" for f in PICKING_FIELDS)
     ds, de = start.isoformat(), end.isoformat()
-    date_cond = (f"AND(IS_AFTER({{{F_IN_DATE}}},DATEADD('{ds}',-1,'days')),"
-                 f"IS_BEFORE({{{F_IN_DATE}}},DATEADD('{de}',1,'days')))")
     if view_type == "project":
+        # 임가공 예정일은 singleLineText (YYYY-MM-DD 형식) → 문자열 범위 비교
         formula = (
-            f"AND({date_cond},"
-            f"NOT({{{F_OUTGOING_ITEM}}}=''),"
-            f"FIND('재고',{{{F_QC_STATUS}}})>0,"
-            f"'{SEL_자재투입완료}'=RECORD_ID(),0=0"  # singleSelect by choice name below
-        )
-        # filterByFormula with choice name (Airtable supports name-based match for singleSelect)
-        formula = (
-            f"AND({date_cond},"
-            f"NOT({{{F_OUTGOING_ITEM}}}=''),"
-            f"FIND('재고',{{{F_QC_STATUS}}})>0,"
+            f"AND({{{F_PURPOSE}}}='조립투입',"
             f"{{{F_MAT_STATUS}}}='자재투입완료',"
-            f"OR(FIND('에이원',{{{F_PKG_PLACE}}})>0,FIND('다영기획',{{{F_PKG_PLACE}}})>0))"
+            f"NOT({{{F_PKG_DATE}}}=''),"
+            f"{{{F_PKG_DATE}}}>='{ds}',"
+            f"{{{F_PKG_DATE}}}<='{de}')"
         )
     else:  # a1_to_partner
+        # 출하희망일은 date 필드 → IS_AFTER/IS_BEFORE 사용
+        date_cond = (f"AND(IS_AFTER({{{F_SHIP_DATE}}},DATEADD('{ds}',-1,'days')),"
+                     f"IS_BEFORE({{{F_SHIP_DATE}}},DATEADD('{de}',1,'days')))")
         formula = (
             f"AND({date_cond},"
-            f"FIND('에이원',{{{F_SHIP_FROM}}})>0,"
-            f"NOT(FIND('다영기획',{{{F_IN_PLACE}}})>0),"
-            f"NOT(FIND('베스트원',{{{F_IN_PLACE}}})>0),"
-            f"NOT({{{F_ITEM_ALT}}}=''),"
             f"{{{F_PURPOSE}}}='재고이동',"
-            f"NOT({{{F_CANCEL}}}='취소'),"
-            f"NOT({{{F_OUTGOING_ITEM}}}=''))"
+            f"{{{F_SHIP_STATUS}}}='출하 완료')"
         )
     return _fetch_all(url, fp, {"filterByFormula": formula}, _wms_headers())
 
@@ -508,10 +502,12 @@ def analyze_qc(records):
 
 def analyze_picking(records, view_type):
     """피킹 레코드 → 건수 + 날짜별 건수"""
+    # 날짜 기준 필드: project=임가공예정일(singleLineText), a1=출하희망일(date)
+    date_field = F_PKG_DATE if view_type == "project" else F_SHIP_DATE
     by_date = defaultdict(int)
     for r in records:
         c = _c(r)
-        d_s = c.get(F_IN_DATE, "")
+        d_s = (c.get(date_field) or "")[:10]  # date 필드는 datetime이므로 앞 10자만
         if d_s:
             by_date[d_s] += 1
     return {"count": len(records), "by_date": dict(sorted(by_date.items())), "view": view_type}
