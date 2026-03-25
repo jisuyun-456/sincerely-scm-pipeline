@@ -121,8 +121,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="kpi-row">
   <div class="kc" id="kpi-compl"><div class="kl">입하완료율</div><div class="kv">97.2<span class="ku">%</span></div><div class="ks ok">목표 95% 달성</div></div>
   <div class="kc" id="kpi-defect"><div class="kl">불량률</div><div class="kv ng">5.52<span class="ku">%</span></div><div class="ks ng">목표 1.0% 미달</div></div>
-  <div class="kc" id="kpi-acc"><div class="kl">재고정확도</div><div class="kv">100<span class="ku">%</span></div><div class="ks ok">목표 99.5% 달성</div></div>
-  <div class="kc" id="kpi-neg"><div class="kl">가용재고 음수</div><div class="kv ng">53<span class="ku">종</span></div><div class="ks ng">목표 0종 미달</div></div>
+  <div class="kc" id="kpi-acc"><div class="kl">자재 피킹</div><div class="kv">—<span class="ku">건</span></div><div class="ks">피킹 건수</div></div>
+  <div class="kc" id="kpi-neg"><div class="kl">자재 이슈</div><div class="kv">—<span class="ku">건</span></div><div class="ks">이슈 건수</div></div>
 </div>
 
 <div class="cat-row">
@@ -247,38 +247,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <!-- 자재 탭 -->
 <div id="tab-material" class="hidden">
+
+  <!-- 1) 자재 피킹수 -->
+  <div class="panel">
+    <div class="ph"><h3>자재 피킹 수</h3><span class="badge b-info" id="mat-pick-badge">—</span></div>
+    <div class="pb">
+      <div class="two" style="gap:8px;margin-bottom:12px">
+        <div style="background:#f5f4f0;border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:#888;margin-bottom:4px">프로젝트 피킹 (에이원/다영기획)</div>
+          <div style="font-size:22px;font-weight:600" id="mat-pick-proj">—</div>
+          <div style="font-size:10px;color:#aaa;margin-top:2px">출고자재 확인 + 자재투입완료 기준</div>
+        </div>
+        <div style="background:#f5f4f0;border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:#888;margin-bottom:4px">에이원→협력사 피킹</div>
+          <div style="font-size:22px;font-weight:600" id="mat-pick-a1">—</div>
+          <div style="font-size:10px;color:#aaa;margin-top:2px">재고이동 + 에이원 출하 기준</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:140px"><canvas id="cMatPicking"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 2) 자재 추가사용 분류 -->
   <div class="two">
     <div class="panel">
-      <div class="ph"><h3>자재 요약</h3><span class="badge b-ok">재고정확도 100%</span></div>
+      <div class="ph"><h3>자재 추가사용 분류</h3><span class="badge b-warn" id="mat-issue-badge">—</span></div>
       <div class="pb">
-        <div class="stat"><span class="sk">총 품목 수</span><span class="sv2" id="mat-total">500종</span></div>
-        <div class="stat"><span class="sk">실물 수량</span><span class="sv2" id="mat-phys">9,337</span></div>
-        <div class="stat"><span class="sk">전산 수량</span><span class="sv2">9,337</span></div>
-        <div class="stat"><span class="sk">불일치 품목</span><span class="sv2 ok">0종</span></div>
-        <div class="stat"><span class="sk">재고 정확도</span><span class="sv2 ok" id="mat-acc">100.0%</span></div>
+        <div id="mat-issue-list" style="margin-bottom:10px"></div>
+        <div class="chart-wrap" style="height:120px"><canvas id="cMatIssue"></canvas></div>
       </div>
     </div>
+
+    <!-- 3) 자재 추가사용액 -->
     <div class="panel">
-      <div class="ph"><h3>실사 현황</h3><span class="badge b-ng">체크율 0.2%</span></div>
+      <div class="ph"><h3>자재 추가사용액</h3><span class="badge b-info">누적 합산</span></div>
       <div class="pb">
-        <div class="stat"><span class="sk">가용재고 음수 품목</span><span class="sv2 ng" id="mat-neg">53종</span></div>
-        <div class="stat"><span class="sk">총 가용재고 합계</span><span class="sv2 ng">-3,135</span></div>
-        <div class="stat"><span class="sk">실사 체크 완료</span><span class="sv2 ng">1종</span></div>
-        <div class="stat"><span class="sk">체크 완료율</span><span class="sv2 ng" id="mat-check-rate">0.2%</span></div>
-        <div class="stat"><span class="sk">목표 정확도</span><span class="sv2">99.5%</span></div>
+        <div class="stat"><span class="sk">이번 기간 추가사용</span><span class="sv2" id="mat-usage-weekly">—</span></div>
+        <div class="stat"><span class="sk">이번달 누적</span><span class="sv2" id="mat-usage-monthly">—</span></div>
+        <div id="mat-usage-note" style="font-size:10px;color:#aaa;margin-top:10px;padding:8px;background:#f5f4f0;border-radius:6px">자재관리 base 연결 후 표시됩니다.</div>
       </div>
     </div>
   </div>
-  <div class="panel">
-    <div class="ph"><h3>재고 현황 개요</h3></div>
-    <div class="pb">
-      <div class="chart-wrap" style="height:140px"><canvas id="cMat"></canvas></div>
-    </div>
-  </div>
-  <div class="iss">
-    <p>가용재고 음수 53종 — 출고 예약 과다. 품목별 리스트 확인 후 출고 예약 조정 필요</p>
-    <p>실사 체크 완료율 0.2% — 실사가 거의 진행되지 않음. 월별 실사 일정 수립 권고</p>
-  </div>
+
 </div>
 
 <!-- 출하 탭 (이번주 + 이전주 + 트렌드 통합) -->
@@ -390,7 +400,14 @@ const FALLBACK = {
     by_week: { 'W10':{qc_qty:310,defect:25,defect_rate:8.1},'W11':{qc_qty:334,defect:90,defect_rate:26.9},'W12':{qc_qty:1729,defect:16,defect_rate:0.9} },
     result_dist: { '수량 정상':604,'이슈 발생 후 해결':7 }
   },
-  material: { summary: { total:500, accuracy:100.0, mismatch:0, neg_avail:53, check_done:1, total_phys:9337, check_rate:0.2 } }
+  material: {
+    picking: {
+      project:       { count:0, by_date:{}, view:'project' },
+      a1_to_partner: { count:0, by_date:{}, view:'a1_to_partner' },
+    },
+    issues: { total:0, by_type:{} },
+    usage:  { weekly_total:0, monthly_cumulative:0, by_date:{} },
+  }
 };
 
 // ── 모드별 배지/라벨 설정 ──
@@ -410,7 +427,7 @@ function applyData(data) {
   const kpi  = data.kpi;
   const inb  = data.inbound.summary;
   const qcs  = data.qc.summary;
-  const mat  = data.material.summary;
+  const mat  = data.material || {};
   const per  = data.period;
   const mode = data.report_mode || 'weekly_review';
   const cfg  = MODE_CONFIG[mode] || MODE_CONFIG.weekly_review;
@@ -431,14 +448,15 @@ function applyData(data) {
   // KPI 카드 (예측 모드에서는 지난주 실적 기준으로 표시)
   setKpi('kpi-compl', kpi.completion_rate, '%', kpi.completion_rate >= 95, '목표 95% 달성', '목표 95% 미달');
   setKpi('kpi-defect', kpi.defect_rate, '%', kpi.defect_rate <= 1.0, '목표 1.0% 달성', '목표 1.0% 미달', true);
-  setKpi('kpi-acc', kpi.accuracy, '%', kpi.accuracy >= 99.5, '목표 99.5% 달성', '목표 99.5% 미달');
-  setKpi('kpi-neg', kpi.neg_avail_cnt, '종', kpi.neg_avail_cnt === 0, '목표 0종 달성', '목표 0종 미달', true);
+  setKpi('kpi-acc', kpi.picking_total ?? 0, '건', true, '피킹 건수', '피킹 건수');
+  setKpi('kpi-neg', kpi.issue_total ?? 0, '건', kpi.issue_total === 0, '이슈 없음', '이슈 발생', true);
 
   // 카테고리 서브텍스트
   const inbLabel = mode === 'weekly_forecast' ? `예상 ${data.forecast?.projected?.inbound_cnt?.toLocaleString()}건` : `${inb.total_cnt.toLocaleString()}건 · ${inb.total_in_qty.toLocaleString()}개`;
   setText('cat-inbound-sub', inbLabel);
   setText('cat-qc-sub', `불량률 ${qcs.defect_rate}%`);
-  setText('cat-mat-sub', `음수재고 ${mat.neg_avail}종`);
+  const pickTotal = (mat.picking?.project?.count||0) + (mat.picking?.a1_to_partner?.count||0);
+  setText('cat-mat-sub', `피킹 ${pickTotal}건`);
 
   // 입고 요약
   setText('inb-cnt', inb.total_cnt.toLocaleString() + '건');
@@ -583,12 +601,43 @@ function applyData(data) {
     }
   }
 
-  // 자재 요약
-  setText('mat-total', mat.total.toLocaleString() + '종');
-  setText('mat-phys', mat.total_phys.toLocaleString());
-  setText('mat-neg', mat.neg_avail + '종');
-  setText('mat-check-rate', mat.check_rate + '%');
-  setText('mat-acc', mat.accuracy + '%');
+  // ── 자재 탭 렌더링 ──
+  const picking   = mat.picking || {};
+  const projPick  = picking.project || {};
+  const a1Pick    = picking.a1_to_partner || {};
+  const issues    = mat.issues || { total:0, by_type:{} };
+  const usage     = mat.usage  || { weekly_total:0, monthly_cumulative:0 };
+  const totalPick = (projPick.count||0) + (a1Pick.count||0);
+
+  setText('mat-pick-proj', (projPick.count||0) + '건');
+  setText('mat-pick-a1', (a1Pick.count||0) + '건');
+  const pickBadge = document.getElementById('mat-pick-badge');
+  if (pickBadge) pickBadge.textContent = `총 ${totalPick}건`;
+
+  // 이슈 분류 목록
+  const issueList = document.getElementById('mat-issue-list');
+  const issueBadge = document.getElementById('mat-issue-badge');
+  if (issueBadge) {
+    issueBadge.textContent = issues.total ? `이슈 ${issues.total}건` : '이슈 없음';
+    issueBadge.className = 'badge ' + (issues.total ? 'b-warn' : 'b-ok');
+  }
+  if (issueList) {
+    const byType = Object.entries(issues.by_type || {});
+    if (byType.length) {
+      const maxCnt = byType[0]?.[1] || 1;
+      issueList.innerHTML = byType.map(([t, cnt]) =>
+        `<div class="sr"><span class="sn">${t}</span><div class="bbg"><div class="bf" style="width:${Math.round(cnt/maxCnt*100)}%;background:#AFA9EC"></div></div><span class="sv">${cnt}건</span></div>`
+      ).join('');
+    } else {
+      issueList.innerHTML = '<div style="font-size:11px;color:#aaa;padding:4px 0">자재관리 base 연결 후 표시됩니다.</div>';
+    }
+  }
+
+  // 추가사용액
+  setText('mat-usage-weekly', usage.weekly_total ? usage.weekly_total.toLocaleString() + '원' : '—');
+  setText('mat-usage-monthly', usage.monthly_cumulative ? usage.monthly_cumulative.toLocaleString() + '원' : '—');
+  const usageNote = document.getElementById('mat-usage-note');
+  if (usageNote) usageNote.style.display = (usage.monthly_cumulative > 0) ? 'none' : '';
 
   // 예측 패널
   const fcPanel = document.getElementById('forecast-panel');
@@ -970,23 +1019,55 @@ function drawChart(cat) {
   }
 
   if (cat === 'material') {
-    const ctx = document.getElementById('cMat');
-    if (!ctx) return;
-    const mat = data.material.summary;
-    const normal = mat.total - mat.neg_avail;
-    charts.material = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: [`재고 정상 (${normal}종)`, `음수 가용재고 (${mat.neg_avail}종)`],
-        datasets: [{ data: [normal, mat.neg_avail], backgroundColor: ['#5DCAA5', '#F09595'], borderWidth: 0, hoverOffset: 4 }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } }
+    const matD   = data.material || {};
+    const projD  = matD.picking?.project?.by_date   || {};
+    const a1D    = matD.picking?.a1_to_partner?.by_date || {};
+    const allDates = [...new Set([...Object.keys(projD), ...Object.keys(a1D)])].sort();
+
+    // 피킹 바차트
+    const pickCtx = document.getElementById('cMatPicking');
+    if (pickCtx && allDates.length) {
+      const labels = allDates.map(d => d.slice(5).replace('-','/'));
+      charts.matPicking = new Chart(pickCtx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: '프로젝트 피킹', data: allDates.map(d => projD[d]||0), backgroundColor: '#AFA9EC', borderRadius: 3 },
+            { label: '에이원→협력사', data: allDates.map(d => a1D[d]||0),   backgroundColor: '#5DCAA5', borderRadius: 3 },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { font: { size: 10 }, boxWidth: 10 } } },
+          scales: {
+            x: { stacked: true, ticks: { font: { size: 10 } }, grid: { display: false } },
+            y: { stacked: true, ticks: { font: { size: 9 } } }
+          }
         }
+      });
+    }
+
+    // 이슈 도넛 차트
+    const issueCtx = document.getElementById('cMatIssue');
+    if (issueCtx) {
+      const byType = matD.issues?.by_type || {};
+      const entries = Object.entries(byType);
+      if (entries.length) {
+        const COLORS = ['#AFA9EC','#5DCAA5','#85B7EB','#EF9F27','#F09595','#D3D1C7'];
+        charts.matIssue = new Chart(issueCtx, {
+          type: 'doughnut',
+          data: {
+            labels: entries.map(([t]) => t),
+            datasets: [{ data: entries.map(([,v]) => v), backgroundColor: COLORS, borderWidth: 0, hoverOffset: 4 }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } } }
+          }
+        });
       }
-    });
+    }
   }
 
   if (cat === 'ship') {

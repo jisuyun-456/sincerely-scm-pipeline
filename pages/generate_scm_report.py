@@ -15,6 +15,8 @@ REPORT_MODE=monthly         매월 1일   - WMS + TMS 월간 실적
   AIRTABLE_API_KEY_TMS   TMS Airtable PAT
   AIRTABLE_BASE_WMS_ID   WMS base ID
   AIRTABLE_BASE_TMS_ID   TMS base ID (기본: app4x70a8mOrIKsMf)
+  AIRTABLE_BASE_MAT_ID   자재관리 base ID (없으면 이슈/추가사용액 스킵)
+  AIRTABLE_API_KEY_MAT   자재관리 Airtable PAT (없으면 WMS key 재사용)
   KAKAO_REST_API_KEY     카카오 REST API 키 (라우팅 km, 없으면 스킵)
   REPORT_MODE            리포트 모드
   SKIP_DELAY             1이면 랜덤 지연 없음
@@ -39,45 +41,60 @@ WMS_KEY     = os.environ.get("AIRTABLE_API_KEY_WMS") or os.environ.get("AIRTABLE
 TMS_KEY     = os.environ.get("AIRTABLE_API_KEY_TMS") or WMS_KEY
 WMS_BASE_ID = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
 TMS_BASE_ID = os.environ.get("AIRTABLE_BASE_TMS_ID", "app4x70a8mOrIKsMf")
+MAT_BASE_ID = os.environ.get("AIRTABLE_BASE_MAT_ID", "")
+MAT_KEY     = os.environ.get("AIRTABLE_API_KEY_MAT") or WMS_KEY
 REPORT_MODE = os.environ.get("REPORT_MODE", "weekly_review")
 KAKAO_KEY   = os.environ.get("KAKAO_REST_API_KEY", "")
 
 # ================================================================
-# WMS Field IDs
+# WMS Field IDs (movement 테이블)
 # ================================================================
 TABLE_MOVEMENT = "tblwq7Kj5Y9nVjlOw"
-TABLE_MATERIAL = "tblaRpZstW10EwDlo"
 
-F_PURPOSE   = "fldFRNxG1pNooEOC7"
-F_IN_QTY    = "fldV8kVokQqMIsif0"
-F_IN_DATE   = "flduN8khmYwdn7uVD"
-F_IN_STATUS = "fld4Yq9LYX46zC5m5"
-F_STOCK_QTY = "fldlJt3RPY6E8JB4G"
-F_QC_QTY    = "fldnrqmT56niE7O21"
-F_DEFECT_S  = "fld3lQvblfrqTl4O8"
-F_DEFECT_F  = "fldsTXzxUeerw4qw2"
-F_QC_RES    = "fldKrjj58HnHKT4SJ"
-F_CANCEL    = "fldwgaM8OnKubM8oE"
+F_PURPOSE       = "fldFRNxG1pNooEOC7"   # 이동목적 singleSelect
+F_IN_QTY        = "fldV8kVokQqMIsif0"
+F_IN_DATE       = "flduN8khmYwdn7uVD"   # 실제입하일
+F_IN_STATUS     = "fld4Yq9LYX46zC5m5"
+F_STOCK_QTY     = "fldlJt3RPY6E8JB4G"
+F_QC_QTY        = "fldnrqmT56niE7O21"
+F_DEFECT_S      = "fld3lQvblfrqTl4O8"
+F_DEFECT_F      = "fldsTXzxUeerw4qw2"
+F_QC_RES        = "fldKrjj58HnHKT4SJ"
+F_CANCEL        = "fldwgaM8OnKubM8oE"   # 취소 여부 singleSelect
 F_ITEM_NAME     = "fldws6Ohz68i3GBPR"
-F_ITEM_ALT      = "fldwZKCYZ4IFOigRp"
+F_ITEM_ALT      = "fldwZKCYZ4IFOigRp"   # 이동물품
 F_NOT_RECV_HIST = "fldjZYoxIe1GI4DGa"
-F_SHIP_FROM     = "fldz7ZLrZw7inalHz"
-F_ISSUE_CAT     = "fldudxogG53VjQmvX"   # 이슈카테고리 (multipleSelects)
-F_QC_ISSUE_FLAG = "fld9eE4YZZWTDsfUC"   # 품질 이슈 리포팅 (checkbox)
-F_OPS_ISSUE_FLAG= "fldVJnnvOYW2vR4ur"   # 운영이슈 (checkbox)
-F_QTY_ISSUE_FLAG= "fld6XIcRIu6HTePBL"   # 수량이슈공유 (checkbox)
-F_MAT_NAME  = "fld7Pfip5zbBTaTdR"
-F_MAT_PHYS  = "fld5XQQv2P9YJZP6n"
-F_MAT_SYS   = "fldAFkM4HtGJsitOk"
-F_MAT_AVAIL = "fldZ5qLZKp0yy28So"
-F_MAT_LOC   = "fldsDSdkogmJ0qsVC"
-F_MAT_CHECK = "flddQhs9cuA6G8xmq"
+F_SHIP_FROM     = "fldz7ZLrZw7inalHz"   # 출하장소
+
+# 피킹 전용 필드
+F_MAT_STATUS    = "fld8dqGaGuLHefQUs"   # 자재투입현황 singleSelect
+F_OUTGOING_ITEM = "fldQevLGnuqIuFRVO"  # 출고자재
+F_IN_PLACE      = "fldCvFgo3U6mdufWB"  # 입하장소
+F_PKG_PLACE     = "fldZgtRTVWTn7x68S"  # 임가공장소
+F_QC_STATUS     = "fldLpIDZBmq9jKYCh"  # 검수 status
+
+# 피킹 singleSelect choice IDs
+SEL_조립투입    = "selwGJ94MwL0h4m39"
+SEL_재고이동    = "selSvPegmBE29miNf"
+SEL_자재투입완료 = "selt0CWNOSqUoL56A"
 
 MOVEMENT_FIELDS = [F_PURPOSE,F_IN_QTY,F_IN_DATE,F_IN_STATUS,F_STOCK_QTY,
                    F_QC_QTY,F_DEFECT_S,F_DEFECT_F,F_QC_RES,F_CANCEL,
-                   F_ITEM_NAME,F_ITEM_ALT,F_NOT_RECV_HIST,F_SHIP_FROM,
-                   F_ISSUE_CAT,F_QC_ISSUE_FLAG,F_OPS_ISSUE_FLAG,F_QTY_ISSUE_FLAG]
-MATERIAL_FIELDS = [F_MAT_NAME,F_MAT_PHYS,F_MAT_SYS,F_MAT_AVAIL,F_MAT_LOC,F_MAT_CHECK]
+                   F_ITEM_NAME,F_ITEM_ALT,F_NOT_RECV_HIST,F_SHIP_FROM]
+
+# 피킹 조회용 필드 목록
+PICKING_FIELDS = [F_PURPOSE,F_IN_DATE,F_MAT_STATUS,F_OUTGOING_ITEM,
+                  F_IN_PLACE,F_SHIP_FROM,F_PKG_PLACE,F_QC_STATUS,F_ITEM_ALT,F_CANCEL]
+
+# ================================================================
+# 자재관리 base Field IDs (연결 후 채움)
+# ================================================================
+TABLE_ISSUE  = ""   # 재고팀_이슈정리 table ID (TBD)
+TABLE_MAT_PARTS = ""  # sync_parts table ID (TBD)
+F_ISSUE_TYPE = ""   # 이슈유형 field ID (TBD)
+F_ISSUE_DATE = ""   # 이슈 날짜 field ID (TBD)
+F_USAGE_AMT  = ""   # 추가사용액 field ID (TBD)
+F_USAGE_DATE = ""   # 추가사용 날짜 field ID (TBD)
 
 # ================================================================
 # TMS Field IDs
@@ -227,10 +244,45 @@ def fetch_movement(start, end):
                f"IS_BEFORE({{{F_IN_DATE}}},DATEADD('{end.isoformat()}',1,'days')))")
     return _fetch_all(url, fp, {"filterByFormula":formula}, _wms_headers())
 
-def fetch_material():
-    url = f"https://api.airtable.com/v0/{WMS_BASE_ID}/{TABLE_MATERIAL}"
-    fp  = "&".join(f"fields[]={f}" for f in MATERIAL_FIELDS)
-    return _fetch_all(url, fp, {}, _wms_headers())
+def fetch_picking(start, end, view_type):
+    """
+    view_type: "project" | "a1_to_partner"
+    project:      출고자재 not empty + 검수status contains '재고' + 자재투입현황=완료 + 임가공장소 contains 에이원/다영기획
+    a1_to_partner: 출하장소 contains 에이원 + 입하장소 not 다영/베스트원 + 이동물품 not empty
+                  + 이동목적=재고이동 + 취소여부≠취소 + 출고자재 not empty
+    """
+    url = f"https://api.airtable.com/v0/{WMS_BASE_ID}/{TABLE_MOVEMENT}"
+    fp  = "&".join(f"fields[]={f}" for f in PICKING_FIELDS)
+    ds, de = start.isoformat(), end.isoformat()
+    date_cond = (f"AND(IS_AFTER({{{F_IN_DATE}}},DATEADD('{ds}',-1,'days')),"
+                 f"IS_BEFORE({{{F_IN_DATE}}},DATEADD('{de}',1,'days')))")
+    if view_type == "project":
+        formula = (
+            f"AND({date_cond},"
+            f"NOT({{{F_OUTGOING_ITEM}}}=''),"
+            f"FIND('재고',{{{F_QC_STATUS}}})>0,"
+            f"'{SEL_자재투입완료}'=RECORD_ID(),0=0"  # singleSelect by choice name below
+        )
+        # filterByFormula with choice name (Airtable supports name-based match for singleSelect)
+        formula = (
+            f"AND({date_cond},"
+            f"NOT({{{F_OUTGOING_ITEM}}}=''),"
+            f"FIND('재고',{{{F_QC_STATUS}}})>0,"
+            f"{{{F_MAT_STATUS}}}='자재투입완료',"
+            f"OR(FIND('에이원',{{{F_PKG_PLACE}}})>0,FIND('다영기획',{{{F_PKG_PLACE}}})>0))"
+        )
+    else:  # a1_to_partner
+        formula = (
+            f"AND({date_cond},"
+            f"FIND('에이원',{{{F_SHIP_FROM}}})>0,"
+            f"NOT(FIND('다영기획',{{{F_IN_PLACE}}})>0),"
+            f"NOT(FIND('베스트원',{{{F_IN_PLACE}}})>0),"
+            f"NOT({{{F_ITEM_ALT}}}=''),"
+            f"{{{F_PURPOSE}}}='재고이동',"
+            f"NOT({{{F_CANCEL}}}='취소'),"
+            f"NOT({{{F_OUTGOING_ITEM}}}=''))"
+        )
+    return _fetch_all(url, fp, {"filterByFormula": formula}, _wms_headers())
 
 # ================================================================
 # TMS Airtable 조회
@@ -449,24 +501,65 @@ def analyze_qc(records):
         },
     }
 
-def analyze_material(records):
-    total=mismatch=neg_avail=check_done=0
-    total_phys=0
+def analyze_picking(records, view_type):
+    """피킹 레코드 → 건수 + 날짜별 건수"""
+    by_date = defaultdict(int)
     for r in records:
-        c=_c(r)
-        phys=c.get(F_MAT_PHYS) or 0
-        sys_v=c.get(F_MAT_SYS) or 0
-        avail=c.get(F_MAT_AVAIL) or 0
-        chk=c.get(F_MAT_CHECK) or False
-        total+=1; total_phys+=phys
-        if phys!=sys_v: mismatch+=1
-        if avail<0: neg_avail+=1
-        if chk: check_done+=1
-    accuracy=round((total-mismatch)/total*100,1) if total else 100.0
-    check_rate=round(check_done/total*100,1) if total else 0.0
-    return {"summary":{"total":total,"total_phys":total_phys,"mismatch":mismatch,
-                       "accuracy":accuracy,"neg_avail":neg_avail,"check_done":check_done,
-                       "check_rate":check_rate}}
+        c = _c(r)
+        d_s = c.get(F_IN_DATE, "")
+        if d_s:
+            by_date[d_s] += 1
+    return {"count": len(records), "by_date": dict(sorted(by_date.items())), "view": view_type}
+
+def _mat_headers():
+    return {"Authorization": f"Bearer {MAT_KEY}"}
+
+def fetch_issue_list(start, end):
+    """자재관리 base 재고팀_이슈정리 테이블 조회 (TABLE_ISSUE, F_ISSUE_TYPE, F_ISSUE_DATE 설정 필요)"""
+    if not MAT_BASE_ID or not TABLE_ISSUE or not F_ISSUE_DATE:
+        print("  [자재관리 base] 미연결 — 이슈 데이터 스킵")
+        return {"total": 0, "by_type": {}}
+    url = f"https://api.airtable.com/v0/{MAT_BASE_ID}/{TABLE_ISSUE}"
+    fp  = "&".join(f"fields[]={f}" for f in [F_ISSUE_TYPE, F_ISSUE_DATE] if f)
+    ds, de = start.isoformat(), end.isoformat()
+    formula = (f"AND(IS_AFTER({{{F_ISSUE_DATE}}},DATEADD('{ds}',-1,'days')),"
+               f"IS_BEFORE({{{F_ISSUE_DATE}}},DATEADD('{de}',1,'days')))")
+    recs = _fetch_all(url, fp, {"filterByFormula": formula}, _mat_headers())
+    by_type = defaultdict(int)
+    for r in recs:
+        c = _c(r)
+        t = c.get(F_ISSUE_TYPE)
+        tname = t["name"] if isinstance(t, dict) else (str(t) if t else "미분류")
+        by_type[tname] += 1
+    return {"total": len(recs), "by_type": dict(sorted(by_type.items(), key=lambda x: -x[1]))}
+
+def fetch_additional_usage(start, end):
+    """자재관리 base sync_parts 테이블 추가사용액 조회 (TABLE_MAT_PARTS, F_USAGE_AMT, F_USAGE_DATE 설정 필요)"""
+    if not MAT_BASE_ID or not TABLE_MAT_PARTS or not F_USAGE_DATE:
+        print("  [자재관리 base] 미연결 — 추가사용액 데이터 스킵")
+        return {"weekly_total": 0, "monthly_cumulative": 0, "by_date": {}}
+    url = f"https://api.airtable.com/v0/{MAT_BASE_ID}/{TABLE_MAT_PARTS}"
+    fp  = "&".join(f"fields[]={f}" for f in [F_USAGE_AMT, F_USAGE_DATE] if f)
+    # 이번달 1일 ~ end 기간 (누적)
+    month_start = start.replace(day=1)
+    ds, de = month_start.isoformat(), end.isoformat()
+    formula = (f"AND(IS_AFTER({{{F_USAGE_DATE}}},DATEADD('{ds}',-1,'days')),"
+               f"IS_BEFORE({{{F_USAGE_DATE}}},DATEADD('{de}',1,'days')))")
+    recs = _fetch_all(url, fp, {"filterByFormula": formula}, _mat_headers())
+    weekly_total = 0.0; monthly_cumulative = 0.0; by_date = defaultdict(float)
+    for r in recs:
+        c = _c(r)
+        d_s = c.get(F_USAGE_DATE, "")
+        amt = float(c.get(F_USAGE_AMT) or 0)
+        monthly_cumulative += amt
+        if d_s:
+            by_date[d_s] += amt
+            try:
+                if start <= date.fromisoformat(d_s) <= end:
+                    weekly_total += amt
+            except Exception: pass
+    return {"weekly_total": round(weekly_total, 0), "monthly_cumulative": round(monthly_cumulative, 0),
+            "by_date": dict(sorted(by_date.items()))}
 
 # ================================================================
 # TMS 분석 함수 (주간 / 월간 공용)
@@ -776,14 +869,27 @@ def main():
     # -- WMS 조회/분석 ----------------------------------------
     print("[WMS] 조회 중...")
     movement_records=fetch_movement(start,end)
-    material_records=fetch_material()
-    print(f"  movement: {len(movement_records)}건  material: {len(material_records)}건")
+    print(f"  movement: {len(movement_records)}건")
     inbound =analyze_inbound(movement_records)
     qc      =analyze_qc(movement_records)
-    material=analyze_material(material_records)
 
-    inb_s=inbound["summary"]; qc_s=qc["summary"]; mat_s=material["summary"]
-    print(f"  입하완료율:{inb_s['completion_rate']}%  불량률:{qc_s['defect_rate']}%  재고정확도:{mat_s['accuracy']}%")
+    # -- 자재 피킹 조회 ----------------------------------------
+    print("[자재 피킹] 조회 중...")
+    pick_proj_recs = fetch_picking(start, end, "project")
+    pick_a1_recs   = fetch_picking(start, end, "a1_to_partner")
+    picking_proj   = analyze_picking(pick_proj_recs, "project")
+    picking_a1     = analyze_picking(pick_a1_recs, "a1_to_partner")
+    print(f"  프로젝트 피킹: {picking_proj['count']}건  에이원→협력사: {picking_a1['count']}건")
+
+    # -- 자재관리 base 조회 (연결 시에만) ----------------------
+    print("[자재관리] 이슈/추가사용액 조회...")
+    issue_data = fetch_issue_list(start, end)
+    usage_data = fetch_additional_usage(start, end)
+    if issue_data["total"]:
+        print(f"  이슈: {issue_data['total']}건  유형: {list(issue_data['by_type'].keys())[:3]}")
+
+    inb_s=inbound["summary"]; qc_s=qc["summary"]
+    print(f"  입하완료율:{inb_s['completion_rate']}%  불량률:{qc_s['defect_rate']}%")
 
     # -- TMS 조회/분석 ----------------------------------------
     print("[TMS] 조회 중...")
@@ -873,8 +979,17 @@ def main():
         "period":{"label":period_label,"week_label":week_lbl,
                   "start":start.isoformat(),"end":end.isoformat()},
         "kpi":{"completion_rate":inb_s["completion_rate"],"defect_rate":qc_s["defect_rate"],
-               "accuracy":mat_s["accuracy"],"neg_avail_cnt":mat_s["neg_avail"]},
-        "inbound":inbound,"qc":qc,"material":material,
+               "picking_total":picking_proj["count"]+picking_a1["count"],
+               "issue_total":issue_data["total"]},
+        "inbound":inbound,"qc":qc,
+        "material":{
+            "picking":{
+                "project":    picking_proj,
+                "a1_to_partner": picking_a1,
+            },
+            "issues":  issue_data,
+            "usage":   usage_data,
+        },
         "shipment":tms_data,
         # weekly 섹션: 출하 탭에서 이전주/다음주/트렌드/품질/기사님 등 상세 표시용
         "weekly": {
