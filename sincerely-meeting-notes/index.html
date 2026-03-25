@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>파트회의 회의록</title>
+<style>
+:root{--bg:#f7f7f5;--sidebar:#eeeeec;--surface:#ffffff;--border:rgba(0,0,0,0.08);--border-md:rgba(0,0,0,0.14);--text:#1a1a1a;--text-2:#5c5c5c;--text-3:#999;--accent:#d97706;--accent-bg:#fef3c7;--radius:10px;--radius-sm:6px;--font:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Segoe UI',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;display:flex;overflow:hidden;font-size:14px}
+.sidebar{width:260px;min-width:260px;background:var(--sidebar);display:flex;flex-direction:column;border-right:1px solid var(--border);height:100vh;overflow:hidden}
+.sidebar-header{padding:20px 16px 12px;display:flex;align-items:center;justify-content:space-between}
+.sidebar-brand{font-size:13px;font-weight:600;color:var(--text-2);letter-spacing:.02em}
+.new-btn{background:var(--text);color:white;border:none;border-radius:var(--radius-sm);padding:5px 10px;font-size:12px;cursor:pointer;font-family:var(--font);transition:opacity .15s}
+.new-btn:hover{opacity:.8}
+.sidebar-list{flex:1;overflow-y:auto;padding:4px 8px 16px}
+.month-label{font-size:11px;color:var(--text-3);padding:12px 8px 4px;font-weight:600;letter-spacing:.05em}
+.doc-item{padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:background .1s;margin-bottom:1px;display:flex;flex-direction:column;gap:2px;position:relative}
+.doc-item:hover{background:rgba(0,0,0,.05)}
+.doc-item.active{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.doc-item-title{font-size:13px;font-weight:500;color:var(--text)}
+.doc-item-meta{font-size:11px;color:var(--text-3)}
+.doc-del{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;opacity:0;transition:opacity .15s;padding:2px 6px;border-radius:4px;line-height:1}
+.doc-item:hover .doc-del{opacity:1}
+.doc-del:hover{color:#e53e3e;background:rgba(229,62,62,.1)}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.avatar{width:28px;height:28px;border-radius:50%;background:#d97706;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;flex-shrink:0}
+.user-name{font-size:12px;font-weight:500}
+.user-role{color:var(--text-3);font-size:11px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:14px;font-weight:500}
+.edit-badge{font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:100px;font-weight:500}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.hint{font-size:11px;color:var(--text-3)}
+.btn-ghost{background:none;border:1px solid var(--border-md);color:var(--text-2);padding:5px 12px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.btn-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-edit{background:none;border:1px solid var(--border-md);color:var(--accent);padding:5px 12px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:var(--font);font-weight:500;transition:all .15s}
+.btn-edit:hover{background:var(--accent-bg)}
+.btn-save{background:#166534;color:white;border:none;padding:5px 14px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:var(--font);font-weight:500}
+.btn-save:hover{opacity:.85}
+.content{flex:1;overflow-y:auto;padding:36px 48px}
+.doc-meta{display:flex;gap:32px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.meta-item{display:flex;flex-direction:column;gap:4px}
+.meta-label{font-size:11px;color:var(--text-3);font-weight:600;letter-spacing:.05em}
+.meta-value{font-size:14px;font-weight:500}
+.meta-input{font-size:14px;font-weight:500;color:var(--text);background:var(--bg);border:1px solid var(--border-md);border-radius:var(--radius-sm);padding:3px 8px;font-family:var(--font);outline:none}
+.meta-input:focus{border-color:var(--accent)}
+.section{margin-bottom:32px}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.section-title{font-size:13px;font-weight:600;color:var(--text-2);letter-spacing:.02em;white-space:nowrap}
+.section-line{flex:1;height:1px;background:var(--border)}
+.section-add{background:none;border:1px dashed var(--border-md);color:var(--text-3);padding:3px 10px;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.section-add:hover{color:var(--text-2);background:var(--bg)}
+.task-table{width:100%;border-collapse:collapse;font-size:13px}
+.task-table th{text-align:left;padding:9px 12px;background:var(--bg);color:var(--text-3);font-weight:600;font-size:11px;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+.task-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.task-table tr:last-child td{border-bottom:none}
+.task-table tr:hover td{background:rgba(0,0,0,.015)}
+.no-col{width:36px;color:var(--text-3);font-size:12px;text-align:center}
+.action-col{width:32px}
+.cell-input{width:100%;background:transparent;border:none;font-size:13px;font-family:var(--font);color:var(--text);outline:none;padding:2px 4px;border-radius:3px}
+.cell-input:focus{background:var(--accent-bg)}
+.cell-select{width:100%;background:transparent;border:none;font-size:13px;font-family:var(--font);color:var(--text);outline:none;cursor:pointer;padding:2px 2px;border-radius:3px}
+.cell-select:focus{background:var(--accent-bg)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6}
+.badge-done{background:#ecfdf5;color:#065f46}
+.badge-progress{background:#eff6ff;color:#1d4ed8}
+.badge-plan{background:#f5f3ff;color:#5b21b6}
+.badge-hold{background:#f5f5f4;color:#57534e}
+.badge-discuss{background:#fff7ed;color:#9a3412}
+.cat-badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:500;background:var(--bg);color:var(--text-2);border:1px solid var(--border-md)}
+.assignee-wrap{display:inline-flex;align-items:center;gap:5px}
+.adot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:white;flex-shrink:0}
+.d-지수{background:#d97706}.d-경선{background:#0891b2}.d-물류파트{background:#7c3aed}.d-웨일즈{background:#059669}.d-def{background:#6b7280}
+.row-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;padding:2px 4px;border-radius:4px;opacity:0;line-height:1}
+tr:hover .row-del{opacity:1}
+.row-del:hover{color:#e53e3e;background:rgba(229,62,62,.1)}
+.note-list{display:flex;flex-direction:column;gap:10px}
+.note-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative}
+.note-item:hover .note-del{opacity:1}
+.note-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;opacity:0;line-height:1}
+.note-del:hover{color:#e53e3e;background:rgba(229,62,62,.1)}
+.note-num{font-size:11px;font-weight:600;color:var(--text-3);margin-bottom:4px}
+.tag-display{font-size:11px;color:var(--accent);background:var(--accent-bg);padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px}
+.tag-input{font-size:11px;color:var(--accent);background:var(--accent-bg);padding:2px 8px;border-radius:4px;border:none;font-family:var(--font);outline:none;margin-bottom:6px;min-width:60px;display:inline-block}
+.tag-input:focus{box-shadow:0 0 0 2px var(--accent)}
+.note-text-view{font-size:13px;line-height:1.6;font-weight:500;white-space:pre-wrap}
+.note-sub-view{font-size:12px;color:var(--text-2);margin-top:4px;display:flex;gap:6px;white-space:pre-wrap}
+.note-sub-view::before{content:'ㄴ';color:var(--text-3);flex-shrink:0}
+.note-textarea{width:100%;background:transparent;border:none;font-size:13px;font-family:var(--font);color:var(--text);outline:none;resize:none;font-weight:500;line-height:1.6;padding:2px 4px;border-radius:3px}
+.note-textarea:focus{background:var(--bg)}
+.note-sub-wrap{display:flex;gap:6px;margin-top:4px;align-items:flex-start}
+.note-sub-prefix{color:var(--text-3);font-size:12px;flex-shrink:0;padding-top:3px}
+.note-sub-area{flex:1;background:transparent;border:none;font-size:12px;font-family:var(--font);color:var(--text-2);outline:none;resize:none;padding:2px 4px;border-radius:3px;line-height:1.6}
+.note-sub-area:focus{background:var(--bg)}
+.empty-hint{padding:20px;text-align:center;color:var(--text-3);font-size:13px;border:1px dashed var(--border-md);border-radius:var(--radius)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:var(--surface);border-radius:var(--radius);padding:28px;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:600;color:var(--text-3);margin-bottom:5px;display:block;letter-spacing:.04em}
+.form-input{width:100%;border:1px solid var(--border-md);border-radius:var(--radius-sm);padding:8px 10px;font-size:13px;font-family:var(--font);color:var(--text);background:var(--bg);outline:none}
+.form-input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:4px}
+@media print{.sidebar,.topbar{display:none}.content{padding:20px}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-brand">물류파트 회의록</span>
+    <button class="new-btn" onclick="openNew()">+ 새 회의</button>
+  </div>
+  <div class="sidebar-list" id="sidebar-list"></div>
+  <div class="sidebar-footer">
+    <div class="avatar">JY</div>
+    <div><div class="user-name">윤지수</div><div class="user-role">SCM / 물류파트</div></div>
+  </div>
+</div>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title" id="topbar-title"></span>
+      <span class="edit-badge" id="edit-badge" style="display:none">편집 중</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="hint" id="hint" style="display:none">⌘S 저장 · ESC 취소</span>
+      <button class="btn-ghost" onclick="doPrint()">인쇄</button>
+      <button class="btn-edit" id="btn-edit" onclick="startEdit()">✏️ 편집</button>
+      <button class="btn-save" id="btn-save" onclick="doSave()" style="display:none">저장</button>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+<div class="modal-overlay" id="new-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">새 회의록 만들기</div>
+    <div class="form-group"><label class="form-label">회의 날짜</label><input class="form-input" type="date" id="new-date"></div>
+    <div class="form-group"><label class="form-label">참석자</label><input class="form-input" type="text" id="new-att" placeholder="윤지수, 문경선"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeNew()">취소</button>
+      <button class="btn-save" onclick="createNew()">만들기</button>
+    </div>
+  </div>
+</div>
+<script>
+const SL=['완료','진행중','예정','보류','논의 필요'];
+const SC={'완료':'badge-done','진행중':'badge-progress','예정':'badge-plan','보류':'badge-hold','논의 필요':'badge-discuss'};
+
+const INIT=[
+  {
+    id:'m1',date:'2026-02-10',attendees:'윤지수, 문경선',author:'윤지수',
+    tasks:[],
+    notes:[
+      {num:1,tag:'운영방안',text:'페어 구성 확정',sub:'(지수-경선) / (준섭-영환) / (지수-경선-은혜) / (자엽-민재-지수)'},
+      {num:2,tag:'성과 관리',text:'KPI 세세하게 다시 보기',sub:'경선님께 공유 드려서 재논의 해보기 (자재/입고/출고)'},
+      {num:3,tag:'AI 활용',text:'AI 사용방안',sub:'회의록 작성 or 발표 sheet부터 해보자'},
+      {num:4,tag:'업무 개선',text:'출하방안 → CBM 도입 (장기 프로젝트)',sub:'성수기 배차 피크 예측 모델 수립. 명절·할인행사 등 성수기 기간을 별도 테이블로 관리하여 가중치 도출\n예측 수식: 예상 CBM = (평균 주간 CBM) × (성수기 가중치)'},
+      {num:5,tag:'업무 개선',text:'입고/자재 CBM: 규격 대신 표준 박스 도입',sub:'출고처럼 모든 자재를 측정하는 대신 대/중/소 혹은 A타입/B타입으로 정한다'},
+      {num:6,tag:'운영 관리',text:'디지털 트래킹',sub:'현재 바코드 없음. 입고완료 → 임가공완료 → 출하대기 상태로 트래킹 중'},
+    ]
+  },
+  {
+    id:'m2',date:'2026-02-25',attendees:'윤지수, 문경선',author:'윤지수',
+    tasks:[
+      {no:1,cat:'운영 관리',task:'자재 + 물류지원 업무 분장',who:'웨일즈',status:'진행중',due:'3월 중'},
+      {no:2,cat:'업무 개선',task:'인쇄 데이터 분리 (생산산출/투입)',who:'경선',status:'예정',due:'논의 필요'},
+      {no:3,cat:'성과 관리',task:'물류파트 KPI 설정 및 관리',who:'지수',status:'예정',due:'3월 중'},
+      {no:4,cat:'업무 개선',task:'출하 창고 가동률 누적 관리 (CBM)',who:'지수',status:'진행중',due:'2월 4주차'},
+      {no:5,cat:'업무 및 운영 개선',task:'글로벌 스탠다드 ERP 시스템 참고',who:'물류파트',status:'진행중',due:'2분기'},
+    ],
+    notes:[
+      {num:1,tag:'운영 관리',text:'자재지원 + 물류지원 업무분장',sub:'물류지원 추가 채용으로 인한 자재+물류 지원 업무 페어 재구성'},
+      {num:2,tag:'업무 개선',text:'인쇄건 (생산산출/생산투입 분리 필요)',sub:'세부 논의 필요'},
+      {num:3,tag:'성과 관리',text:'KPI는 이슈 위주로 검토하기 (자재부분)',sub:'입하, 검수, 출하 확인 필요 → FM.Management: 재고팀_이슈정리 Airtable 참고'},
+      {num:4,tag:'업무 개선',text:'출하쪽 창고 가동률 누적 관리',sub:'TMS: Shipment - Airtable 기반으로 진행'},
+      {num:5,tag:'업무 및 운영 개선',text:'글로벌 스탠다드 ERP 시스템 참고',sub:'SAP, 오라클 기준 그리고 CPIM, CSCP, CTLD 방법론으로 재구성 (BOM, CBM 등)'},
+    ]
+  },
+  {
+    id:'m3',date:'2026-03-03',attendees:'윤지수, 문경선',author:'윤지수',
+    tasks:[
+      {no:1,cat:'운영 관리',task:'자재 + 물류지원 업무 분장',who:'웨일즈',status:'진행중',due:'3월 중'},
+      {no:2,cat:'업무 개선',task:'인쇄 데이터 분리 (생산산출/투입)',who:'경선',status:'진행중',due:'논의 필요'},
+      {no:3,cat:'성과 관리',task:'물류파트 KPI 설정 및 관리',who:'지수',status:'예정',due:'3월 중'},
+      {no:4,cat:'업무 개선',task:'출하 창고 가동률 누적 관리 (CBM)',who:'지수',status:'완료',due:'2월 4주차'},
+      {no:5,cat:'업무 및 운영 개선',task:'글로벌 스탠다드 ERP 시스템 참고',who:'물류파트',status:'진행중',due:'상반기'},
+      {no:6,cat:'업무 개선',task:'입하 CBM',who:'지수',status:'진행중',due:'3월 중'},
+      {no:7,cat:'업무 개선',task:'빈 좌표 리스트',who:'지수',status:'보류',due:'3월 둘째주'},
+      {no:8,cat:'업무 개선',task:'재고조사 오류검증',who:'지수',status:'예정',due:'상반기'},
+    ],
+    notes:[
+      {num:1,tag:'업무 개선',text:'실재고 조사',sub:'하루 5~10개 실재고 조사 진행 중. 에어테이블 특성상 Zapier/오토메이션으로 데이터가 생겼다 사라지는 문제로 전산재고↔실재고 차이 발생. 재고 입출고 데이터 클로징이 안 되는 구조적 이슈.'},
+      {num:2,tag:'업무 개선',task:'재고 조사 데이터 검증',text:'재고 조사 데이터 검증',sub:'클로드 코드 skill/subagent 사용하여 재고수량 불일치 이유 분석\n기초재고 + 입고 - 출고 = 현재 실재고 최대한 맞는지 확인'},
+      {num:3,tag:'업무 개선',text:'에어테이블 빈재고 좌표 표시',sub:'신제품 출시 후 또는 새 재고 편입 시 비어있는 보관랙 좌표 확인 가능하게 (편의성 향상)'},
+      {num:4,tag:'업무 개선',text:'입하 CBM 측정 정형화',sub:'클로드 코드로 CBM 측정. 예: 피규어 500개 = 중박스(480×380×270mm) 기준 CBM 계산\n그동안 입하 시 CBM 따로 측정하지 않았음. 물류팀이 얼마나 CBM을 핸들링하는지 파악 목적.'},
+    ]
+  },
+  {
+    id:'m4',date:'2026-03-11',attendees:'윤지수, 문경선',author:'윤지수',
+    tasks:[
+      {no:1,cat:'운영 관리',task:'자재 + 물류지원 업무 분장',who:'웨일즈',status:'완료',due:'3월 중'},
+      {no:2,cat:'업무 개선',task:'인쇄 데이터 분리 (생산산출/투입)',who:'경선',status:'진행중',due:'논의 필요'},
+      {no:3,cat:'성과 관리',task:'물류파트 KPI 설정 및 관리',who:'지수',status:'예정',due:'3월 중'},
+      {no:4,cat:'업무 개선',task:'출하 창고 가동률 누적 관리 (CBM)',who:'지수',status:'완료',due:'2월 4주차'},
+      {no:5,cat:'업무 및 운영 개선',task:'글로벌 스탠다드 ERP 시스템 참고',who:'물류파트',status:'진행중',due:'상반기'},
+      {no:6,cat:'업무 개선',task:'입하 CBM',who:'지수',status:'진행중',due:'3월 중'},
+      {no:7,cat:'업무 개선',task:'빈 좌표 리스트',who:'지수',status:'보류',due:'3월 둘째주'},
+      {no:8,cat:'업무 개선',task:'재고조사 오류검증',who:'지수',status:'진행중',due:'상반기'},
+    ],
+    notes:[
+      {num:1,tag:'운영 관리',text:'운영관리 업무 진행',sub:'민재님이 생산투입건과 다영기획 리턴건 또한 맡아서 하고 계심'},
+      {num:2,tag:'업무 개선',text:'인쇄 데이터 분리',sub:'투입 요청일 알려주고 계시나 보충요청서는 아직 전달받지 못한 상태'},
+      {num:3,tag:'업무 개선',text:'재고 관점 이슈',sub:'전산재고↔실재고 불일치 지속. Zapier/오토메이션으로 데이터 생겼다 사라지는 구조 문제.\n→ 클로드 코드 MCP로 SAP처럼 실사 전용 프로세스 3단계 분석 후 데이터 클로징.\n\n진행상황:\n✅ Airtable MCP 연결\n✅ Supabase 테이블 스키마 설계 및 생성\n✅ GitHub Actions 파이프라인 자동화\n✅ Airtable → Supabase 데이터 이동 동선 확인'},
+    ]
+  },
+  {
+    id:'m5',date:'2026-03-17',attendees:'윤지수, 문경선',author:'윤지수',
+    tasks:[
+      {no:1,cat:'운영 관리',task:'자재 + 물류지원 업무 분장',who:'웨일즈',status:'완료',due:'3월 중'},
+      {no:2,cat:'업무 개선',task:'인쇄 데이터 분리 (생산산출/투입)',who:'경선',status:'진행중',due:'논의 필요'},
+      {no:3,cat:'성과 관리',task:'물류파트 KPI 설정 및 관리',who:'지수',status:'예정',due:'3월 중'},
+      {no:4,cat:'업무 개선',task:'출하 창고 가동률 누적 관리 (CBM)',who:'지수',status:'완료',due:'2월 4주차'},
+      {no:5,cat:'업무 및 운영 개선',task:'글로벌 스탠다드 ERP 시스템 참고',who:'물류파트',status:'진행중',due:'상반기'},
+      {no:6,cat:'업무 개선',task:'입하 CBM',who:'지수',status:'진행중',due:'3월 중'},
+      {no:7,cat:'업무 개선',task:'빈 좌표 리스트',who:'지수',status:'보류',due:'3월 둘째주'},
+      {no:8,cat:'업무 개선',task:'재고조사 오류검증',who:'지수',status:'진행중',due:'상반기'},
+      {no:9,cat:'업무 개선',task:'입고 리드타임 측정',who:'경선',status:'진행중',due:''},
+    ],
+    notes:[
+      {num:1,tag:'운영 관리',text:'물류/자재 지원 업무 분장 완료',sub:'문제 없이 진행 완료'},
+      {num:2,tag:'업무 개선',text:'입고 리드타임 측정중',sub:'경선 담당으로 측정 진행 중'},
+      {num:3,tag:'업무 개선',text:'인쇄 데이터 분리',sub:'투입 요청일 알려주고 계시나 보충요청서 전달 기다리는중'},
+      {num:4,tag:'프로젝트 관리',text:'AI 팀 요금제 도입 후 프로젝트 셋팅 계획',sub:'AI 팀 요금제 받게 되면 Claude + GitHub 프로젝트 단위로 셋팅.\n주간/월간 단위 예측 리포트 만들어보기 (시각화 및 수치화).\n웨일즈 구성원분들께 공유하고 M/H 운영에 문제 없을지 검토.'},
+    ]
+  },
+  {
+    id:'m6',date:'2026-03-25',attendees:'윤지수, 문경선',author:'윤지수',
+    tasks:[
+      {no:1,cat:'운영 관리',task:'자재 + 물류지원 업무 분장',who:'웨일즈',status:'완료',due:'3월 중'},
+      {no:2,cat:'업무 개선',task:'인쇄 데이터 분리 (생산산출/투입)',who:'경선',status:'진행중',due:'논의 필요'},
+      {no:3,cat:'성과 관리',task:'물류파트 KPI 설정 및 관리',who:'지수',status:'예정',due:'3월 중'},
+      {no:4,cat:'업무 개선',task:'출하 창고 가동률 누적 관리 (CBM)',who:'지수',status:'완료',due:'2월 4주차'},
+      {no:5,cat:'업무 및 운영 개선',task:'글로벌 스탠다드 ERP 시스템 참고',who:'물류파트',status:'진행중',due:'상반기'},
+      {no:6,cat:'업무 개선',task:'입하 CBM',who:'지수',status:'진행중',due:'3월 중'},
+      {no:7,cat:'업무 개선',task:'빈 좌표 리스트',who:'지수',status:'보류',due:'3월 둘째주'},
+      {no:8,cat:'업무 개선',task:'재고조사 오류검증',who:'지수',status:'진행중',due:'상반기'},
+      {no:9,cat:'업무 개선',task:'입고 리드타임 측정',who:'경선',status:'진행중',due:''},
+    ],
+    notes:[
+      {num:1,tag:'업무 개선',text:'입고 리드타임 측정중',sub:'경선 담당으로 측정 진행 중'},
+      {num:2,tag:'업무 개선',text:'인쇄 데이터 분리',sub:'투입 요청일 알려주고 계시나 보충요청서 전달 기다리는중'},
+      {num:3,tag:'SSOT 방향성',text:'SSOT 방향성 확인 필요',sub:'파트 단위가 아닌 팀 단위로 진행 필요함'},
+      {num:4,tag:'운영 관리',text:'생산투입건 리드타임 1일 추가 요청',sub:'생산투입건에 대한 리드타임 1일 추가 요청 건'},
+    ]
+  },
+];
+
+let data=JSON.parse(localStorage.getItem('scm_v3')||'null')||JSON.parse(JSON.stringify(INIT));
+let cur='m6';
+let editing=false;
+
+const save=()=>localStorage.setItem('scm_v3',JSON.stringify(data));
+const getM=()=>data.find(x=>x.id===cur);
+const lbl=d=>d.replace('20','').replace(/-/g,'.')+'_물류파트';
+const WD=['일','월','화','수','목','금','토'];
+const dfmt=d=>{const dt=new Date(d);return d.replace('20','').replace(/-/g,'.')+` ${WD[dt.getDay()]}요일`;};
+const dcls=w=>['지수','경선','물류파트','웨일즈'].includes(w)?'d-'+w:'d-def';
+const bcls=s=>SC[s]||'badge-hold';
+
+function renderSidebar(){
+  const byM={};
+  [...data].sort((a,b)=>b.date.localeCompare(a.date)).forEach(m=>{const k=m.date.slice(0,7);(byM[k]=byM[k]||[]).push(m);});
+  document.getElementById('sidebar-list').innerHTML=Object.entries(byM).map(([k,docs])=>
+    `<div class="month-label">${k.replace('-','년 ')}월</div>`+
+    docs.map(m=>`<div class="doc-item${m.id===cur?' active':''}" onclick="sel('${m.id}')">
+      <div class="doc-item-title">${lbl(m.date)}</div>
+      <div class="doc-item-meta">참석 ${m.attendees.split(',').length}명 · 업무 ${m.tasks.length}건</div>
+      <button class="doc-del" onclick="event.stopPropagation();delDoc('${m.id}')">×</button>
+    </div>`).join('')
+  ).join('');
+}
+
+function renderView(){
+  const m=getM();if(!m)return;
+  document.getElementById('topbar-title').textContent=lbl(m.date);
+  document.getElementById('content').innerHTML=`
+    <div class="doc-meta">
+      <div class="meta-item"><div class="meta-label">회의일자</div><div class="meta-value">${dfmt(m.date)}</div></div>
+      <div class="meta-item"><div class="meta-label">참석자</div><div class="meta-value">${m.attendees}</div></div>
+      <div class="meta-item"><div class="meta-label">작성자</div><div class="meta-value">${m.author}</div></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">실행 업무 (To-do)</span><div class="section-line"></div></div>
+      ${m.tasks.length?`<table class="task-table"><thead><tr>
+        <th class="no-col">NO.</th><th>프로젝트/업무</th><th>주요업무</th><th>담당</th><th>진행현황</th><th>기한</th>
+      </tr></thead><tbody>${m.tasks.map(t=>`<tr>
+        <td class="no-col">${t.no}</td>
+        <td><span class="cat-badge">${t.cat}</span></td>
+        <td>${t.task}</td>
+        <td><span class="assignee-wrap"><span class="adot ${dcls(t.who)}">${t.who[0]}</span>${t.who}</span></td>
+        <td><span class="badge ${bcls(t.status)}">${t.status}</span></td>
+        <td style="font-size:12px;color:var(--text-2)">${t.due||'—'}</td>
+      </tr>`).join('')}</tbody></table>`:'<div class="empty-hint">업무 항목이 없습니다. 편집 모드에서 추가하세요.</div>'}
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">주요 내용</span><div class="section-line"></div></div>
+      <div class="note-list">${m.notes.length?m.notes.map(n=>`<div class="note-item">
+        <div class="note-num">${n.num}.</div>
+        <div class="tag-display">${n.tag}</div>
+        <div class="note-text-view">${n.text}</div>
+        ${n.sub?`<div class="note-sub-view">${n.sub}</div>`:''}
+      </div>`).join(''):'<div class="empty-hint">내용이 없습니다. 편집 모드에서 추가하세요.</div>'}</div>
+    </div>`;
+}
+
+function renderEdit(){
+  const m=getM();if(!m)return;
+  document.getElementById('topbar-title').textContent=lbl(m.date);
+  document.getElementById('content').innerHTML=`
+    <div class="doc-meta">
+      <div class="meta-item"><div class="meta-label">회의일자</div><input class="meta-input" type="date" id="e-date" value="${m.date}"></div>
+      <div class="meta-item"><div class="meta-label">참석자</div><input class="meta-input" id="e-att" value="${m.attendees}" style="width:180px"></div>
+      <div class="meta-item"><div class="meta-label">작성자</div><input class="meta-input" id="e-auth" value="${m.author}" style="width:100px"></div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">실행 업무 (To-do)</span><div class="section-line"></div><button class="section-add" onclick="addTask()">+ 행 추가</button></div>
+      <table class="task-table"><thead><tr>
+        <th class="no-col">NO.</th><th>프로젝트/업무</th><th>주요업무</th><th>담당</th><th>진행현황</th><th>기한</th><th class="action-col"></th>
+      </tr></thead><tbody id="tbdy">${m.tasks.map((t,i)=>trow(t,i)).join('')}</tbody></table>
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">주요 내용</span><div class="section-line"></div><button class="section-add" onclick="addNote()">+ 항목 추가</button></div>
+      <div class="note-list" id="nlist">${m.notes.map((n,i)=>nitem(n,i)).join('')}</div>
+    </div>`;
+}
+
+function trow(t,i){return `<tr data-i="${i}">
+  <td class="no-col">${i+1}</td>
+  <td><input class="cell-input" id="tc-${i}-cat" value="${t.cat}" placeholder="업무 개선"></td>
+  <td><input class="cell-input" id="tc-${i}-task" value="${t.task}" placeholder="주요 업무 내용"></td>
+  <td><input class="cell-input" id="tc-${i}-who" value="${t.who}" placeholder="담당자" style="width:60px"></td>
+  <td><select class="cell-select" id="tc-${i}-status">${SL.map(s=>`<option${t.status===s?' selected':''}>${s}</option>`).join('')}</select></td>
+  <td><input class="cell-input" id="tc-${i}-due" value="${t.due||''}" placeholder="기한" style="width:80px"></td>
+  <td><button class="row-del" onclick="delTask(${i})">×</button></td>
+</tr>`;}
+
+function nitem(n,i){return `<div class="note-item" data-i="${i}">
+  <div class="note-num">${i+1}.</div>
+  <input class="tag-input" id="nc-${i}-tag" value="${n.tag}" placeholder="분류">
+  <textarea class="note-textarea" id="nc-${i}-text" rows="2" placeholder="주요 내용을 입력하세요">${n.text}</textarea>
+  <div class="note-sub-wrap"><span class="note-sub-prefix">ㄴ</span><textarea class="note-sub-area" id="nc-${i}-sub" rows="2" placeholder="세부 내용 (선택)">${n.sub||''}</textarea></div>
+  <button class="note-del" onclick="delNote(${i})">×</button>
+</div>`;}
+
+function collect(){
+  const m=getM();
+  const ed=document.getElementById('e-date');if(ed)m.date=ed.value;
+  const ea=document.getElementById('e-att');if(ea)m.attendees=ea.value;
+  const eu=document.getElementById('e-auth');if(eu)m.author=eu.value;
+  m.tasks.forEach((_,i)=>{
+    const f=k=>{const el=document.getElementById(`tc-${i}-${k}`);return el?el.value:null;};
+    if(f('cat')!==null){m.tasks[i].cat=f('cat');m.tasks[i].task=f('task');m.tasks[i].who=f('who');m.tasks[i].status=f('status');m.tasks[i].due=f('due');}
+  });
+  m.notes.forEach((_,i)=>{
+    const f=k=>{const el=document.getElementById(`nc-${i}-${k}`);return el?el.value:null;};
+    if(f('tag')!==null){m.notes[i].tag=f('tag');m.notes[i].text=f('text');m.notes[i].sub=f('sub');}
+  });
+  m.tasks.forEach((t,i)=>t.no=i+1);
+  m.notes.forEach((n,i)=>n.num=i+1);
+}
+
+function addTask(){collect();const m=getM();m.tasks.push({no:m.tasks.length+1,cat:'업무 개선',task:'',who:'지수',status:'진행중',due:''});renderEdit();const el=document.getElementById(`tc-${m.tasks.length-1}-task`);if(el)el.focus();}
+function delTask(i){collect();const m=getM();m.tasks.splice(i,1);m.tasks.forEach((t,j)=>t.no=j+1);renderEdit();}
+function addNote(){collect();const m=getM();m.notes.push({num:m.notes.length+1,tag:'업무 개선',text:'',sub:''});renderEdit();const el=document.getElementById(`nc-${m.notes.length-1}-text`);if(el)el.focus();}
+function delNote(i){collect();const m=getM();m.notes.splice(i,1);m.notes.forEach((n,j)=>n.num=j+1);renderEdit();}
+
+function startEdit(){
+  editing=true;
+  document.getElementById('edit-badge').style.display='';
+  document.getElementById('btn-edit').style.display='none';
+  document.getElementById('btn-save').style.display='';
+  document.getElementById('hint').style.display='';
+  renderEdit();
+  setTimeout(()=>{const el=document.querySelector('.cell-input,.note-textarea');if(el)el.focus();},50);
+}
+
+function doSave(){
+  collect();save();editing=false;
+  document.getElementById('edit-badge').style.display='none';
+  document.getElementById('btn-edit').style.display='';
+  document.getElementById('btn-save').style.display='none';
+  document.getElementById('hint').style.display='none';
+  renderSidebar();renderView();
+}
+
+function sel(id){
+  if(editing&&!confirm('편집 중인 내용이 있어요. 저장하지 않고 이동할까요?'))return;
+  if(editing){editing=false;document.getElementById('edit-badge').style.display='none';document.getElementById('btn-edit').style.display='';document.getElementById('btn-save').style.display='none';document.getElementById('hint').style.display='none';}
+  cur=id;renderSidebar();renderView();
+}
+
+function delDoc(id){
+  if(!confirm('이 회의록을 삭제할까요?'))return;
+  data=data.filter(m=>m.id!==id);
+  if(cur===id)cur=data[data.length-1]?.id||'';
+  save();renderSidebar();renderView();
+}
+
+function openNew(){document.getElementById('new-modal').style.display='flex';document.getElementById('new-date').value=new Date().toISOString().slice(0,10);document.getElementById('new-att').value='윤지수, 문경선';}
+function closeNew(){document.getElementById('new-modal').style.display='none';}
+function createNew(){
+  const dt=document.getElementById('new-date').value;
+  const att=document.getElementById('new-att').value||'윤지수';
+  if(!dt)return;
+  const id='m'+Date.now();
+  data.push({id,date:dt,attendees:att,author:'윤지수',tasks:[],notes:[]});
+  save();cur=id;closeNew();renderSidebar();startEdit();
+}
+function doPrint(){if(editing){alert('저장 후 인쇄하세요.');return;}window.print();}
+
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();if(editing)doSave();}
+  if(e.key==='Escape'&&editing&&confirm('편집을 취소할까요?')){
+    editing=false;
+    document.getElementById('edit-badge').style.display='none';
+    document.getElementById('btn-edit').style.display='';
+    document.getElementById('btn-save').style.display='none';
+    document.getElementById('hint').style.display='none';
+    renderView();
+  }
+});
+
+renderSidebar();renderView();
+</script>
+</body>
+</html>
