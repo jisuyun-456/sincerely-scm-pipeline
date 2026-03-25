@@ -89,12 +89,12 @@ PICKING_FIELDS = [F_PURPOSE,F_IN_DATE,F_MAT_STATUS,F_OUTGOING_ITEM,
 # ================================================================
 # 자재관리 base Field IDs (연결 후 채움)
 # ================================================================
-TABLE_ISSUE  = ""   # 재고팀_이슈정리 table ID (TBD)
-TABLE_MAT_PARTS = ""  # sync_parts table ID (TBD)
-F_ISSUE_TYPE = ""   # 이슈유형 field ID (TBD)
-F_ISSUE_DATE = ""   # 이슈 날짜 field ID (TBD)
-F_USAGE_AMT  = ""   # 추가사용액 field ID (TBD)
-F_USAGE_DATE = ""   # 추가사용 날짜 field ID (TBD)
+TABLE_ISSUE      = "tblpfhX34NEbLiI2M"  # 재고팀_이슈정리
+TABLE_MAT_PARTS  = "tbloxlqToEz7mzpi6"  # sync_parts
+F_ISSUE_TYPE     = "fldXEYnbKmQIMlSrr"  # 이슈유형 (multipleSelects)
+F_ISSUE_DATE     = "fldorqBH7Ri8ghD1K"  # 등록일자
+F_USAGE_AMT      = "fldqcUKzgUKqfchBt"  # 자재_추가사용액 (재고팀_이슈정리)
+F_PARTS_USAGE_26 = "fldBfeezGj146zxBB"  # 자재추가사용액(계산용)_2026 (sync_parts)
 
 # ================================================================
 # TMS Field IDs
@@ -515,51 +515,46 @@ def _mat_headers():
     return {"Authorization": f"Bearer {MAT_KEY}"}
 
 def fetch_issue_list(start, end):
-    """자재관리 base 재고팀_이슈정리 테이블 조회 (TABLE_ISSUE, F_ISSUE_TYPE, F_ISSUE_DATE 설정 필요)"""
-    if not MAT_BASE_ID or not TABLE_ISSUE or not F_ISSUE_DATE:
+    """자재관리 base 재고팀_이슈정리 테이블 조회"""
+    if not MAT_BASE_ID or not TABLE_ISSUE:
         print("  [자재관리 base] 미연결 — 이슈 데이터 스킵")
-        return {"total": 0, "by_type": {}}
+        return {"total": 0, "by_type": {}, "usage_total": 0}
     url = f"https://api.airtable.com/v0/{MAT_BASE_ID}/{TABLE_ISSUE}"
-    fp  = "&".join(f"fields[]={f}" for f in [F_ISSUE_TYPE, F_ISSUE_DATE] if f)
+    fp  = "&".join(f"fields[]={f}" for f in [F_ISSUE_TYPE, F_ISSUE_DATE, F_USAGE_AMT])
     ds, de = start.isoformat(), end.isoformat()
     formula = (f"AND(IS_AFTER({{{F_ISSUE_DATE}}},DATEADD('{ds}',-1,'days')),"
                f"IS_BEFORE({{{F_ISSUE_DATE}}},DATEADD('{de}',1,'days')))")
     recs = _fetch_all(url, fp, {"filterByFormula": formula}, _mat_headers())
-    by_type = defaultdict(int)
+    by_type = defaultdict(int); usage_total = 0.0
     for r in recs:
         c = _c(r)
-        t = c.get(F_ISSUE_TYPE)
-        tname = t["name"] if isinstance(t, dict) else (str(t) if t else "미분류")
-        by_type[tname] += 1
-    return {"total": len(recs), "by_type": dict(sorted(by_type.items(), key=lambda x: -x[1]))}
+        # 이슈유형은 multipleSelects → list of strings
+        types = c.get(F_ISSUE_TYPE) or []
+        if isinstance(types, list):
+            for t in types:
+                by_type[str(t)] += 1
+        elif types:
+            by_type[str(types)] += 1
+        else:
+            by_type["미분류"] += 1
+        usage_total += float(c.get(F_USAGE_AMT) or 0)
+    return {"total": len(recs), "by_type": dict(sorted(by_type.items(), key=lambda x: -x[1])),
+            "usage_total": round(usage_total, 0)}
 
 def fetch_additional_usage(start, end):
-    """자재관리 base sync_parts 테이블 추가사용액 조회 (TABLE_MAT_PARTS, F_USAGE_AMT, F_USAGE_DATE 설정 필요)"""
-    if not MAT_BASE_ID or not TABLE_MAT_PARTS or not F_USAGE_DATE:
+    """자재관리 base sync_parts 테이블에서 2026 누적 추가사용액 조회.
+    기간별 금액은 fetch_issue_list()의 usage_total 사용."""
+    if not MAT_BASE_ID or not TABLE_MAT_PARTS:
         print("  [자재관리 base] 미연결 — 추가사용액 데이터 스킵")
-        return {"weekly_total": 0, "monthly_cumulative": 0, "by_date": {}}
+        return {"cumulative_2026": 0}
     url = f"https://api.airtable.com/v0/{MAT_BASE_ID}/{TABLE_MAT_PARTS}"
-    fp  = "&".join(f"fields[]={f}" for f in [F_USAGE_AMT, F_USAGE_DATE] if f)
-    # 이번달 1일 ~ end 기간 (누적)
-    month_start = start.replace(day=1)
-    ds, de = month_start.isoformat(), end.isoformat()
-    formula = (f"AND(IS_AFTER({{{F_USAGE_DATE}}},DATEADD('{ds}',-1,'days')),"
-               f"IS_BEFORE({{{F_USAGE_DATE}}},DATEADD('{de}',1,'days')))")
-    recs = _fetch_all(url, fp, {"filterByFormula": formula}, _mat_headers())
-    weekly_total = 0.0; monthly_cumulative = 0.0; by_date = defaultdict(float)
+    fp  = f"fields[]={F_PARTS_USAGE_26}"
+    # 날짜 필터 없이 전체 parts 합산 (formula 필드라 날짜 기준 필터 불가)
+    recs = _fetch_all(url, fp, {}, _mat_headers())
+    cumulative = 0.0
     for r in recs:
-        c = _c(r)
-        d_s = c.get(F_USAGE_DATE, "")
-        amt = float(c.get(F_USAGE_AMT) or 0)
-        monthly_cumulative += amt
-        if d_s:
-            by_date[d_s] += amt
-            try:
-                if start <= date.fromisoformat(d_s) <= end:
-                    weekly_total += amt
-            except Exception: pass
-    return {"weekly_total": round(weekly_total, 0), "monthly_cumulative": round(monthly_cumulative, 0),
-            "by_date": dict(sorted(by_date.items()))}
+        cumulative += float(_c(r).get(F_PARTS_USAGE_26) or 0)
+    return {"cumulative_2026": round(cumulative, 0)}
 
 # ================================================================
 # TMS 분석 함수 (주간 / 월간 공용)

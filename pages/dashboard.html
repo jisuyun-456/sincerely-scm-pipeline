@@ -282,8 +282,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="panel">
       <div class="ph"><h3>자재 추가사용액</h3><span class="badge b-info">누적 합산</span></div>
       <div class="pb">
-        <div class="stat"><span class="sk">이번 기간 추가사용</span><span class="sv2" id="mat-usage-weekly">—</span></div>
-        <div class="stat"><span class="sk">이번달 누적</span><span class="sv2" id="mat-usage-monthly">—</span></div>
+        <div class="stat"><span class="sk">이번 기간 추가사용액</span><span class="sv2" id="mat-usage-weekly">—</span></div>
+        <div class="stat"><span class="sk">2026 누적 추가사용액</span><span class="sv2" id="mat-usage-monthly">—</span></div>
         <div id="mat-usage-note" style="font-size:10px;color:#aaa;margin-top:10px;padding:8px;background:#f5f4f0;border-radius:6px">자재관리 base 연결 후 표시됩니다.</div>
       </div>
     </div>
@@ -406,7 +406,7 @@ const FALLBACK = {
       a1_to_partner: { count:0, by_date:{}, view:'a1_to_partner' },
     },
     issues: { total:0, by_type:{} },
-    usage:  { weekly_total:0, monthly_cumulative:0, by_date:{} },
+    usage:  { cumulative_2026:0 },
   }
 };
 
@@ -606,7 +606,7 @@ function applyData(data) {
   const projPick  = picking.project || {};
   const a1Pick    = picking.a1_to_partner || {};
   const issues    = mat.issues || { total:0, by_type:{} };
-  const usage     = mat.usage  || { weekly_total:0, monthly_cumulative:0 };
+  const usage     = mat.usage  || { cumulative_2026:0 };
   const totalPick = (projPick.count||0) + (a1Pick.count||0);
 
   setText('mat-pick-proj', (projPick.count||0) + '건');
@@ -634,10 +634,10 @@ function applyData(data) {
   }
 
   // 추가사용액
-  setText('mat-usage-weekly', usage.weekly_total ? usage.weekly_total.toLocaleString() + '원' : '—');
-  setText('mat-usage-monthly', usage.monthly_cumulative ? usage.monthly_cumulative.toLocaleString() + '원' : '—');
+  setText('mat-usage-weekly', issues.usage_total ? issues.usage_total.toLocaleString() + '원' : '—');
+  setText('mat-usage-monthly', usage.cumulative_2026 ? usage.cumulative_2026.toLocaleString() + '원' : '—');
   const usageNote = document.getElementById('mat-usage-note');
-  if (usageNote) usageNote.style.display = (usage.monthly_cumulative > 0) ? 'none' : '';
+  if (usageNote) usageNote.style.display = (usage.cumulative_2026 > 0) ? 'none' : '';
 
   // 예측 패널
   const fcPanel = document.getElementById('forecast-panel');
