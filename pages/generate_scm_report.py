@@ -41,8 +41,8 @@ WMS_KEY     = os.environ.get("AIRTABLE_API_KEY_WMS") or os.environ.get("AIRTABLE
 TMS_KEY     = os.environ.get("AIRTABLE_API_KEY_TMS") or WMS_KEY
 WMS_BASE_ID = os.environ.get("AIRTABLE_BASE_WMS_ID") or os.environ.get("AIRTABLE_BASE_ID", "appLui4ZR5HWcQRri")
 TMS_BASE_ID = os.environ.get("AIRTABLE_BASE_TMS_ID", "app4x70a8mOrIKsMf")
-MAT_BASE_ID = os.environ.get("AIRTABLE_BASE_MAT_ID", "")
-MAT_KEY     = os.environ.get("AIRTABLE_API_KEY_MAT") or WMS_KEY
+MAT_BASE_ID = os.environ.get("AIRTABLE_BASE_INVENTORY_ID", "")
+MAT_KEY     = os.environ.get("AIRTABLE_API_KEY_INVENTORY") or WMS_KEY
 REPORT_MODE = os.environ.get("REPORT_MODE", "weekly_review")
 KAKAO_KEY   = os.environ.get("KAKAO_REST_API_KEY", "")
 
