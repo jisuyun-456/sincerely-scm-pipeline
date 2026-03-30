@@ -1,0 +1,324 @@
+[
+  {
+    "domain": "nestjs-backend",
+    "task": "inventory module webhook 수신 + shadow ledger",
+    "detail": "에어테이블 Automation → POST /inventory/movement → mat_document INSERT + stock_balance UPSERT. inventory.service.ts 운영 중",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "Storno(역분개) 처리 구현",
+    "detail": "POST /inventory/storno → 원본 조회 → STORNO-{docNumber} 역방향 INSERT → 잔액 역산. postStorno() 구현 완료",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "parseSingleSelect 3형태 한글 처리",
+    "detail": "에어테이블 singleSelect 필드 3가지 형태(full object, name-only, string) 안전 파싱. inventory.service.ts:242-247",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "에어테이블 Automation webhook 연동",
+    "detail": "Airtable base appLui4ZR5HWcQRri → When record created → Run script → NestJS POST. 운영 중",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "backfill-movements dry-run 구현",
+    "detail": "과거 movement 전체 시뮬레이션, 음수 재고 에러 목록 사전 확인. backfill-dryrun-errors.json 생성됨",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "백필 실행 (8400+ 이동문서)",
+    "detail": "1월~현재 movement 전체 Supabase 적재. 대부분 성공, 일부 에러(~80건 재고 부족) 및 스킵(unknown_type, zero_qty) 발생",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "8 Agent + 9 Command + 3 Skill 정의",
+    "detail": "테스트/.claude/ 하위에 wms-*, tms-*, meeting-analysis 에이전트, 커맨드, backfill/railway/scm-tdd 스킬 정의 완료",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "supabase",
+    "task": "51테이블 6스키마 마이그레이션 설계",
+    "detail": "shared/mm/wms/tms/pp/finance 6스키마, 17개 마이그레이션 파일(001~017). supabase/migrations/",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "supabase",
+    "task": "seed 데이터 설계",
+    "detail": "reference_data, organizations, business_partners, material_master, warehouse_setup, operational_data. supabase/seed/ 6개 파일",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "supabase",
+    "task": "ERD/DFD 다이어그램",
+    "detail": "51 테이블 ERD + DFD Level 1 (P1 구매/P2 생산/P3 배송/P4 재고). erd_dfd_diagrams.json",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "supabase",
+    "task": "AS-IS vs TO-BE 워크플로우 비교",
+    "detail": "Airtable 2base 30table 445field → Supabase 6schema 51table 정규화. workflow_comparison.json",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "supabase",
+    "task": "DBT 변환 모델 (staging + marts)",
+    "detail": "stg_mat_document, stg_mat_master, stg_stock_balance → dim_parts, fct_inventory_movement, fct_period_summary, fct_stock_balance_current",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "supabase",
+    "task": "Retool 쿼리 설계",
+    "detail": "9개 페이지 CRUD + KPI 대시보드 + 워크플로우 추적기 + 유틸리티 쿼리. docs/retool/page-queries.md",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "tms",
+    "task": "출고확인서 PDF 자동생성",
+    "detail": "Make webhook → GitHub Actions → Python reportlab → GitHub Releases → Airtable attachment. generate_pdf.py + generate_pdf.yml",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "tms",
+    "task": "거래명세서 PDF 한글 폰트 최종 검증",
+    "detail": "Pretendard + NanumGothic 전체 글리프 렌더링 확인 완료",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "tms",
+    "task": "Logen TMS Chrome Extension",
+    "detail": "IBSheet DOM 이슈로 bookmarklet 불가 → Chrome Extension(background.js + content.js) 구현. logen-tms-extension/",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "tms",
+    "task": "CBM 산출 로직 (수동/품목매칭/박스파싱)",
+    "detail": "우선순위: 수동 Total_CBM → Product 테이블 매칭(83.4%) → 박스 문자열 파싱(극소~특대) → 미산출 0.0",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "출하 탭 대시보드 (Chart.js)",
+    "detail": "일별/주차별 CBM+건수 차트, 배송파트너별 건수, 주요 출하 품목 Top, CBM 산출 근거. dashboard.html",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "주간 리포트 GitHub Actions",
+    "detail": "sincerely_wms_weekly_report.py → wms_weekly_report.yml 스케줄 실행",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "월간 리포트 GitHub Actions",
+    "detail": "sincerely_monthly_report.py → wms_monthly_report.yml 스케줄 실행",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "GitHub Pages 배포 워크플로우",
+    "detail": "deploy_pages.yml → 대시보드 정적 페이지 배포",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "Airtable snapshot 파이프라인",
+    "detail": "snapshot.yml + pipeline.py → Airtable REST API → 데이터 정규화 → Supabase upsert",
+    "passes": true,
+    "priority": "done"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "백필 음수 재고 에러 해결 (~80건)",
+    "detail": "backfill-errors.json: PT1197(-1005개→-1206개), PT1093(-9453개→-9663개) 등. 입고 전표 누락 또는 순서 역전이 원인. 음수 허용 임시 플래그 또는 입고 선행 적재 필요",
+    "passes": false,
+    "priority": "critical"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "Railway 배포 (ngrok → 고정 URL)",
+    "detail": "현재 PM2+ngrok 환경, 세션마다 URL 변경 → webhook 수신 불가 위험. Railway CLI 배포 후 Airtable Automation URL 교체. railway-deploy SKILL 참조",
+    "passes": false,
+    "priority": "critical"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "mat_master 미등록 parts_code 자동 INSERT",
+    "detail": "현재 미등록 parts_code 수신 시 FK 에러 반환. 목표: UNKNOWN 파츠 자동 등록(is_customer_goods=false) 후 처리 계속. CLAUDE.md TODO",
+    "passes": false,
+    "priority": "high"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "TypeORM 재연결 (Supabase Connection Pooler URL 확보)",
+    "detail": "app.module.ts에서 TypeOrmModule.forRoot() 주석 처리됨. 5개 모듈(Master/WMS/TMS/Return/Analytics) 비활성화 원인. Pooler URL 확보 후 복원",
+    "passes": false,
+    "priority": "high"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "백필 에러 레코드 재처리",
+    "detail": "backfill-errors.json ~80건 잔여분. 음수 재고 해결 후 재시도. backfill-data SKILL 참조",
+    "passes": false,
+    "priority": "high"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "미매핑 이동목적 추가 (생산샘플 등)",
+    "detail": "backfill-success.json에 skipped_unknown_type: '생산샘플'. MOVEMENT_TYPE_MAP(constants/movement-type.map.ts)에 매핑 추가 필요",
+    "passes": false,
+    "priority": "high"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "Product 테이블 매칭률 개선 (16.6% 실패)",
+    "detail": "927건 실패 원인: 변형 표기(색상/사이즈 추가), 주문코드 포함, 미등록 품목(스티커/노트류). fuzzy matching 또는 alias 테이블 도입 검토",
+    "passes": false,
+    "priority": "high"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "대시보드 입고/검수/자재 탭 연결",
+    "detail": "현재 '준비 중' 상태. Airtable WMS base 테이블 구조 확정 후 출하 탭과 동일 방식으로 연결. sincerely_scm_context.md PENDING",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "finance",
+    "task": "K-IFRS 분개 자동생성 로직",
+    "detail": "이동유형별 차/대변 자동 처리: 101→차)재고자산1140 대)매입채무2110, 201→차)매출원가5110 대)재고자산1140. finance 스키마(011) 설계 완료, 트리거(016) 정의됨, 실 로직 미구현",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "wms",
+    "task": "location_stock 뷰 생성 (위치별 현재 재고 집계)",
+    "detail": "stock_balance 기반 위치별 현재 재고 집계 뷰. 012_views.sql에 정의 여부 확인 필요",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "wms",
+    "task": "rack 적재율 heatmap — item CBM 데이터 연결",
+    "detail": "wms_transaction → location 링크 로직 미완성. item-level CBM 데이터 미연결 상태 (heatmap 전제 조건)",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "wms",
+    "task": "location rollup isValid 이슈 해결",
+    "detail": "Airtable rollup 필드 isValid: false 상태. 우회 중(직접 쿼리). Airtable rollup 필드 정합성 복구 또는 Supabase 뷰로 대체",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "이모지 필드명 예외처리 강화",
+    "detail": "Airtable 이모지 포함 필드명(예: sync_parts) → pipeline.py에서 NULL 반환됨. 명시적 field ID 사용 또는 정규식 필터링 필요",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "generate_scm_report.py silent exception 개선",
+    "detail": "6곳의 except Exception: pass (line 317,401,466,844,1114 + pdf 146). 데이터 품질 이슈 은폐됨. logging.error() 추가 또는 sentinel 값 반환으로 교체",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "supabase",
+    "task": "실사(Physical Inventory) 3-table 파이프라인",
+    "detail": "실사문서 1:N 실사카운트 1:1 실사결과_클로징 (SAP MI01→MI04→MI07). 설계 완료, Supabase 연동 테스트 진행됨, 파이프라인 미완성",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "Storno 원본 전표 UPDATE 로직 검토",
+    "detail": "inventory.service.ts:160-162에서 원본 mat_document의 status를 'reversed'로 UPDATE. INSERT ONLY 원칙과 충돌 가능성. status 트래킹을 별도 테이블 또는 REVERSAL 전표의 ref로 대체 검토",
+    "passes": false,
+    "priority": "medium"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "WMS 모듈 활성화",
+    "detail": "src/wms/ 존재(inbound/inventory/outbound 하위 모듈). TypeORM 연결 후 app.module.ts 주석 해제. wms.module.ts 준비됨",
+    "passes": false,
+    "priority": "low"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "TMS 모듈 활성화",
+    "detail": "src/tms/ 존재(shipment/otif/tracking 하위 모듈). TypeORM 연결 후 주석 해제. tms.module.ts 준비됨",
+    "passes": false,
+    "priority": "low"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "Master/Return/Analytics 모듈 활성화",
+    "detail": "src/master/(item/location/supplier), src/return/(reverse-logistics), src/analytics/ 존재. TypeORM 연결 후 주석 해제",
+    "passes": false,
+    "priority": "low"
+  },
+  {
+    "domain": "nestjs-backend",
+    "task": "movement-handler Edge Function → NestJS 이관",
+    "detail": "supabase/functions/movement-handler/index.ts 로직을 NestJS 서비스로 이관. 개발팀 협의 후 진행",
+    "passes": false,
+    "priority": "low"
+  },
+  {
+    "domain": "finance",
+    "task": "더존 아마란스10 API 연동",
+    "detail": "accounting_entries → douzone_sync_log. 전표 상태 draft→reviewed→posted 워크플로우. 더존 API 스펙 확인 필요",
+    "passes": false,
+    "priority": "low"
+  },
+  {
+    "domain": "supabase",
+    "task": "RLS 정책 실적용",
+    "detail": "017_rls_policies.sql 파일 존재. 실제 Supabase 프로젝트에 적용 여부 확인 필요. 적용 시 기존 서비스 키 접근에 영향 없는지 테스트",
+    "passes": false,
+    "priority": "low"
+  },
+  {
+    "domain": "supabase",
+    "task": "마이그레이션 실제 적용 (51테이블 TO-BE)",
+    "detail": "supabase/migrations/ 17개 파일은 설계 완료. 현재 운영 DB는 sap 스키마(mat_master/mat_document/stock_balance/period_close). TO-BE 51테이블 실적용 시점 결정 필요",
+    "passes": false,
+    "priority": "low"
+  },
+  {
+    "domain": "airtable-pipeline",
+    "task": "월간 리포트 GitHub Actions 테스트 실행",
+    "detail": "SKIP_DELAY=1 환경변수로 테스트 실행 필요. sincerely_scm_context.md PENDING",
+    "passes": false,
+    "priority": "low"
+  }
+]

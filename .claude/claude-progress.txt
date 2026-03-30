@@ -1,0 +1,13 @@
+# Sincerely SCM — 작업 진행 로그
+# 새 세션 시작 시 가장 먼저 읽을 것
+
+## 2026-03-30
+완료: CLAUDE.md 계층 구조 + 하네스 설정 완성
+      - 루트 CLAUDE.md 생성 (프로젝트 정체성, 원칙, 기술 스택)
+      - 폴더별 CLAUDE.md 5개 (supabase/wms/tms/airtable-pipeline/nestjs-backend)
+      - .claude/commands/start.md (/start 세션 루틴)
+      - .claude/skills/ 3개 (sap-movement, k-ifrs-ledger, pdf-pipeline)
+      - .claude/feature_list.json 46개 항목 (done:22, critical:2, high:5, medium:9, low:8)
+      - .claude/claude-progress.txt 초기화
+미완료: feature_list.json critical 항목 2건 (백필 음수 에러, Railway 배포)
+다음 세션: /start 실행 → critical 태스크 선택

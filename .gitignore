@@ -1,0 +1,30 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# dependencies
+node_modules/
+dist/
+.temp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# build
+*.tsbuildinfo
+
+# superpowers (third-party)
+superpowers/
+
+# plan files
+.claude/plans/
+
+# embedded git repos (managed separately)
+테스트/
+sincerely-scm-pipeline-github/

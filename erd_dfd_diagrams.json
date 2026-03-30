@@ -1,0 +1,296 @@
+{
+  "meta": {
+    "title": "SCM Architecture — ERD & DFD Diagram Data",
+    "purpose": "Claude AI 아티팩트로 ERD(Entity-Relationship Diagram) + DFD(Data Flow Diagram) 시각화용",
+    "how_to_use": "이 JSON 파일을 Claude AI에 첨부하고 'ERD 다이어그램과 DFD 다이어그램을 Mermaid 또는 React 아티팩트로 시각화해줘'라고 요청"
+  },
+
+  "erd": {
+    "description": "Entity-Relationship Diagram — 51 tables across 6 schemas",
+
+    "shared_schema": {
+      "color": "#4A90D9",
+      "label": "SHARED (Master Data)",
+      "entities": [
+        {
+          "table": "organizations",
+          "pk": "id UUID",
+          "fields": ["org_code VARCHAR(10)", "org_name VARCHAR(100)", "org_type VARCHAR(20)", "parent_id UUID FK→self"],
+          "relationships": []
+        },
+        {
+          "table": "users",
+          "pk": "id UUID",
+          "fields": ["auth_user_id UUID FK→auth.users", "employee_number VARCHAR(20)", "name VARCHAR(100)", "email VARCHAR(255)", "team VARCHAR(20)", "slack_id VARCHAR(50)"],
+          "relationships": []
+        },
+        {
+          "table": "clients",
+          "pk": "id UUID",
+          "fields": ["client_code VARCHAR(20)", "company_name VARCHAR(200)", "business_reg_number VARCHAR(20)", "contact_name", "status"],
+          "relationships": [
+            {"to": "projects", "type": "1:N", "fk": "client_id"}
+          ]
+        },
+        {
+          "table": "vendors",
+          "pk": "id UUID",
+          "fields": ["vendor_code VARCHAR(20)", "vendor_name VARCHAR(200)", "vendor_type VARCHAR(50)", "douzone_vendor_code VARCHAR(20)"],
+          "relationships": [
+            {"to": "parts_master", "type": "1:N", "fk": "vendor_id"},
+            {"to": "mm.purchase_orders", "type": "1:N", "fk": "vendor_id"},
+            {"to": "pp.work_centers", "type": "1:N", "fk": "vendor_id"}
+          ]
+        },
+        {
+          "table": "projects",
+          "pk": "id UUID",
+          "fields": ["project_code VARCHAR(50)", "project_name VARCHAR(200)", "client_id UUID FK→clients", "project_status", "cx_specialist_id UUID FK→users", "first_shipment_date DATE"],
+          "relationships": [
+            {"to": "mm.purchase_orders", "type": "1:N", "fk": "project_id"},
+            {"to": "pp.production_orders", "type": "1:N", "fk": "project_id"},
+            {"to": "tms.transportation_requirements", "type": "1:N", "fk": "project_id"}
+          ]
+        },
+        {
+          "table": "material_types",
+          "pk": "id UUID",
+          "fields": ["type_code VARCHAR(10)", "type_name VARCHAR(100)", "default_debit_gl_id FK→gl_accounts", "default_credit_gl_id FK→gl_accounts", "issue_debit_gl_id FK", "issue_credit_gl_id FK"],
+          "relationships": [
+            {"to": "goods_master", "type": "1:N", "fk": "material_type_id"},
+            {"to": "item_master", "type": "1:N", "fk": "material_type_id"},
+            {"to": "parts_master", "type": "1:N", "fk": "material_type_id"}
+          ]
+        },
+        {
+          "table": "gl_accounts",
+          "pk": "id UUID",
+          "fields": ["account_code VARCHAR(10)", "account_name VARCHAR(100)", "account_type VARCHAR(20)", "normal_balance VARCHAR(6)", "douzone_code VARCHAR(20)"],
+          "relationships": [
+            {"to": "material_types", "type": "1:N", "fk": "default_debit_gl_id / issue_debit_gl_id"},
+            {"to": "finance.accounting_entries", "type": "1:N", "fk": "debit_account_id / credit_account_id"}
+          ]
+        },
+        {
+          "table": "goods_master",
+          "pk": "id UUID",
+          "fields": ["goods_code", "goods_name", "material_type_id FK", "base_uom", "goods_category", "moq"],
+          "note": "FERT — 완제품/굿즈. NO FK to item_master (BOM only)"
+        },
+        {
+          "table": "item_master",
+          "pk": "id UUID",
+          "fields": ["item_code", "item_name", "material_type_id FK", "base_uom", "production_type"],
+          "note": "HALB — 아이템. NO FK to goods_master (BOM only)"
+        },
+        {
+          "table": "parts_master",
+          "pk": "id UUID",
+          "fields": ["parts_code", "parts_name", "material_type_id FK", "vendor_id FK→vendors", "base_uom", "is_stock_managed", "reorder_point"],
+          "note": "ROH/VERP/HAWA — 파츠/원자재. NO FK to item_master (BOM only)",
+          "relationships": [
+            {"to": "wms.quants", "type": "1:N", "fk": "parts_id"},
+            {"to": "mm.purchase_order_items", "type": "1:N", "fk": "parts_id"},
+            {"to": "mm.stock_movements", "type": "1:N", "fk": "parts_id"},
+            {"to": "pp.bom_items", "type": "1:N", "fk": "parts_id"}
+          ]
+        }
+      ]
+    },
+
+    "tms_schema": {
+      "color": "#50C878",
+      "label": "TMS (Transportation Management)",
+      "entities": [
+        {"table": "locations", "pk": "id", "fields": ["location_code", "location_type", "location_name", "address", "max_cbm"]},
+        {"table": "carriers", "pk": "id", "fields": ["carrier_code", "carrier_name", "carrier_type", "max_cbm_per_trip"]},
+        {"table": "dispatch_schedules", "pk": "id", "fields": ["schedule_date", "carrier_id FK→carriers", "total_cbm_assigned"]},
+        {"table": "transportation_requirements", "pk": "id", "fields": ["tr_number", "project_id FK→projects", "origin/dest_location_id FK→locations", "requested_shipment_date", "delivery_type", "recipient_name", "status"]},
+        {"table": "freight_orders", "pk": "id", "fields": ["fo_number", "tr_id FK→TR", "carrier_id FK→carriers", "dispatch_schedule_id FK", "shipping_status", "total_cbm", "freight_cost", "billing_status"]},
+        {"table": "logistics_releases", "pk": "id", "fields": ["release_number", "production_order_id FK→pp.production_orders", "project_id FK", "tr_id FK→TR", "status"]},
+        {"table": "logistics_release_items", "pk": "id", "fields": ["release_id FK→logistics_releases", "parts_id FK→parts_master", "released_qty", "batch_id FK→batches"]},
+        {"table": "packaging_materials", "pk": "id", "fields": ["box_code", "width_cm", "depth_cm", "height_cm", "cbm"]},
+        {"table": "routes", "pk": "id", "fields": ["route_code", "origin/dest FK→locations", "carrier_id FK", "standard_transit_days"]}
+      ]
+    },
+
+    "wms_schema": {
+      "color": "#FF9F43",
+      "label": "WMS (Warehouse Management)",
+      "entities": [
+        {"table": "warehouses", "pk": "id", "fields": ["warehouse_code", "warehouse_name", "plant_id FK→organizations", "max_cbm"]},
+        {"table": "storage_types", "pk": "id", "fields": ["warehouse_id FK→warehouses", "type_code", "type_name"]},
+        {"table": "storage_bins", "pk": "id", "fields": ["bin_code", "warehouse_id FK", "storage_type_id FK", "zone", "aisle", "rack", "level"]},
+        {"table": "batches", "pk": "id", "fields": ["parts_id FK→parts_master", "batch_number", "gr_id FK→goods_receipts", "remaining_qty", "unit_cost"]},
+        {"table": "quants", "pk": "id", "fields": ["parts_id FK→parts_master", "storage_bin_id FK→bins", "batch_id FK→batches", "system_qty", "physical_qty", "reserved_qty", "blocked_qty", "available_qty (GENERATED)"]},
+        {"table": "inventory_count_docs", "pk": "id", "fields": ["doc_number", "count_type", "warehouse_id FK", "status"]},
+        {"table": "inventory_count_items", "pk": "id", "fields": ["doc_id FK→count_docs", "parts_id FK", "book_qty", "final_count_qty", "difference", "adjustment_approved"]}
+      ]
+    },
+
+    "mm_schema": {
+      "color": "#EE5A24",
+      "label": "MM (Materials Management + QM)",
+      "entities": [
+        {"table": "purchase_requisitions", "pk": "id", "fields": ["pr_number", "parts_id FK", "required_qty", "status", "converted_po_item_id FK"]},
+        {"table": "purchase_orders", "pk": "id", "fields": ["po_number", "project_id FK→projects", "vendor_id FK→vendors", "po_status"]},
+        {"table": "purchase_order_items", "pk": "id", "fields": ["po_id FK→PO", "parts_id FK", "order_qty", "received_qty", "unit_price", "total_amount (GENERATED)"]},
+        {"table": "goods_receipts", "pk": "id", "fields": ["gr_number", "po_item_id FK→POI", "parts_id FK", "storage_bin_id FK→bins", "received_qty", "unit_cost", "total_cost", "inspection_result"]},
+        {"table": "stock_movements", "pk": "id", "fields": ["movement_number", "movement_type (SAP 15종)", "parts_id FK", "from_bin_id FK→bins", "to_bin_id FK→bins", "actual_qty", "gr_id FK→GR", "production_order_id FK→pp.PO", "unit_cost_at_movement"]},
+        {"table": "invoice_verifications", "pk": "id", "fields": ["iv_number", "po_id FK→PO", "vendor_id FK", "invoice_amount", "gr_amount", "price_variance", "match_result"]},
+        {"table": "reservations", "pk": "id", "fields": ["reservation_number", "parts_id FK", "requirement_qty", "withdrawn_qty", "project_id FK", "production_order_id FK", "status"]},
+        {"table": "return_orders", "pk": "id", "fields": ["return_number", "direction (vendor|customer)", "parts_id FK", "return_qty", "reason_code", "disposition"]},
+        {"table": "quality_inspections", "pk": "id", "fields": ["inspection_number", "gr_id FK→GR", "parts_id FK", "accepted_qty", "rejected_qty", "result", "decision"]},
+        {"table": "scrap_records", "pk": "id", "fields": ["scrap_number", "parts_id FK", "scrap_qty", "reason_code", "cost_value", "movement_id FK→SM"]}
+      ]
+    },
+
+    "pp_schema": {
+      "color": "#A29BFE",
+      "label": "PP (Production Planning — 임가공)",
+      "entities": [
+        {"table": "bom_headers", "pk": "id", "fields": ["bom_code", "goods_id FK→goods_master XOR item_id FK→item_master", "bom_type"]},
+        {"table": "bom_items", "pk": "id", "fields": ["bom_id FK→bom_headers", "parts_id FK→parts_master", "component_qty", "scrap_pct"]},
+        {"table": "work_centers", "pk": "id", "fields": ["wc_code", "wc_name", "wc_type", "vendor_id FK→vendors", "capacity_daily"]},
+        {"table": "routings", "pk": "id", "fields": ["routing_code", "bom_id FK→bom_headers", "work_center_id FK→WC", "operation_type", "standard_time_min"]},
+        {"table": "production_orders", "pk": "id", "fields": ["order_number", "project_id FK→projects", "goods_id FK", "bom_id FK→BOM", "work_center_id FK→WC", "vendor_id FK→vendors", "status", "planned_qty", "actual_qty"]},
+        {"table": "production_order_components", "pk": "id", "fields": ["production_order_id FK→PO", "parts_id FK→parts_master", "required_qty", "issued_qty"]},
+        {"table": "production_confirmations", "pk": "id", "fields": ["production_order_id FK→PO", "confirmation_date", "operation_type", "completed_qty", "man_hours_actual"]}
+      ]
+    },
+
+    "finance_schema": {
+      "color": "#FD79A8",
+      "label": "FINANCE (K-IFRS + 더존)",
+      "entities": [
+        {"table": "accounting_entries", "pk": "id", "fields": ["entry_number", "entry_type", "source_table+source_id", "debit_account_id FK→gl_accounts", "credit_account_id FK→gl_accounts", "amount", "status (draft→reviewed→posted)", "douzone_slip_no"]},
+        {"table": "cost_settings", "pk": "id", "fields": ["parts_type", "costing_method (weighted_avg|fifo)", "effective_from"]},
+        {"table": "douzone_sync_log", "pk": "id", "fields": ["entry_id FK→entries", "douzone_slip_no", "sync_status"]},
+        {"table": "period_closes", "pk": "id", "fields": ["period (YYYY-MM)", "parts_id FK", "warehouse_id FK", "closing_qty", "closing_value", "is_closed"]}
+      ]
+    },
+
+    "cross_schema_relationships": [
+      {"from": "shared.projects", "to": "mm.purchase_orders", "fk": "project_id", "type": "1:N"},
+      {"from": "shared.projects", "to": "pp.production_orders", "fk": "project_id", "type": "1:N"},
+      {"from": "shared.projects", "to": "tms.transportation_requirements", "fk": "project_id", "type": "1:N"},
+      {"from": "shared.vendors", "to": "mm.purchase_orders", "fk": "vendor_id", "type": "1:N"},
+      {"from": "shared.vendors", "to": "pp.work_centers", "fk": "vendor_id", "type": "1:N"},
+      {"from": "shared.parts_master", "to": "wms.quants", "fk": "parts_id", "type": "1:N"},
+      {"from": "shared.parts_master", "to": "mm.stock_movements", "fk": "parts_id", "type": "1:N"},
+      {"from": "shared.parts_master", "to": "mm.purchase_order_items", "fk": "parts_id", "type": "1:N"},
+      {"from": "shared.parts_master", "to": "pp.bom_items", "fk": "parts_id", "type": "1:N"},
+      {"from": "shared.gl_accounts", "to": "finance.accounting_entries", "fk": "debit/credit_account_id", "type": "1:N"},
+      {"from": "shared.material_types", "to": "shared.gl_accounts", "fk": "default_debit/credit_gl_id", "type": "N:1"},
+      {"from": "mm.purchase_orders", "to": "mm.purchase_order_items", "fk": "po_id", "type": "1:N"},
+      {"from": "mm.purchase_order_items", "to": "mm.goods_receipts", "fk": "po_item_id", "type": "1:N"},
+      {"from": "mm.goods_receipts", "to": "mm.stock_movements", "fk": "gr_id", "type": "1:1 (단방향)"},
+      {"from": "mm.stock_movements", "to": "wms.quants", "fk": "trigger: auto-update", "type": "trigger"},
+      {"from": "mm.stock_movements", "to": "finance.accounting_entries", "fk": "trigger: auto-create", "type": "trigger"},
+      {"from": "pp.bom_headers", "to": "pp.bom_items", "fk": "bom_id", "type": "1:N"},
+      {"from": "pp.production_orders", "to": "pp.production_order_components", "fk": "production_order_id", "type": "1:N"},
+      {"from": "pp.production_orders", "to": "tms.logistics_releases", "fk": "production_order_id", "type": "1:N"},
+      {"from": "tms.transportation_requirements", "to": "tms.freight_orders", "fk": "tr_id", "type": "1:N"},
+      {"from": "tms.logistics_releases", "to": "tms.logistics_release_items", "fk": "release_id", "type": "1:N"},
+      {"from": "wms.warehouses", "to": "wms.storage_bins", "fk": "warehouse_id", "type": "1:N"},
+      {"from": "wms.storage_bins", "to": "wms.quants", "fk": "storage_bin_id", "type": "1:N"}
+    ]
+  },
+
+  "dfd": {
+    "description": "Data Flow Diagram — 4개 핵심 비즈니스 프로세스의 데이터 흐름",
+
+    "level_0": {
+      "name": "SCM System Context",
+      "external_entities": [
+        {"id": "E1", "name": "고객사 (Client)", "type": "external"},
+        {"id": "E2", "name": "협력사 (Vendor)", "type": "external"},
+        {"id": "E3", "name": "배송파트너 (Carrier)", "type": "external"},
+        {"id": "E4", "name": "더존 아마란스10", "type": "external_system"},
+        {"id": "E5", "name": "Airtable (Legacy)", "type": "external_system"}
+      ],
+      "processes": [
+        {"id": "P0", "name": "Sincerely SCM System (Supabase)"}
+      ],
+      "data_flows": [
+        {"from": "E1", "to": "P0", "label": "프로젝트 요청 / 반품"},
+        {"from": "P0", "to": "E1", "label": "배송 / 출하확인서"},
+        {"from": "E2", "to": "P0", "label": "자재 납품 / 세금계산서"},
+        {"from": "P0", "to": "E2", "label": "발주서 / 반품"},
+        {"from": "E3", "to": "P0", "label": "배송완료 확인"},
+        {"from": "P0", "to": "E3", "label": "배차 지시"},
+        {"from": "P0", "to": "E4", "label": "전표 초안 (draft)"},
+        {"from": "E4", "to": "P0", "label": "더존 전표번호"}
+      ]
+    },
+
+    "level_1": {
+      "name": "Core Business Processes",
+      "processes": [
+        {
+          "id": "P1",
+          "name": "구매관리 (Procurement)",
+          "sub_processes": [
+            {"id": "P1.1", "name": "구매요청 생성", "input": "재고 부족 알림", "output": "PR 레코드", "store": "mm.purchase_requisitions"},
+            {"id": "P1.2", "name": "발주 생성", "input": "승인된 PR", "output": "PO + PO Items", "store": "mm.purchase_orders + purchase_order_items"},
+            {"id": "P1.3", "name": "입하 처리", "input": "자재 납품", "output": "GR + Stock Movement(101)", "store": "mm.goods_receipts + stock_movements"},
+            {"id": "P1.4", "name": "품질 검사", "input": "입하된 자재", "output": "검사 결과 / 반품", "store": "mm.quality_inspections + return_orders"},
+            {"id": "P1.5", "name": "송장 검증", "input": "세금계산서", "output": "3-way match 결과", "store": "mm.invoice_verifications"}
+          ],
+          "data_stores": ["mm.purchase_requisitions", "mm.purchase_orders", "mm.purchase_order_items", "mm.goods_receipts", "mm.stock_movements", "mm.quality_inspections", "mm.invoice_verifications"],
+          "auto_triggers": ["GR INSERT → quants 갱신", "GR INSERT → 전표 생성 (DR 원재료/CR 매입채무)"]
+        },
+        {
+          "id": "P2",
+          "name": "생산관리 (Production — 임가공)",
+          "sub_processes": [
+            {"id": "P2.1", "name": "BOM 확인", "input": "프로젝트 확정", "output": "구성품 목록", "store": "pp.bom_headers + bom_items"},
+            {"id": "P2.2", "name": "생산오더 생성", "input": "BOM + 프로젝트", "output": "생산오더", "store": "pp.production_orders"},
+            {"id": "P2.3", "name": "자재 예약", "input": "생산오더", "output": "예약 레코드", "store": "mm.reservations"},
+            {"id": "P2.4", "name": "자재 투입 (261)", "input": "예약된 자재", "output": "Stock Movement", "store": "mm.stock_movements"},
+            {"id": "P2.5", "name": "작업 실적", "input": "작업 완료", "output": "확인 레코드", "store": "pp.production_confirmations"},
+            {"id": "P2.6", "name": "완성품 입고 (262)", "input": "임가공 완료", "output": "Stock Movement", "store": "mm.stock_movements"}
+          ],
+          "auto_triggers": ["SM(261) → quants 감소 + 전표 (DR 재공품/CR 원재료)", "SM(262) → quants 증가 + 전표 (DR 제품/CR 재공품)", "Reservation → quants.reserved_qty 증가"]
+        },
+        {
+          "id": "P3",
+          "name": "배송관리 (Logistics)",
+          "sub_processes": [
+            {"id": "P3.1", "name": "배송요청 생성", "input": "프로젝트 출고", "output": "TR 레코드", "store": "tms.transportation_requirements"},
+            {"id": "P3.2", "name": "출고지시", "input": "TR 승인", "output": "Logistics Release + Items", "store": "tms.logistics_releases + release_items"},
+            {"id": "P3.3", "name": "재고 출고 (601)", "input": "출고지시", "output": "Stock Movement", "store": "mm.stock_movements"},
+            {"id": "P3.4", "name": "출하 생성", "input": "차량 배정", "output": "Freight Order", "store": "tms.freight_orders"},
+            {"id": "P3.5", "name": "배차 관리", "input": "FO + Carrier", "output": "배차 스케줄", "store": "tms.dispatch_schedules"},
+            {"id": "P3.6", "name": "운임 정산", "input": "배송 완료", "output": "billing_status=billed", "store": "tms.freight_orders"}
+          ],
+          "auto_triggers": ["SM(601) → quants 감소 + 전표 (DR 매출원가/CR 제품)", "FO billing → 전표 (DR 운반비/CR 미지급금)"]
+        },
+        {
+          "id": "P4",
+          "name": "재고관리 (Inventory)",
+          "sub_processes": [
+            {"id": "P4.1", "name": "재고 조회", "input": "조회 요청", "output": "가용재고", "store": "view: shared.v_available_qty"},
+            {"id": "P4.2", "name": "창고간 이동 (301)", "input": "이동 요청", "output": "Stock Movement", "store": "mm.stock_movements"},
+            {"id": "P4.3", "name": "재고실사", "input": "실사 계획", "output": "실사 문서/항목", "store": "wms.inventory_count_docs + items"},
+            {"id": "P4.4", "name": "실사 조정 (701/702)", "input": "실사 승인", "output": "조정 Movement", "store": "mm.stock_movements"},
+            {"id": "P4.5", "name": "재고수불부", "input": "조회 요청", "output": "월별 입출고 현황", "store": "view: finance.v_stock_ledger"},
+            {"id": "P4.6", "name": "월말 마감", "input": "마감 실행", "output": "기말 스냅샷", "store": "finance.period_closes"}
+          ],
+          "auto_triggers": ["SM(301) → from_bin 감소 + to_bin 증가", "SM(701/702) → quants 조정 + 전표 자동"]
+        }
+      ]
+    },
+
+    "trigger_data_flows": [
+      {"event": "mm.goods_receipts INSERT", "flow": ["→ mm.stock_movements (101)", "→ wms.quants (system_qty +)", "→ finance.accounting_entries (DR 원재료/CR 매입채무)"]},
+      {"event": "mm.stock_movements INSERT (261)", "flow": ["→ wms.quants (system_qty - from_bin)", "→ finance.accounting_entries (DR 재공품/CR 원재료)"]},
+      {"event": "mm.stock_movements INSERT (262)", "flow": ["→ wms.quants (system_qty + to_bin)", "→ finance.accounting_entries (DR 제품/CR 재공품)"]},
+      {"event": "mm.stock_movements INSERT (601)", "flow": ["→ wms.quants (system_qty - from_bin)", "→ finance.accounting_entries (DR 매출원가/CR 제품)"]},
+      {"event": "mm.stock_movements INSERT (301)", "flow": ["→ wms.quants (from_bin -, to_bin +)"]},
+      {"event": "tms.freight_orders UPDATE (billed)", "flow": ["→ finance.accounting_entries (DR 운반비/CR 미지급금)"]},
+      {"event": "wms.inventory_count_items UPDATE (approved)", "flow": ["→ mm.stock_movements (701 or 702)", "→ wms.quants (조정)", "→ finance.accounting_entries (잡이익/잡손실)"]},
+      {"event": "mm.reservations INSERT", "flow": ["→ wms.quants (reserved_qty +, available_qty -)"]}
+    ]
+  }
+}

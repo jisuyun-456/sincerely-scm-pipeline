@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "로젠 → TMS 운송장 자동 전송",
+  "version": "1.0",
+  "description": "로젠택배 그리드의 운송장번호를 Airtable TMS에 자동 업데이트",
+  "permissions": [],
+  "host_permissions": [
+    "https://logis.ilogen.com/*",
+    "https://api.airtable.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://logis.ilogen.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ]
+}
