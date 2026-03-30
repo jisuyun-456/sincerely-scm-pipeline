@@ -1,6 +1,14 @@
 {
   "periods": [
     {
+      "key": "2026-W13_review",
+      "label": "W13 (3/23~) 실적",
+      "mode": "weekly_review",
+      "mode_label": "주간 실적",
+      "generated_at": "2026-03-30T02:30:10",
+      "file": "2026-W13_review.json"
+    },
+    {
       "key": "2026-W12_review",
       "label": "W12 (3/16~) 실적",
       "mode": "weekly_review",
