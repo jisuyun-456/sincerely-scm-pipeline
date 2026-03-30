@@ -9,8 +9,9 @@ Airtable(비정규화 운영 데이터) → Supabase(정규화 원장) 동기화
 - pages/dashboard.html: 출하 탭 대시보드 (Chart.js)
 - pages/generate_scm_report.py: 주간/월간 리포트 생성
 
-## GitHub Actions (5개)
-snapshot.yml, wms_weekly_report.yml, wms_monthly_report.yml, generate_pdf.yml, deploy_pages.yml
+## GitHub Actions (3개)
+wms_weekly_report.yml, wms_monthly_report.yml, generate_pdf.yml
+(삭제: snapshot.yml → NestJS webhook으로 대체, deploy_pages.yml → 미사용)
 
 ## 주의사항
 - Airtable 테이블은 display name 아닌 table ID 사용 (변경 안전)

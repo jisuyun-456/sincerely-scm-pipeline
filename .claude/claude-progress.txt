@@ -1,7 +1,17 @@
 # Sincerely SCM — 작업 진행 로그
 # 새 세션 시작 시 가장 먼저 읽을 것
 
-## 2026-03-30
+## 2026-03-30 (세션 2)
+완료: SCM 배포 Step 4~7 전체 완료
+      - Step 4: Docker compose up (scm-nocodb:8080, scm-metabase:3000)
+      - Step 5: NocoDB → Supabase 연결 (pooler: aws-1-ap-south-1.pooler.supabase.com:6543)
+      - Step 6: Metabase → Supabase 연결 (SCM_Supabase, 모든 스키마 동기화)
+      - Step 7: 최종 확인 (projects 25건, active:20/completed:5 차트 생성)
+      - 핵심: Supabase ap-south-1 리전 → aws-1-ap-south-1 pooler 사용 (ap-northeast-2 아님)
+      - Docker DNS 8.8.8.8 설정 필요 (WSL2 DNS 해결)
+다음 세션: /start 실행 → critical 태스크 (백필 음수 에러, Railway 배포)
+
+## 2026-03-30 (세션 1)
 완료: CLAUDE.md 계층 구조 + 하네스 설정 완성
       - 루트 CLAUDE.md 생성 (프로젝트 정체성, 원칙, 기술 스택)
       - 폴더별 CLAUDE.md 5개 (supabase/wms/tms/airtable-pipeline/nestjs-backend)

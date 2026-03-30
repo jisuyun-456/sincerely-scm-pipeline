@@ -27,10 +27,11 @@
 | 백엔드 | NestJS (PM2, ngrok→Railway 전환 예정) | 운영 중 |
 | 파이프라인 | GitHub Actions + Python | 운영 중 |
 | TO-BE DB | Supabase 6스키마 51테이블 (설계 완료) | 미적용 |
-| 프론트엔드 | Retool (쿼리 설계 완료) | 미적용 |
+| 테이블 탐색 | NocoDB (localhost:8080) | 미적용 |
+| 대시보드 | Metabase (localhost:3000) | 미적용 |
 
 ## 전환 로드맵
-Airtable(AS-IS) → Supabase 51테이블 + NestJS 백엔드 + 더존 아마란스10 연계(TO-BE)
+Airtable(AS-IS) → Supabase 51테이블 + NocoDB/Metabase UI + NestJS 백엔드 + 더존 아마란스10 연계(TO-BE)
 현재 위치: Shadow Ledger 운영 중 (Airtable webhook → NestJS → Supabase sap 스키마)
 
 ## 태스크 관리
