@@ -139,7 +139,7 @@ jobs:
           cp history/*.json site/history/
 
           # 회의록 페이지
-          cp -r sincerely-meeting-notes site/sincerely-meeting-notes
+          [ -d sincerely-meeting-notes ] && cp -r sincerely-meeting-notes site/sincerely-meeting-notes || echo "[skip] sincerely-meeting-notes 없음"
 
           echo "site/ 구조:"
           ls -la site/
