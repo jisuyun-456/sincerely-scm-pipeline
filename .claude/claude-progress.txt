@@ -1,6 +1,19 @@
 # Sincerely SCM — 작업 진행 로그
 # 새 세션 시작 시 가장 먼저 읽을 것
 
+## 2026-03-30 (세션 3)
+완료: Retool 9페이지 + Skills 4개 + Docs 3개
+      - Retool 연결 확인 (postgres resource, Supabase pooler:6543)
+      - 9페이지 구조: Dashboard/ProjectDetail/PurchaseOrders/GoodsReceipt/Inventory/Production/Delivery/Finance/MasterData
+      - 27개 쿼리 전부 생성 (DB 컬럼명 전수 검증 완료)
+      - Dashboard: KPI 카드 4개 + 프로젝트 테이블 25건
+      - ProjectDetail: Select 드롭다운 방식 (urlparams 대신)
+      - GoodsReceipt/MasterData: Tabbed Container 수동 구성 완료
+      - Skills 신규 4개: accounting-period-close, accounting-invoice-match, db-data-integrity, db-query-optimizer
+      - Docs 3개: project_workflows.md (25개 프로젝트), retool_page_setup.md, retool_setup_guide.md
+      - 핵심: shared.clients.company_name (client_name 아님), shared.users.name (display_name 아님), shared.projects.fulfillment_lead_time (lead_time_days 아님)
+다음 세션: Retool UI 디자인 개선 (레이아웃/컬럼 포맷팅), 또는 백필 음수 에러 / Railway 배포
+
 ## 2026-03-30 (세션 2)
 완료: SCM 배포 Step 4~7 전체 완료
       - Step 4: Docker compose up (scm-nocodb:8080, scm-metabase:3000)

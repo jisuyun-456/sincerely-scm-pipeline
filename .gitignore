@@ -28,3 +28,6 @@ superpowers/
 # embedded git repos (managed separately)
 테스트/
 sincerely-scm-pipeline-github/
+
+# dbt logs
+sincerely_scm_dbt/logs/
