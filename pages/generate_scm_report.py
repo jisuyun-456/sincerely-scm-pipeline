@@ -389,7 +389,8 @@ def analyze_inbound(records):
         if stat=="입하완료": completed+=1
         elif not stat: unconfirmed+=1
         if c.get(F_NOT_RECV_HIST):
-            not_recv[c.get(F_SHIP_FROM) or "미상"]+=1
+            ship_from = c.get(F_SHIP_FROM) or ("고객물품(직접입고)" if purpose == "고객물품" else "미상")
+            not_recv[ship_from]+=1
         if date_val:
             by_date[date_val]["cnt"]+=1
             by_date[date_val]["in_qty"]+=in_qty
@@ -409,16 +410,21 @@ def analyze_inbound(records):
         "not_recv_by_partner":dict(sorted(not_recv.items(),key=lambda x:-x[1])),
     }
 
+QC_PASS_VALUES = {"수량 정상", "정상", "합격", "샘플합격"}
+
 def analyze_qc(records):
     """
     검수 로직 반영:
-    - 검수 건수 = 전체 입하건수 (표본 검수 방식이므로 모든 건에 대해 검수 진행)
-    - 검수 수량 = 전체 입하수량의 7.5% (5~10% 표본 검수 비율 중간값)
-    - 불량 수량/불량률은 실제 QC 기록에서 집계
+    - 취소 레코드 제외 후 집계
+    - 검수 건수 = 유효 입하건수 (표본 검수 방식이므로 모든 건에 대해 검수 진행)
+    - 검수 수량 = 유효 입하수량의 7.5% (5~10% 표본 검수 비율 중간값)
+    - 불량 수량/불량률은 실제 QC 기록에서 집계 (검수결과가 정상/합격이면 불량 미집계)
     - 이슈카테고리 집계 (수량이슈/품질이슈/운영이슈)
     """
-    total_cnt = len(records)  # 전체 입하건수 = 검수 건수
-    total_in_qty = sum((_c(r).get(F_IN_QTY) or 0) for r in records)
+    # 취소 레코드 사전 제외
+    active_records = [r for r in records if not _sel(_c(r).get(F_CANCEL, {}))]
+    total_cnt = len(active_records)
+    total_in_qty = sum((_c(r).get(F_IN_QTY) or 0) for r in active_records)
     sample_rate = 0.075        # 5~10% 표본 검수 중간값 7.5%
     total_qc_qty = int(total_in_qty * sample_rate)
 
@@ -432,18 +438,21 @@ def analyze_qc(records):
     issue_cnt = 0
     issue_cat_counts = defaultdict(int)
 
-    for r in records:
+    for r in active_records:
         c = _c(r)
         in_qty = c.get(F_IN_QTY) or 0
         qc_qty = c.get(F_QC_QTY) or 0
         defect_s = c.get(F_DEFECT_S) or 0
         defect_f = c.get(F_DEFECT_F) or 0
         defect = defect_s + defect_f
-        total_defect += defect
         if qc_qty > 0:
             actual_qc_cnt += 1
         qc_res = _sel(c.get(F_QC_RES, {})) or "수량 정상"
         result_dist[qc_res] += 1
+
+        # 검수결과가 정상/합격이면 불량으로 집계하지 않음
+        effective_defect = 0 if qc_res in QC_PASS_VALUES else defect
+        total_defect += effective_defect
 
         # 이슈카테고리
         cats = c.get(F_ISSUE_CAT) or []
@@ -461,12 +470,12 @@ def analyze_qc(records):
                 wk = f"W{d.isocalendar()[1]}"
                 by_week[wk]["cnt"] += 1
                 by_week[wk]["qc_qty"] += int(in_qty * sample_rate)
-                by_week[wk]["defect"] += defect
+                by_week[wk]["defect"] += effective_defect
             except Exception: pass
         item_name = _sel(c.get(F_ITEM_NAME)) or _sel(c.get(F_ITEM_ALT)) or ""
-        if item_name and defect > 0:
+        if item_name and effective_defect > 0:
             defect_by_item[item_name]["qc_qty"] += max(qc_qty, int(in_qty * sample_rate))
-            defect_by_item[item_name]["defect"] += defect
+            defect_by_item[item_name]["defect"] += effective_defect
 
     for wk in by_week:
         q = by_week[wk]["qc_qty"]
@@ -609,7 +618,7 @@ def analyze_tms(records, live_cbm, product_cbm=None):
         if isinstance(box_qty,list): box_qty=", ".join(str(x) for x in box_qty)
         box_qty=box_qty.strip()
         if not box_qty or not _BOX_RE.search(box_qty): missing_box+=1
-        if box_qty and _BOX_RE.search(box_qty) and src=="box_parse":
+        if box_qty and _BOX_RE.search(box_qty):
             _, btype_counts = parse_box_cbm(box_qty, live_cbm)
             for bt,cnt in btype_counts.items():
                 box_type_all[bt]+=cnt
