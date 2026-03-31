@@ -12,8 +12,12 @@
       - 발표 자료: docs/presentation_context.md 작성 (As-Is/To-Be, 마이그레이션맵, 스키마탐색기, E2E 워크플로우)
       - GitHub push 완료 (origin/master, secret scanning unblock)
       - Retool JSON export 백업 확보 (SSOT-SAP.json)
-미완료: 나머지 CRUD 뮤테이션 쿼리 등록 (q_gr_insert, q_entry_mark_reviewed 등), Column Pinning, 상태변경 버튼
-다음 세션: 금요일 발표 자료 HTML 아티팩트 생성 (presentation_context.md → Claude AI), 또는 CRUD 뮤테이션 이어서
+      - CRUD 뮤테이션 7개 추가 등록: q_entry_mark_reviewed, q_entry_post_douzone, q_entry_revert_draft, q_production_update_status, q_freight_mark_billed, q_inventory_adjustment_approve, q_gr_insert
+      - 전체 조회 쿼리 Automatic 설정, 뮤테이션 쿼리 Manual 설정
+      - 모든 뮤테이션 쿼리 Success → 해당 페이지 조회 쿼리 refresh 연결
+      - 상태변경 버튼 추가 (Dashboard)
+미완료: Form 컴포넌트 (GR 등록 폼, 전표 더존번호 입력 등), Column Pinning (지원 안 됨)
+다음 세션: 백엔드 critical (백필 음수 에러, Railway 배포), 또는 Retool Form 컴포넌트 추가
 
 ## 2026-03-30 (세션 3)
 완료: Retool 9페이지 + Skills 4개 + Docs 3개
