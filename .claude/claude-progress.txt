@@ -21,7 +21,11 @@
       - Delivery: 운임 청구 처리 버튼 추가
       - 워크플로우 추적기 페이지 신규 추가 (workflow) — Select(project_selector) + Table(tbl_workflow)
       - 총 10페이지, 조회 27개 + CRUD 9개 = 36개 쿼리 운영 중
-다음 세션: 백엔드 critical (백필 음수 에러, Railway 배포), GR 등록 Form 컴포넌트
+      - GR 등록 Form 완성 (Select 2개 + NumberInput 4개 + TextInput 2개 + Select 1개 + Button)
+      - 드롭다운 쿼리 2개 추가 (q_gr_po_dropdown, q_gr_parts_dropdown)
+      - 페이지 타이틀 한글화 (구매/발주, 입고/검수 등)
+      - 총 10페이지, ~40개 쿼리 운영 중
+다음 세션: E2E 테스트 (프로젝트 1개로 Dashboard→배송→회계까지), 백엔드 critical
 
 ## 2026-03-30 (세션 3)
 완료: Retool 9페이지 + Skills 4개 + Docs 3개
