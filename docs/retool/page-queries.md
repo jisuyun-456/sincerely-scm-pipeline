@@ -1,43 +1,629 @@
 # SCM SSOT Retool 쿼리 모음
 
-> Supabase 연결 기준 — 모든 쿼리는 Retool의 Supabase Resource를 사용합니다.
-> 변수 참조: `{{ component_name.value }}` 형식
+> **앱명:** SSOT-SAP
+> **리소스:** postgres (Supabase pooler:6543)
+> **네이밍 규칙:** 모든 쿼리명은 `q_` prefix 사용
+> **변수 참조:** `{{ component_name.value }}` 형식
+> **최종 동기화:** 2026-03-31 — retool_page_setup.md 기준 통일
 
 ---
 
 ## 목차
 
-1. [대시보드](#page-1-대시보드)
-2. [Projects CRUD](#page-2-projects-crud)
-3. [Clients/Vendors](#page-3-clientsvendors)
-4. [발주/입하 (MM)](#page-4-발주입하-mm)
-5. [재고/창고 (WMS)](#page-5-재고창고-wms)
-6. [임가공 (PP)](#page-6-임가공-pp)
-7. [출하/물류 (TMS)](#page-7-출하물류-tms)
-8. [전표/더존 (Finance)](#page-8-전표더존-finance)
-9. [워크플로우 추적기](#page-9-워크플로우-추적기)
-10. [유틸리티 쿼리](#appendix-유용한-유틸리티-쿼리)
+1. [Page 1: dashboard](#page-1-dashboard)
+2. [Page 2: project_detail](#page-2-project_detail)
+3. [Page 3: purchase_orders](#page-3-purchase_orders)
+4. [Page 4: goods_receipt](#page-4-goods_receipt)
+5. [Page 5: inventory](#page-5-inventory)
+6. [Page 6: production](#page-6-production)
+7. [Page 7: delivery](#page-7-delivery)
+8. [Page 8: finance](#page-8-finance)
+9. [Page 9: master_data](#page-9-master_data)
+10. [CRUD 뮤테이션 쿼리 (미등록)](#crud-뮤테이션-쿼리-미등록)
+11. [워크플로우 추적기 (미등록)](#워크플로우-추적기-미등록)
+12. [유틸리티 쿼리](#appendix-유틸리티-쿼리)
+13. [트리거 요약표](#트리거-요약표)
 
 ---
 
-## Page 1: 대시보드
+## Page 1: dashboard
 
-### Query: `dashboard_project_kpi`
+### `q_kpi`
 
-프로젝트 상태별 KPI 카드용 집계
+프로젝트 KPI 카드 (총/진행중/완료)
 
 ```sql
 SELECT
-  project_status,
-  COUNT(*) as cnt
-FROM shared.projects
-GROUP BY project_status
-ORDER BY cnt DESC;
+  COUNT(*) AS total,
+  COUNT(*) FILTER (WHERE project_status = 'active') AS active,
+  COUNT(*) FILTER (WHERE project_status = 'completed') AS completed
+FROM shared.projects;
 ```
 
-### Query: `dashboard_pending_entries`
+### `q_shipping_this_month`
 
-미처리 전표 현황 (대시보드 알림 카드)
+이번달 출하 건수
+
+```sql
+SELECT COUNT(*) AS cnt
+FROM tms.transportation_requirements
+WHERE requested_shipment_date >= date_trunc('month', CURRENT_DATE)
+  AND requested_shipment_date < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month';
+```
+
+### `q_projects_list`
+
+프로젝트 목록 (메인 테이블)
+
+```sql
+SELECT
+  p.id,
+  p.project_code,
+  p.project_name,
+  c.company_name,
+  p.project_status,
+  u.name AS cx_specialist,
+  p.first_shipment_date,
+  p.fulfillment_lead_time
+FROM shared.projects p
+JOIN shared.clients c ON c.id = p.client_id
+LEFT JOIN shared.users u ON u.id = p.cx_specialist_id
+ORDER BY p.project_code DESC;
+```
+
+> 행 클릭 → Navigate to `project_detail`, URL param: `project_id={{ tbl_projects.selectedRow.data.id }}`
+
+---
+
+## Page 2: project_detail
+
+### `q_project_info`
+
+프로젝트 헤더 정보
+
+```sql
+SELECT
+  p.project_code,
+  p.project_name,
+  p.project_status,
+  p.main_usage,
+  c.company_name,
+  u.name AS cx_specialist,
+  p.first_shipment_date,
+  p.last_shipment_date,
+  p.fulfillment_lead_time,
+  p.ordered_items_summary
+FROM shared.projects p
+JOIN shared.clients c ON c.id = p.client_id
+LEFT JOIN shared.users u ON u.id = p.cx_specialist_id
+WHERE p.id = {{ urlparams.project_id }};
+```
+
+### `q_project_pos` (발주 탭)
+
+```sql
+SELECT
+  po.po_number,
+  v.vendor_name,
+  po.po_status,
+  po.requested_date,
+  poi.line_number,
+  pt.parts_name,
+  poi.order_qty,
+  poi.unit_price,
+  poi.total_amount,
+  COALESCE(poi.received_qty, 0) AS received_qty
+FROM mm.purchase_orders po
+JOIN shared.vendors v ON v.id = po.vendor_id
+LEFT JOIN mm.purchase_order_items poi ON poi.po_id = po.id
+LEFT JOIN shared.parts_master pt ON pt.id = poi.parts_id
+WHERE po.project_id = {{ urlparams.project_id }}
+ORDER BY po.requested_date, poi.line_number;
+```
+
+### `q_project_grs` (입고 탭)
+
+```sql
+SELECT
+  gr.gr_number,
+  pt.parts_name,
+  gr.received_qty,
+  gr.accepted_qty,
+  gr.rejected_qty,
+  gr.unit_cost,
+  gr.total_cost,
+  gr.actual_receipt_date,
+  gr.inspection_result
+FROM mm.goods_receipts gr
+JOIN mm.purchase_orders po ON po.id = gr.po_id
+JOIN shared.parts_master pt ON pt.id = gr.parts_id
+WHERE po.project_id = {{ urlparams.project_id }}
+ORDER BY gr.actual_receipt_date;
+```
+
+### `q_project_production` (생산 탭)
+
+```sql
+SELECT
+  pro.order_number,
+  pro.status,
+  pro.planned_start_date,
+  pro.planned_end_date,
+  pro.actual_start_date,
+  pro.actual_end_date,
+  pro.planned_qty,
+  pro.actual_qty,
+  pro.output_qty,
+  CASE WHEN pro.planned_qty > 0
+    THEN ROUND(COALESCE(pro.output_qty, 0)::numeric / pro.planned_qty * 100)
+    ELSE 0
+  END AS progress_pct
+FROM pp.production_orders pro
+WHERE pro.project_id = {{ urlparams.project_id }}
+ORDER BY pro.planned_start_date;
+```
+
+### `q_project_delivery` (배송 탭)
+
+```sql
+SELECT
+  tr.tr_number,
+  tr.delivery_type,
+  tr.recipient_name,
+  tr.recipient_address,
+  tr.status AS tr_status,
+  tr.requested_shipment_date,
+  fo.fo_number,
+  fo.shipping_status,
+  cr.carrier_name,
+  fo.actual_departure_datetime,
+  fo.actual_arrival_datetime,
+  fo.freight_cost
+FROM tms.transportation_requirements tr
+LEFT JOIN tms.freight_orders fo ON fo.tr_id = tr.id
+LEFT JOIN tms.carriers cr ON cr.id = fo.carrier_id
+WHERE tr.project_id = {{ urlparams.project_id }}
+ORDER BY tr.requested_shipment_date;
+```
+
+---
+
+## Page 3: purchase_orders
+
+### `q_po_list`
+
+```sql
+SELECT
+  po.id,
+  po.po_number,
+  p.project_code,
+  p.project_name,
+  v.vendor_name,
+  po.po_status,
+  po.requested_date,
+  SUM(poi.total_amount) AS total_amount
+FROM mm.purchase_orders po
+JOIN shared.projects p ON p.id = po.project_id
+JOIN shared.vendors v ON v.id = po.vendor_id
+LEFT JOIN mm.purchase_order_items poi ON poi.po_id = po.id
+GROUP BY po.id, p.project_code, p.project_name, v.vendor_name
+ORDER BY po.requested_date DESC;
+```
+
+### `q_po_items` (PO 선택 시)
+
+```sql
+SELECT
+  poi.line_number,
+  pt.parts_code,
+  pt.parts_name,
+  poi.order_qty,
+  COALESCE(poi.received_qty, 0) AS received_qty,
+  poi.unit_price,
+  poi.total_amount,
+  poi.quality_check_result
+FROM mm.purchase_order_items poi
+JOIN shared.parts_master pt ON pt.id = poi.parts_id
+WHERE poi.po_id = {{ tbl_po.selectedRow.data.id }}
+ORDER BY poi.line_number;
+```
+
+---
+
+## Page 4: goods_receipt
+
+### `q_gr_list`
+
+```sql
+SELECT
+  gr.gr_number,
+  po.po_number,
+  pt.parts_name,
+  gr.received_qty,
+  gr.accepted_qty,
+  gr.rejected_qty,
+  gr.unit_cost,
+  gr.total_cost,
+  gr.actual_receipt_date,
+  gr.inspection_result
+FROM mm.goods_receipts gr
+JOIN mm.purchase_orders po ON po.id = gr.po_id
+JOIN shared.parts_master pt ON pt.id = gr.parts_id
+ORDER BY gr.actual_receipt_date DESC;
+```
+
+### `q_pending_receipt` (입고 대기)
+
+```sql
+SELECT
+  po.po_number,
+  poi.line_number,
+  pt.parts_code,
+  pt.parts_name,
+  poi.order_qty,
+  COALESCE(poi.received_qty, 0) AS received_so_far,
+  poi.order_qty - COALESCE(poi.received_qty, 0) AS remaining,
+  po.requested_date,
+  v.vendor_name
+FROM mm.purchase_order_items poi
+JOIN mm.purchase_orders po ON po.id = poi.po_id
+JOIN shared.parts_master pt ON pt.id = poi.parts_id
+JOIN shared.vendors v ON v.id = po.vendor_id
+WHERE po.po_status NOT IN ('closed', 'cancelled')
+  AND poi.order_qty > COALESCE(poi.received_qty, 0)
+ORDER BY po.requested_date;
+```
+
+### `q_returns` (반품)
+
+```sql
+SELECT
+  ro.return_number,
+  ro.direction,
+  CASE ro.direction
+    WHEN 'vendor' THEN '공급업체 반품'
+    WHEN 'customer' THEN '고객 반품'
+  END AS dir_label,
+  pt.parts_name,
+  ro.return_qty,
+  ro.reason_code,
+  ro.disposition,
+  ro.status
+FROM mm.return_orders ro
+JOIN shared.parts_master pt ON pt.id = ro.parts_id
+ORDER BY ro.created_at DESC;
+```
+
+---
+
+## Page 5: inventory
+
+### `q_inventory`
+
+```sql
+SELECT
+  pt.parts_code,
+  pt.parts_name,
+  w.warehouse_code,
+  sb.bin_code,
+  sb.zone,
+  q.stock_type,
+  q.physical_qty,
+  q.reserved_qty,
+  q.available_qty,
+  b.batch_number,
+  b.unit_cost,
+  q.physical_qty * COALESCE(b.unit_cost, 0) AS stock_value
+FROM wms.quants q
+JOIN shared.parts_master pt ON pt.id = q.parts_id
+JOIN wms.storage_bins sb ON sb.id = q.storage_bin_id
+JOIN wms.warehouses w ON w.id = sb.warehouse_id
+LEFT JOIN wms.batches b ON b.id = q.batch_id
+ORDER BY pt.parts_code, sb.bin_code;
+```
+
+### `q_negative_stock` (음수 재고 경고)
+
+```sql
+SELECT
+  pt.parts_code,
+  pt.parts_name,
+  w.warehouse_code,
+  q.physical_qty
+FROM wms.quants q
+JOIN shared.parts_master pt ON pt.id = q.parts_id
+JOIN wms.storage_bins sb ON sb.id = q.storage_bin_id
+JOIN wms.warehouses w ON w.id = sb.warehouse_id
+WHERE q.physical_qty < 0;
+```
+
+### `q_stock_movements`
+
+```sql
+SELECT
+  sm.movement_number,
+  sm.movement_type,
+  CASE sm.movement_type
+    WHEN '101' THEN '입고'
+    WHEN '102' THEN '입고취소'
+    WHEN '161' THEN '고객반품'
+    WHEN '201' THEN '출고'
+    WHEN '261' THEN '생산출고'
+    WHEN '262' THEN '생산반품'
+    WHEN '301' THEN '창고이전'
+    WHEN '551' THEN '폐기'
+    WHEN '601' THEN '납품출고'
+    WHEN '701' THEN '실사(+)'
+    WHEN '702' THEN '실사(-)'
+  END AS type_label,
+  pt.parts_name,
+  sm.actual_qty,
+  sm.unit_cost_at_movement,
+  sm.posting_date,
+  sm.status,
+  sm.is_reversal
+FROM mm.stock_movements sm
+JOIN shared.parts_master pt ON pt.id = sm.parts_id
+ORDER BY sm.posting_date DESC;
+```
+
+---
+
+## Page 6: production
+
+### `q_production_orders`
+
+```sql
+SELECT
+  pro.id,
+  pro.order_number,
+  pro.status,
+  p.project_code,
+  p.project_name,
+  pro.planned_start_date,
+  pro.planned_end_date,
+  pro.actual_start_date,
+  pro.actual_end_date,
+  pro.planned_qty,
+  pro.actual_qty,
+  pro.output_qty,
+  CASE WHEN pro.planned_qty > 0
+    THEN ROUND(COALESCE(pro.output_qty, 0)::numeric / pro.planned_qty * 100)
+    ELSE 0
+  END AS progress_pct
+FROM pp.production_orders pro
+JOIN shared.projects p ON p.id = pro.project_id
+ORDER BY
+  CASE pro.status
+    WHEN 'in_progress' THEN 1
+    WHEN 'released' THEN 2
+    WHEN 'planned' THEN 3
+    WHEN 'completed' THEN 4
+    ELSE 5
+  END;
+```
+
+### `q_bom_components` (선택한 생산오더의 BOM)
+
+```sql
+SELECT
+  pt.parts_code,
+  pt.parts_name,
+  bi.component_qty AS qty_per_unit,
+  bi.component_qty * pro.planned_qty AS total_required,
+  COALESCE(poc.issued_qty, 0) AS issued,
+  bi.component_qty * pro.planned_qty - COALESCE(poc.issued_qty, 0) AS remaining,
+  COALESCE(stock.available, 0) AS current_stock
+FROM pp.bom_items bi
+JOIN shared.parts_master pt ON pt.id = bi.parts_id
+JOIN pp.production_orders pro ON pro.bom_id = bi.bom_id
+LEFT JOIN pp.production_order_components poc
+  ON poc.production_order_id = pro.id AND poc.parts_id = bi.parts_id
+LEFT JOIN (
+  SELECT parts_id, SUM(available_qty) AS available
+  FROM wms.quants GROUP BY parts_id
+) stock ON stock.parts_id = bi.parts_id
+WHERE pro.id = {{ tbl_production.selectedRow.data.id }};
+```
+
+---
+
+## Page 7: delivery
+
+### `q_transport_requests`
+
+```sql
+SELECT
+  tr.tr_number,
+  p.project_code,
+  p.project_name,
+  tr.delivery_type,
+  CASE tr.delivery_type
+    WHEN 'direct' THEN '직납'
+    WHEN 'courier' THEN '택배'
+    WHEN 'relay'  THEN '릴레이'
+    WHEN 'pickup' THEN '픽업'
+    WHEN 'transfer' THEN '이전'
+  END AS type_label,
+  tr.recipient_name,
+  tr.recipient_address,
+  tr.requested_shipment_date,
+  tr.status
+FROM tms.transportation_requirements tr
+JOIN shared.projects p ON p.id = tr.project_id
+ORDER BY tr.requested_shipment_date DESC;
+```
+
+### `q_freight_orders`
+
+```sql
+SELECT
+  fo.fo_number,
+  tr.tr_number,
+  cr.carrier_name,
+  cr.carrier_type,
+  fo.planned_shipment_date,
+  fo.confirmed_shipment_date,
+  fo.actual_departure_datetime,
+  fo.actual_arrival_datetime,
+  fo.shipping_status,
+  fo.total_cbm,
+  fo.freight_cost,
+  fo.tracking_number
+FROM tms.freight_orders fo
+JOIN tms.transportation_requirements tr ON tr.id = fo.tr_id
+JOIN tms.carriers cr ON cr.id = fo.carrier_id
+ORDER BY fo.planned_shipment_date DESC;
+```
+
+---
+
+## Page 8: finance
+
+### `q_journal_entries`
+
+```sql
+SELECT
+  ae.entry_number,
+  ae.entry_date,
+  ae.entry_type,
+  CASE ae.entry_type
+    WHEN 'goods_receipt'        THEN '입고'
+    WHEN 'goods_issue'          THEN '출고'
+    WHEN 'production'           THEN '생산'
+    WHEN 'assembly_issue'       THEN '조립출고'
+    WHEN 'assembly_receipt'     THEN '조립입고'
+    WHEN 'purchase_invoice'     THEN '매입'
+    WHEN 'freight'              THEN '운임'
+    WHEN 'inventory_adjustment' THEN '재고조정'
+  END AS type_label,
+  da.account_code || ' ' || da.account_name AS debit_account,
+  ca.account_code || ' ' || ca.account_name AS credit_account,
+  ae.amount,
+  ae.status,
+  ae.is_reversal,
+  ae.douzone_slip_no
+FROM finance.accounting_entries ae
+JOIN shared.gl_accounts da ON da.id = ae.debit_account_id
+JOIN shared.gl_accounts ca ON ca.id = ae.credit_account_id
+ORDER BY ae.entry_date DESC, ae.entry_number DESC;
+```
+
+### `q_period_closes`
+
+```sql
+SELECT
+  pc.period,
+  pt.parts_code,
+  pt.parts_name,
+  w.warehouse_code,
+  pc.closing_qty,
+  pc.closing_value,
+  pc.unit_cost,
+  pc.is_closed
+FROM finance.period_closes pc
+JOIN shared.parts_master pt ON pt.id = pc.parts_id
+JOIN wms.warehouses w ON w.id = pc.warehouse_id
+ORDER BY pc.period DESC, pt.parts_code;
+```
+
+---
+
+## Page 9: master_data
+
+### `q_clients`
+
+```sql
+SELECT
+  client_code,
+  company_name,
+  business_reg_number,
+  contact_name,
+  contact_email,
+  contact_phone,
+  status
+FROM shared.clients
+ORDER BY client_code;
+```
+
+### `q_vendors`
+
+```sql
+SELECT
+  vendor_code,
+  vendor_name,
+  vendor_type,
+  douzone_vendor_code,
+  is_stock_vendor,
+  contact_name,
+  contact_phone,
+  email,
+  status
+FROM shared.vendors
+ORDER BY vendor_code;
+```
+
+### `q_parts`
+
+```sql
+SELECT
+  pt.parts_code,
+  pt.parts_name,
+  mt.type_code AS material_type,
+  mg.group_code AS material_group,
+  v.vendor_name AS default_vendor,
+  pt.base_uom,
+  pt.reorder_point,
+  pt.min_order_qty,
+  pt.status
+FROM shared.parts_master pt
+LEFT JOIN shared.material_types mt ON mt.id = pt.material_type_id
+LEFT JOIN shared.material_groups mg ON mg.id = pt.material_group_id
+LEFT JOIN shared.vendors v ON v.id = pt.vendor_id
+ORDER BY pt.parts_code;
+```
+
+### `q_bom`
+
+```sql
+SELECT
+  bh.bom_code,
+  bh.bom_type,
+  COALESCE(g.goods_name, i.item_name) AS product_name,
+  bi.component_qty,
+  pt.parts_code,
+  pt.parts_name
+FROM pp.bom_headers bh
+LEFT JOIN shared.goods_master g ON g.id = bh.goods_id
+LEFT JOIN shared.item_master i ON i.id = bh.item_id
+JOIN pp.bom_items bi ON bi.bom_id = bh.id
+JOIN shared.parts_master pt ON pt.id = bi.parts_id
+ORDER BY bh.bom_code, bi.sort_order;
+```
+
+### `q_warehouses`
+
+```sql
+SELECT
+  w.warehouse_code,
+  w.warehouse_name,
+  w.address,
+  w.max_cbm,
+  w.status,
+  COUNT(sb.id) AS bin_count
+FROM wms.warehouses w
+LEFT JOIN wms.storage_bins sb ON sb.warehouse_id = w.id
+GROUP BY w.id
+ORDER BY w.warehouse_code;
+```
+
+---
+
+## CRUD 뮤테이션 쿼리 (미등록)
+
+> 아래 쿼리들은 Retool에 아직 등록되지 않음. 데이터 입력/수정 기능 추가 시 등록할 것.
+
+### `q_pending_entries` — Dashboard 미처리 전표 현황 카드
 
 ```sql
 SELECT
@@ -49,51 +635,9 @@ GROUP BY status
 ORDER BY status;
 ```
 
-### Query: `dashboard_march_calendar`
+> Dashboard에 Stat 카드로 추가 권장
 
-3월 출하 일정 캘린더 (날짜 범위를 파라미터로 변경 가능)
-
-```sql
-SELECT
-  project_code,
-  project_name,
-  first_shipment_date,
-  last_shipment_date,
-  project_status,
-  c.company_name AS client_name,
-  u.name AS cx_specialist
-FROM shared.projects p
-LEFT JOIN shared.clients c ON c.id = p.client_id
-LEFT JOIN shared.users u ON u.id = p.cx_specialist_id
-WHERE first_shipment_date BETWEEN '2026-03-01' AND '2026-03-31'
-ORDER BY first_shipment_date;
-```
-
----
-
-## Page 2: Projects CRUD
-
-### Query: `projects_list`
-
-프로젝트 목록 (메인 테이블)
-
-```sql
-SELECT
-  p.id, p.project_code, p.project_name, p.project_status,
-  p.first_shipment_date, p.last_shipment_date,
-  c.company_name AS client_name,
-  u.name AS cx_specialist,
-  p.ordered_items_summary,
-  p.created_at
-FROM shared.projects p
-LEFT JOIN shared.clients c ON c.id = p.client_id
-LEFT JOIN shared.users u ON u.id = p.cx_specialist_id
-ORDER BY p.first_shipment_date DESC;
-```
-
-### Query: `projects_update_status`
-
-프로젝트 상태 변경 (버튼 클릭 → Run Query)
+### `q_project_update_status` — 프로젝트 상태 변경
 
 ```sql
 UPDATE shared.projects
@@ -102,79 +646,9 @@ SET project_status = {{ status_select.value }},
 WHERE id = {{ projects_table.selectedRow.id }};
 ```
 
-> **Retool 설정:** `status_select` = Select 컴포넌트, 옵션: `planning`, `active`, `completed`, `on_hold`
+> Retool 설정: `status_select` = Select 컴포넌트, 옵션: `planning`, `active`, `completed`, `on_hold`
 
----
-
-## Page 3: Clients/Vendors
-
-### Query: `clients_list`
-
-거래처 목록
-
-```sql
-SELECT id, client_code, company_name, contact_name, contact_email, contact_phone, status
-FROM shared.clients
-ORDER BY company_name;
-```
-
-### Query: `vendors_list`
-
-공급업체 목록
-
-```sql
-SELECT id, vendor_code, vendor_name, vendor_type, contact_name, contact_phone, status
-FROM shared.vendors
-ORDER BY vendor_type, vendor_name;
-```
-
----
-
-## Page 4: 발주/입하 (MM)
-
-### Query: `po_list`
-
-발주서 목록 (상단 테이블)
-
-```sql
-SELECT
-  po.id, po.po_number, po.po_status,
-  p.project_code, p.project_name,
-  v.vendor_name,
-  po.requested_date,
-  COUNT(poi.id) AS line_count,
-  SUM(poi.order_qty) AS total_order_qty,
-  SUM(poi.total_amount) AS total_amount
-FROM mm.purchase_orders po
-JOIN shared.projects p ON p.id = po.project_id
-JOIN shared.vendors v ON v.id = po.vendor_id
-LEFT JOIN mm.purchase_order_items poi ON poi.po_id = po.id
-GROUP BY po.id, po.po_number, po.po_status, p.project_code, p.project_name, v.vendor_name, po.requested_date
-ORDER BY po.requested_date DESC;
-```
-
-### Query: `po_items_detail`
-
-발주 행 선택 시 하단 상세 테이블 로드
-
-```sql
-SELECT
-  poi.id, poi.line_number, poi.parts_id,
-  pm.parts_name, pm.parts_code,
-  poi.order_qty, poi.received_qty,
-  poi.unit_price, poi.total_amount,
-  poi.planned_delivery_date, poi.quality_check_result
-FROM mm.purchase_order_items poi
-JOIN shared.parts_master pm ON pm.id = poi.parts_id
-WHERE poi.po_id = {{ po_table.selectedRow.id }}
-ORDER BY poi.line_number;
-```
-
-> **Retool 설정:** `po_table.selectedRow.id` 에서 자동 트리거
-
-### Query: `gr_insert`
-
-입하(GR) 등록 폼 제출 — **트리거 1번 발동** (finance 전표 자동생성)
+### `q_gr_insert` — 입하(GR) 등록 (트리거 1번 발동)
 
 ```sql
 INSERT INTO mm.goods_receipts (
@@ -199,38 +673,12 @@ INSERT INTO mm.goods_receipts (
   {{ gr_inspection_result.value }},
   {{ current_user_id.value }}
 );
--- ↑ 이 INSERT 후 finance.accounting_entries draft 전표 자동생성 (트리거 1번 발동)
 ```
 
-> **트리거 1:** `mm.goods_receipts` INSERT → `finance.accounting_entries` draft 생성
+> 트리거 1: `mm.goods_receipts` INSERT → `finance.accounting_entries` draft 생성
 > DR: 146000 원재료 / CR: 252000 외상매입금
 
----
-
-## Page 5: 재고/창고 (WMS)
-
-### Query: `quants_current_stock`
-
-현재 재고 현황 (Quants 테이블)
-
-```sql
-SELECT
-  q.id,
-  pm.parts_code, pm.parts_name, pm.parts_type,
-  wb.bin_code,
-  wh.warehouse_name,
-  q.physical_qty, q.system_qty,
-  q.stock_type, q.verification_status
-FROM wms.quants q
-JOIN shared.parts_master pm ON pm.id = q.parts_id
-JOIN wms.storage_bins wb ON wb.id = q.storage_bin_id
-JOIN wms.warehouses wh ON wh.id = wb.warehouse_id
-ORDER BY pm.parts_name, wb.bin_code;
-```
-
-### Query: `inventory_adjustment_approve`
-
-재고 실사 조정 승인 — **트리거 6번 발동** (재고조정 전표 자동생성)
+### `q_inventory_adjustment_approve` — 재고 실사 조정 승인 (트리거 6번 발동)
 
 ```sql
 UPDATE wms.inventory_count_items
@@ -239,38 +687,12 @@ SET
   approved_by = {{ current_user_id.value }},
   processed_at = NOW()
 WHERE id = {{ inventory_items_table.selectedRow.id }};
--- ↑ adjustment_approved=TRUE 시 finance 재고조정 전표 자동생성 (트리거 6번 발동)
 ```
 
-> **트리거 6:** `adjustment_approved = TRUE` → `finance.accounting_entries` 생성
+> 트리거 6: `adjustment_approved = TRUE` → 재고조정 전표 자동생성
 > DR: 484000 재고자산손실 / CR: 146000 원재료 (부족 시)
 
----
-
-## Page 6: 임가공 (PP)
-
-### Query: `production_orders_list`
-
-생산 지시서 목록
-
-```sql
-SELECT
-  po.id, po.order_number, po.status,
-  p.project_code, p.project_name,
-  po.planned_start_date, po.planned_end_date,
-  po.actual_start_date, po.actual_end_date,
-  po.planned_qty, po.actual_qty, po.output_qty,
-  po.production_location,
-  u.name AS cx_responsible
-FROM pp.production_orders po
-JOIN shared.projects p ON p.id = po.project_id
-LEFT JOIN shared.users u ON u.id = po.cx_responsible_id
-ORDER BY po.planned_start_date DESC;
-```
-
-### Query: `production_order_update_status`
-
-생산 지시서 상태 변경
+### `q_production_update_status` — 생산 상태 변경
 
 ```sql
 UPDATE pp.production_orders
@@ -279,76 +701,21 @@ SET status = {{ prod_status_select.value }},
 WHERE id = {{ prod_table.selectedRow.id }};
 ```
 
-> **Retool 설정:** `prod_status_select` 옵션: `planned`, `in_progress`, `completed`, `cancelled`
+> Retool 설정: `prod_status_select` 옵션: `planned`, `in_progress`, `completed`, `cancelled`
 
----
-
-## Page 7: 출하/물류 (TMS)
-
-### Query: `freight_orders_list`
-
-화물 주문 목록
-
-```sql
-SELECT
-  fo.id, fo.fo_number, fo.shipping_status, fo.billing_status,
-  tr.tr_number,
-  p.project_code, p.project_name,
-  c.company_name AS client_name,
-  fo.planned_shipment_date, fo.confirmed_shipment_date,
-  fo.total_cbm, fo.freight_cost,
-  fo.tax_invoice_no,
-  ca.carrier_name
-FROM tms.freight_orders fo
-JOIN tms.transportation_requirements tr ON tr.id = fo.tr_id
-JOIN shared.projects p ON p.id = tr.project_id
-JOIN shared.clients c ON c.id = p.client_id
-LEFT JOIN tms.carriers ca ON ca.id = fo.carrier_id
-ORDER BY fo.planned_shipment_date DESC;
-```
-
-### Query: `freight_order_mark_billed`
-
-운임 청구 처리 — **트리거 5번 발동** (운반비 전표 자동생성)
+### `q_freight_mark_billed` — 운임 청구 처리 (트리거 5번 발동)
 
 ```sql
 UPDATE tms.freight_orders
 SET billing_status = 'billed',
     updated_at = NOW()
 WHERE id = {{ fo_table.selectedRow.id }};
--- ↑ billing_status='billed' 전환 시 운반비 전표 자동생성 (트리거 5번 발동)
--- DR: 831000 운반비 / CR: 253000 미지급금
 ```
 
-> **트리거 5:** `billing_status = 'billed'` → `finance.accounting_entries` 생성
+> 트리거 5: `billing_status = 'billed'` → 운반비 전표 자동생성
 > DR: 831000 운반비 / CR: 253000 미지급금
 
----
-
-## Page 8: 전표/더존 (Finance)
-
-### Query: `accounting_entries_list`
-
-전표 목록 (전체 조회)
-
-```sql
-SELECT
-  ae.id, ae.entry_number, ae.entry_date, ae.entry_type,
-  ae.amount, ae.status, ae.source_table,
-  dr.account_name AS debit_account, dr.account_code AS debit_code,
-  cr.account_name AS credit_account, cr.account_code AS credit_code,
-  ae.tax_invoice_no, ae.vat_amount,
-  ae.reviewed_at, ae.douzone_slip_no,
-  ae.created_at
-FROM finance.accounting_entries ae
-JOIN shared.gl_accounts dr ON dr.id = ae.debit_account_id
-JOIN shared.gl_accounts cr ON cr.id = ae.credit_account_id
-ORDER BY ae.entry_date DESC, ae.created_at DESC;
-```
-
-### Query: `entry_mark_reviewed`
-
-전표 검토 완료 처리 (draft → reviewed)
+### `q_entry_mark_reviewed` — 전표 검토 완료 (draft → reviewed)
 
 ```sql
 UPDATE finance.accounting_entries
@@ -360,9 +727,7 @@ WHERE id = {{ entries_table.selectedRow.id }}
   AND status = 'draft';
 ```
 
-### Query: `entry_post_with_douzone`
-
-더존 전표번호 입력 후 확정 처리 (reviewed → posted)
+### `q_entry_post_douzone` — 더존 전표번호 입력 확정 (reviewed → posted)
 
 ```sql
 UPDATE finance.accounting_entries
@@ -373,11 +738,9 @@ WHERE id = {{ entries_table.selectedRow.id }}
   AND status = 'reviewed';
 ```
 
-> **Retool 설정:** `slip_no_input` = Text Input 컴포넌트, 더존 전표번호 직접 입력
+> Retool 설정: `slip_no_input` = Text Input, 더존 전표번호 직접 입력
 
-### Query: `entry_revert_to_draft`
-
-검토 취소 (reviewed → draft, 수정 필요시)
+### `q_entry_revert_draft` — 검토 취소 (reviewed → draft)
 
 ```sql
 UPDATE finance.accounting_entries
@@ -391,33 +754,26 @@ WHERE id = {{ entries_table.selectedRow.id }}
 
 ---
 
-## Page 9: 워크플로우 추적기
+## 워크플로우 추적기 (미등록)
 
-### Query: `workflow_tracker`
+> 향후 별도 페이지 또는 project_detail 하위 탭으로 추가 예정
 
-프로젝트 선택 → 전체 흐름 타임라인 (단일 프로젝트)
+### `q_workflow_tracker` — 프로젝트별 전체 흐름 타임라인
 
 ```sql
 SELECT
-  -- 프로젝트
   p.project_code, p.project_name, p.project_status,
   p.first_shipment_date,
   c.company_name AS client_name,
-  -- 발주
   po.po_number, po.po_status, po.requested_date,
-  -- 입하
   gr.gr_number, gr.actual_receipt_date,
   gr.received_qty, gr.rejected_qty, gr.unit_cost,
-  -- 재고이동
   sm.movement_type, sm.actual_qty, sm.actual_date,
-  -- 임가공
   prod.order_number AS prod_order_number,
   prod.status AS prod_status,
   prod.actual_start_date, prod.actual_end_date,
-  -- 출하
   fo.fo_number, fo.shipping_status, fo.freight_cost,
   fo.planned_shipment_date,
-  -- 전표
   ae.entry_number, ae.entry_type, ae.amount,
   ae.status AS entry_status, ae.entry_date,
   dr.account_name AS debit_account,
@@ -439,9 +795,7 @@ WHERE p.id = {{ project_selector.value }}
 ORDER BY gr.actual_receipt_date NULLS LAST, ae.entry_date NULLS LAST;
 ```
 
-### Query: `workflow_all_entries_for_project`
-
-선택 프로젝트의 전표 전체 조회 (모든 entry_type 포함)
+### `q_workflow_project_entries` — 프로젝트 전표 전체 조회
 
 ```sql
 SELECT
@@ -472,11 +826,9 @@ ORDER BY ae.entry_date, ae.entry_type;
 
 ---
 
-## Appendix: 유용한 유틸리티 쿼리
+## Appendix: 유틸리티 쿼리
 
-### Query: `util_project_dropdown`
-
-워크플로우 추적기의 `project_selector` Select 컴포넌트 데이터 소스
+### `q_util_project_dropdown` — 프로젝트 셀렉트 드롭다운
 
 ```sql
 SELECT
@@ -487,11 +839,9 @@ FROM shared.projects
 ORDER BY first_shipment_date DESC;
 ```
 
-> **Retool 설정:** Select 컴포넌트 → Values: `id`, Labels: `project_code || ' — ' || project_name`
+> Retool 설정: Select 컴포넌트 → Values: `id`, Labels: `project_code || ' — ' || project_name`
 
-### Query: `util_trigger_check`
-
-트리거 발동 결과 검증 — 전표 유형별 건수 확인
+### `q_util_trigger_check` — 트리거 발동 결과 검증
 
 ```sql
 SELECT
@@ -505,9 +855,7 @@ GROUP BY entry_type, status
 ORDER BY entry_type, status;
 ```
 
-### Query: `util_verify_gr_entries`
-
-입하 전표 연결 검증 — GR과 전표 매핑 확인 (트리거 1번 결과 확인용)
+### `q_util_verify_gr_entries` — GR-전표 매핑 확인
 
 ```sql
 SELECT
@@ -527,9 +875,7 @@ ORDER BY gr.actual_receipt_date DESC, gr.created_at DESC
 LIMIT 50;
 ```
 
-### Query: `util_pending_review_count`
-
-검토 대기 중인 draft 전표 수 (대시보드 배지용)
+### `q_util_pending_review_count` — draft 전표 카운트 (대시보드 배지용)
 
 ```sql
 SELECT COUNT(*) AS pending_count
@@ -552,4 +898,4 @@ WHERE status = 'draft';
 
 ---
 
-*최종 업데이트: 2026-03-27*
+*최종 업데이트: 2026-03-31 — retool_page_setup.md 기준 통일*

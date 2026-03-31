@@ -580,6 +580,31 @@ ORDER BY w.warehouse_code;
 
 ---
 
+## 미등록 쿼리 (향후 추가 대상)
+
+> 아래 쿼리들은 현재 Retool에 미등록. 데이터 입력/수정 기능 확장 시 등록할 것.
+> SQL 전문은 `docs/retool/page-queries.md` 참조.
+
+| 페이지 | 쿼리명 | 용도 | 비고 |
+|--------|--------|------|------|
+| dashboard | `q_pending_entries` | 미처리 전표 현황 Stat 카드 | SELECT |
+| project_detail | `q_project_update_status` | 프로젝트 상태 변경 | UPDATE |
+| goods_receipt | `q_gr_insert` | 입하(GR) 등록 | INSERT, 트리거 1번 |
+| inventory | `q_inventory_adjustment_approve` | 재고 실사 조정 승인 | UPDATE, 트리거 6번 |
+| production | `q_production_update_status` | 생산 상태 변경 | UPDATE |
+| delivery | `q_freight_mark_billed` | 운임 청구 처리 | UPDATE, 트리거 5번 |
+| finance | `q_entry_mark_reviewed` | 전표 검토 완료 (draft→reviewed) | UPDATE |
+| finance | `q_entry_post_douzone` | 더존 전표번호 확정 (reviewed→posted) | UPDATE |
+| finance | `q_entry_revert_draft` | 검토 취소 (reviewed→draft) | UPDATE |
+| (신규) | `q_workflow_tracker` | 프로젝트별 전체 흐름 타임라인 | SELECT |
+| (신규) | `q_workflow_project_entries` | 프로젝트 전표 전체 조회 | SELECT |
+| 유틸리티 | `q_util_project_dropdown` | 프로젝트 셀렉트 드롭다운 | SELECT |
+| 유틸리티 | `q_util_trigger_check` | 트리거 발동 결과 검증 | SELECT |
+| 유틸리티 | `q_util_verify_gr_entries` | GR-전표 매핑 확인 | SELECT |
+| 유틸리티 | `q_util_pending_review_count` | draft 전표 카운트 (배지) | SELECT |
+
+---
+
 ## 작업 순서
 
 ```
