@@ -410,7 +410,7 @@ def analyze_inbound(records):
         "not_recv_by_partner":dict(sorted(not_recv.items(),key=lambda x:-x[1])),
     }
 
-QC_PASS_VALUES = {"수량 정상", "정상", "합격", "샘플합격"}
+QC_RESOLVED_VALUES = {"이슈 발생 후 해결", "해당 없음"}
 
 def analyze_qc(records):
     """
@@ -450,8 +450,8 @@ def analyze_qc(records):
         qc_res = _sel(c.get(F_QC_RES, {})) or "수량 정상"
         result_dist[qc_res] += 1
 
-        # 검수결과가 정상/합격이면 불량으로 집계하지 않음
-        effective_defect = 0 if qc_res in QC_PASS_VALUES else defect
+        # 검수결과가 "이슈 발생 후 해결"이면 불량 제외 (정상입고 처리 건)
+        effective_defect = 0 if qc_res in QC_RESOLVED_VALUES else defect
         total_defect += effective_defect
 
         # 이슈카테고리

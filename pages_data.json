@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-31T12:09:37",
+  "generated_at": "2026-03-31T13:31:34",
   "report_mode": "weekly_review",
   "period_key": "2026-W13_review",
   "period": {
@@ -10,7 +10,7 @@
   },
   "kpi": {
     "completion_rate": 94.6,
-    "defect_rate": 0.0,
+    "defect_rate": 1.3,
     "picking_total": 248,
     "issue_total": 0
   },
@@ -87,23 +87,42 @@
       "total_qc_qty": 9076,
       "sample_rate": 0.075,
       "actual_qc_cnt": 3,
-      "total_defect": 0,
-      "defect_rate": 0.0,
-      "target_met": true
+      "total_defect": 118,
+      "defect_rate": 1.3,
+      "target_met": false
     },
     "by_week": {
       "W13": {
         "cnt": 276,
         "qc_qty": 8974,
-        "defect": 0,
-        "defect_rate": 0.0
+        "defect": 118,
+        "defect_rate": 1.31
       }
     },
     "result_dist": {
       "수량 정상": 275,
       "이슈 발생 후 해결": 1
     },
-    "defect_by_item": [],
+    "defect_by_item": [
+      {
+        "name": "에센셜장우산",
+        "qc_qty": 101,
+        "defect": 101,
+        "defect_rate": 100.0
+      },
+      {
+        "name": "PT4605-비스포크_산출물(상품) || PNA50463_브릭스탠드멀티충전스테이션 || 에이원지식산업센터",
+        "qc_qty": 50,
+        "defect": 10,
+        "defect_rate": 20.0
+      },
+      {
+        "name": "실크(포터블 피크닉 롤테이블)",
+        "qc_qty": 802,
+        "defect": 7,
+        "defect_rate": 0.87
+      }
+    ],
     "issue_summary": {
       "total_cnt": 276,
       "issue_cnt": 8,
