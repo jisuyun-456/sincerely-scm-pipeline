@@ -34,5 +34,33 @@
 Airtable(AS-IS) → Supabase 51테이블 + NocoDB/Metabase UI + NestJS 백엔드 + 더존 아마란스10 연계(TO-BE)
 현재 위치: Shadow Ledger 운영 중 (Airtable webhook → NestJS → Supabase sap 스키마)
 
+## 에이전트 팀 라우팅
+
+### 프로젝트 특화 에이전트 (세밀한 키워드 우선)
+
+| 키워드 | 에이전트 |
+|--------|---------|
+| 품목코드, 로케이션, 공급사, 바코드, ROP | wms-master-data (SK-01) |
+| 입하, 검수, GR, ASN, AQL, Dock-to-Stock | wms-inbound (SK-02) |
+| 재고 불일치, 사이클카운팅, 음수재고, ADJUST | wms-inventory (SK-03) |
+| 피킹, 패킹, Wave, SSCC, 출고지시 | wms-outbound (SK-04) |
+| 운송장, 택배, 배송추적, POD | tms-shipment (SK-05) |
+| OTIF, KPI 달성률, Dock-to-Stock 시간 | tms-otif-kpi (SK-06) |
+| 반품, 역물류, RESTOCK, DISPOSE | wms-return (SK-07) |
+| 회의록, 회의 분석, 액션아이템 | meeting-analysis (SK-08) |
+
+### 범용 전문가 에이전트 (일반 키워드)
+
+| 키워드 | 에이전트 |
+|--------|---------|
+| 재고 전략, 물류 컨설팅, SCM 개선, 공급망 | scm-logistics-expert (D1) |
+| 분개, 전표, 세금, 기간마감, K-IFRS, 더존 | tax-accounting-expert (D2) |
+| 코드, API, DB, 배포, 아키텍처, 성능 | tech-architect (D3) |
+| UI, 디자인, CSS, 접근성, 컴포넌트 | frontend-design-expert (D4) |
+| 프로젝트 계획, 리스크, KPI, MECE, 일정 | project-manager (D5) |
+| 복합 요청, 종합 분석, 제안서, 전체 리뷰 | orchestrator |
+
+> **라우팅 우선순위:** 프로젝트 특화(세밀한 키워드) > 범용 전문가(일반 키워드)
+
 ## 태스크 관리
 `.claude/feature_list.json` — 전체 태스크 목록 (priority: critical > high > medium > low > done)

@@ -413,4 +413,59 @@ NestJS 기반 RESTful API 개발을 전담합니다.
 
 ---
 
+## 신시어리 SCM 프로젝트 현재 레이어 현황
+
+> 2026-04-01 기준
+
+### 글로벌 설정 (~/.claude/)
+
+| 파일 | 상태 | 내용 |
+|------|------|------|
+| `CLAUDE.md` | 완성 | 5개 전문가 정체성(D1~D5) + 도메인 라우팅 + 워크플로우 사이클 |
+| `settings.json` | 완성 | 7개 플러그인 + Stop/Notification hooks |
+
+### 프로젝트 설정 (.claude/)
+
+| 레이어 | 파일 수 | 상세 |
+|--------|---------|------|
+| **Agents** | 14개 | 범용 5전문가 + orchestrator + 프로젝트 특화 8개(SK-01~SK-08) |
+| **Commands** | 13개 | /start, /bootstrap, /orchestrate + 도메인별 10개 |
+| **Skills** | 10개 | scm/(2), accounting/(3), tech/(2), design/(1), pm/(2) |
+| **Hooks** | 1개 | check-sql-safety.sh (INSERT ONLY 원칙 보호) |
+| **settings.json** | 완성 | permissions + PreToolUse:Bash 훅 |
+
+### 전문가 에이전트 팀 구성
+
+```
+┌─── 범용 전문가 (일반 키워드) ───────────────────────┐
+│ D1 scm-logistics-expert   APICS/SCOR/SAP/GS1     │
+│ D2 tax-accounting-expert  K-IFRS/SAP/더존/CPA     │
+│ D3 tech-architect         SOLID/Clean/12-Factor   │
+│ D4 frontend-design-expert WCAG/Atomic/Web Vitals  │
+│ D5 project-manager        BCG/McKinsey/PMBOK      │
+│    orchestrator            5가지 조합 패턴          │
+├─── 프로젝트 특화 (세밀한 키워드 우선) ──────────────┤
+│ SK-01 wms-master-data    품목/로케이션/공급사      │
+│ SK-02 wms-inbound        입하/검수/입고            │
+│ SK-03 wms-inventory      재고관리/사이클카운팅      │
+│ SK-04 wms-outbound       출고/피킹/패킹            │
+│ SK-05 tms-shipment       출하/배송추적             │
+│ SK-06 tms-otif-kpi       KPI 계산/대시보드         │
+│ SK-07 wms-return         반품/역물류               │
+│ SK-08 meeting-analysis   회의록 분석               │
+└────────────────────────────────────────────────────┘
+```
+
+### 오케스트레이션 패턴
+
+| 패턴 | 조합 | 예시 |
+|------|------|------|
+| 병렬 독립 | D1+D2 병렬 → 통합 | 재고 분석 + 회계 영향 |
+| 순차 파이프라인 | D1→D3→D5 | 프로세스 분석→설계→일정 |
+| 감사/검증 | D2→D3 | 마감→정합성 검증 |
+| 컨설팅 보고서 | D5+D1+D3 → D5 | 개선 제안서 |
+| 풀스택 개발 | D3+D4+D1 worktree | 대시보드 개발 |
+
+---
+
 *Claude Code 공식 문서: https://docs.anthropic.com/claude-code*
