@@ -31,6 +31,14 @@
       "mode_label": "주간 실적",
       "generated_at": "2026-03-21T13:49:18",
       "file": "2026-W11_review.json"
+    },
+    {
+      "key": "2026-03_monthly",
+      "label": "2026년 03월 (지난달)",
+      "mode": "monthly",
+      "mode_label": "월간 실적",
+      "generated_at": "2026-04-01T03:37:46",
+      "file": "2026-03_monthly.json"
     }
   ]
 }
