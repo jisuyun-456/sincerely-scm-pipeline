@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사나의 첫 돌 — 디자인 방향</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#fafafa; font-family:'Inter',sans-serif; overflow-x:hidden; }
+
+  .page-header {
+    text-align:center; padding:80px 24px 40px;
+  }
+  .page-header h1 {
+    font-size:13px; letter-spacing:6px; text-transform:uppercase; color:#666; font-weight:400;
+  }
+  .page-header p {
+    font-size:15px; color:#888; margin-top:12px; font-weight:300;
+  }
+
+  .direction {
+    max-width:1100px; margin:0 auto 120px; padding:0 24px; cursor:pointer;
+    transition: opacity 0.3s;
+  }
+  .direction:hover { opacity:0.95; }
+
+  .direction-label {
+    font-size:11px; letter-spacing:5px; color:#555; text-transform:uppercase; margin-bottom:24px; font-weight:500;
+  }
+
+  .direction-title {
+    font-size:40px; font-weight:200; letter-spacing:-1px; margin-bottom:8px; line-height:1.2;
+  }
+  .direction-sub {
+    font-size:16px; color:#777; font-weight:300; margin-bottom:40px; max-width:600px;
+  }
+
+  /* ─── Direction A: Cinematic Scroll ─── */
+  .hero-a {
+    position:relative; width:100%; aspect-ratio:16/9; max-height:600px;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1410 30%, #2a1f18 60%, #1a1410 100%);
+    border-radius:16px; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  }
+  .hero-a::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(200,160,120,0.15) 0%, transparent 70%);
+  }
+  .hero-a-content { position:relative; text-align:center; z-index:1; }
+  .hero-a-content .name-kr {
+    font-family:'Noto Serif KR',serif; font-size:72px; font-weight:300; letter-spacing:8px;
+    background: linear-gradient(180deg, #fff 0%, #c8a882 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:4px;
+  }
+  .hero-a-content .name-en {
+    font-size:14px; letter-spacing:8px; color:#8a7560; font-weight:300; text-transform:uppercase;
+  }
+  .hero-a-content .divider {
+    width:40px; height:1px; background:linear-gradient(90deg, transparent, #8a7560, transparent);
+    margin:24px auto;
+  }
+  .hero-a-content .tagline {
+    font-size:18px; font-weight:200; color:#b8a08a; letter-spacing:2px;
+  }
+  .hero-a-content .date {
+    font-size:12px; color:#6a5a4a; letter-spacing:4px; margin-top:32px; font-weight:400;
+  }
+
+  .hero-a-scroll-hint {
+    display:flex; gap:48px; justify-content:center; margin-top:32px; padding:24px 0;
+  }
+  .scroll-section {
+    text-align:center; opacity:0.4; transition:opacity 0.3s;
+  }
+  .scroll-section:hover { opacity:1; }
+  .scroll-section .num { font-size:28px; font-weight:200; color:#c8a882; }
+  .scroll-section .label { font-size:10px; letter-spacing:3px; color:#777; margin-top:4px; }
+
+  .detail-a {
+    display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;
+  }
+  .detail-card {
+    background:#111; border:1px solid #1a1a1a; border-radius:12px; padding:24px;
+  }
+  .detail-card h4 { font-size:11px; letter-spacing:3px; color:#666; text-transform:uppercase; margin-bottom:12px; }
+  .detail-card p { font-size:13px; color:#999; line-height:1.8; font-weight:300; }
+  .detail-card .tech { display:inline-block; background:#1a1a1a; color:#888; padding:3px 10px; border-radius:4px; font-size:11px; margin:2px; }
+
+  /* ─── Direction B: Editorial / Magazine ─── */
+  .hero-b {
+    position:relative; width:100%; border-radius:16px; overflow:hidden;
+    background:#faf9f7; color:#1a1a1a; padding:0;
+  }
+  .hero-b-top {
+    display:grid; grid-template-columns:1fr 1fr; min-height:500px;
+  }
+  .hero-b-left {
+    display:flex; flex-direction:column; justify-content:center; padding:60px;
+  }
+  .hero-b-left .issue {
+    font-size:10px; letter-spacing:5px; color:#bbb; text-transform:uppercase; margin-bottom:32px;
+  }
+  .hero-b-left .name-kr {
+    font-family:'Noto Serif KR',serif; font-size:64px; font-weight:600; color:#1a1a1a;
+    line-height:1.1; margin-bottom:8px;
+  }
+  .hero-b-left .name-en {
+    font-size:16px; letter-spacing:6px; color:#999; font-weight:300; text-transform:uppercase;
+  }
+  .hero-b-left .divider {
+    width:60px; height:2px; background:#1a1a1a; margin:28px 0;
+  }
+  .hero-b-left .tagline {
+    font-size:15px; color:#666; line-height:1.8; font-weight:300; max-width:320px;
+  }
+  .hero-b-right {
+    background: linear-gradient(135deg, #e8e2da, #f5f0ea);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  .hero-b-right::after {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(circle at 60% 50%, rgba(255,255,255,0.3), transparent 70%);
+  }
+  .photo-placeholder-b {
+    width:240px; height:320px; border-radius:8px;
+    background:rgba(255,255,255,0.6); display:flex; align-items:center; justify-content:center;
+    font-size:64px; position:relative; z-index:1;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  }
+
+  .hero-b-timeline {
+    display:flex; border-top:1px solid #e5e0da; background:#faf9f7;
+  }
+  .hero-b-timeline .month {
+    flex:1; padding:20px; text-align:center; border-right:1px solid #e5e0da;
+    transition: background 0.3s;
+  }
+  .hero-b-timeline .month:last-child { border-right:none; }
+  .hero-b-timeline .month:hover { background:#f0ebe4; }
+  .hero-b-timeline .month .m-num { font-size:20px; font-weight:600; color:#1a1a1a; }
+  .hero-b-timeline .month .m-label { font-size:9px; color:#999; letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
+
+  /* ─── Direction C: Anthropic-Style Gradient ─── */
+  .hero-c {
+    position:relative; width:100%; aspect-ratio:16/9; max-height:600px;
+    border-radius:16px; overflow:hidden;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #24243e 100%);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hero-c::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(200,140,255,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(120,180,255,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,180,200,0.06) 0%, transparent 60%);
+  }
+  .hero-c::after {
+    content:''; position:absolute; inset:0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity:0.5;
+  }
+  .hero-c-content { position:relative; z-index:1; text-align:center; }
+  .hero-c-content .badge {
+    display:inline-block; border:1px solid rgba(255,255,255,0.15); border-radius:20px;
+    padding:6px 20px; font-size:11px; letter-spacing:3px; color:rgba(255,255,255,0.5);
+    margin-bottom:32px; backdrop-filter:blur(4px);
+  }
+  .hero-c-content .name-kr {
+    font-family:'Noto Serif KR',serif; font-size:80px; font-weight:300;
+    background: linear-gradient(135deg, #fff 0%, #c8b0ff 50%, #ffb8d0 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:8px; letter-spacing:4px;
+  }
+  .hero-c-content .name-en {
+    font-size:15px; letter-spacing:8px; color:rgba(255,255,255,0.35); font-weight:300;
+  }
+  .hero-c-content .hero-desc {
+    font-size:17px; font-weight:200; color:rgba(255,255,255,0.5); margin-top:28px;
+    max-width:500px; line-height:1.8; margin-left:auto; margin-right:auto;
+  }
+
+  .hero-c-features {
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-top:32px;
+  }
+  .feature-card {
+    background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+    border-radius:12px; padding:24px; text-align:center;
+    backdrop-filter:blur(8px); transition:all 0.3s;
+  }
+  .feature-card:hover {
+    background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.12);
+    transform:translateY(-2px);
+  }
+  .feature-card .icon { font-size:28px; margin-bottom:12px; }
+  .feature-card h4 { font-size:13px; font-weight:500; margin-bottom:6px; color:#e0d0ff; }
+  .feature-card p { font-size:12px; color:rgba(255,255,255,0.4); line-height:1.6; }
+
+  /* ─── Selection indicator ─── */
+  .pick-badge {
+    display:inline-block; margin-top:20px; padding:8px 20px; border-radius:8px;
+    font-size:12px; letter-spacing:2px; cursor:pointer; transition:all 0.3s;
+    border:1px solid #333; color:#888;
+  }
+  .pick-badge:hover { border-color:#666; color:#fff; }
+  .direction.selected .pick-badge { border-color:#c8a882; color:#c8a882; background:rgba(200,168,130,0.08); }
+
+  /* ─── Recommendation ─── */
+  .recommend {
+    max-width:1100px; margin:0 auto 80px; padding:0 24px;
+    text-align:center;
+  }
+  .recommend p {
+    font-size:14px; color:#666; line-height:2; font-weight:300;
+  }
+  .recommend strong { color:#999; font-weight:500; }
+</style>
+<script>
+  function selectDirection(el) {
+    document.querySelectorAll('.direction').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+    const choice = el.dataset.choice;
+    // Record selection
+    if (window.__recordChoice) window.__recordChoice(choice);
+  }
+</script>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Design Direction</h1>
+  <p>Apple · Anthropic 수준의 프리미엄 홈페이지 — 3가지 방향</p>
+</div>
+
+<!-- ═══════ A: CINEMATIC DARK ═══════ -->
+<div class="direction" data-choice="a" onclick="selectDirection(this)">
+  <div class="direction-label">Direction A</div>
+  <div class="direction-title">Cinematic Dark</div>
+  <div class="direction-sub">Apple 제품 페이지처럼. 어두운 배경 위에 사나의 사진이 극적으로 떠오르는 풀스크린 시네마틱 경험.</div>
+
+  <div class="hero-a">
+    <div class="hero-a-content">
+      <div class="name-kr">사나</div>
+      <div class="name-en">Sana Yun</div>
+      <div class="divider"></div>
+      <div class="tagline">The First 365 Days</div>
+      <div class="date">2025. 05. 28 — 2026. 05. 24</div>
+    </div>
+  </div>
+
+  <div class="hero-a-scroll-hint">
+    <div class="scroll-section"><div class="num">01</div><div class="label">Birth</div></div>
+    <div class="scroll-section"><div class="num">02</div><div class="label">100 Days</div></div>
+    <div class="scroll-section"><div class="num">03</div><div class="label">First Steps</div></div>
+    <div class="scroll-section"><div class="num">04</div><div class="label">365 Days</div></div>
+  </div>
+
+  <div class="detail-a">
+    <div class="detail-card">
+      <h4>Interaction</h4>
+      <p>스크롤에 따라 사진이 페이드인/줌, 텍스트가 시차를 두고 등장. GSAP ScrollTrigger 기반의 시네마틱 트랜지션.</p>
+    </div>
+    <div class="detail-card">
+      <h4>Tech Stack</h4>
+      <p>
+        <span class="tech">Next.js 15</span>
+        <span class="tech">Framer Motion</span>
+        <span class="tech">GSAP</span>
+        <span class="tech">Tailwind CSS</span>
+        <span class="tech">Vercel</span>
+      </p>
+    </div>
+  </div>
+  <div style="text-align:center"><div class="pick-badge">SELECT THIS DIRECTION</div></div>
+</div>
+
+<!-- ═══════ B: EDITORIAL LIGHT ═══════ -->
+<div class="direction" data-choice="b" onclick="selectDirection(this)">
+  <div class="direction-label">Direction B</div>
+  <div class="direction-title">Editorial Light</div>
+  <div class="direction-sub">고급 매거진 화보처럼. 밝은 배경에 대담한 타이포그래피와 격자 레이아웃. 사진이 지면 위에 놓인 듯한 느낌.</div>
+
+  <div class="hero-b">
+    <div class="hero-b-top">
+      <div class="hero-b-left">
+        <div class="issue">Vol. 01 — First Year</div>
+        <div class="name-kr">사나</div>
+        <div class="name-en">Sana Yun</div>
+        <div class="divider"></div>
+        <div class="tagline">태어난 날부터 첫 생일까지,<br>362일간의 이야기를<br>한 권의 화보로 담았습니다.</div>
+      </div>
+      <div class="hero-b-right">
+        <div class="photo-placeholder-b">📸</div>
+      </div>
+    </div>
+    <div class="hero-b-timeline">
+      <div class="month"><div class="m-num">1</div><div class="m-label">Jun '25</div></div>
+      <div class="month"><div class="m-num">2</div><div class="m-label">Jul</div></div>
+      <div class="month"><div class="m-num">3</div><div class="m-label">Aug</div></div>
+      <div class="month"><div class="m-num">4</div><div class="m-label">Sep</div></div>
+      <div class="month"><div class="m-num">5</div><div class="m-label">Oct</div></div>
+      <div class="month"><div class="m-num">6</div><div class="m-label">Nov</div></div>
+      <div class="month"><div class="m-num">7</div><div class="m-label">Dec</div></div>
+      <div class="month"><div class="m-num">8</div><div class="m-label">Jan '26</div></div>
+      <div class="month"><div class="m-num">9</div><div class="m-label">Feb</div></div>
+      <div class="month"><div class="m-num">10</div><div class="m-label">Mar</div></div>
+      <div class="month"><div class="m-num">11</div><div class="m-label">Apr</div></div>
+      <div class="month"><div class="m-num">12</div><div class="m-label">May</div></div>
+    </div>
+  </div>
+
+  <div class="detail-a" style="margin-top:32px;">
+    <div class="detail-card">
+      <h4>Interaction</h4>
+      <p>매거진 스프레드처럼 섹션별 스냅 스크롤. 월별 타임라인 클릭 시 해당 시기 사진 갤러리로 스무스 전환. CSS Grid 기반 마소닉 레이아웃.</p>
+    </div>
+    <div class="detail-card">
+      <h4>Tech Stack</h4>
+      <p>
+        <span class="tech">Next.js 15</span>
+        <span class="tech">Framer Motion</span>
+        <span class="tech">CSS Grid</span>
+        <span class="tech">Tailwind CSS</span>
+        <span class="tech">Vercel</span>
+      </p>
+    </div>
+  </div>
+  <div style="text-align:center"><div class="pick-badge">SELECT THIS DIRECTION</div></div>
+</div>
+
+<!-- ═══════ C: GRADIENT GLOW ═══════ -->
+<div class="direction" data-choice="c" onclick="selectDirection(this)">
+  <div class="direction-label">Direction C — Recommended</div>
+  <div class="direction-title">Gradient Glow</div>
+  <div class="direction-sub">Anthropic 홈페이지처럼. 깊은 다크 배경 위로 은은한 그라데이션 빛이 흐르고, 사진이 빛 속에서 나타나는 몽환적 경험.</div>
+
+  <div class="hero-c">
+    <div class="hero-c-content">
+      <div class="badge">★ FIRST BIRTHDAY</div>
+      <div class="name-kr">사나</div>
+      <div class="name-en">Sana Yun</div>
+      <div class="hero-desc">365일의 기적 같은 순간들.<br>처음 웃던 날, 처음 뒤집던 날, 처음 걸음마를 뗀 날.</div>
+    </div>
+  </div>
+
+  <div class="hero-c-features">
+    <div class="feature-card">
+      <div class="icon">📖</div>
+      <h4>스토리 타임라인</h4>
+      <p>스크롤하면 월별 이야기가 빛과 함께 펼쳐집니다</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🖼️</div>
+      <h4>시네마틱 갤러리</h4>
+      <p>사진이 하나씩 극적으로 등장하는 풀스크린 뷰어</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">✨</div>
+      <h4>인터랙티브 모션</h4>
+      <p>마우스/터치에 반응하는 파티클과 글로우 이펙트</p>
+    </div>
+  </div>
+
+  <div class="detail-a" style="margin-top:24px;">
+    <div class="detail-card">
+      <h4>Interaction</h4>
+      <p>배경 그라데이션이 스크롤에 따라 색상 변화. 사진에 마우스 오버 시 주변 글로우 반응. Three.js 파티클 or CSS 그라데이션 애니메이션.</p>
+    </div>
+    <div class="detail-card">
+      <h4>Tech Stack</h4>
+      <p>
+        <span class="tech">Next.js 15</span>
+        <span class="tech">Framer Motion</span>
+        <span class="tech">Three.js (optional)</span>
+        <span class="tech">Tailwind CSS</span>
+        <span class="tech">Vercel</span>
+      </p>
+    </div>
+  </div>
+  <div style="text-align:center"><div class="pick-badge">SELECT THIS DIRECTION</div></div>
+</div>
+
+<div class="recommend">
+  <p>
+    <strong>제 추천: C (Gradient Glow)</strong><br>
+    Anthropic 스타일의 깊은 다크 + 그라데이션 글로우가 사진을 가장 극적으로 보여줍니다.<br>
+    딸아이의 사진이 빛 속에서 떠오르는 느낌 — 감성적이면서도 프리미엄.<br>
+    A의 시네마틱 스크롤 인터랙션을 결합하면 최고의 조합이 됩니다.
+  </p>
+</div>
+
+</body>
+</html>

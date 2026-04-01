@@ -43,6 +43,4 @@ psql $SUPABASE_DB_URL -f supabase/seed/006_operational_data.sql
 ```
 
 ## 완료 후
-- feature_list.json 해당 태스크 passes: true 업데이트
 - git commit with migration tag
-- claude-progress.txt 기록

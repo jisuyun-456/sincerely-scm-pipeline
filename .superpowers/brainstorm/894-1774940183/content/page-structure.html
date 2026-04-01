@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사나의 첫 돌 — 페이지 구조</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a0a; color:#fafafa; font-family:'Inter',sans-serif; }
+
+  .page-header {
+    text-align:center; padding:60px 24px 20px;
+  }
+  .page-header h1 { font-size:12px; letter-spacing:6px; color:#555; font-weight:400; text-transform:uppercase; }
+  .page-header p { font-size:14px; color:#777; margin-top:8px; font-weight:300; }
+  .page-header .combo {
+    display:inline-block; margin-top:12px; padding:6px 16px; border-radius:20px;
+    border:1px solid rgba(200,140,255,0.2); font-size:11px; color:rgba(200,176,255,0.7); letter-spacing:2px;
+    background:rgba(200,140,255,0.04);
+  }
+
+  .site-label {
+    max-width:1000px; margin:40px auto 0; padding:0 24px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .site-label .badge {
+    background:rgba(200,140,255,0.1); border:1px solid rgba(200,140,255,0.2);
+    padding:4px 14px; border-radius:12px; font-size:11px; color:#c8b0ff; letter-spacing:1px;
+  }
+  .site-label .desc { font-size:13px; color:#666; font-weight:300; }
+
+  .section-flow {
+    max-width:1000px; margin:24px auto 0; padding:0 24px;
+  }
+
+  .flow-section {
+    position:relative; border-left:2px solid #1a1a1a; padding:0 0 48px 40px; margin-left:12px;
+  }
+  .flow-section:last-child { border-left-color:transparent; padding-bottom:0; }
+
+  .flow-section::before {
+    content:''; position:absolute; left:-7px; top:0;
+    width:12px; height:12px; border-radius:50%;
+    border:2px solid #333; background:#0a0a0a;
+  }
+  .flow-section.hero-sec::before { border-color:#c8b0ff; background:#c8b0ff; box-shadow:0 0 12px rgba(200,176,255,0.4); }
+  .flow-section.story-sec::before { border-color:#ffb8d0; background:#ffb8d0; box-shadow:0 0 12px rgba(255,184,208,0.4); }
+  .flow-section.gallery-sec::before { border-color:#80b0ff; background:#80b0ff; box-shadow:0 0 12px rgba(128,176,255,0.4); }
+  .flow-section.invite-sec::before { border-color:#80dfc8; background:#80dfc8; box-shadow:0 0 12px rgba(128,223,200,0.4); }
+  .flow-section.footer-sec::before { border-color:#ffd080; background:#ffd080; box-shadow:0 0 12px rgba(255,208,128,0.4); }
+
+  .flow-num { font-size:10px; letter-spacing:4px; color:#555; text-transform:uppercase; margin-bottom:8px; }
+  .flow-title { font-size:22px; font-weight:300; margin-bottom:6px; letter-spacing:-0.5px; }
+  .flow-desc { font-size:13px; color:#777; line-height:1.8; font-weight:300; max-width:600px; margin-bottom:16px; }
+
+  .flow-mockup {
+    border-radius:12px; overflow:hidden; border:1px solid #1a1a1a;
+  }
+
+  /* ─── Hero Section Mockup ─── */
+  .mock-hero {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #24243e 100%);
+    padding:48px 32px; text-align:center; position:relative; min-height:280px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+  }
+  .mock-hero::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(200,140,255,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(120,180,255,0.08) 0%, transparent 50%);
+  }
+  .mock-hero * { position:relative; z-index:1; }
+  .mock-hero .h-badge {
+    border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:4px 16px;
+    font-size:10px; letter-spacing:3px; color:rgba(255,255,255,0.4); margin-bottom:20px; display:inline-block;
+  }
+  .mock-hero .h-name {
+    font-family:'Noto Serif KR',serif; font-size:52px; font-weight:300;
+    background:linear-gradient(135deg, #fff 0%, #c8b0ff 50%, #ffb8d0 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:4px;
+  }
+  .mock-hero .h-en { font-size:13px; letter-spacing:6px; color:rgba(255,255,255,0.3); margin-top:4px; }
+  .mock-hero .h-tagline { font-size:15px; color:rgba(255,255,255,0.4); margin-top:20px; font-weight:200; }
+  .mock-hero .h-scroll {
+    margin-top:28px; font-size:10px; letter-spacing:3px; color:rgba(255,255,255,0.2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:0.3; } 50% { opacity:0.8; } }
+
+  /* ─── Story Timeline Mockup ─── */
+  .mock-story {
+    background:#0d0d12; padding:40px 32px;
+  }
+  .story-month-row {
+    display:flex; gap:16px; align-items:stretch; margin-bottom:24px;
+  }
+  .story-month-label {
+    width:80px; flex-shrink:0; text-align:right; padding-top:8px;
+  }
+  .story-month-label .m-num { font-size:32px; font-weight:200; color:#c8b0ff; }
+  .story-month-label .m-name { font-size:10px; letter-spacing:2px; color:#555; }
+  .story-month-content {
+    flex:1; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05);
+    border-radius:12px; padding:20px; display:flex; gap:16px; align-items:center;
+    transition:all 0.3s;
+  }
+  .story-month-content:hover {
+    background:rgba(200,140,255,0.04); border-color:rgba(200,140,255,0.15);
+  }
+  .story-photo-placeholder {
+    width:80px; height:80px; border-radius:8px; flex-shrink:0;
+    background:linear-gradient(135deg, rgba(200,140,255,0.15), rgba(255,184,208,0.15));
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+  }
+  .story-text h4 { font-size:14px; font-weight:400; margin-bottom:4px; }
+  .story-text p { font-size:12px; color:#666; line-height:1.6; font-weight:300; }
+
+  /* ─── Gallery Mockup ─── */
+  .mock-gallery {
+    background:#08080c; padding:40px 32px;
+  }
+  .gallery-grid {
+    display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:200px 140px; gap:8px;
+  }
+  .g-item {
+    border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-size:20px; transition:all 0.3s; cursor:pointer; position:relative; overflow:hidden;
+  }
+  .g-item:hover { transform:scale(1.02); }
+  .g-item::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.4) 100%);
+  }
+  .g-item:nth-child(1) { grid-column:1/3; background:linear-gradient(135deg, #1a1430, #2a1f3e); }
+  .g-item:nth-child(2) { background:linear-gradient(135deg, #1a1025, #25182f); }
+  .g-item:nth-child(3) { background:linear-gradient(135deg, #151020, #1f1530); }
+  .g-item:nth-child(4) { background:linear-gradient(135deg, #18102a, #221838); }
+  .g-item:nth-child(5) { background:linear-gradient(135deg, #120e22, #1c1530); }
+
+  /* ─── Invite Section Mockup ─── */
+  .mock-invite {
+    background:linear-gradient(180deg, #0d0d14, #12101e); padding:40px 32px; text-align:center;
+  }
+  .invite-card {
+    max-width:400px; margin:0 auto;
+    background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+    border-radius:16px; padding:32px; backdrop-filter:blur(8px);
+  }
+  .invite-card .i-icon { font-size:32px; margin-bottom:16px; }
+  .invite-card h3 { font-size:18px; font-weight:300; margin-bottom:8px; }
+  .invite-card p { font-size:13px; color:#666; line-height:1.8; margin-bottom:20px; }
+  .invite-info {
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; text-align:left;
+  }
+  .invite-info-item {
+    background:rgba(255,255,255,0.02); border-radius:8px; padding:12px;
+  }
+  .invite-info-item .label { font-size:9px; letter-spacing:2px; color:#555; text-transform:uppercase; }
+  .invite-info-item .value { font-size:13px; color:#ccc; margin-top:4px; font-weight:300; }
+
+  /* ─── Footer Mockup ─── */
+  .mock-footer {
+    background:#08080a; padding:32px; text-align:center;
+    border-top:1px solid #1a1a1a;
+  }
+  .mock-footer p { font-size:12px; color:#444; font-weight:300; }
+  .mock-footer .heart { color:#ffb8d0; }
+
+  /* ─── Interaction Tags ─── */
+  .interactions {
+    display:flex; flex-wrap:wrap; gap:6px; margin-top:12px;
+  }
+  .int-tag {
+    display:inline-flex; align-items:center; gap:4px;
+    background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+    padding:4px 10px; border-radius:6px; font-size:10px; color:#888; letter-spacing:0.5px;
+  }
+  .int-tag .dot { width:5px; height:5px; border-radius:50%; }
+  .int-tag .dot.motion { background:#c8b0ff; }
+  .int-tag .dot.scroll { background:#ffb8d0; }
+  .int-tag .dot.hover { background:#80b0ff; }
+
+  /* ─── Separator ─── */
+  .site-separator {
+    max-width:1000px; margin:60px auto; padding:0 24px;
+    display:flex; align-items:center; gap:20px;
+  }
+  .site-separator .line { flex:1; height:1px; background:linear-gradient(90deg, transparent, #222, transparent); }
+  .site-separator .text { font-size:10px; letter-spacing:4px; color:#444; }
+
+  /* ─── Site 2: Archive ─── */
+  .archive-preview {
+    max-width:1000px; margin:0 auto; padding:0 24px 80px;
+  }
+  .archive-card {
+    background:#111; border:1px solid #1a1a1a; border-radius:16px; padding:40px;
+    display:grid; grid-template-columns:1fr 1fr; gap:40px;
+  }
+  .archive-left h3 { font-size:20px; font-weight:300; margin-bottom:12px; }
+  .archive-left p { font-size:13px; color:#777; line-height:1.8; font-weight:300; margin-bottom:16px; }
+  .archive-feature-list { list-style:none; }
+  .archive-feature-list li {
+    padding:8px 0; border-bottom:1px solid #1a1a1a; font-size:13px; color:#999;
+    display:flex; align-items:center; gap:8px;
+  }
+  .archive-feature-list li::before { content:'→'; color:#c8b0ff; }
+  .archive-right {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  }
+  .archive-thumb {
+    aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .archive-thumb:nth-child(1) { background:linear-gradient(135deg, #1a1430, #251f3a); }
+  .archive-thumb:nth-child(2) { background:linear-gradient(135deg, #1a1025, #201530); }
+  .archive-thumb:nth-child(3) { background:linear-gradient(135deg, #15102a, #1c1535); }
+  .archive-thumb:nth-child(4) { background:linear-gradient(135deg, #120e20, #1a1230); }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Page Structure</h1>
+  <p>Gradient Glow + Cinematic Scroll — 전체 페이지 흐름</p>
+  <div class="combo">C · GRADIENT GLOW × A · CINEMATIC SCROLL</div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- SITE 1: 돌잔치 초대 + 성장 기록      -->
+<!-- ═══════════════════════════════════ -->
+<div class="site-label">
+  <div class="badge">SITE 1</div>
+  <div class="desc">돌잔치 초대 + 성장 기록 — 원페이지 스크롤</div>
+</div>
+
+<div class="section-flow">
+
+  <!-- Section 1: Hero -->
+  <div class="flow-section hero-sec">
+    <div class="flow-num">Section 01</div>
+    <div class="flow-title">Hero — 첫인상</div>
+    <div class="flow-desc">
+      풀스크린 다크 배경. 이름이 그라데이션 글로우로 떠오르고, 스크롤 힌트가 아래로 유도합니다.
+      배경에 은은한 파티클 or 그라데이션 오브 움직임.
+    </div>
+    <div class="interactions">
+      <div class="int-tag"><div class="dot motion"></div>이름 페이드인 (0.8s)</div>
+      <div class="int-tag"><div class="dot motion"></div>배경 그라데이션 시프트</div>
+      <div class="int-tag"><div class="dot scroll"></div>스크롤 시 패럴렉스 줌아웃</div>
+    </div>
+    <div class="flow-mockup" style="margin-top:16px;">
+      <div class="mock-hero">
+        <div class="h-badge">★ 2026. 05. 24</div>
+        <div class="h-name">사나</div>
+        <div class="h-en">SANA YUN</div>
+        <div class="h-tagline">The First 365 Days</div>
+        <div class="h-scroll">↓ SCROLL TO EXPLORE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Story Timeline -->
+  <div class="flow-section story-sec">
+    <div class="flow-num">Section 02</div>
+    <div class="flow-title">Story Timeline — 월별 성장 기록</div>
+    <div class="flow-desc">
+      스크롤하면 월별 카드가 시차를 두고 등장. 각 월마다 대표 사진 1장 + 짧은 에피소드.
+      왼쪽에 월 숫자가 크게, 오른쪽에 사진+텍스트. 스크롤할수록 배경 그라데이션 색상이 미묘하게 변화.
+    </div>
+    <div class="interactions">
+      <div class="int-tag"><div class="dot scroll"></div>카드 스태거 페이드인</div>
+      <div class="int-tag"><div class="dot scroll"></div>배경색 그라데이션 전환</div>
+      <div class="int-tag"><div class="dot hover"></div>카드 호버 시 글로우</div>
+    </div>
+    <div class="flow-mockup" style="margin-top:16px;">
+      <div class="mock-story">
+        <div class="story-month-row">
+          <div class="story-month-label">
+            <div class="m-num">01</div>
+            <div class="m-name">JUN '25</div>
+          </div>
+          <div class="story-month-content">
+            <div class="story-photo-placeholder">👶</div>
+            <div class="story-text">
+              <h4>세상에 온 날</h4>
+              <p>2025년 5월 28일, 3.2kg의 작은 기적이 찾아왔습니다. 처음 눈을 뜬 순간...</p>
+            </div>
+          </div>
+        </div>
+        <div class="story-month-row">
+          <div class="story-month-label">
+            <div class="m-num">02</div>
+            <div class="m-name">JUL</div>
+          </div>
+          <div class="story-month-content">
+            <div class="story-photo-placeholder">😊</div>
+            <div class="story-text">
+              <h4>처음 웃던 날</h4>
+              <p>방긋 웃는 모습에 온 가족이 녹아내렸어요...</p>
+            </div>
+          </div>
+        </div>
+        <div class="story-month-row" style="opacity:0.4;">
+          <div class="story-month-label">
+            <div class="m-num">...</div>
+            <div class="m-name"></div>
+          </div>
+          <div class="story-month-content">
+            <div class="story-photo-placeholder" style="opacity:0.5;">📸</div>
+            <div class="story-text">
+              <h4 style="color:#555;">12개월의 이야기가 이어집니다</h4>
+              <p></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Gallery -->
+  <div class="flow-section gallery-sec">
+    <div class="flow-num">Section 03</div>
+    <div class="flow-title">Gallery — 시네마틱 포토</div>
+    <div class="flow-desc">
+      벤토 그리드 레이아웃의 사진 갤러리. 클릭하면 풀스크린 라이트박스로 확대.
+      사진 위에 은은한 글로우 오버레이. 스크롤 시 사진이 하나씩 스케일업되며 나타남.
+    </div>
+    <div class="interactions">
+      <div class="int-tag"><div class="dot scroll"></div>사진 스케일업 reveal</div>
+      <div class="int-tag"><div class="dot hover"></div>호버 시 글로우 + 캡션</div>
+      <div class="int-tag"><div class="dot motion"></div>라이트박스 전환</div>
+    </div>
+    <div class="flow-mockup" style="margin-top:16px;">
+      <div class="mock-gallery">
+        <div class="gallery-grid">
+          <div class="g-item">📸</div>
+          <div class="g-item">📸</div>
+          <div class="g-item">📸</div>
+          <div class="g-item">📸</div>
+          <div class="g-item">📸</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Invitation -->
+  <div class="flow-section invite-sec">
+    <div class="flow-num">Section 04</div>
+    <div class="flow-title">Invitation — 돌잔치 안내</div>
+    <div class="flow-desc">
+      글래스모피즘 카드 안에 날짜, 시간, 장소, 약도를 깔끔하게 정리.
+      카카오맵 연동 버튼 포함.
+    </div>
+    <div class="interactions">
+      <div class="int-tag"><div class="dot scroll"></div>카드 슬라이드업</div>
+      <div class="int-tag"><div class="dot hover"></div>버튼 글로우</div>
+    </div>
+    <div class="flow-mockup" style="margin-top:16px;">
+      <div class="mock-invite">
+        <div class="invite-card">
+          <div class="i-icon">💌</div>
+          <h3>돌잔치에 초대합니다</h3>
+          <p>사나의 첫 번째 생일을 함께 축하해주세요</p>
+          <div class="invite-info">
+            <div class="invite-info-item">
+              <div class="label">Date</div>
+              <div class="value">2026. 05. 24 (일)</div>
+            </div>
+            <div class="invite-info-item">
+              <div class="label">Time</div>
+              <div class="value">오전 11:00</div>
+            </div>
+            <div class="invite-info-item">
+              <div class="label">Venue</div>
+              <div class="value">장소 미정</div>
+            </div>
+            <div class="invite-info-item">
+              <div class="label">Map</div>
+              <div class="value" style="color:#c8b0ff;">📍 지도 보기 →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Footer -->
+  <div class="flow-section footer-sec">
+    <div class="flow-num">Section 05</div>
+    <div class="flow-title">Footer</div>
+    <div class="flow-desc">
+      심플하게 가족 이름 + "Made with love" 한 줄.
+    </div>
+    <div class="flow-mockup" style="margin-top:16px;">
+      <div class="mock-footer">
+        <p>Made with <span class="heart">♥</span> by 윤 Family</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- SITE 2: 추억 보관용 아카이브           -->
+<!-- ═══════════════════════════════════ -->
+<div class="site-separator">
+  <div class="line"></div>
+  <div class="text">SITE 2</div>
+  <div class="line"></div>
+</div>
+
+<div class="site-label" style="margin-top:0;">
+  <div class="badge" style="background:rgba(255,208,128,0.1); border-color:rgba(255,208,128,0.2); color:#ffd080;">SITE 2</div>
+  <div class="desc">추억 보관용 아카이브 — 장기 보관, 가족 전용</div>
+</div>
+
+<div class="archive-preview">
+  <div class="archive-card" style="margin-top:24px;">
+    <div class="archive-left">
+      <h3>Sana's Archive</h3>
+      <p>돌잔치가 끝난 후에도 오래 간직할 수 있는 디지털 앨범. 같은 디자인 시스템을 공유하되, 초대 섹션 대신 더 풍성한 갤러리와 기록에 집중합니다.</p>
+      <ul class="archive-feature-list">
+        <li>월별 포토 갤러리 (무제한 사진)</li>
+        <li>성장 기록 (키/몸무게/이정표)</li>
+        <li>가족 메시지 보드</li>
+        <li>동일한 Gradient Glow 테마</li>
+        <li>돌잔치 사이트와 링크 연결</li>
+      </ul>
+    </div>
+    <div class="archive-right">
+      <div class="archive-thumb">📸</div>
+      <div class="archive-thumb">📸</div>
+      <div class="archive-thumb">📸</div>
+      <div class="archive-thumb">📸</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

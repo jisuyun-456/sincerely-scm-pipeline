@@ -3,12 +3,10 @@
 신시어리 포장재 물류팀 SCM 시스템. Airtable 운영 데이터를 Supabase PostgreSQL 불변 원장으로 마이그레이션 중.
 
 ## 이 프로젝트 열면 자동 실행
-다른 것보다 먼저, 아래 3개를 즉시 실행할 것:
-1. `cat .claude/claude-progress.txt` → 이전 세션 파악
-2. `cat .claude/feature_list.json` → 미완료 태스크 파악
-3. `git log --oneline -5` → 최근 작업 히스토리 확인
+다른 것보다 먼저, 아래를 즉시 실행할 것:
+1. `git log --oneline -10` → 최근 작업 히스토리 확인
 실행 후 "현재 상태 요약 + 다음 추천 태스크 1개"를 나에게 말해줄 것.
-세션 종료 시: git commit + claude-progress.txt 업데이트 필수.
+세션 종료 시: git commit 필수.
 
 ## 데이터 정합성 원칙
 - Airtable: 운영 입력 레이어 — API로만 읽기, 직접 수정 금지
