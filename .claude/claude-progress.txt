@@ -25,7 +25,7 @@
       - 드롭다운 쿼리 2개 추가 (q_gr_po_dropdown, q_gr_parts_dropdown)
       - 페이지 타이틀 한글화 (구매/발주, 입고/검수 등)
       - 총 10페이지, ~40개 쿼리 운영 중
-다음 세션: E2E 테스트 (프로젝트 1개로 Dashboard→배송→회계까지), 백엔드 critical
+다음 세션: E2E 테스트 (프로젝트 1개로 Dashboard→배송→회계까지), 백엔드 high
 
 ## 2026-03-30 (세션 3)
 완료: Retool 9페이지 + Skills 4개 + Docs 3개
@@ -38,7 +38,7 @@
       - Skills 신규 4개: accounting-period-close, accounting-invoice-match, db-data-integrity, db-query-optimizer
       - Docs 3개: project_workflows.md (25개 프로젝트), retool_page_setup.md, retool_setup_guide.md
       - 핵심: shared.clients.company_name (client_name 아님), shared.users.name (display_name 아님), shared.projects.fulfillment_lead_time (lead_time_days 아님)
-다음 세션: Retool UI 디자인 개선 (레이아웃/컬럼 포맷팅), 또는 백필 음수 에러 / Railway 배포
+다음 세션: Retool UI 디자인 개선 (레이아웃/컬럼 포맷팅), 또는 Railway 배포
 
 ## 2026-03-30 (세션 2)
 완료: SCM 배포 Step 4~7 전체 완료
@@ -48,7 +48,7 @@
       - Step 7: 최종 확인 (projects 25건, active:20/completed:5 차트 생성)
       - 핵심: Supabase ap-south-1 리전 → aws-1-ap-south-1 pooler 사용 (ap-northeast-2 아님)
       - Docker DNS 8.8.8.8 설정 필요 (WSL2 DNS 해결)
-다음 세션: /start 실행 → critical 태스크 (백필 음수 에러, Railway 배포)
+다음 세션: /start 실행 → high 태스크
 
 ## 2026-03-30 (세션 1)
 완료: CLAUDE.md 계층 구조 + 하네스 설정 완성
@@ -58,5 +58,5 @@
       - .claude/skills/ 3개 (sap-movement, k-ifrs-ledger, pdf-pipeline)
       - .claude/feature_list.json 46개 항목 (done:22, critical:2, high:5, medium:9, low:8)
       - .claude/claude-progress.txt 초기화
-미완료: feature_list.json critical 항목 2건 (백필 음수 에러, Railway 배포)
+미완료: feature_list.json critical 없음, high 3건
 다음 세션: /start 실행 → critical 태스크 선택

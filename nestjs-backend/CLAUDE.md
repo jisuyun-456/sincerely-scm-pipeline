@@ -18,4 +18,4 @@
 - MOVEMENT_TYPE_MAP에 '생산샘플' 미등록 → skipped_unknown_type 발생
 
 ## 향후 방향
-Railway 배포 → 백필 에러 해결 → mat_master 자동등록 → TypeORM 연결 → 전체 모듈 활성화
+mat_master 자동등록 → TypeORM 연결 → 전체 모듈 활성화

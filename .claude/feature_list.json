@@ -29,20 +29,6 @@
   },
   {
     "domain": "nestjs-backend",
-    "task": "backfill-movements dry-run 구현",
-    "detail": "과거 movement 전체 시뮬레이션, 음수 재고 에러 목록 사전 확인. backfill-dryrun-errors.json 생성됨",
-    "passes": true,
-    "priority": "done"
-  },
-  {
-    "domain": "nestjs-backend",
-    "task": "백필 실행 (8400+ 이동문서)",
-    "detail": "1월~현재 movement 전체 Supabase 적재. 대부분 성공, 일부 에러(~80건 재고 부족) 및 스킵(unknown_type, zero_qty) 발생",
-    "passes": true,
-    "priority": "done"
-  },
-  {
-    "domain": "nestjs-backend",
     "task": "8 Agent + 9 Command + 3 Skill 정의",
     "detail": "테스트/.claude/ 하위에 wms-*, tms-*, meeting-analysis 에이전트, 커맨드, backfill/railway/scm-tdd 스킬 정의 완료",
     "passes": true,
@@ -155,20 +141,6 @@
   },
   {
     "domain": "nestjs-backend",
-    "task": "백필 음수 재고 에러 해결 (~80건)",
-    "detail": "backfill-errors.json: PT1197(-1005개→-1206개), PT1093(-9453개→-9663개) 등. 입고 전표 누락 또는 순서 역전이 원인. 음수 허용 임시 플래그 또는 입고 선행 적재 필요",
-    "passes": false,
-    "priority": "critical"
-  },
-  {
-    "domain": "nestjs-backend",
-    "task": "Railway 배포 (ngrok → 고정 URL)",
-    "detail": "현재 PM2+ngrok 환경, 세션마다 URL 변경 → webhook 수신 불가 위험. Railway CLI 배포 후 Airtable Automation URL 교체. railway-deploy SKILL 참조",
-    "passes": false,
-    "priority": "critical"
-  },
-  {
-    "domain": "nestjs-backend",
     "task": "mat_master 미등록 parts_code 자동 INSERT",
     "detail": "현재 미등록 parts_code 수신 시 FK 에러 반환. 목표: UNKNOWN 파츠 자동 등록(is_customer_goods=false) 후 처리 계속. CLAUDE.md TODO",
     "passes": false,
@@ -178,20 +150,6 @@
     "domain": "nestjs-backend",
     "task": "TypeORM 재연결 (Supabase Connection Pooler URL 확보)",
     "detail": "app.module.ts에서 TypeOrmModule.forRoot() 주석 처리됨. 5개 모듈(Master/WMS/TMS/Return/Analytics) 비활성화 원인. Pooler URL 확보 후 복원",
-    "passes": false,
-    "priority": "high"
-  },
-  {
-    "domain": "nestjs-backend",
-    "task": "백필 에러 레코드 재처리",
-    "detail": "backfill-errors.json ~80건 잔여분. 음수 재고 해결 후 재시도. backfill-data SKILL 참조",
-    "passes": false,
-    "priority": "high"
-  },
-  {
-    "domain": "nestjs-backend",
-    "task": "미매핑 이동목적 추가 (생산샘플 등)",
-    "detail": "backfill-success.json에 skipped_unknown_type: '생산샘플'. MOVEMENT_TYPE_MAP(constants/movement-type.map.ts)에 매핑 추가 필요",
     "passes": false,
     "priority": "high"
   },
