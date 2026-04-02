@@ -1,8 +1,8 @@
 -- ================================================================
 -- SCM Data Architecture — SAP S/4HANA Full Enterprise
--- Supabase PostgreSQL Complete Migration (17 files)
--- Generated: 2026-03-29
--- Tables: ~51 across 6 schemas (shared/tms/wms/mm/pp/finance)
+-- Supabase PostgreSQL Complete Migration (18 files)
+-- Generated: 2026-04-02 (018 Quick Wins 추가)
+-- Tables: ~55 across 6 schemas (shared/tms/wms/mm/pp/finance)
 -- ================================================================
 
 
@@ -4155,3 +4155,19 @@ ALTER TABLE finance.period_closes      FORCE ROW LEVEL SECURITY;
 --   3. Add row-level filtering (e.g., users see only their organization's data)
 -- ============================================================================
 
+
+-- ################################################################
+-- ## 018_quick_wins_qm_otif_rop_pir.sql
+-- ################################################################
+
+-- ============================================================================
+-- Migration 018: Quick Wins — QM Defect Catalog, OTIF Records, Reorder Alerts,
+--                              Purchasing Info Records
+-- New tables: mm.defect_catalogs, mm.inspection_defects, mm.purchasing_info_records,
+--             tms.otif_records
+-- New views:  mm.v_qc_defect_trend, mm.v_defect_pareto, tms.v_otif_trend,
+--             shared.v_reorder_alerts, mm.v_current_prices, mm.v_parts_without_prices
+-- Seed data:  21 defect codes for packaging/printing industry
+-- ============================================================================
+
+\i migrations/018_quick_wins_qm_otif_rop_pir.sql

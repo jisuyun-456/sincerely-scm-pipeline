@@ -415,21 +415,33 @@ NestJS 기반 RESTful API 개발을 전담합니다.
 
 ## 신시어리 SCM 프로젝트 현재 레이어 현황
 
-> 2026-04-01 기준
+> 2026-04-01 기준 (최종)
 
 ### 글로벌 설정 (~/.claude/)
 
 | 파일 | 상태 | 내용 |
 |------|------|------|
-| `CLAUDE.md` | 완성 | 5개 전문가 정체성(D1~D5) + 도메인 라우팅 + 워크플로우 사이클 |
-| `settings.json` | 완성 | 7개 플러그인 + Stop/Notification hooks |
+| `CLAUDE.md` | 완성 | 5개 전문가 정체성(D1~D5) + 도메인 라우팅 + 워크플로우 스킵 매트릭스 |
+| `settings.json` | 완성 | 7개 플러그인 + Stop(git commit 체크리스트) + Notification(비프음) |
+
+### 워크플로우 스킵 매트릭스
+
+| 요청 유형 | 1구상 | 2계획 | 3실행 | 4검토 | 5검증 |
+|---------|:-----:|:-----:|:-----:|:-----:|:-----:|
+| 질문, 설명, 분석 | skip | skip | skip | skip | skip |
+| 오타/변수명/1~2줄 수정 | skip | skip | 바로 | skip | skip |
+| 버그 수정 | skip | skip | 필수 | 필수 | 필수 |
+| 기존 기능 수정/확장 | skip | 필수 | 필수 | 필수 | 필수 |
+| 새 기능/아키텍처 `/brainstorm` 명시 시 | 필수 | 필수 | 필수 | 필수 | 필수 |
+
+> **브레인스토밍은 수동 호출 전용** — `/brainstorm` 또는 "브레인스토밍 해줘" 명시 시에만 실행
 
 ### 프로젝트 설정 (.claude/)
 
 | 레이어 | 파일 수 | 상세 |
 |--------|---------|------|
 | **Agents** | 14개 | 범용 5전문가 + orchestrator + 프로젝트 특화 8개(SK-01~SK-08) |
-| **Commands** | 13개 | /start, /bootstrap, /orchestrate + 도메인별 10개 |
+| **Commands** | 14개 | /start, /bootstrap, /orchestrate, /skill-creator + 도메인별 10개 |
 | **Skills** | 10개 | scm/(2), accounting/(3), tech/(2), design/(1), pm/(2) |
 | **Hooks** | 1개 | check-sql-safety.sh (INSERT ONLY 원칙 보호) |
 | **settings.json** | 완성 | permissions + PreToolUse:Bash 훅 |

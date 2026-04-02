@@ -6,7 +6,8 @@
       "Bash(git:*)",
       "Bash(bash .claude/hooks/*)",
       "mcp__claude_ai_Airtable__list_tables_for_base",
-      "Bash(python3 -c ':*)"
+      "Bash(python3 -c ':*)",
+      "mcp__claude_ai_Airtable__list_records_for_table"
     ],
     "deny": [
       "Bash(rm -rf:*)"
@@ -17,14 +18,23 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/check-sql-safety.sh" },
-          { "type": "command", "command": "bash .claude/hooks/protect-branch.sh" }
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-sql-safety.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/protect-branch.sh"
+          }
         ]
       },
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/protect-sensitive-files.sh" }
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/protect-sensitive-files.sh"
+          }
         ]
       }
     ],
@@ -32,23 +42,38 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/auto-format.sh" },
-          { "type": "command", "command": "bash .claude/hooks/typecheck.sh" },
-          { "type": "command", "command": "bash .claude/hooks/test-on-change.sh" }
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/auto-format.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/typecheck.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/test-on-change.sh"
+          }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/build-gate.sh" }
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/build-gate.sh"
+          }
         ]
       }
     ],
     "SubagentStop": [
       {
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/log-agent-usage.sh" }
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-agent-usage.sh"
+          }
         ]
       }
     ]
