@@ -1,5 +1,7 @@
 # Retool SCM — 9페이지 셋업 가이드 (검증 완료)
 
+> ⚠️ **Deprecated** — 이 문서는 `docs/retool/retool_master.md`로 통합되었습니다.
+
 > **앱명:** SAP
 > **리소스:** postgres (Supabase pooler:6543)
 > **최종 검증:** 2026-03-30 — 마이그레이션 SQL 전수 대조 완료

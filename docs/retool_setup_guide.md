@@ -1,5 +1,7 @@
 # Retool + Supabase SCM 연결 가이드
 
+> ⚠️ **Deprecated** — 이 문서는 `docs/retool/retool_master.md`로 통합되었습니다.
+
 > **목적:** Supabase 6스키마 51테이블을 Retool에서 운영/관리할 수 있는 내부 툴 구축
 > **원칙:** Supabase = 불변 원장 (INSERT ONLY), Retool = 운영 UI + 조회/입력 레이어
 

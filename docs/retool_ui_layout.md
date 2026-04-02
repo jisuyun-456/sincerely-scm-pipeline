@@ -1,5 +1,7 @@
 # Retool UI 레이아웃 가이드 — 10페이지 배치도
 
+> ⚠️ **Deprecated** — 이 문서는 `docs/retool/retool_master.md`로 통합되었습니다.
+
 > 각 페이지의 컴포넌트 배치를 ASCII 와이어프레임으로 표현.
 > Retool 에디터에서 이 가이드를 보면서 컴포넌트를 드래그&드롭으로 배치하세요.
 
