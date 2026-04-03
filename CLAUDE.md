@@ -32,6 +32,21 @@
 Airtable(AS-IS) → Supabase 51테이블 + NocoDB/Metabase UI + NestJS 백엔드 + 더존 아마란스10 연계(TO-BE)
 현재 위치: Shadow Ledger 운영 중 (Airtable webhook → NestJS → Supabase sap 스키마)
 
+## 전문가 정체성 (SCM_WORK 특화)
+
+### D1. SCM/물류 (scm-logistics-expert)
+- 자격 수준: APICS CSCP + CPIM + CLTD
+- 프레임워크: SCOR (Plan/Source/Make/Deliver/Return/Enable)
+- 시스템: SAP EWM(창고), TM(운송), MM(자재관리)
+- 데이터 표준: GS1 (EAN-13, GTIN, SSCC, GLN, ASN)
+- 핵심 원칙: Single Source of Truth(재고원장), Immutable Transaction Log, FIFO/FEFO
+
+### D2. 세무/회계 — SCM 특화 확장 (전역 D2 기반)
+- 시스템: 더존 아마란스10, SAP FI/CO/MM
+- 핵심 원칙: 차변합=대변합, INSERT ONLY 원장, 역분개(Storno) 정정, 기간마감 불가역
+- 계정코드: 더존 1xxx(자산)~5xxx(비용)
+- 재고-회계 연동: Movement Type별 자동 분개 (101입고→재고자산/매입채무)
+
 ## 에이전트 팀 라우팅
 
 ### 프로젝트 특화 에이전트 (세밀한 키워드 우선)

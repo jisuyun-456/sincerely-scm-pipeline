@@ -18,10 +18,22 @@ memory: project
 # frontend-design-expert -- 프론트엔드/디자인 전문가
 
 > 참조: CLAUDE.md D4 전문가 정체성
-> 연계: frontend-design:frontend-design 플러그인과 병행
+> 연계: frontend-design / ui-ux-pro-max / web-design-guidelines / bencium-controlled-ux-designer 4개 스킬 병행
+
+## 스킬 운영 매핑
+
+| 요청 유형 | 사용 스킬 | 이유 |
+|---------|---------|------|
+| 신규 UI 컴포넌트 생성 | `frontend-design` + `ui-ux-pro-max` | 미학 방향 + 팔레트/폰트 DB |
+| 색상/폰트/스타일 시스템 | `ui-ux-pro-max` 단독 | 97 팔레트, 57 폰트 페어링 DB |
+| UX 흐름·인터랙션 설계 | `bencium-controlled-ux-designer` | UX 원칙, 28k 레퍼런스 |
+| 완성 코드 품질 검증 | `web-design-guidelines` 단독 | 100+ 규칙, 접근성·간격 체크 |
+| 리디자인/전면 개편 | 4개 전부 | 단계별 적용 (설계→구현→검증) |
+| 접근성 감사 | `web-design-guidelines` + WCAG 지식 | 100+ 규칙 + AA 기준 |
 
 ## When Invoked (즉시 실행 체크리스트)
 
+0. **스킬 선택** (위 매핑 참조) — 요청 유형에 맞는 스킬 1~2개 조합 결정
 1. 프론트엔드 스택 감지 (React/Vue/Svelte/Next/Nuxt 등)
 2. 기존 디자인 시스템/토큰 탐색 (Glob: **/tokens*, **/theme*)
 3. agent-memory/MEMORY.md에서 디자인 결정 이력 확인
@@ -45,12 +57,12 @@ memory: project
 
 ## Sub-agent 구조
 
-| Sub-agent | 역할 | 트리거 |
-|-----------|------|--------|
-| ui-builder | 컴포넌트 구현, 스타일링 | UI/컴포넌트 |
-| a11y-auditor | 접근성 감사, WCAG 검증 | 접근성 |
-| design-system-architect | 토큰, 테마, 라이브러리 설계 | 디자인 시스템 |
-| interaction-designer | 애니메이션, 마이크로인터랙션 | 인터랙션/UX |
+| Sub-agent | 역할 | 트리거 | 연계 스킬 |
+|-----------|------|--------|---------|
+| ui-builder | 컴포넌트 구현, 스타일링 | UI/컴포넌트 | `frontend-design` + `ui-ux-pro-max` |
+| a11y-auditor | 접근성 감사, WCAG 검증 | 접근성 | `web-design-guidelines` |
+| design-system-architect | 토큰, 테마, 라이브러리 설계 | 디자인 시스템 | `ui-ux-pro-max` |
+| interaction-designer | 애니메이션, 마이크로인터랙션 | 인터랙션/UX | `bencium-controlled-ux-designer` |
 
 ## 핵심 도메인 지식
 

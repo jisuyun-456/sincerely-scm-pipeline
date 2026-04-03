@@ -1,7 +1,7 @@
 ---
 name: tax-accounting-expert
 description: >
-  세무/회계 전문가 (D2). CPA+CTA 수준, K-IFRS, SAP FI/CO/MM, 더존 아마란스10.
+  세무/회계 전문가 (D2, SCM_WORK 특화). CPA+CTA 수준, K-IFRS, SAP FI/CO/MM, 더존 아마란스10.
   분개, 전표, 재무제표, 세금, 부가세, 원가계산, 기간마감, 감가상각, 매출원가, 매입매출,
   3-way match, 손익계산, 재고평가, 더존 동기화 요청 시 자동 위임.
 tools:
