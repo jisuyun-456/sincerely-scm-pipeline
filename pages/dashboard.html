@@ -5,378 +5,579 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sincerely SCM Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;1,400&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          background: "#F9F6F1",
+          surface: "#FFFFFF",
+          primary: "#1A1A1A",
+          accent: "#99462a",
+          border: "#E5E1DA",
+          muted: "#8C8375",
+          success: "#4A6741",
+          error: "#963E3E",
+          warning: "#B08934"
+        },
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          serif: ['Newsreader', 'Georgia', 'serif']
+        }
+      }
+    }
+  }
+</script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh;padding:24px 16px}
-.container{max-width:900px;margin:0 auto}
-.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.brand{font-size:16px;font-weight:600;color:#1a1a1a}
-.brand small{font-size:11px;font-weight:400;color:#888;margin-left:6px}
-.live{font-size:10px;padding:3px 10px;background:#E1F5EE;color:#085041;border-radius:20px;border:0.5px solid #9FE1CB}
-.period-row{display:flex;gap:5px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px}
-.period-row::-webkit-scrollbar{display:none}
-.pc{flex-shrink:0;padding:5px 14px;border-radius:20px;font-size:11px;border:0.5px solid #d4d2c8;background:transparent;color:#666;cursor:pointer;white-space:nowrap;transition:all .15s}
-.pc:hover{background:#ebe9e3}
-.pc.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-.sep2{color:#bbb;font-size:11px;align-self:center;flex-shrink:0;padding:0 2px}
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-.kc{background:#fff;border-radius:10px;padding:13px 14px;border:0.5px solid #e8e6e0}
-.kl{font-size:10px;color:#888;margin-bottom:4px}
-.kv{font-size:20px;font-weight:600;line-height:1;color:#1a1a1a}
+/* ── 레거시 CSS 클래스 (JS/데이터 바인딩에서 참조) ── */
+*{box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+
+/* KPI card inner spans */
+.kl{font-size:10px;color:#8C8375;margin-bottom:4px}
+.kv{font-size:22px;font-weight:600;line-height:1;color:#1A1A1A}
 .ku{font-size:10px;color:#aaa;margin-left:2px;font-weight:400}
-.ks{font-size:10px;margin-top:4px}
-.ok{color:#1D9E75}.ng{color:#E24B4A}.warn{color:#BA7517}
-.cat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
-.cat{padding:10px 6px;border-radius:10px;border:0.5px solid #e8e6e0;background:#fff;cursor:pointer;text-align:center;transition:all .15s}
-.cat:hover{background:#f5f4f0}
-.cat.on.inbound{border-color:#1D9E75;background:#E1F5EE}
-.cat.on.qc{border-color:#BA7517;background:#FAEEDA}
-.cat.on.material{border-color:#7F77DD;background:#EEEDFE}
-.cat.on.ship{border-color:#185FA5;background:#E6F1FB}
-.ico{width:24px;height:24px;border-radius:6px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
-.cat.inbound .ico{background:#5DCAA5;color:#085041}
-.cat.qc .ico{background:#EF9F27;color:#633806}
-.cat.material .ico{background:#AFA9EC;color:#26215C}
-.cat.ship .ico{background:#85B7EB;color:#042C53}
-.cn{font-size:12px;font-weight:500;color:#1a1a1a}
-.csub{font-size:10px;color:#888;margin-top:2px}
-.panel{background:#fff;border:0.5px solid #e8e6e0;border-radius:12px;overflow:hidden;margin-bottom:8px}
-.ph{padding:11px 14px;border-bottom:0.5px solid #e8e6e0;display:flex;align-items:center;justify-content:space-between}
-.ph h3{font-size:13px;font-weight:500;color:#1a1a1a}
-.badge{font-size:10px;padding:2px 9px;border-radius:20px}
+.ks{font-size:11px;margin-top:4px}
+
+/* Status colors */
+.ok{color:#4A6741}
+.ng{color:#963E3E}
+.warn{color:#B08934}
+
+/* Badge variants */
+.badge{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:500}
 .b-ok{background:#E1F5EE;color:#085041}
-.b-ng{background:#FCEBEB;color:#A32D2D}
+.b-ng{background:#FCEBEB;color:#963E3E}
 .b-info{background:#E6F1FB;color:#185FA5}
-.b-warn{background:#FAEEDA;color:#854F0B}
-.pb{padding:13px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.sub{background:#f9f8f5;border-radius:8px;padding:11px 12px}
-.slabel{font-size:10px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.b-warn{background:#FAEEDA;color:#B08934}
+
+/* Bar list rows */
 .sr{display:flex;align-items:center;gap:6px;margin-bottom:6px}
 .sr:last-child{margin-bottom:0}
-.sn{font-size:11px;color:#1a1a1a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bbg{flex:2;height:4px;background:#e8e6e0;border-radius:2px}
+.sn{font-size:11px;color:#1A1A1A;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bbg{flex:2;height:4px;background:#E5E1DA;border-radius:2px}
 .bf{height:4px;border-radius:2px}
-.sv{font-size:10px;color:#888;min-width:56px;text-align:right;white-space:nowrap}
-.stat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #f0efe9;font-size:11px}
+.sv{font-size:10px;color:#8C8375;min-width:56px;text-align:right;white-space:nowrap}
+.slabel{font-size:10px;font-weight:500;color:#8C8375;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+
+/* Stat rows */
+.stat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #F0EDE6;font-size:11px}
 .stat:last-child{border-bottom:none}
-.sk{color:#888}
-.sv2{font-weight:500;color:#1a1a1a}
+.sk{color:#8C8375}
+.sv2{font-weight:500;color:#1A1A1A}
+
+/* Sub card */
+.sub{background:#F9F6F1;border-radius:8px;padding:11px 12px}
+
+/* Chart wrapper */
 .chart-wrap{position:relative;width:100%}
-.iss{margin-top:8px;padding:9px 12px;border-left:2px solid #E24B4A;background:#fdf2f2;border-radius:0 8px 8px 0}
-.iss p{font-size:11px;color:#A32D2D;margin-bottom:3px}
-.iss p:last-child{margin-bottom:0}
+
+/* Table */
 .wt{width:100%;border-collapse:collapse;font-size:11px}
-.wt th{text-align:left;padding:5px 8px;color:#888;font-weight:400;border-bottom:0.5px solid #f0efe9}
-.wt td{padding:6px 8px;border-bottom:0.5px solid #f0efe9;color:#1a1a1a}
+.wt th{text-align:left;padding:5px 8px;color:#8C8375;font-weight:400;border-bottom:0.5px solid #F0EDE6}
+.wt td{padding:6px 8px;border-bottom:0.5px solid #F0EDE6;color:#1A1A1A}
 .wt tr:last-child td{border-bottom:none}
-.wt tr:hover td{background:#f9f8f5}
+.wt tr:hover td{background:#F9F6F1}
 .tr{text-align:right}
-.hidden{display:none}
-.footer{margin-top:20px;text-align:center;font-size:10px;color:#bbb}
+
+/* Issue section */
+.iss{margin-top:8px;padding:9px 12px;border-left:2px solid #963E3E;background:#fdf2f2;border-radius:0 8px 8px 0}
+.iss p{font-size:11px;color:#963E3E;margin-bottom:3px}
+.iss p:last-child{margin-bottom:0}
+
+/* Visibility */
+.hidden{display:none !important}
+
+/* Period chip */
+.pc{flex-shrink:0;padding:4px 12px;border-radius:20px;font-size:11px;border:0.5px solid #E5E1DA;background:transparent;color:#8C8375;cursor:pointer;white-space:nowrap;transition:all .15s;display:inline-block}
+.pc:hover{background:#E5E1DA}
+.pc.on{background:#1A1A1A;color:#fff;border-color:#1A1A1A}
+.sep2{color:#bbb;font-size:11px;padding:0 2px}
+
+/* Category tab active states */
+.cat.on.inbound{border-color:#5DCAA5 !important;background:#E1F5EE !important}
+.cat.on.qc{border-color:#EF9F27 !important;background:#FAEEDA !important}
+.cat.on.material{border-color:#AFA9EC !important;background:#EEEDFE !important}
+.cat.on.ship{border-color:#85B7EB !important;background:#E6F1FB !important}
+
+/* Nav tab active states */
+.nav-tab.on.inbound{color:#085041;border-bottom-color:#5DCAA5}
+.nav-tab.on.qc{color:#633806;border-bottom-color:#EF9F27}
+.nav-tab.on.material{color:#26215C;border-bottom-color:#AFA9EC}
+.nav-tab.on.ship{color:#185FA5;border-bottom-color:#85B7EB}
+
+/* Glass nav */
+.glass-nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  background:rgba(249,246,241,0.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid #E5E1DA;
+  height:56px;display:flex;align-items:center;
+  padding:0 20px;gap:16px;
+}
+
+/* Sidebar */
+.sidebar{
+  position:fixed;left:0;top:56px;bottom:0;width:240px;
+  background:#FFFFFF;border-right:1px solid #E5E1DA;
+  overflow-y:auto;z-index:40;
+  display:flex;flex-direction:column;
+}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar::-webkit-scrollbar-thumb{background:#E5E1DA;border-radius:2px}
+
+/* Main content area */
+.main-content{
+  margin-left:240px;
+  padding-top:56px;
+  min-height:100vh;
+  background:#F9F6F1;
+}
+
+/* Panel card */
+.panel{background:#fff;border:1px solid #E5E1DA;border-radius:10px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(26,26,26,.04)}
+.ph{padding:11px 14px;border-bottom:1px solid #F0EDE6;display:flex;align-items:center;justify-content:space-between}
+.ph h3{font-size:13px;font-weight:500;color:#1A1A1A}
+.pb{padding:13px 14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+
+/* Academic shadow for KPI cards */
+.academic-shadow{box-shadow:0 1px 3px rgba(26,26,26,.06),0 4px 12px rgba(26,26,26,.04)}
+
+/* Period row in sidebar */
+.period-row-sidebar{display:flex;flex-direction:column;gap:4px;padding:8px 12px}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main-content{margin-left:0}
+  .glass-nav{padding:0 12px}
+}
 @media(max-width:600px){
-  .kpi-row{grid-template-columns:repeat(2,1fr)}
-  .two{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:repeat(2,1fr) !important}
+  .two{grid-template-columns:1fr !important}
 }
 </style>
 </head>
-<body>
-<div class="container">
+<body class="bg-background text-primary" style="background:#F9F6F1">
 
-<div class="top">
-  <div><span class="brand">Sincerely SCM<small id="report-subtitle">물류 운영 현황</small></span></div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <a href="./sincerely-meeting-notes/" style="font-size:10px;padding:3px 10px;border-radius:20px;border:0.5px solid #d4d2c8;color:#666;text-decoration:none;white-space:nowrap;">📋 회의록</a>
-    <span class="live" id="mode-badge">WMS + Airtable 연동</span>
+<!-- ── 상단 고정 네비게이션 ── -->
+<nav class="glass-nav">
+  <!-- Brand -->
+  <div class="flex items-center gap-3 flex-shrink-0">
+    <span class="font-semibold text-sm text-primary" style="font-family:'Newsreader',serif;font-size:16px">Sincerely SCM</span>
+    <small id="report-subtitle" class="text-xs text-muted hidden lg:inline">주간 리뷰</small>
   </div>
-</div>
 
-<div class="period-row" id="period-tabs">
-  <div class="pc on" id="period-label">데이터 로딩 중...</div>
-</div>
+  <!-- Tab Buttons (category selector) -->
+  <div class="flex items-center gap-1 ml-4 flex-1">
+    <button class="nav-tab cat inbound on" onclick="setCat('inbound',this)"
+      style="padding:6px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;color:#8C8375;border-radius:0">
+      입고
+    </button>
+    <button class="nav-tab cat qc" onclick="setCat('qc',this)"
+      style="padding:6px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;color:#8C8375;border-radius:0">
+      검수
+    </button>
+    <button class="nav-tab cat material" onclick="setCat('material',this)"
+      style="padding:6px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;color:#8C8375;border-radius:0">
+      자재
+    </button>
+    <button class="nav-tab cat ship" onclick="setCat('ship',this)"
+      style="padding:6px 14px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;color:#8C8375;border-radius:0">
+      출하
+    </button>
+  </div>
 
-<!-- 예측 모드 전용 패널 -->
-<div id="forecast-panel" class="hidden" style="margin-bottom:16px">
-  <div class="panel" style="border-left:3px solid #7F77DD">
-    <div class="ph" style="background:#EEEDFE">
-      <h3 style="color:#26215C">이번주 예측 요약</h3>
-      <span class="badge" style="background:#7F77DD;color:#fff" id="fc-risk-badge">리스크 분석 중</span>
+  <!-- Right side: live badge + meeting notes -->
+  <div class="flex items-center gap-2 flex-shrink-0">
+    <a href="./sincerely-meeting-notes/" style="font-size:10px;padding:3px 10px;border-radius:20px;border:0.5px solid #E5E1DA;color:#8C8375;text-decoration:none;white-space:nowrap;">📋 회의록</a>
+    <span class="badge b-ok" id="mode-badge" style="white-space:nowrap">WMS + Airtable 연동</span>
+  </div>
+</nav>
+
+<!-- ── 좌측 사이드바 ── -->
+<aside class="sidebar">
+  <!-- Research Sections Header -->
+  <div style="padding:16px 16px 8px">
+    <div style="font-size:10px;font-weight:600;color:#8C8375;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">운영 현황</div>
+    <nav>
+      <button class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-1 cat inbound on"
+        onclick="setCat('inbound',this)"
+        style="font-size:12px;background:#E1F5EE;color:#085041;border:none;cursor:pointer">
+        <span style="width:6px;height:6px;border-radius:50%;background:#5DCAA5;flex-shrink:0;display:inline-block"></span>
+        입고 현황
+      </button>
+      <button class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-1 cat qc"
+        onclick="setCat('qc',this)"
+        style="font-size:12px;background:none;color:#8C8375;border:none;cursor:pointer">
+        <span style="width:6px;height:6px;border-radius:50%;background:#EF9F27;flex-shrink:0;display:inline-block"></span>
+        검수 품질
+      </button>
+      <button class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-1 cat material"
+        onclick="setCat('material',this)"
+        style="font-size:12px;background:none;color:#8C8375;border:none;cursor:pointer">
+        <span style="width:6px;height:6px;border-radius:50%;background:#AFA9EC;flex-shrink:0;display:inline-block"></span>
+        자재 관리
+      </button>
+      <button class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-1 cat ship"
+        onclick="setCat('ship',this)"
+        style="font-size:12px;background:none;color:#8C8375;border:none;cursor:pointer">
+        <span style="width:6px;height:6px;border-radius:50%;background:#85B7EB;flex-shrink:0;display:inline-block"></span>
+        출하 물동량
+      </button>
+    </nav>
+  </div>
+
+  <div style="height:1px;background:#E5E1DA;margin:8px 16px"></div>
+
+  <!-- Period History -->
+  <div style="padding:8px 16px;flex:1">
+    <div style="font-size:10px;font-weight:600;color:#8C8375;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">기간 이력</div>
+    <div id="period-tabs" class="period-row-sidebar">
+      <div class="pc on" id="period-label">데이터 로딩 중...</div>
     </div>
-    <div class="pb">
+  </div>
+
+  <!-- Footer brand -->
+  <div style="padding:12px 16px;border-top:1px solid #E5E1DA">
+    <div style="font-size:9px;color:#C5C0B8;font-family:'Newsreader',serif">Sincerely SCM · Powered by Airtable</div>
+  </div>
+</aside>
+
+<!-- ── 메인 콘텐츠 ── -->
+<main class="main-content">
+  <div style="padding:20px 20px 32px">
+
+    <!-- 페이지 헤더 -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div>
+          <h1 style="font-family:'Newsreader',serif;font-size:22px;font-weight:500;color:#1A1A1A;line-height:1.2">물류 운영 현황</h1>
+          <div style="font-size:11px;color:#8C8375;margin-top:3px" id="period-range"></div>
+        </div>
+        <span style="display:none" id="period-sep"></span>
+      </div>
+    </div>
+
+    <!-- 예측 모드 전용 패널 -->
+    <div id="forecast-panel" class="hidden" style="margin-bottom:16px">
+      <div class="panel" style="border-left:3px solid #AFA9EC">
+        <div class="ph" style="background:#EEEDFE">
+          <h3 style="color:#26215C">이번주 예측 요약</h3>
+          <span class="badge" style="background:#AFA9EC;color:#fff" id="fc-risk-badge">리스크 분석 중</span>
+        </div>
+        <div class="pb">
+          <div class="two">
+            <div class="sub">
+              <div class="slabel">이번주 예상 입고</div>
+              <div style="font-size:22px;font-weight:600;color:#1A1A1A" id="fc-proj-cnt">—건</div>
+              <div style="font-size:11px;color:#8C8375;margin-top:4px" id="fc-proj-qty">수량: —개</div>
+              <div style="font-size:10px;color:#aaa;margin-top:2px" id="fc-daily-avg">일평균: —건</div>
+            </div>
+            <div class="sub">
+              <div class="slabel">KPI 달성 가능성</div>
+              <div class="stat"><span class="sk">입하완료율 목표 95%</span><span class="sv2" id="fc-comp-ok">—</span></div>
+              <div class="stat"><span class="sk">불량률 목표 1.0%</span><span class="sv2" id="fc-defect-ok">—</span></div>
+              <div class="stat"><span class="sk">예측 기반 주차</span><span class="sv2" id="fc-based-on">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI 4칸 -->
+    <div class="kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div class="academic-shadow" id="kpi-compl"
+        style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+        <div class="kl">입하완료율</div>
+        <div class="kv">94.6<span class="ku">%</span></div>
+        <div class="ks ok">목표 95% 달성</div>
+      </div>
+      <div class="academic-shadow" id="kpi-defect"
+        style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+        <div class="kl">불량률</div>
+        <div class="kv ng">1.3<span class="ku">%</span></div>
+        <div class="ks ng">목표 1.0% 미달</div>
+      </div>
+      <div class="academic-shadow" id="kpi-acc"
+        style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+        <div class="kl">자재 피킹</div>
+        <div class="kv">—<span class="ku">건</span></div>
+        <div class="ks">피킹 건수</div>
+      </div>
+      <div class="academic-shadow" id="kpi-neg"
+        style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+        <div class="kl">자재 이슈</div>
+        <div class="kv">—<span class="ku">건</span></div>
+        <div class="ks">이슈 건수</div>
+      </div>
+    </div>
+
+    <!-- 카테고리 요약 칩 행 -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px">
+      <div class="cat inbound on"
+        style="background:#E1F5EE;border:1px solid #5DCAA5;border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s"
+        onclick="setCat('inbound',this)">
+        <div style="font-size:10px;font-weight:600;color:#085041;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">입고</div>
+        <div class="csub" id="cat-inbound-sub" style="font-size:11px;color:#085041">276건 · 121,026개</div>
+      </div>
+      <div class="cat qc"
+        style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s"
+        onclick="setCat('qc',this)">
+        <div style="font-size:10px;font-weight:600;color:#8C8375;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">검수</div>
+        <div class="csub" id="cat-qc-sub" style="font-size:11px;color:#8C8375">불량률 1.3%</div>
+      </div>
+      <div class="cat material"
+        style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s"
+        onclick="setCat('material',this)">
+        <div style="font-size:10px;font-weight:600;color:#8C8375;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">자재</div>
+        <div class="csub" id="cat-mat-sub" style="font-size:11px;color:#8C8375">음수재고 53종</div>
+      </div>
+      <div class="cat ship"
+        style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s"
+        onclick="setCat('ship',this)">
+        <div style="font-size:10px;font-weight:600;color:#8C8375;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">출하</div>
+        <div class="csub" id="cat-ship-sub" style="font-size:11px;color:#8C8375">실시간 Airtable</div>
+      </div>
+    </div>
+
+    <!-- ── 입고 탭 ── -->
+    <div id="tab-inbound">
       <div class="two">
-        <div class="sub">
-          <div class="slabel">이번주 예상 입고</div>
-          <div style="font-size:22px;font-weight:600;color:#1a1a1a" id="fc-proj-cnt">—건</div>
-          <div style="font-size:11px;color:#888;margin-top:4px" id="fc-proj-qty">수량: —개</div>
-          <div style="font-size:10px;color:#aaa;margin-top:2px" id="fc-daily-avg">일평균: —건</div>
+        <div class="panel">
+          <div class="ph"><h3>입고 요약</h3><span class="badge b-ok" id="inb-compl-badge">완료율 —</span></div>
+          <div class="pb">
+            <div class="stat"><span class="sk">총 입고 건수</span><span class="sv2" id="inb-cnt">681건</span></div>
+            <div class="stat"><span class="sk">총 입고 수량</span><span class="sv2" id="inb-qty">218,868개</span></div>
+            <div class="stat"><span class="sk">입하완료</span><span class="sv2 ok" id="inb-comp">662건</span></div>
+            <div class="stat"><span class="sk">미확인</span><span class="sv2 warn" id="inb-unconf">19건</span></div>
+            <div class="stat"><span class="sk">총 재고 수량</span><span class="sv2" id="inb-stock">218,981개</span></div>
+          </div>
         </div>
-        <div class="sub">
-          <div class="slabel">KPI 달성 가능성</div>
-          <div class="stat"><span class="sk">입하완료율 목표 95%</span><span class="sv2" id="fc-comp-ok">—</span></div>
-          <div class="stat"><span class="sk">불량률 목표 1.0%</span><span class="sv2" id="fc-defect-ok">—</span></div>
-          <div class="stat"><span class="sk">예측 기반 주차</span><span class="sv2" id="fc-based-on">—</span></div>
+        <div class="panel">
+          <div class="ph"><h3>입고 목적별</h3></div>
+          <div class="pb">
+            <div class="slabel">건수 기준</div>
+            <div id="inb-purpose-list"></div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-
-<div class="kpi-row">
-  <div class="kc" id="kpi-compl"><div class="kl">입하완료율</div><div class="kv">94.6<span class="ku">%</span></div><div class="ks ok">목표 95% 달성</div></div>
-  <div class="kc" id="kpi-defect"><div class="kl">불량률</div><div class="kv ng">1.3<span class="ku">%</span></div><div class="ks ng">목표 1.0% 미달</div></div>
-  <div class="kc" id="kpi-acc"><div class="kl">자재 피킹</div><div class="kv">—<span class="ku">건</span></div><div class="ks">피킹 건수</div></div>
-  <div class="kc" id="kpi-neg"><div class="kl">자재 이슈</div><div class="kv">—<span class="ku">건</span></div><div class="ks">이슈 건수</div></div>
-</div>
-
-<div class="cat-row">
-  <div class="cat inbound on" onclick="setCat('inbound',this)">
-    <div class="ico">IN</div><div class="cn">입고</div><div class="csub" id="cat-inbound-sub">276건 · 121,026개</div>
-  </div>
-  <div class="cat qc" onclick="setCat('qc',this)">
-    <div class="ico">QC</div><div class="cn">검수</div><div class="csub" id="cat-qc-sub">불량률 1.3%</div>
-  </div>
-  <div class="cat material" onclick="setCat('material',this)">
-    <div class="ico">WH</div><div class="cn">자재</div><div class="csub" id="cat-mat-sub">음수재고 53종</div>
-  </div>
-  <div class="cat ship" onclick="setCat('ship',this)">
-    <div class="ico">OUT</div><div class="cn">출하</div><div class="csub" id="cat-ship-sub">실시간 Airtable</div>
-  </div>
-</div>
-
-<!-- 입고 탭 -->
-<div id="tab-inbound">
-  <div class="two">
-    <div class="panel">
-      <div class="ph"><h3>입고 요약</h3><span class="badge b-ok" id="inb-compl-badge">완료율 —</span></div>
-      <div class="pb">
-        <div class="stat"><span class="sk">총 입고 건수</span><span class="sv2" id="inb-cnt">681건</span></div>
-        <div class="stat"><span class="sk">총 입고 수량</span><span class="sv2" id="inb-qty">218,868개</span></div>
-        <div class="stat"><span class="sk">입하완료</span><span class="sv2 ok" id="inb-comp">662건</span></div>
-        <div class="stat"><span class="sk">미확인</span><span class="sv2 warn" id="inb-unconf">19건</span></div>
-        <div class="stat"><span class="sk">총 재고 수량</span><span class="sv2" id="inb-stock">218,981개</span></div>
+      <div class="panel">
+        <div class="ph"><h3>미입하 발생 현황</h3><span class="badge b-ng" id="inb-notrecv-badge">—</span></div>
+        <div class="pb">
+          <div class="slabel">협력사별 건수</div>
+          <div id="inb-notrecv-list"></div>
+        </div>
       </div>
-    </div>
-    <div class="panel">
-      <div class="ph"><h3>입고 목적별</h3></div>
-      <div class="pb">
-        <div class="slabel">건수 기준</div>
-        <div id="inb-purpose-list"></div>
+      <div class="panel">
+        <div class="ph"><h3>일별 입고 현황</h3><span class="badge b-info" id="inb-date-range">—</span></div>
+        <div class="pb">
+          <div class="chart-wrap" style="height:160px"><canvas id="cInbound"></canvas></div>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="panel">
-    <div class="ph"><h3>미입하 발생 현황</h3><span class="badge b-ng" id="inb-notrecv-badge">—</span></div>
-    <div class="pb">
-      <div class="slabel">협력사별 건수</div>
-      <div id="inb-notrecv-list"></div>
-    </div>
-  </div>
-  <div class="panel">
-    <div class="ph"><h3>일별 입고 현황</h3><span class="badge b-info" id="inb-date-range">—</span></div>
-    <div class="pb">
-      <div class="chart-wrap" style="height:160px"><canvas id="cInbound"></canvas></div>
-    </div>
-  </div>
-  <div class="panel">
-    <div class="ph"><h3>주차별 집계</h3></div>
-    <div class="pb">
-      <table class="wt">
-        <thead><tr><th>주차</th><th class="tr">건수</th><th class="tr">입고 수량</th><th class="tr">건당 평균</th></tr></thead>
-        <tbody id="inb-week-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- 검수 탭 -->
-<div id="tab-qc" class="hidden">
-  <div class="two">
-    <div class="panel">
-      <div class="ph"><h3>검수 요약</h3><span class="badge b-ng" id="qc-defect-badge">불량률 —</span></div>
-      <div class="pb">
-        <div class="stat"><span class="sk">검수 건수</span><span class="sv2" id="qc-cnt">—</span></div>
-        <div class="stat" style="font-size:11px;color:#888;margin-top:-6px"><span class="sk"></span><span id="qc-cnt-note" style="font-size:11px;color:#888">전체 입하건수 기준 (표본검수 방식)</span></div>
-        <div class="stat"><span class="sk">검수 수량</span><span class="sv2" id="qc-qty">—</span></div>
-        <div class="stat" style="font-size:11px;color:#888;margin-top:-6px"><span class="sk"></span><span id="qc-qty-note" style="font-size:11px;color:#888">입하수량 × 7.5% (5~10% 표본)</span></div>
-        <div class="stat"><span class="sk">총 불량 수량</span><span class="sv2 ng" id="qc-defect">—</span></div>
-        <div class="stat"><span class="sk">불량률</span><span class="sv2 ng" id="qc-rate">—</span></div>
-        <div class="stat"><span class="sk">목표 불량률</span><span class="sv2">1.0%</span></div>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="ph"><h3>주차별 불량률 추이</h3></div>
-      <div class="pb">
-        <div class="slabel">결과 분포</div>
-        <div id="qc-result-dist"></div>
-        <div style="margin-top:12px">
-          <div class="slabel">주차별 불량률</div>
-          <div id="qc-week-bars"></div>
+      <div class="panel">
+        <div class="ph"><h3>주차별 집계</h3></div>
+        <div class="pb">
+          <table class="wt">
+            <thead><tr><th>주차</th><th class="tr">건수</th><th class="tr">입고 수량</th><th class="tr">건당 평균</th></tr></thead>
+            <tbody id="inb-week-tbody"></tbody>
+          </table>
         </div>
       </div>
     </div>
-  </div>
-  <div class="panel">
-    <div class="ph"><h3>주차별 검수 · 불량 현황</h3><span class="badge b-ng" id="qc-alert-badge">—</span></div>
-    <div class="pb">
-      <div class="chart-wrap" style="height:160px"><canvas id="cQC"></canvas></div>
-      <table class="wt" style="margin-top:10px">
-        <thead><tr><th>주차</th><th class="tr">검수 수량</th><th class="tr">불량 수량</th><th class="tr">불량률</th></tr></thead>
-        <tbody id="qc-week-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-  <!-- 이슈카테고리 섹션 -->
-  <div class="panel" style="grid-column:1/-1">
-    <div class="ph"><h3>이슈 카테고리 분석</h3><span class="badge b-ng" id="issue-cnt-badge">—</span></div>
-    <div class="pb">
-      <div class="two" style="margin-bottom:12px">
-        <div class="stat"><span class="sk">전체 입하수</span><span class="sv2" id="issue-total-cnt">—</span></div>
-        <div class="stat"><span class="sk">이슈 발생수</span><span class="sv2 ng" id="issue-cnt">—</span></div>
-      </div>
-      <div class="slabel">이슈 카테고리 분류</div>
-      <div id="issue-cat-bars" style="margin-top:8px"></div>
-    </div>
-  </div>
-  <div class="panel" style="grid-column:1/-1">
-    <div class="ph"><h3>불량 품목별 상세</h3><span class="badge b-ng" id="qc-item-cnt-badge">—</span></div>
-    <div class="pb">
-      <table class="wt">
-        <thead><tr><th>품목명</th><th class="tr">검수수량</th><th class="tr">불량수량</th><th class="tr">불량률</th></tr></thead>
-        <tbody id="qc-item-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
 
-<!-- 자재 탭 -->
-<div id="tab-material" class="hidden">
-
-  <!-- 1) 자재 피킹수 -->
-  <div class="panel">
-    <div class="ph"><h3>자재 피킹 수</h3><span class="badge b-info" id="mat-pick-badge">—</span></div>
-    <div class="pb">
-      <div class="two" style="gap:8px;margin-bottom:12px">
-        <div style="background:#f5f4f0;border-radius:8px;padding:12px 14px">
-          <div style="font-size:10px;color:#888;margin-bottom:4px">프로젝트 피킹 (에이원/다영기획)</div>
-          <div style="font-size:22px;font-weight:600" id="mat-pick-proj">—</div>
-          <div style="font-size:10px;color:#aaa;margin-top:2px">출고자재 확인 + 자재투입완료 기준</div>
+    <!-- ── 검수 탭 ── -->
+    <div id="tab-qc" class="hidden">
+      <div class="two">
+        <div class="panel">
+          <div class="ph"><h3>검수 요약</h3><span class="badge b-ng" id="qc-defect-badge">불량률 —</span></div>
+          <div class="pb">
+            <div class="stat"><span class="sk">검수 건수</span><span class="sv2" id="qc-cnt">—</span></div>
+            <div class="stat" style="font-size:11px;color:#8C8375;margin-top:-6px"><span class="sk"></span><span id="qc-cnt-note" style="font-size:11px;color:#8C8375">전체 입하건수 기준 (표본검수 방식)</span></div>
+            <div class="stat"><span class="sk">검수 수량</span><span class="sv2" id="qc-qty">—</span></div>
+            <div class="stat" style="font-size:11px;color:#8C8375;margin-top:-6px"><span class="sk"></span><span id="qc-qty-note" style="font-size:11px;color:#8C8375">입하수량 × 7.5% (5~10% 표본)</span></div>
+            <div class="stat"><span class="sk">총 불량 수량</span><span class="sv2 ng" id="qc-defect">—</span></div>
+            <div class="stat"><span class="sk">불량률</span><span class="sv2 ng" id="qc-rate">—</span></div>
+            <div class="stat"><span class="sk">목표 불량률</span><span class="sv2">1.0%</span></div>
+          </div>
         </div>
-        <div style="background:#f5f4f0;border-radius:8px;padding:12px 14px">
-          <div style="font-size:10px;color:#888;margin-bottom:4px">에이원→협력사 피킹</div>
-          <div style="font-size:22px;font-weight:600" id="mat-pick-a1">—</div>
-          <div style="font-size:10px;color:#aaa;margin-top:2px">재고이동 + 에이원 출하 기준</div>
+        <div class="panel">
+          <div class="ph"><h3>주차별 불량률 추이</h3></div>
+          <div class="pb">
+            <div class="slabel">결과 분포</div>
+            <div id="qc-result-dist"></div>
+            <div style="margin-top:12px">
+              <div class="slabel">주차별 불량률</div>
+              <div id="qc-week-bars"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="chart-wrap" style="height:140px"><canvas id="cMatPicking"></canvas></div>
-    </div>
-  </div>
-
-  <!-- 2) 자재 추가사용 분류 -->
-  <div class="two">
-    <div class="panel">
-      <div class="ph"><h3>자재 추가사용 분류</h3><span class="badge b-warn" id="mat-issue-badge">—</span></div>
-      <div class="pb">
-        <div id="mat-issue-list" style="margin-bottom:10px"></div>
-        <div class="chart-wrap" style="height:120px"><canvas id="cMatIssue"></canvas></div>
+      <div class="panel">
+        <div class="ph"><h3>주차별 검수 · 불량 현황</h3><span class="badge b-ng" id="qc-alert-badge">—</span></div>
+        <div class="pb">
+          <div class="chart-wrap" style="height:160px"><canvas id="cQC"></canvas></div>
+          <table class="wt" style="margin-top:10px">
+            <thead><tr><th>주차</th><th class="tr">검수 수량</th><th class="tr">불량 수량</th><th class="tr">불량률</th></tr></thead>
+            <tbody id="qc-week-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h3>이슈 카테고리 분석</h3><span class="badge b-ng" id="issue-cnt-badge">—</span></div>
+        <div class="pb">
+          <div class="two" style="margin-bottom:12px">
+            <div class="stat"><span class="sk">전체 입하수</span><span class="sv2" id="issue-total-cnt">—</span></div>
+            <div class="stat"><span class="sk">이슈 발생수</span><span class="sv2 ng" id="issue-cnt">—</span></div>
+          </div>
+          <div class="slabel">이슈 카테고리 분류</div>
+          <div id="issue-cat-bars" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h3>불량 품목별 상세</h3><span class="badge b-ng" id="qc-item-cnt-badge">—</span></div>
+        <div class="pb">
+          <table class="wt">
+            <thead><tr><th>품목명</th><th class="tr">검수수량</th><th class="tr">불량수량</th><th class="tr">불량률</th></tr></thead>
+            <tbody id="qc-item-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- 3) 자재 추가사용액 -->
-    <div class="panel">
-      <div class="ph"><h3>자재 추가사용액</h3><span class="badge b-info">누적 합산</span></div>
-      <div class="pb">
-        <div class="stat"><span class="sk">이번 기간 추가사용액</span><span class="sv2" id="mat-usage-weekly">—</span></div>
-        <div class="stat"><span class="sk">2026 누적 추가사용액</span><span class="sv2" id="mat-usage-monthly">—</span></div>
-        <div id="mat-usage-note" style="font-size:10px;color:#aaa;margin-top:10px;padding:8px;background:#f5f4f0;border-radius:6px">자재관리 base 연결 후 표시됩니다.</div>
+    <!-- ── 자재 탭 ── -->
+    <div id="tab-material" class="hidden">
+      <div class="panel">
+        <div class="ph"><h3>자재 피킹 수</h3><span class="badge b-info" id="mat-pick-badge">—</span></div>
+        <div class="pb">
+          <div class="two" style="gap:8px;margin-bottom:12px">
+            <div class="sub">
+              <div class="slabel">프로젝트 피킹 (에이원/다영기획)</div>
+              <div style="font-size:22px;font-weight:600;color:#1A1A1A" id="mat-pick-proj">—</div>
+              <div style="font-size:10px;color:#aaa;margin-top:2px">출고자재 확인 + 자재투입완료 기준</div>
+            </div>
+            <div class="sub">
+              <div class="slabel">에이원→협력사 피킹</div>
+              <div style="font-size:22px;font-weight:600;color:#1A1A1A" id="mat-pick-a1">—</div>
+              <div style="font-size:10px;color:#aaa;margin-top:2px">재고이동 + 에이원 출하 기준</div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:140px"><canvas id="cMatPicking"></canvas></div>
+        </div>
+      </div>
+      <div class="two">
+        <div class="panel">
+          <div class="ph"><h3>자재 추가사용 분류</h3><span class="badge b-warn" id="mat-issue-badge">—</span></div>
+          <div class="pb">
+            <div id="mat-issue-list" style="margin-bottom:10px"></div>
+            <div class="chart-wrap" style="height:120px"><canvas id="cMatIssue"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>자재 추가사용액</h3><span class="badge b-info">누적 합산</span></div>
+          <div class="pb">
+            <div class="stat"><span class="sk">이번 기간 추가사용액</span><span class="sv2" id="mat-usage-weekly">—</span></div>
+            <div class="stat"><span class="sk">2026 누적 추가사용액</span><span class="sv2" id="mat-usage-monthly">—</span></div>
+            <div id="mat-usage-note" style="font-size:10px;color:#aaa;margin-top:10px;padding:8px;background:#F9F6F1;border-radius:6px">자재관리 base 연결 후 표시됩니다.</div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-</div>
+    <!-- ── 출하 탭 ── -->
+    <div id="tab-ship" class="hidden">
 
-<!-- 출하 탭 (이번주 + 이전주 + 트렌드 통합) -->
-<div id="tab-ship" class="hidden">
-
-  <!-- KPI 4칸 -->
-  <div class="kpi-row" id="ship-kpi-row" style="margin-bottom:10px">
-    <div class="kc"><div class="kl">총 출하 건수</div><div class="kv" id="ship-total">—</div><div class="ks" id="ship-comppend">—</div></div>
-    <div class="kc"><div class="kl">총 CBM</div><div class="kv" id="ship-cbm">—</div><div class="ks" id="ship-avgcbm">—</div></div>
-    <div class="kc"><div class="kl">완료율</div><div class="kv" id="ship-comprate">—</div><div class="ks" id="ship-compsub">—</div></div>
-    <div class="kc"><div class="kl">CBM 신뢰도</div><div class="kv" id="ship-conf">—</div><div class="ks" id="ship-confsub">—</div></div>
-  </div>
-
-  <!-- 일별 CBM + 박스 구성비 -->
-  <div class="two">
-    <div class="panel">
-      <div class="ph"><h3>일별 CBM</h3><span class="badge b-info" id="ship-wk-range">—</span></div>
-      <div class="pb">
-        <div class="chart-wrap" style="height:150px"><canvas id="cShip"></canvas></div>
+      <!-- KPI 4칸 -->
+      <div class="kpi-row" id="ship-kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+        <div class="academic-shadow" style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+          <div class="kl">총 출하 건수</div><div class="kv" id="ship-total">—</div><div class="ks" id="ship-comppend">—</div>
+        </div>
+        <div class="academic-shadow" style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+          <div class="kl">총 CBM</div><div class="kv" id="ship-cbm">—</div><div class="ks" id="ship-avgcbm">—</div>
+        </div>
+        <div class="academic-shadow" style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+          <div class="kl">완료율</div><div class="kv" id="ship-comprate">—</div><div class="ks" id="ship-compsub">—</div>
+        </div>
+        <div class="academic-shadow" style="background:#fff;border:1px solid #E5E1DA;border-radius:10px;padding:16px">
+          <div class="kl">CBM 신뢰도</div><div class="kv" id="ship-conf">—</div><div class="ks" id="ship-confsub">—</div>
+        </div>
       </div>
-    </div>
-    <div class="panel">
-      <div class="ph"><h3>박스 타입 구성비</h3><span class="badge" id="ship-boxtotal">—</span></div>
-      <div class="pb">
-        <div class="chart-wrap" style="height:150px"><canvas id="cBoxType"></canvas></div>
+
+      <div class="two">
+        <div class="panel">
+          <div class="ph"><h3>일별 CBM</h3><span class="badge b-info" id="ship-wk-range">—</span></div>
+          <div class="pb">
+            <div class="chart-wrap" style="height:150px"><canvas id="cShip"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>박스 타입 구성비</h3><span class="badge" id="ship-boxtotal">—</span></div>
+          <div class="pb">
+            <div class="chart-wrap" style="height:150px"><canvas id="cBoxType"></canvas></div>
+          </div>
+        </div>
       </div>
+
+      <div class="two">
+        <div class="panel">
+          <div class="ph"><h3>출하 품목 Top (CBM 기준)</h3></div>
+          <div class="pb"><div id="ship-top-items"><div class="stat" style="color:#aaa;font-size:11px">로딩 중...</div></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>운영 품질 KPI</h3></div>
+          <div class="pb" id="ship-quality"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h3>최근 4주 물동량 · 손익 트렌드</h3></div>
+        <div class="pb">
+          <div class="chart-wrap" style="height:140px"><canvas id="cTrend"></canvas></div>
+          <div id="ship-trendtbl" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <div class="two">
+        <div class="panel">
+          <div class="ph"><h3>기사님 CBM 달성율</h3><span class="badge b-info" id="ship-prevwk">이전주</span></div>
+          <div class="pb" id="ship-drivers"></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>기사님 배송 거리 km</h3><span class="badge b-info">이전주 · Kakao 라우팅</span></div>
+          <div class="pb" id="ship-routing"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h3>에이원센터 창고 가동율 (이전주)</h3></div>
+        <div class="pb" id="ship-a1"></div>
+      </div>
+
+      <div class="panel" id="ship-next-panel">
+        <div class="ph"><h3>다음주 예고</h3><span class="badge" id="ship-nextwk">—</span></div>
+        <div class="pb" id="ship-next"></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h3>주요 알림</h3></div>
+        <div class="pb" id="ship-alerts"></div>
+      </div>
+
     </div>
-  </div>
 
-  <!-- 품목 Top + 운영 품질 -->
-  <div class="two">
-    <div class="panel">
-      <div class="ph"><h3>출하 품목 Top (CBM 기준)</h3></div>
-      <div class="pb"><div id="ship-top-items"><div class="stat" style="color:#aaa;font-size:11px">로딩 중...</div></div></div>
+    <!-- Footer -->
+    <div class="footer" style="margin-top:24px;text-align:center;font-size:10px;color:#C5C0B8;padding-bottom:16px">
+      Sincerely SCM Dashboard &nbsp;·&nbsp; 데이터 기준: 2026-03-19
     </div>
-    <div class="panel">
-      <div class="ph"><h3>운영 품질 KPI</h3></div>
-      <div class="pb" id="ship-quality"></div>
-    </div>
-  </div>
 
-  <!-- 4주 트렌드 -->
-  <div class="panel">
-    <div class="ph"><h3>최근 4주 물동량 · 손익 트렌드</h3></div>
-    <div class="pb">
-      <div class="chart-wrap" style="height:140px"><canvas id="cTrend"></canvas></div>
-      <div id="ship-trendtbl" style="margin-top:10px"></div>
-    </div>
-  </div>
-
-  <!-- 기사님 CBM 달성율 + 라우팅 km (이전주) -->
-  <div class="two">
-    <div class="panel">
-      <div class="ph"><h3>기사님 CBM 달성율</h3><span class="badge b-info" id="ship-prevwk">이전주</span></div>
-      <div class="pb" id="ship-drivers"></div>
-    </div>
-    <div class="panel">
-      <div class="ph"><h3>기사님 배송 거리 km</h3><span class="badge b-info">이전주 · Kakao 라우팅</span></div>
-      <div class="pb" id="ship-routing"></div>
-    </div>
-  </div>
-
-  <!-- 에이원 창고 가동율 -->
-  <div class="panel">
-    <div class="ph"><h3>에이원센터 창고 가동율 (이전주)</h3></div>
-    <div class="pb" id="ship-a1"></div>
-  </div>
-
-  <!-- 다음주 예고 -->
-  <div class="panel" id="ship-next-panel">
-    <div class="ph"><h3>다음주 예고</h3><span class="badge" id="ship-nextwk">—</span></div>
-    <div class="pb" id="ship-next"></div>
-  </div>
-
-  <!-- 알림 -->
-  <div class="panel">
-    <div class="ph"><h3>주요 알림</h3></div>
-    <div class="pb" id="ship-alerts"></div>
-  </div>
-
-</div>
-
-<div class="footer">Sincerely SCM Dashboard &nbsp;·&nbsp; 데이터 기준: 2026-03-19</div>
-
-</div><!-- /container -->
+  </div><!-- /padding wrapper -->
+</main><!-- /main-content -->
 
 <script>
 let charts = {};
@@ -647,7 +848,7 @@ function applyData(data) {
     const fc  = data.forecast;
     const prj = fc.projected;
     const kpiA = fc.kpi_assessment;
-    const riskColor = { LOW: '#1D9E75', MEDIUM: '#BA7517', HIGH: '#E24B4A' };
+    const riskColor = { LOW: '#4A6741', MEDIUM: '#B08934', HIGH: '#963E3E' };
     const riskLabel = { LOW: '🟢 저위험', MEDIUM: '🟡 주의', HIGH: '🔴 고위험' };
     const riskBadge = document.getElementById('fc-risk-badge');
     if (riskBadge) {
@@ -757,18 +958,18 @@ function applyData(data) {
       const wact=((prevW.driver_weekly||{})[driver]||0).toFixed(2);
       const wmax=(prevW.driver_weekly_max||{})[driver]||cap;
       const wdays=(prevW.driver_work_days||{})[driver]||{};
-      const color=pct>100?'#E24B4A':pct>70?'#1D9E75':'#EF9F27';
+      const color=pct>100?'#963E3E':pct>70?'#4A6741':'#B08934';
       const name=driver.replace('신시어리 ','');
-      return `<div style="background:#f9f8f5;border-radius:6px;padding:10px 12px;margin-bottom:6px">
+      return `<div style="background:#F9F6F1;border-radius:6px;padding:10px 12px;margin-bottom:6px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
           <span style="font-size:12px;font-weight:500">${name}</span>
           <span style="font-size:10px;color:#aaa">${cap}m³/일 × ${wdays.count||0}일 = ${wmax}m³</span>
         </div>
-        <div style="width:100%;height:5px;background:#e8e6e0;border-radius:3px;overflow:hidden;margin-bottom:5px">
+        <div style="width:100%;height:5px;background:#E5E1DA;border-radius:3px;overflow:hidden;margin-bottom:5px">
           <div style="height:5px;border-radius:3px;width:${Math.min(pct,100)}%;background:${color}"></div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:baseline">
-          <span style="font-size:11px;color:#888">${wact}m³ / ${wmax}m³</span>
+          <span style="font-size:11px;color:#8C8375">${wact}m³ / ${wmax}m³</span>
           <span style="font-size:17px;font-weight:500;color:${color}">${pct.toFixed(1)}%${pct>100?' 초과':''}</span>
         </div>
       </div>`;
@@ -797,10 +998,10 @@ function applyData(data) {
       }).join('');
       const totalMin = Object.values(dailyData).reduce((s,d)=>s+(d.total_min||0),0);
       const totalTimeStr = totalMin>0 ? ` · ${Math.floor(totalMin/60)}시간 ${totalMin%60}분` : '';
-      return `<div style="background:#f9f8f5;border-radius:6px;padding:10px 12px;margin-bottom:6px">
+      return `<div style="background:#F9F6F1;border-radius:6px;padding:10px 12px;margin-bottom:6px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
           <span style="font-size:12px;font-weight:500">${name}</span>
-          <span style="font-size:18px;font-weight:500;color:#185FA5">${km.toFixed(1)}<span style="font-size:10px;color:#aaa;margin-left:2px">km</span><span style="font-size:10px;color:#888;margin-left:5px">${totalTimeStr}</span></span>
+          <span style="font-size:18px;font-weight:500;color:#185FA5">${km.toFixed(1)}<span style="font-size:10px;color:#aaa;margin-left:2px">km</span><span style="font-size:10px;color:#8C8375;margin-left:5px">${totalTimeStr}</span></span>
         </div>${dayRows}</div>`;
     }).join('');
   } else if(rtEl){
@@ -812,7 +1013,7 @@ function applyData(data) {
   const a1=prevW.a1_utilization||{};
   if(a1El&&a1.capacity){
     const pct=a1.pct||0;
-    const clr=pct>120?'#E24B4A':pct>100?'#EF9F27':pct>70?'#1D9E75':'#85B7EB';
+    const clr=pct>120?'#963E3E':pct>100?'#B08934':pct>70?'#4A6741':'#85B7EB';
     a1El.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div>
         <div class="stat"><span class="sk">창고 용량</span><span class="sv2">${a1.capacity} m³</span></div>
@@ -821,8 +1022,8 @@ function applyData(data) {
         ${pct>100?`<div class="stat"><span class="sk">초과분</span><span class="sv2 ng">+${((a1.total_cbm||0)-a1.capacity).toFixed(2)} m³</span></div>`:''}
       </div>
       <div>
-        <div style="font-size:10px;color:#888;margin-bottom:5px">가동율</div>
-        <div style="width:100%;height:10px;background:#e8e6e0;border-radius:5px;overflow:hidden;margin:6px 0">
+        <div style="font-size:10px;color:#8C8375;margin-bottom:5px">가동율</div>
+        <div style="width:100%;height:10px;background:#E5E1DA;border-radius:5px;overflow:hidden;margin:6px 0">
           <div style="height:10px;border-radius:5px;width:${Math.min(pct,100)}%;background:${clr}"></div>
         </div>
         <div style="font-size:28px;font-weight:600;color:${clr}">${pct.toFixed(1)}<span style="font-size:11px;color:#aaa;margin-left:2px">%</span></div>
@@ -854,7 +1055,7 @@ function applyData(data) {
     if(tCbm>25) alts.push({t:'info',m:`주간 CBM ${tCbm}m³ 초과 — 차량 용량 사전 조율 권장`});
     if(a1.pct>100) alts.push({t:'warn',m:`이전주 에이원 창고 가동율 ${a1.pct.toFixed(1)}% — 용량 초과 확인 필요`});
     if(!alts.length) alts.push({t:'ok',m:'특이 사항 없음'});
-    const borderMap={warn:'#BA7517',ok:'#1D9E75',info:'#185FA5'};
+    const borderMap={warn:'#B08934',ok:'#4A6741',info:'#185FA5'};
     const bgMap={warn:'#FAEEDA',ok:'#E1F5EE',info:'#E6F1FB'};
     const txtMap={warn:'#633806',ok:'#085041',info:'#0C447C'};
     altEl.innerHTML=alts.map(a=>`<div style="padding:8px 12px;border-left:2px solid ${borderMap[a.t]};background:${bgMap[a.t]};border-radius:0 6px 6px 0;margin-bottom:5px;font-size:11px;color:${txtMap[a.t]}">${a.m}</div>`).join('');
@@ -894,8 +1095,8 @@ async function loadHistory() {
     tabs.innerHTML = '';
     periods.forEach((p, i) => {
       if (i > 0 && i % 4 === 0) {
-        const sep = document.createElement('span');
-        sep.className = 'sep2'; sep.textContent = '|';
+        const sep = document.createElement('div');
+        sep.style.cssText = 'height:1px;background:#E5E1DA;margin:4px 0';
         tabs.appendChild(sep);
       }
       const btn = document.createElement('div');
@@ -1002,8 +1203,8 @@ function drawChart(cat) {
           {
             label: '불량률(%)', yAxisID: 'y2', type: 'line',
             data: drData,
-            borderColor: '#E24B4A', backgroundColor: 'transparent',
-            pointRadius: 5, pointBackgroundColor: '#E24B4A', borderWidth: 2, tension: 0
+            borderColor: '#963E3E', backgroundColor: 'transparent',
+            pointRadius: 5, pointBackgroundColor: '#963E3E', borderWidth: 2, tension: 0
           }
         ]
       },
@@ -1185,7 +1386,7 @@ function drawChart(cat) {
           plugins:{ legend:{display:false} },
           scales:{
             x:{ticks:{font:{size:10}},grid:{display:false}},
-            y:{position:'left',min:0,ticks:{font:{size:9},callback:v=>v+'m³'},grid:{color:'#f0ede6'}},
+            y:{position:'left',min:0,ticks:{font:{size:9},callback:v=>v+'m³'},grid:{color:'#F0EDE6'}},
             y2:{position:'right',min:0,ticks:{font:{size:9}},grid:{display:false}}
           } }
       });
@@ -1193,7 +1394,7 @@ function drawChart(cat) {
       if (tblEl) {
         const fmt3=n=>isNaN(n)?'—':Math.round(n).toLocaleString('ko-KR');
         tblEl.innerHTML=`<table class="wt"><thead><tr><th>주차</th><th class="tr">건수</th><th class="tr">CBM</th><th class="tr">비용</th><th class="tr">손익</th></tr></thead>
-          <tbody>${trendData.map(t=>`<tr><td>${t.week}</td><td class="tr">${t.count}건</td><td class="tr">${t.cbm.toFixed(1)}m³</td><td class="tr">${t.cost>0?fmt3(t.cost)+'원':'—'}</td><td class="tr" style="color:${t.profit>=0?'#1D9E75':'#E24B4A'}">${t.profit!==0?(t.profit>=0?'+':'')+fmt3(t.profit)+'원':'—'}</td></tr>`).join('')}</tbody></table>`;
+          <tbody>${trendData.map(t=>`<tr><td>${t.week}</td><td class="tr">${t.count}건</td><td class="tr">${t.cbm.toFixed(1)}m³</td><td class="tr">${t.cost>0?fmt3(t.cost)+'원':'—'}</td><td class="tr" style="color:${t.profit>=0?'#4A6741':'#963E3E'}">${t.profit!==0?(t.profit>=0?'+':'')+fmt3(t.profit)+'원':'—'}</td></tr>`).join('')}</tbody></table>`;
       }
     } else if (ctxTrend) {
       ctxTrend.parentElement.innerHTML='<div style="text-align:center;padding:48px 0;font-size:11px;color:#aaa">트렌드 데이터 없음</div>';
