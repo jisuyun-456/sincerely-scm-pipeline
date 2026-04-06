@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sincerely SCM | 실행 업무 현황</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "surface-container": "#f0ede9",
+          "primary": "#99462a",
+          "on-background": "#1c1c19",
+          "inverse-on-surface": "#f3f0eb",
+          "secondary-container": "#e2dfde",
+          "background": "#fcf9f4",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-high": "#ebe8e3",
+          "surface-dim": "#dcdad5",
+          "inverse-surface": "#31302d",
+          "outline": "#88726c",
+          "on-primary-container": "#541400",
+          "outline-variant": "#dbc1b9",
+          "on-error": "#ffffff",
+          "on-secondary": "#ffffff",
+          "on-primary": "#ffffff",
+          "surface-bright": "#fcf9f4",
+          "surface-container-highest": "#e5e2dd",
+          "primary-fixed-dim": "#ffb59e",
+          "inverse-primary": "#ffb59e",
+          "primary-fixed": "#ffdbd0",
+          "tertiary-fixed": "#ffddb1",
+          "surface": "#fcf9f4",
+          "on-surface-variant": "#55433d",
+          "surface-variant": "#e5e2dd",
+          "primary-container": "#d97757",
+          "on-secondary-container": "#636262",
+          "error": "#ba1a1a",
+          "surface-container-low": "#f6f3ee",
+          "tertiary": "#815600",
+          "on-surface": "#1c1c19",
+          "secondary": "#5f5e5e",
+          "error-container": "#ffdad6",
+          "tertiary-container": "#c58500",
+          "on-error-container": "#93000a"
+        },
+        borderRadius: {
+          DEFAULT: "0.125rem",
+          lg: "0.25rem",
+          xl: "0.5rem",
+          full: "0.75rem"
+        },
+        fontFamily: {
+          headline: ["Newsreader", "serif"],
+          body: ["Inter", "sans-serif"],
+          label: ["Inter", "sans-serif"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  body {
+    background-color: #fcf9f4;
+    color: #1c1c19;
+    font-family: 'Inter', sans-serif;
+  }
+  .glass-nav {
+    backdrop-filter: blur(12px);
+    background-color: rgba(252, 249, 244, 0.85);
+  }
+  .pill-btn { transition: all 0.15s ease; }
+  .pill-btn.on { background-color: #99462a; color: #fff; border-color: #99462a; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes rowIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulseA { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.5);} }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Top Nav -->
+<nav class="fixed top-0 w-full z-50 glass-nav border-b border-outline-variant/20 flex justify-between items-center px-8 py-4">
+  <div class="flex items-center gap-8">
+    <span class="font-headline text-2xl italic font-semibold text-on-surface">Sincerely SCM</span>
+    <div class="hidden md:flex gap-6">
+      <a class="font-headline text-lg tracking-tight text-primary border-b-2 border-primary pb-1 font-semibold" href="#">Actions</a>
+      <a class="font-headline text-lg tracking-tight text-on-surface/60 hover:text-primary transition-colors" href="docs/q1_wms_tms_report.html">Q1 Report</a>
+      <a class="font-headline text-lg tracking-tight text-on-surface/60 hover:text-primary transition-colors" href="#">Analytics</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full">
+      <span class="w-2 h-2 bg-primary rounded-full" style="animation:pulseA 2s infinite"></span>
+      <span class="text-xs font-bold uppercase tracking-widest text-primary">Live</span>
+    </div>
+    <div class="text-right hidden sm:block">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Review Period</p>
+      <p class="text-xs font-medium text-on-surface">2026 Q1 — APR</p>
+    </div>
+  </div>
+</nav>
+
+<!-- Side Nav -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-surface-container-low border-r border-outline-variant/10 hidden lg:flex flex-col">
+  <div class="px-6 py-6 border-b border-outline-variant/10">
+    <h2 class="font-body text-xs font-medium uppercase tracking-widest text-on-surface/50">SCM 실행 관리</h2>
+    <p class="text-[11px] text-on-surface/30 mt-1 uppercase tracking-tighter">Initiative Tracker v1.0</p>
+  </div>
+  <nav class="flex-1 mt-4">
+    <a class="flex items-center gap-3 px-6 py-4 w-full text-primary bg-surface rounded-l-md font-bold shadow-inner font-body text-sm uppercase tracking-widest" href="#">
+      <span class="material-symbols-outlined text-lg">task_alt</span> Overview
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 w-full text-on-surface/50 hover:bg-surface-container font-body text-sm uppercase tracking-widest transition-colors" href="#">
+      <span class="material-symbols-outlined text-lg">analytics</span> Analytics
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 w-full text-on-surface/50 hover:bg-surface-container font-body text-sm uppercase tracking-widest transition-colors" href="docs/q1_wms_tms_report.html">
+      <span class="material-symbols-outlined text-lg">bar_chart</span> Q1 Report
+    </a>
+    <a class="flex items-center gap-3 px-6 py-4 w-full text-on-surface/50 hover:bg-surface-container font-body text-sm uppercase tracking-widest transition-colors" href="#">
+      <span class="material-symbols-outlined text-lg">description</span> Reports
+    </a>
+  </nav>
+  <div class="p-6">
+    <button class="w-full bg-primary text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-all">
+      New Initiative
+    </button>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="lg:ml-64 pt-24 px-6 lg:px-8 pb-12 flex-1 flex flex-col gap-8" style="animation:fadeDown 0.5s ease both;">
+
+  <!-- Page Header -->
+  <header class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2">SCM Initiative Tracker</p>
+      <h1 class="font-headline text-4xl text-on-surface">실행 업무 현황</h1>
+      <p class="text-on-surface-variant font-body mt-2 text-sm">2026년 1분기 전체 이니셔티브 진행 현황 및 담당자별 추적</p>
+    </div>
+    <div class="flex bg-surface-container-low p-1 rounded-xl border border-outline-variant/10">
+      <button class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg text-on-surface-variant hover:bg-surface-container transition-all">주간</button>
+      <button class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-surface-container-lowest shadow text-primary">Q1</button>
+      <button class="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg text-on-surface-variant hover:bg-surface-container transition-all">전체</button>
+    </div>
+  </header>
+
+  <!-- KPI Section -->
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-6" style="animation:fadeUp 0.5s ease 0.1s both;">
+    <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+      <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block">Total Initiatives</span>
+      <div class="flex items-baseline justify-between">
+        <h3 class="font-headline text-5xl text-on-surface" id="cnt-total">0</h3>
+        <span class="material-symbols-outlined text-on-surface-variant text-2xl">grid_view</span>
+      </div>
+      <p class="text-sm text-on-surface-variant mt-2">이번 분기 전체</p>
+    </div>
+    <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+      <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block">Completed</span>
+      <div class="flex items-baseline justify-between">
+        <h3 class="font-headline text-5xl text-green-700" id="cnt-done">0</h3>
+        <span class="text-green-700 text-sm font-medium flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">trending_up</span>
+          <span id="pct-done">—</span>
+        </span>
+      </div>
+      <p class="text-sm text-on-surface-variant mt-2">완료 건수</p>
+    </div>
+    <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+      <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block">In Progress</span>
+      <div class="flex items-baseline justify-between">
+        <h3 class="font-headline text-5xl text-tertiary" id="cnt-inprog">0</h3>
+        <span class="text-tertiary text-sm font-medium flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">pending</span>
+          <span id="pct-inprog">—</span>
+        </span>
+      </div>
+      <p class="text-sm text-on-surface-variant mt-2">진행 중 건수</p>
+    </div>
+  </section>
+
+  <!-- Progress Bar -->
+  <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10" style="animation:fadeUp 0.5s ease 0.18s both;">
+    <div class="flex justify-between items-baseline mb-3">
+      <span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">전체 진행률</span>
+      <span class="font-headline text-lg text-primary" id="pct-label">—</span>
+    </div>
+    <div class="h-2 bg-surface-container-high rounded-full overflow-hidden">
+      <div class="h-full rounded-full bg-primary transition-all duration-700" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Filter Pills -->
+  <div class="flex gap-2 flex-wrap" id="filters" style="animation:fadeUp 0.5s ease 0.24s both;"></div>
+
+  <!-- Table -->
+  <section class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10" style="animation:fadeUp 0.5s ease 0.30s both;">
+    <div class="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+      <h4 class="font-headline text-2xl">이니셔티브 목록</h4>
+      <span class="text-xs text-on-surface-variant font-medium uppercase tracking-widest">2026 Q1 — APR</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="bg-surface-container-high/50">
+            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant w-12">No.</th>
+            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant w-36">프로젝트</th>
+            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">주요 업무</th>
+            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">담당</th>
+            <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant text-right">상태</th>
+          </tr>
+        </thead>
+        <tbody id="tbody" class="divide-y divide-outline-variant/10"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="lg:ml-64 py-6 bg-background border-t border-outline-variant/20 flex flex-col items-center gap-3">
+  <div class="flex gap-8 text-[11px] text-on-surface/40">
+    <a class="hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+    <a class="hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+    <a class="hover:text-on-surface transition-colors" href="#">SCM Portal</a>
+  </div>
+  <p class="text-[11px] text-on-surface/40">© 2026 Sincerely SCM. All rights reserved.</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var DATA = [
+    { proj:'운영 관리',      pc:'ops',    task:'자재 + 물류지원 업무 분장',
+      asgKey:'경선', asgLabel:'경선',    status:'완료',    sc:'done'   },
+    { proj:'업무 개선',      pc:'work',   task:'출하 창고 가동률 누적 관리 (CBM)',
+      asgKey:'지수', asgLabel:'지수',    status:'완료',    sc:'done'   },
+    { proj:'재고 마감',      pc:'stock',  task:'26년도 1-3월 자재 실재고 마감',
+      asgKey:'경선', asgLabel:'경선',    status:'완료',    sc:'done'   },
+    { proj:'성과 관리',      pc:'kpi',    task:'물류파트 KPI 설정 및 관리',
+      asgKey:'파트', asgLabel:'물류파트', status:'완료',    sc:'done'   },
+    { proj:'운영 방안 검토',  pc:'review', task:'글로벌 스탠다드 ERP 시스템 참고',
+      asgKey:'파트', asgLabel:'물류파트', status:'진행 중', sc:'inprog' },
+    { proj:'업무 개선',      pc:'work',   task:'입고 리드타임 측정 중',
+      asgKey:'경선', asgLabel:'경선',    status:'진행 중', sc:'inprog' },
+    { proj:'업무 개선',      pc:'work',
+      task:'TMS GAP 보완부분 (OTIF 기록 테이블, 배송이벤트 테이블, 운임단가표, 배송파트너 확장, Shipment 보강, 배차일지 확장, ASN 입하예정, 정산관리, 택배사 추적 로그, 루트 최적화, 배송 SLA 기준, 배송 클레임 관리)',
+      asgKey:'파트', asgLabel:'물류파트', status:'진행 중', sc:'inprog' },
+    { proj:'업무 개선',      pc:'work',   task:'WMS GAP 보완부분',
+      asgKey:'파트', asgLabel:'물류파트', status:'검토중',  sc:'review' },
+  ];
+
+  // Project badge colors (light palette)
+  var PROJ_COLORS = {
+    ops:    { bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200' },
+    work:   { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
+    stock:  { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+    kpi:    { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200' },
+    review: { bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200' },
+  };
+
+  // Status badge
+  var STATUS_COLORS = {
+    done:   { bg: 'bg-green-100',  text: 'text-green-800'  },
+    inprog: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+    review: { bg: 'bg-purple-100', text: 'text-purple-800' },
+  };
+  var STATUS_LABELS = { done: '완료', inprog: '진행 중', review: '검토중' };
+
+  // Assignee dot colors
+  var ASG_COLORS = {
+    경선: 'bg-amber-100 text-amber-800 border border-amber-300',
+    지수: 'bg-blue-100 text-blue-800 border border-blue-300',
+    파트: 'bg-emerald-100 text-emerald-800 border border-emerald-300',
+  };
+
+  var tbody = document.getElementById('tbody');
+
+  function el(tag, cls) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    return e;
+  }
+
+  DATA.forEach(function (d, i) {
+    var tr = el('tr', 'hover:bg-surface-container transition-colors cursor-default');
+    tr.dataset.status = d.status;
+    tr.dataset.proj   = d.proj;
+    tr.dataset.asg    = d.asgLabel;
+    tr.style.animation = 'rowIn 0.45s ease ' + (0.35 + i * 0.06) + 's both';
+
+    // No.
+    var tdNo = el('td', 'px-6 py-4 text-xs font-mono text-on-surface-variant');
+    tdNo.textContent = String(i + 1);
+    tr.appendChild(tdNo);
+
+    // Project badge
+    var pc = PROJ_COLORS[d.pc] || PROJ_COLORS.work;
+    var tdProj = el('td', 'px-6 py-4');
+    var badge = el('span', 'inline-block px-2 py-1 rounded text-[11px] font-semibold border ' + pc.bg + ' ' + pc.text + ' ' + pc.border);
+    badge.textContent = d.proj;
+    tdProj.appendChild(badge);
+    tr.appendChild(tdProj);
+
+    // Task
+    var tdTask = el('td', 'px-6 py-4');
+    var taskDiv = el('div', 'text-sm text-on-surface leading-relaxed max-w-xl');
+    taskDiv.textContent = d.task;
+    tdTask.appendChild(taskDiv);
+    tr.appendChild(tdTask);
+
+    // Assignee
+    var tdAsg = el('td', 'px-6 py-4');
+    var asgWrap = el('span', 'inline-flex items-center gap-2');
+    var dot = el('span', 'w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ' + (ASG_COLORS[d.asgKey] || 'bg-gray-100 text-gray-700'));
+    dot.textContent = d.asgLabel.charAt(0);
+    var name = el('span', 'text-sm text-on-surface');
+    name.textContent = d.asgLabel;
+    asgWrap.appendChild(dot);
+    asgWrap.appendChild(name);
+    tdAsg.appendChild(asgWrap);
+    tr.appendChild(tdAsg);
+
+    // Status
+    var sc = STATUS_COLORS[d.sc] || STATUS_COLORS.inprog;
+    var tdSt = el('td', 'px-6 py-4 text-right');
+    var stBadge = el('span', 'inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ' + sc.bg + ' ' + sc.text);
+    var stDot = el('span', 'w-1.5 h-1.5 rounded-full flex-shrink-0 ' + (d.sc === 'done' ? 'bg-green-700' : d.sc === 'inprog' ? 'bg-yellow-600' : 'bg-purple-700'));
+    if (d.sc === 'inprog') stDot.style.animation = 'pulseA 2s infinite';
+    stBadge.appendChild(stDot);
+    stBadge.appendChild(document.createTextNode(STATUS_LABELS[d.sc]));
+    tdSt.appendChild(stBadge);
+    tr.appendChild(tdSt);
+
+    tbody.appendChild(tr);
+  });
+
+  // Stats
+  var total  = DATA.length;
+  var done   = DATA.filter(function (d) { return d.status === '완료'; }).length;
+  var inprog = DATA.filter(function (d) { return d.status === '진행 중'; }).length;
+  var pct    = Math.round(done / total * 100);
+
+  function countUp(el, target, duration) {
+    var start = performance.now();
+    function step(now) {
+      var progress = Math.min((now - start) / duration, 1);
+      var eased    = 1 - Math.pow(1 - progress, 3);
+      el.textContent = String(Math.round(eased * target));
+      if (progress < 1) { requestAnimationFrame(step); }
+      else { el.textContent = String(target); }
+    }
+    requestAnimationFrame(step);
+  }
+
+  setTimeout(function () {
+    countUp(document.getElementById('cnt-total'),  total,  900);
+    countUp(document.getElementById('cnt-done'),   done,   900);
+    countUp(document.getElementById('cnt-inprog'), inprog, 900);
+    document.getElementById('pct-done').textContent   = (done / total * 100).toFixed(1) + '%';
+    document.getElementById('pct-inprog').textContent = (inprog / total * 100).toFixed(1) + '%';
+    document.getElementById('pct-label').textContent  = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }, 400);
+
+  // Filters
+  var filterDefs = [
+    { label: '전체',     fn: function ()  { return true; } },
+    { label: '완료',     fn: function (r) { return r.dataset.status === '완료'; } },
+    { label: '진행 중',  fn: function (r) { return r.dataset.status === '진행 중'; } },
+    { label: '검토중',   fn: function (r) { return r.dataset.status === '검토중'; } },
+    { label: '경선',     fn: function (r) { return r.dataset.asg.indexOf('경선') !== -1; } },
+    { label: '물류파트', fn: function (r) { return r.dataset.asg === '물류파트'; } },
+    { label: '지수',     fn: function (r) { return r.dataset.asg.indexOf('지수') !== -1; } },
+  ];
+
+  var filtersEl = document.getElementById('filters');
+
+  filterDefs.forEach(function (f, i) {
+    var btn = document.createElement('button');
+    btn.className = 'pill-btn px-4 py-2 rounded-lg border border-outline-variant/30 text-xs font-medium text-on-surface-variant hover:bg-surface-container hover:border-outline-variant transition-all' + (i === 0 ? ' on' : '');
+    btn.textContent = f.label;
+    btn.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    btn.addEventListener('click', function () {
+      filtersEl.querySelectorAll('.pill-btn').forEach(function (b) {
+        b.classList.remove('on');
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.classList.add('on');
+      btn.setAttribute('aria-pressed', 'true');
+
+      var rows = tbody.querySelectorAll('tr');
+      var n = 1;
+      rows.forEach(function (row) {
+        var hidden = !f.fn(row);
+        row.style.display = hidden ? 'none' : '';
+        if (!hidden) { row.cells[0].textContent = String(n++); }
+      });
+    });
+    filtersEl.appendChild(btn);
+  });
+}());
+</script>
+</body>
+</html>

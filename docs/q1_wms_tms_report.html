@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sincerely SCM | 26년 1분기 WMS/TMS 현황</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "surface-container": "#f0ede9",
+          "primary": "#99462a",
+          "on-background": "#1c1c19",
+          "inverse-on-surface": "#f3f0eb",
+          "secondary-container": "#e2dfde",
+          "background": "#fcf9f4",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-high": "#ebe8e3",
+          "surface-dim": "#dcdad5",
+          "inverse-surface": "#31302d",
+          "outline": "#88726c",
+          "on-primary-container": "#541400",
+          "outline-variant": "#dbc1b9",
+          "on-error": "#ffffff",
+          "on-secondary": "#ffffff",
+          "on-primary": "#ffffff",
+          "surface-bright": "#fcf9f4",
+          "surface-container-highest": "#e5e2dd",
+          "primary-fixed-dim": "#ffb59e",
+          "inverse-primary": "#ffb59e",
+          "primary-fixed": "#ffdbd0",
+          "surface": "#fcf9f4",
+          "on-surface-variant": "#55433d",
+          "surface-variant": "#e5e2dd",
+          "primary-container": "#d97757",
+          "on-secondary-container": "#636262",
+          "error": "#ba1a1a",
+          "surface-container-low": "#f6f3ee",
+          "tertiary": "#815600",
+          "on-surface": "#1c1c19",
+          "secondary": "#5f5e5e",
+          "error-container": "#ffdad6",
+          "tertiary-container": "#c58500",
+          "on-error-container": "#93000a"
+        },
+        borderRadius: {
+          DEFAULT: "0.125rem",
+          lg: "0.25rem",
+          xl: "0.5rem",
+          full: "0.75rem"
+        },
+        fontFamily: {
+          headline: ["Newsreader", "serif"],
+          body: ["Inter", "sans-serif"],
+          label: ["Inter", "sans-serif"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  body { background-color: #fcf9f4; color: #1c1c19; font-family: 'Inter', sans-serif; }
+  .glass-nav { backdrop-filter: blur(12px); background-color: rgba(252,249,244,0.85); }
+  .sec { display: none; }
+  .sec.on { display: block; animation: fadeUp 0.35s ease both; }
+  .tab-pill { transition: all 0.15s ease; }
+  .tab-pill.on { background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #99462a; font-weight: 700; }
+  .stab { transition: all 0.13s; }
+  .stab.on { background: #f6f3ee; color: #1c1c19; border-color: #dbc1b9; }
+  /* badges */
+  .bx { display:inline-flex; align-items:center; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; border:1px solid; white-space:nowrap; font-family:'Inter',sans-serif; }
+  .bi { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+  .bn { background:#f9fafb; color:#6b7280; border-color:#e5e7eb; }
+  .bd { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+  .bw { background:#fffbeb; color:#b45309; border-color:#fde68a; }
+  .bg { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
+  /* alert */
+  .alert-box { background:#fef2f2; border:1px solid #fecaca; border-left:3px solid #dc2626; border-radius:6px; padding:10px 14px; color:#dc2626; font-size:12px; line-height:1.7; margin-bottom:12px; }
+  /* issue cards */
+  .ic { background:#fff; border:1px solid #e5e7eb; border-radius:0 8px 8px 0; padding:14px 18px; margin-bottom:8px; }
+  .ic-h { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .ic-t { font-size:14px; font-weight:600; color:#1c1c19; }
+  .ic-d { font-size:12.5px; color:#55433d; line-height:1.65; }
+  .ic.sev-high { border-left:3px solid #dc2626; background:#fef9f9; }
+  .ic.sev-mid  { border-left:3px solid #b45309; background:#fffdf7; }
+  .ic.sev-low  { border-left:3px solid #1d4ed8; background:#f8faff; }
+  .month-label { font-size:10px; font-weight:700; color:#6b7280; letter-spacing:0.1em; text-transform:uppercase; margin:20px 0 8px; display:flex; align-items:center; gap:10px; }
+  .month-label::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+  .note { font-size:11.5px; color:#55433d; margin:6px 0 16px; line-height:1.7; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  @media(max-width:640px) {
+    .kpi-grid-4 { grid-template-columns: repeat(2,1fr) !important; }
+    .chart-grid  { grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Top Nav -->
+<nav class="fixed top-0 w-full z-50 glass-nav border-b border-outline-variant/20 flex justify-between items-center px-8 py-4">
+  <div class="flex items-center gap-8">
+    <span class="font-headline text-2xl italic font-semibold text-on-surface">Sincerely SCM</span>
+    <div class="hidden md:flex gap-6">
+      <a class="font-headline text-lg tracking-tight text-on-surface/60 hover:text-primary transition-colors" href="../dashboard.html">Actions</a>
+      <a class="font-headline text-lg tracking-tight text-primary border-b-2 border-primary pb-1 font-semibold" href="#">Q1 Report</a>
+      <a class="font-headline text-lg tracking-tight text-on-surface/60 hover:text-primary transition-colors" href="#">Analytics</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full">
+      <span class="w-2 h-2 bg-primary rounded-full"></span>
+      <span class="text-xs font-bold uppercase tracking-widest text-primary">Q1 2026</span>
+    </div>
+    <div class="text-right hidden sm:block">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">기준일</p>
+      <p class="text-xs font-medium text-on-surface">2026.04.01</p>
+    </div>
+  </div>
+</nav>
+
+<!-- Side Nav -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-surface-container-low border-r border-outline-variant/10 hidden lg:flex flex-col">
+  <div class="px-6 py-6 border-b border-outline-variant/10">
+    <h2 class="font-body text-xs font-medium uppercase tracking-widest text-on-surface/50">WMS/TMS Report</h2>
+    <p class="text-[11px] text-on-surface/30 mt-1 uppercase tracking-tighter">26년 1분기 현황</p>
+  </div>
+  <nav class="flex-1 mt-4" id="sidenav">
+    <button onclick="sw('in')" data-tab="in" class="sidenav-btn flex items-center gap-3 px-6 py-4 w-full text-primary bg-surface rounded-l-md font-bold font-body text-sm uppercase tracking-widest">
+      <span class="material-symbols-outlined text-lg">input</span> 입고
+    </button>
+    <button onclick="sw('qc')" data-tab="qc" class="sidenav-btn flex items-center gap-3 px-6 py-4 w-full text-on-surface/50 hover:bg-surface-container font-body text-sm uppercase tracking-widest transition-colors">
+      <span class="material-symbols-outlined text-lg">verified_user</span> 검수
+    </button>
+    <button onclick="sw('mt')" data-tab="mt" class="sidenav-btn flex items-center gap-3 px-6 py-4 w-full text-on-surface/50 hover:bg-surface-container font-body text-sm uppercase tracking-widest transition-colors">
+      <span class="material-symbols-outlined text-lg">inventory_2</span> 자재 재고
+    </button>
+    <button onclick="sw('tm')" data-tab="tm" class="sidenav-btn flex items-center gap-3 px-6 py-4 w-full text-on-surface/50 hover:bg-surface-container font-body text-sm uppercase tracking-widest transition-colors">
+      <span class="material-symbols-outlined text-lg">local_shipping</span> 출하
+    </button>
+    <button onclick="sw('is')" data-tab="is" class="sidenav-btn flex items-center gap-3 px-6 py-4 w-full text-on-surface/50 hover:bg-surface-container font-body text-sm uppercase tracking-widest transition-colors">
+      <span class="material-symbols-outlined text-lg">warning</span> 이슈
+      <span class="ml-auto bx bd text-[9px] px-1.5 py-0">6</span>
+    </button>
+  </nav>
+  <div class="p-6">
+    <a href="../dashboard.html" class="block w-full bg-primary text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-all text-center">
+      Actions 보기
+    </a>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="lg:ml-64 pt-24 px-6 lg:px-8 pb-12 flex-1 flex flex-col gap-8" style="animation:fadeDown 0.5s ease both;">
+
+  <!-- Page Header -->
+  <header class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2">Sincerely SCM · WMS/TMS Report</p>
+      <h1 class="font-headline text-4xl text-on-surface">26년 1분기 현황</h1>
+      <p class="text-on-surface-variant font-body mt-2 text-sm">2026년 Q1 기준 입고·검수·자재·출하·이슈 종합 분석</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <span class="bx bi">2026 1분기</span>
+      <span class="bx bn">금요일 발표용</span>
+      <span class="bx bn">2026.04.01 기준</span>
+    </div>
+  </header>
+
+  <!-- Tab Bar (mobile + tablet) -->
+  <div class="lg:hidden flex bg-surface-container-low p-1 rounded-xl border border-outline-variant/10 gap-1 flex-wrap" id="tabbar-mobile">
+    <button onclick="sw('in')" data-tab="in" class="tab-pill on flex-1 min-w-0 px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant uppercase tracking-wider">입고</button>
+    <button onclick="sw('qc')" data-tab="qc" class="tab-pill flex-1 min-w-0 px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant uppercase tracking-wider">검수</button>
+    <button onclick="sw('mt')" data-tab="mt" class="tab-pill flex-1 min-w-0 px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant uppercase tracking-wider">자재</button>
+    <button onclick="sw('tm')" data-tab="tm" class="tab-pill flex-1 min-w-0 px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant uppercase tracking-wider">출하</button>
+    <button onclick="sw('is')" data-tab="is" class="tab-pill flex-1 min-w-0 px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant uppercase tracking-wider">이슈</button>
+  </div>
+
+  <!-- ═══ 입고 ═══ -->
+  <div class="sec on" id="s-in">
+    <!-- KPI -->
+    <section class="grid grid-cols-2 xl:grid-cols-4 kpi-grid-4 gap-4 mb-6">
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">총 입하건수</span>
+        <h3 class="font-headline text-4xl text-on-surface">3,200</h3>
+        <p class="text-xs text-on-surface-variant mt-1">1월 1,237 · 2월 786 · 3월 1,177</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">입하수량</span>
+        <h3 class="font-headline text-4xl text-on-surface">1.04M</h3>
+        <p class="text-xs text-on-surface-variant mt-1">1Q 누계 1,039,063개</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">입고수량</span>
+        <h3 class="font-headline text-4xl text-tertiary">1.03M</h3>
+        <p class="text-xs text-on-surface-variant mt-1">손실 6,870개</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">입하완료율</span>
+        <div class="flex items-baseline gap-2">
+          <h3 class="font-headline text-4xl text-green-700">97.1%</h3>
+          <span class="material-symbols-outlined text-green-700 text-lg">trending_up</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">2월 100% 달성 ✓</p>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 chart-grid gap-4 mb-4">
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <p class="font-headline text-xl mb-4">월별 입고건수</p>
+        <div style="position:relative;height:190px;"><canvas id="ci1"></canvas></div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <p class="font-headline text-xl mb-4">입고 목적별 (1Q)</p>
+        <div style="position:relative;height:190px;"><canvas id="ci2"></canvas></div>
+      </div>
+    </div>
+    <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <p class="font-headline text-xl">주간 입고 현황</p>
+        <span class="bx bn">W02 ~ W14</span>
+      </div>
+      <div style="position:relative;height:170px;"><canvas id="ci3"></canvas></div>
+    </div>
+
+    <!-- 미입하 현황 -->
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="p-5 border-b border-outline-variant/10 flex flex-wrap items-center gap-3">
+        <h4 class="font-headline text-xl">미입하 발생이력 현황</h4>
+        <span class="bx bn">1Q 발생이력 56건</span>
+        <span class="bx bw">미해소 4건</span>
+      </div>
+      <p class="px-5 py-3 text-xs text-on-surface-variant note">입하 지연/미확인 이력이 기록된 건 (해소 완료 포함). ⚠ 표시는 3/31 기준 현재도 미입하 상태인 건.</p>
+    </div>
+
+    <div class="month-label">1월 <span class="bx bg">전량 해소 (20건)</span></div>
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="bg-surface-container-high/50">
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">업체명</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">건수</th>
+          </tr></thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">신명인쇄</td><td class="px-5 py-3 text-on-surface-variant">5건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">엠알오즈 (MROZ)</td><td class="px-5 py-3 text-on-surface-variant">2건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 위즈프로 (구.호언)</td><td class="px-5 py-3 text-on-surface-variant">2건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 케이원랩</td><td class="px-5 py-3 text-on-surface-variant">2건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 에벤에셀기업</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 디자인오엔</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">올댓프린팅</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">민영종합상사</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 큐엘앤컴퍼니</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">감성코퍼레이션 외 5개사</td><td class="px-5 py-3 text-on-surface-variant">5건</td></tr>
+            <tr class="bg-surface-container/50"><td class="px-5 py-3 font-semibold text-on-surface">합계</td><td class="px-5 py-3 font-semibold text-on-surface">20건</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="month-label">2월 <span class="bx bg">전량 해소 (6건)</span></div>
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="bg-surface-container-high/50">
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">업체명</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">건수</th>
+          </tr></thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">(업체명 미기재)</td><td class="px-5 py-3 text-on-surface-variant">3건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">비닐24</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">엠알오즈 (MROZ)</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">서울디지털인쇄협동조합</td><td class="px-5 py-3 text-on-surface-variant">1건</td></tr>
+            <tr class="bg-surface-container/50"><td class="px-5 py-3 font-semibold text-on-surface">합계</td><td class="px-5 py-3 font-semibold text-on-surface">6건</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="month-label">3월 <span class="bx bw">4건 미해소 ⚠</span></div>
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="bg-surface-container-high/50">
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">업체명</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">건수</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">상태</th>
+          </tr></thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">(업체명 미기재)</td><td class="px-5 py-3 text-on-surface-variant">12건</td><td class="px-5 py-3"><span class="bx bn">확인 중</span></td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 피앤더블유인터네셔널</td><td class="px-5 py-3 text-on-surface-variant">4건</td><td class="px-5 py-3"><span class="bx bg">해소</span></td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">강천FNT</td><td class="px-5 py-3 text-on-surface-variant">2건</td><td class="px-5 py-3"><span class="bx bg">해소</span></td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 에벤에셀기업</td><td class="px-5 py-3 text-on-surface-variant">2건</td><td class="px-5 py-3"><span class="bx bg">해소</span></td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">주식회사 꾸띠잔홀딩스</td><td class="px-5 py-3 text-on-surface-variant">2건</td><td class="px-5 py-3"><span class="bx bg">해소</span></td></tr>
+            <tr class="bg-red-50 hover:bg-red-100 transition-colors"><td class="px-5 py-3 font-semibold text-error">HEFEI WORLD BA... ⚠</td><td class="px-5 py-3 text-on-surface-variant">1건</td><td class="px-5 py-3"><span class="bx bd">미해소</span></td></tr>
+            <tr class="bg-red-50 hover:bg-red-100 transition-colors"><td class="px-5 py-3 font-semibold text-error">비닐24 ⚠</td><td class="px-5 py-3 text-on-surface-variant">1건</td><td class="px-5 py-3"><span class="bx bd">미해소</span></td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">(주)홍기씨앤디 외 4개사</td><td class="px-5 py-3 text-on-surface-variant">4건</td><td class="px-5 py-3"><span class="bx bg">해소</span></td></tr>
+            <tr class="bg-surface-container/50"><td class="px-5 py-3 font-semibold text-on-surface">합계</td><td class="px-5 py-3 font-semibold text-on-surface">30건</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="alert-box">⚠ 3/31 기준 미해소 4건 — HEFEI WORLD BA..., 비닐24, 업체명 미기재 2건. 즉시 확인 및 입하처리 필요.</div>
+  </div>
+
+  <!-- ═══ 검수 ═══ -->
+  <div class="sec" id="s-qc">
+    <section class="grid grid-cols-2 xl:grid-cols-4 kpi-grid-4 gap-4 mb-6">
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">검수건수</span>
+        <h3 class="font-headline text-4xl text-on-surface">2,727</h3>
+        <p class="text-xs text-on-surface-variant mt-1">1Q 합계</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">검수수량</span>
+        <h3 class="font-headline text-4xl text-on-surface">13,772</h3>
+        <p class="text-xs text-on-surface-variant mt-1">1Q 합계</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">불량수량</span>
+        <h3 class="font-headline text-4xl text-error">2,841</h3>
+        <p class="text-xs text-on-surface-variant mt-1">1Q 합계</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">1Q 불량률</span>
+        <div class="flex items-baseline gap-2">
+          <h3 class="font-headline text-4xl text-error">20.6%</h3>
+          <span class="material-symbols-outlined text-error text-lg">trending_up</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1">목표 ≤ 1.0%</p>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 chart-grid gap-4 mb-6">
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <div class="flex items-center gap-2 mb-4">
+          <p class="font-headline text-xl">월별 불량률</p>
+          <span class="bx bg">목표 1%</span>
+        </div>
+        <div style="position:relative;height:190px;"><canvas id="cq1"></canvas></div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <p class="font-headline text-xl mb-4">검수 결과 분류 (건수)</p>
+        <div style="position:relative;height:190px;"><canvas id="cq2"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Sub-tabs -->
+    <div class="flex gap-2 mb-4">
+      <button class="stab px-4 py-2 rounded-lg border border-outline-variant/20 text-xs font-semibold text-on-surface-variant on" id="qt1" onclick="qsw(1)">1월</button>
+      <button class="stab px-4 py-2 rounded-lg border border-outline-variant/20 text-xs font-semibold text-on-surface-variant" id="qt2" onclick="qsw(2)">2월</button>
+      <button class="stab px-4 py-2 rounded-lg border border-outline-variant/20 text-xs font-semibold text-on-surface-variant" id="qt3" onclick="qsw(3)">3월</button>
+    </div>
+
+    <!-- 1월 -->
+    <div id="qd1">
+      <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-3">
+        <div class="p-5 border-b border-outline-variant/10 flex flex-wrap items-center gap-2">
+          <h4 class="font-headline text-xl">1월 주요 불량 품목</h4>
+          <span class="bx bw">커스텀인쇄물 전량불량 3건 · 375개</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead><tr class="bg-surface-container-high/50">
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">품목명</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">검수수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">불량수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">불량률</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">유형</th>
+            </tr></thead>
+            <tbody class="divide-y divide-outline-variant/10">
+              <tr class="hover:bg-surface-container transition-colors">
+                <td class="px-5 py-3 text-on-surface">사각스티커(커스텀인쇄) — 매트블랙텀블러用<br><span class="text-[10px] text-on-surface-variant font-mono">PNA38099-자화전자</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">160개</td><td class="px-5 py-3 text-on-surface-variant">160개</td>
+                <td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">인쇄 불량</td>
+              </tr>
+              <tr class="hover:bg-surface-container transition-colors">
+                <td class="px-5 py-3 text-on-surface">웰컴페이퍼(커스텀인쇄) — 어드벤스3단자동우산用<br><span class="text-[10px] text-on-surface-variant font-mono">PNA50284-크라우드웍스</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">110개</td><td class="px-5 py-3 text-on-surface-variant">110개</td>
+                <td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">인쇄 불량</td>
+              </tr>
+              <tr class="hover:bg-surface-container transition-colors">
+                <td class="px-5 py-3 text-on-surface">브랜딩택(커스텀인쇄) — 블랙쇼핑백用<br><span class="text-[10px] text-on-surface-variant font-mono">PNA50008-호원대학교</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">105개</td><td class="px-5 py-3 text-on-surface-variant">105개</td>
+                <td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">인쇄 불량</td>
+              </tr>
+              <tr class="hover:bg-surface-container transition-colors">
+                <td class="px-5 py-3 text-on-surface">스탠리데일리텀블러<br><span class="text-[10px] text-on-surface-variant font-mono">PNA37091-스튜디오팡파레</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">52개</td><td class="px-5 py-3 text-on-surface-variant">50개</td>
+                <td class="px-5 py-3"><span class="bx bd">96.2%</span></td><td class="px-5 py-3 text-on-surface-variant">제품 불량</td>
+              </tr>
+              <tr class="hover:bg-surface-container transition-colors">
+                <td class="px-5 py-3 text-on-surface">퀵차지도킹형보조배터리<br><span class="text-[10px] text-on-surface-variant font-mono">PNA50041-HDC현대산업개발</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">101개</td><td class="px-5 py-3 text-on-surface-variant">47개</td>
+                <td class="px-5 py-3"><span class="bx bw">46.5%</span></td><td class="px-5 py-3 text-on-surface-variant">제품 불량</td>
+              </tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">기타</td><td class="px-5 py-3 text-on-surface-variant">4,368개</td><td class="px-5 py-3 text-on-surface-variant">247개</td><td class="px-5 py-3 text-on-surface-variant">5.7%</td><td class="px-5 py-3 text-on-surface-variant">—</td></tr>
+              <tr class="bg-surface-container/50">
+                <td class="px-5 py-3 font-semibold text-on-surface">1월 전체</td>
+                <td class="px-5 py-3 font-semibold text-on-surface">4,896개</td>
+                <td class="px-5 py-3 font-semibold text-on-surface">719개</td>
+                <td class="px-5 py-3"><span class="bx bw font-bold">14.69%</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2월 -->
+    <div id="qd2" style="display:none;">
+      <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-3">
+        <div class="p-5 border-b border-outline-variant/10 flex flex-wrap items-center gap-2">
+          <h4 class="font-headline text-xl">2월 주요 불량 품목</h4>
+          <span class="bx bd">전량불량 4건 · 1,264개 · 전체 불량의 84.5%</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead><tr class="bg-surface-container-high/50">
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">품목명</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">검수수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">불량수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">불량률</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">원인</th>
+            </tr></thead>
+            <tbody class="divide-y divide-outline-variant/10">
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">사각스티커 (어드벤스3단자동우산)</td><td class="px-5 py-3 text-on-surface-variant">480개</td><td class="px-5 py-3 text-on-surface-variant">480개</td><td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">색상·인쇄 불량 (그라데이션 불균일)</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">로고스트랩파우치</td><td class="px-5 py-3 text-on-surface-variant">452개</td><td class="px-5 py-3 text-on-surface-variant">452개</td><td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">시안 불일치 — 인쇄 없어야 하는데 인쇄됨</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">불박 (시그니처다이어리)</td><td class="px-5 py-3 text-on-surface-variant">171개</td><td class="px-5 py-3 text-on-surface-variant">171개</td><td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">박 뭉침으로 글씨 식별 불가</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">레더스킨다이어리</td><td class="px-5 py-3 text-on-surface-variant">161개</td><td class="px-5 py-3 text-on-surface-variant">161개</td><td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">로고 인쇄 부분 기포 오염</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">기타 품목</td><td class="px-5 py-3 text-on-surface-variant">2,404개</td><td class="px-5 py-3 text-on-surface-variant">231개</td><td class="px-5 py-3 text-on-surface-variant">9.6%</td><td class="px-5 py-3 text-on-surface-variant">—</td></tr>
+              <tr class="bg-surface-container/50">
+                <td class="px-5 py-3 font-semibold text-on-surface">2월 전체</td>
+                <td class="px-5 py-3 font-semibold text-on-surface">3,668개</td>
+                <td class="px-5 py-3 font-semibold text-on-surface">1,495개</td>
+                <td class="px-5 py-3"><span class="bx bd font-bold">40.76%</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="note">2월 불량률 급등은 4개 품목 Lot 전량불량이 원인. 납품 전 샘플 승인·시안 확정서 프로세스 강화 필요.</p>
+    </div>
+
+    <!-- 3월 -->
+    <div id="qd3" style="display:none;">
+      <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-3">
+        <div class="p-5 border-b border-outline-variant/10 flex flex-wrap items-center gap-2">
+          <h4 class="font-headline text-xl">3월 주요 불량 품목</h4>
+          <span class="bx bw">사각스티커 반복불량 3건 · 308개</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead><tr class="bg-surface-container-high/50">
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">품목명</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">검수수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">불량수량</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">불량률</th>
+              <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">유형</th>
+            </tr></thead>
+            <tbody class="divide-y divide-outline-variant/10">
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">사각스티커(커스텀인쇄) — 커넥트6in1케이블키트用<br><span class="text-[10px] text-on-surface-variant font-mono">PNA50779-크래프톤</span></td><td class="px-5 py-3 text-on-surface-variant">119개</td><td class="px-5 py-3 text-on-surface-variant">119개</td><td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">인쇄 불량</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">에센셜장우산(풀컬러)<br><span class="text-[10px] text-on-surface-variant font-mono">PNA50831-티피에이</span></td><td class="px-5 py-3 text-on-surface-variant">101개</td><td class="px-5 py-3 text-on-surface-variant">101개</td><td class="px-5 py-3"><span class="bx bd">100%</span></td><td class="px-5 py-3 text-on-surface-variant">제품 불량</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">사각스티커(커스텀인쇄) — 임팩트슬로건타월用<br><span class="text-[10px] text-on-surface-variant font-mono">PNA51027-엘리케이트</span></td><td class="px-5 py-3 text-on-surface-variant">344개</td><td class="px-5 py-3 text-on-surface-variant">103개</td><td class="px-5 py-3"><span class="bx bw">30.0%</span></td><td class="px-5 py-3 text-on-surface-variant">인쇄 불량</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">사각스티커(커스텀인쇄) — 리마커블칫솔살균기用<br><span class="text-[10px] text-on-surface-variant font-mono">PNA50779-크래프톤</span></td><td class="px-5 py-3 text-on-surface-variant">136개</td><td class="px-5 py-3 text-on-surface-variant">86개</td><td class="px-5 py-3"><span class="bx bw">63.2%</span></td><td class="px-5 py-3 text-on-surface-variant">인쇄 불량</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">브랜드-잇<br><span class="text-[10px] text-on-surface-variant font-mono">PNA50463-한국자원봉사문화</span></td><td class="px-5 py-3 text-on-surface-variant">453개</td><td class="px-5 py-3 text-on-surface-variant">38개</td><td class="px-5 py-3 text-on-surface-variant">8.4%</td><td class="px-5 py-3 text-on-surface-variant">제품 불량</td></tr>
+              <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">기타</td><td class="px-5 py-3 text-on-surface-variant">4,055개</td><td class="px-5 py-3 text-on-surface-variant">180개</td><td class="px-5 py-3 text-on-surface-variant">4.4%</td><td class="px-5 py-3 text-on-surface-variant">—</td></tr>
+              <tr class="bg-surface-container/50">
+                <td class="px-5 py-3 font-semibold text-on-surface">3월 전체</td>
+                <td class="px-5 py-3 font-semibold text-on-surface">5,208개</td>
+                <td class="px-5 py-3 font-semibold text-on-surface">627개</td>
+                <td class="px-5 py-3"><span class="bx bw font-bold">12.04%</span></td>
+                <td class="px-5 py-3 text-on-surface-variant">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="note">사각스티커(커스텀인쇄) 반복 불량 — 1월·3월 동일 품목군에서 인쇄 불량 다수 발생. 납품사 품질 관리 점검 필요.</p>
+    </div>
+  </div>
+
+  <!-- ═══ 자재 재고 ═══ -->
+  <div class="sec" id="s-mt">
+    <section class="grid grid-cols-2 xl:grid-cols-4 kpi-grid-4 gap-4 mb-6">
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">생산산출 (피킹)</span>
+        <h3 class="font-headline text-4xl text-on-surface">2,347</h3>
+        <p class="text-xs text-on-surface-variant mt-1">1Q 합계</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">피킹 수량</span>
+        <h3 class="font-headline text-4xl text-on-surface">562K</h3>
+        <p class="text-xs text-on-surface-variant mt-1">562,669개 · 건당 239.9개</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">추가사용 이슈</span>
+        <h3 class="font-headline text-4xl text-tertiary">239</h3>
+        <p class="text-xs text-on-surface-variant mt-1">생산 초과 자재</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">추가사용액 (1Q)</span>
+        <h3 class="font-headline text-3xl text-tertiary">10.7M</h3>
+        <p class="text-xs text-on-surface-variant mt-1">10,729,347원</p>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 chart-grid gap-4 mb-6">
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <p class="font-headline text-xl mb-4">이슈 유형별 (1Q 합계)</p>
+        <div style="position:relative;height:220px;"><canvas id="cm1"></canvas></div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <p class="font-headline text-xl mb-4">주요 이슈 월별 추이</p>
+        <div style="position:relative;height:220px;"><canvas id="cm2"></canvas></div>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="bg-surface-container-high/50">
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">이슈 유형</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">1월</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">2월</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">3월</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">1Q 합계</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">비중</th>
+          </tr></thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">품질불량</td><td class="px-5 py-3 text-on-surface-variant">51건</td><td class="px-5 py-3 text-on-surface-variant">30건</td><td class="px-5 py-3 text-on-surface-variant">22건</td><td class="px-5 py-3 font-semibold text-on-surface">103건</td><td class="px-5 py-3 text-on-surface-variant">43.1%</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">이동수량부족</td><td class="px-5 py-3 text-on-surface-variant">17건</td><td class="px-5 py-3 text-on-surface-variant">24건</td><td class="px-5 py-3"><span class="bx bw">37건</span></td><td class="px-5 py-3 font-semibold text-on-surface">78건</td><td class="px-5 py-3 text-on-surface-variant">32.6%</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">기타/지시서누락</td><td class="px-5 py-3 text-on-surface-variant">13건</td><td class="px-5 py-3 text-on-surface-variant">4건</td><td class="px-5 py-3 text-on-surface-variant">8건</td><td class="px-5 py-3 font-semibold text-on-surface">25건</td><td class="px-5 py-3 text-on-surface-variant">10.5%</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">외주임가공용샘플</td><td class="px-5 py-3 text-on-surface-variant">10건</td><td class="px-5 py-3 text-on-surface-variant">5건</td><td class="px-5 py-3 text-on-surface-variant">1건</td><td class="px-5 py-3 font-semibold text-on-surface">16건</td><td class="px-5 py-3 text-on-surface-variant">6.7%</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">임가공미숙</td><td class="px-5 py-3 text-on-surface-variant">9건</td><td class="px-5 py-3 text-on-surface-variant">3건</td><td class="px-5 py-3 text-on-surface-variant">1건</td><td class="px-5 py-3 font-semibold text-on-surface">13건</td><td class="px-5 py-3 text-on-surface-variant">5.4%</td></tr>
+            <tr class="bg-surface-container/50"><td class="px-5 py-3 font-bold text-on-surface">합계</td><td class="px-5 py-3 font-bold text-on-surface">101건</td><td class="px-5 py-3 font-bold text-on-surface">67건</td><td class="px-5 py-3 font-bold text-on-surface">71건</td><td class="px-5 py-3 font-bold text-on-surface">239건</td><td class="px-5 py-3 font-bold text-on-surface">100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note">⚠ 3월 이동수량부족 17→37건 급증. 재고 이전 프로세스 점검 필요.<br>품질불량(43.1%) + 이동수량부족(32.6%) = 전체의 75.7%.</p>
+
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="p-5 border-b border-outline-variant/10">
+        <h4 class="font-headline text-xl">추가사용액 상위 10개 파츠 (1Q 2026)</h4>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="bg-surface-container-high/50">
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">파츠명</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">추가사용량</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">추가사용액</th>
+          </tr></thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT4762-골지G형박스(L)_그레이</td><td class="px-5 py-3 text-on-surface-variant">938개</td><td class="px-5 py-3 font-semibold text-on-surface">1,078,700원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT0542-골지트레이박스_화이트_200-1</td><td class="px-5 py-3 text-on-surface-variant">441개</td><td class="px-5 py-3 font-semibold text-on-surface">829,080원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT3325-리마커블UV칫솔살균기(C타입)</td><td class="px-5 py-3 text-on-surface-variant">75개</td><td class="px-5 py-3 font-semibold text-on-surface">627,300원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT0543-골지트레이박스_블랙_200-1</td><td class="px-5 py-3 text-on-surface-variant">205개</td><td class="px-5 py-3 font-semibold text-on-surface">599,830원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT3073-에어캡봉투(중)</td><td class="px-5 py-3 text-on-surface-variant">2,096개</td><td class="px-5 py-3 font-semibold text-on-surface">373,088원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT0475-페이퍼G형박스(T)_그레이_100-2</td><td class="px-5 py-3 text-on-surface-variant">160개</td><td class="px-5 py-3 font-semibold text-on-surface">367,520원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT4768-EVA파우치(전용)_반투명</td><td class="px-5 py-3 text-on-surface-variant">317개</td><td class="px-5 py-3 font-semibold text-on-surface">344,579원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT1583-골지단품박스_그레이_100-2</td><td class="px-5 py-3 text-on-surface-variant">408개</td><td class="px-5 py-3 font-semibold text-on-surface">300,696원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT2812-골지트레이박스_블랙</td><td class="px-5 py-3 text-on-surface-variant">129개</td><td class="px-5 py-3 font-semibold text-on-surface">285,090원</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface font-mono text-xs">PT4710-브릭스탠드멀티충전스테이션_화이트</td><td class="px-5 py-3 text-on-surface-variant">10개</td><td class="px-5 py-3 font-semibold text-on-surface">240,000원</td></tr>
+            <tr class="bg-surface-container/50"><td class="px-5 py-3 font-bold text-on-surface">1Q 전체 합계</td><td class="px-5 py-3 text-on-surface-variant">—</td><td class="px-5 py-3 font-bold text-on-surface">10,729,347원</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 출하 ═══ -->
+  <div class="sec" id="s-tm">
+    <section class="grid grid-cols-2 xl:grid-cols-4 kpi-grid-4 gap-4 mb-6">
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">총 출하건수</span>
+        <h3 class="font-headline text-4xl text-on-surface">1,165</h3>
+        <p class="text-xs text-on-surface-variant mt-1">1월 595 · 2월 255 · 3월 315</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">총 CBM</span>
+        <h3 class="font-headline text-4xl text-on-surface">358+</h3>
+        <p class="text-xs text-on-surface-variant mt-1">2~3월 기준 (1월 미집계)</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">총 운송비용</span>
+        <h3 class="font-headline text-3xl text-tertiary">56.9M</h3>
+        <p class="text-xs text-on-surface-variant mt-1">56,933,172원 · 1Q 합계</p>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all">
+        <span class="text-tertiary text-[10px] font-bold uppercase tracking-[0.2em] mb-1 block">평균 CBM 달성률</span>
+        <h3 class="font-headline text-3xl text-tertiary">27~57%</h3>
+        <p class="text-xs text-on-surface-variant mt-1">가동률 개선 필요</p>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 chart-grid gap-4 mb-6">
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <p class="font-headline text-xl mb-4">기사별 CBM 달성률 (2~3월)</p>
+        <div style="position:relative;height:210px;"><canvas id="ct1"></canvas></div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/10">
+        <p class="font-headline text-xl mb-4">월별 출하건수 · 운송비용</p>
+        <div style="position:relative;height:210px;"><canvas id="ct2"></canvas></div>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="p-5 border-b border-outline-variant/10"><h4 class="font-headline text-xl">파트너별 출하 현황</h4></div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="bg-surface-container-high/50">
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">파트너</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">1월</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">2월 건수</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">2월 CBM</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">3월 건수</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">3월 CBM</th>
+          </tr></thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">신시어리 (조희선)</td><td class="px-5 py-3 text-on-surface-variant">80건</td><td class="px-5 py-3 text-on-surface-variant">67건</td><td class="px-5 py-3 text-on-surface-variant">66.28</td><td class="px-5 py-3 text-on-surface-variant">71건</td><td class="px-5 py-3 text-on-surface-variant">57.62</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">신시어리 (이장훈)</td><td class="px-5 py-3 text-on-surface-variant">58건</td><td class="px-5 py-3 text-on-surface-variant">27건</td><td class="px-5 py-3 text-on-surface-variant">21.26</td><td class="px-5 py-3 text-on-surface-variant">47건</td><td class="px-5 py-3 text-on-surface-variant">46.98</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">신시어리 (박종성)</td><td class="px-5 py-3 text-on-surface-variant">108건</td><td class="px-5 py-3 text-on-surface-variant">46건</td><td class="px-5 py-3"><span class="bx bw">65.67</span></td><td class="px-5 py-3 text-on-surface-variant">39건</td><td class="px-5 py-3 text-on-surface-variant">26.52</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">신시어리 (로젠 택배)</td><td class="px-5 py-3 text-on-surface-variant">89건</td><td class="px-5 py-3 text-on-surface-variant">57건</td><td class="px-5 py-3 text-on-surface-variant">23.80</td><td class="px-5 py-3 text-on-surface-variant">71건</td><td class="px-5 py-3 text-on-surface-variant">33.41</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">베스트원 (퀵)</td><td class="px-5 py-3 text-on-surface-variant">50건</td><td class="px-5 py-3 text-on-surface-variant">23건</td><td class="px-5 py-3 text-on-surface-variant">—</td><td class="px-5 py-3 text-on-surface-variant">31건</td><td class="px-5 py-3 text-on-surface-variant">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 mb-4">
+      <div class="p-5 border-b border-outline-variant/10"><h4 class="font-headline text-xl">기사별 CBM 달성률 상세</h4></div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead><tr class="bg-surface-container-high/50">
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">기사</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">주간 최대</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">2월 CBM</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">2월 달성률</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">3월 CBM</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">3월 달성률</th>
+            <th class="px-5 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">평균</th>
+          </tr></thead>
+          <tbody class="divide-y divide-outline-variant/10">
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">조희선</td><td class="px-5 py-3 text-on-surface-variant">38 CBM/주</td><td class="px-5 py-3 text-on-surface-variant">66.28</td><td class="px-5 py-3 text-on-surface-variant">43.6%</td><td class="px-5 py-3 text-on-surface-variant">57.62</td><td class="px-5 py-3 text-on-surface-variant">30.3%</td><td class="px-5 py-3 font-bold text-on-surface">37.0%</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">이장훈</td><td class="px-5 py-3 text-on-surface-variant">27 CBM/주</td><td class="px-5 py-3 text-on-surface-variant">21.26</td><td class="px-5 py-3 text-on-surface-variant">19.7%</td><td class="px-5 py-3 text-on-surface-variant">46.98</td><td class="px-5 py-3 text-on-surface-variant">34.8%</td><td class="px-5 py-3 font-bold text-on-surface">27.3%</td></tr>
+            <tr class="hover:bg-surface-container transition-colors"><td class="px-5 py-3 text-on-surface">박종성</td><td class="px-5 py-3 text-on-surface-variant">19 CBM/주</td><td class="px-5 py-3"><span class="bx bw">65.67</span></td><td class="px-5 py-3"><span class="bx bw">86.4% ⚠</span></td><td class="px-5 py-3 text-on-surface-variant">26.52</td><td class="px-5 py-3 text-on-surface-variant">27.9%</td><td class="px-5 py-3 font-bold text-on-surface">57.2%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note">⚠ 박종성 W09(2/23~3/01) CBM 48.93 — 주간 최대(19 CBM)의 257% 이상치. 데이터 정합성 확인 필요.<br>1월 CBM 미집계로 1Q 전체 비교 제한.</p>
+  </div>
+
+  <!-- ═══ 이슈 ═══ -->
+  <div class="sec" id="s-is">
+    <div class="mb-4">
+      <h4 class="font-headline text-2xl mb-1">1Q 주요 이슈</h4>
+      <p class="text-sm text-on-surface-variant">심각도 순 정렬 — 6건</p>
+    </div>
+    <div class="ic sev-high">
+      <div class="ic-h"><span class="bx bd">높음</span><span class="ic-t">검수 불량률 목표 초과</span></div>
+      <p class="ic-d">1월 14.7% / 2월 40.8% / 3월 12.0% — 목표(≤1%) 대비 전 구간 크게 초과. 사각스티커 커스텀인쇄 품목은 1·3월 반복 불량.</p>
+    </div>
+    <div class="ic sev-high">
+      <div class="ic-h"><span class="bx bd">높음</span><span class="ic-t">2월 전량불량 Lot 4건</span></div>
+      <p class="ic-d">사각스티커·로고스트랩파우치·불박·레더스킨다이어리 — 1,264개 전량불량. 납품 전 샘플 승인 프로세스 강화 필요.</p>
+    </div>
+    <div class="ic sev-mid">
+      <div class="ic-h"><span class="bx bw">중간</span><span class="ic-t">미입하 미해소 4건 (3/31 기준)</span></div>
+      <p class="ic-d">1Q 발생이력 56건 중 3월 4건 미해소 — HEFEI WORLD BA..., 비닐24, 업체명 미기재 2건. 즉시 확인 및 입하 처리 필요.</p>
+    </div>
+    <div class="ic sev-mid">
+      <div class="ic-h"><span class="bx bw">중간</span><span class="ic-t">1월 CBM 미집계</span></div>
+      <p class="ic-d">TMS Shipment Total_CBM 필드 1월분 미입력 — 운임 효율 분석 및 1Q 전체 비교 불가.</p>
+    </div>
+    <div class="ic sev-mid">
+      <div class="ic-h"><span class="bx bw">중간</span><span class="ic-t">CBM 달성률 저조</span></div>
+      <p class="ic-d">조희선 37.0% / 이장훈 27.3% / 박종성 57.2%. 차량 가동률 향상 · 배송 루트 최적화 검토 필요.</p>
+    </div>
+    <div class="ic sev-low">
+      <div class="ic-h"><span class="bx bi">낮음</span><span class="ic-t">박종성 W09 이상치</span></div>
+      <p class="ic-d">2월 W09 CBM 48.93 — 주간 최대(19 CBM)의 257%. 타 기사 대비 비정상적. 데이터 정합성 확인 필요.</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="lg:ml-64 py-6 bg-background border-t border-outline-variant/20 flex flex-col items-center gap-3">
+  <div class="flex gap-8 text-[11px] text-on-surface/40">
+    <a class="hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+    <a class="hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+    <a class="hover:text-on-surface transition-colors" href="#">SCM Portal</a>
+  </div>
+  <p class="text-[11px] text-on-surface/40">© 2026 Sincerely SCM. All rights reserved. Data: 2026.04.01 기준.</p>
+</footer>
+
+<script>
+(function(){
+'use strict';
+
+/* ── 탭 전환 ── */
+var TABS = ['in','qc','mt','tm','is'];
+var DRAWN = {};
+
+function sw(t){
+  TABS.forEach(function(id){ document.getElementById('s-'+id).classList.remove('on'); });
+  document.getElementById('s-'+t).classList.add('on');
+
+  // mobile tab bar
+  document.querySelectorAll('#tabbar-mobile .tab-pill').forEach(function(b){
+    b.classList.toggle('on', b.dataset.tab === t);
+  });
+  // side nav
+  document.querySelectorAll('.sidenav-btn').forEach(function(b){
+    var active = b.dataset.tab === t;
+    b.className = b.className.replace(/text-primary|text-on-surface\/50|bg-surface|shadow-inner|font-bold/g,'').trim();
+    if(active){
+      b.classList.add('text-primary','bg-surface','font-bold');
+    } else {
+      b.classList.add('text-on-surface/50');
+    }
+  });
+
+  setTimeout(function(){ draw(t); }, 30);
+}
+
+/* ── QC 월별 서브탭 ── */
+function qsw(n){
+  [1,2,3].forEach(function(i){
+    document.getElementById('qd'+i).style.display = (i===n)?'block':'none';
+    document.getElementById('qt'+i).classList.toggle('on', i===n);
+  });
+}
+window.sw=sw; window.qsw=qsw;
+
+/* ── 차트 색상 (라이트 팔레트) ── */
+var C = {
+  primary:   '#99462a',
+  tertiary:  '#815600',
+  green:     '#15803d',
+  red:       '#dc2626',
+  blue:      '#1d4ed8',
+  violet:    '#7c3aed',
+  gray:      '#9ca3af',
+  grid:      'rgba(0,0,0,0.06)',
+  tick:      '#55433d',
+  legend:    '#55433d',
+  p22:'rgba(153,70,42,0.18)',
+  t22:'rgba(129,86,0,0.18)',
+  g22:'rgba(21,128,61,0.18)',
+  r22:'rgba(220,38,38,0.15)',
+  b22:'rgba(29,78,216,0.12)',
+};
+
+Chart.defaults.color = C.legend;
+Chart.defaults.borderColor = C.grid;
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+function scaleOpts(extra){
+  return Object.assign({ grid:{color:C.grid}, ticks:{color:C.tick,font:{size:11}} }, extra||{});
+}
+function legendOpts(pos){
+  return { display:true, position:pos||'top', labels:{color:C.legend,font:{size:11},boxWidth:10,padding:10} };
+}
+
+/* ── 차트 그리기 ── */
+function draw(t){
+  if(DRAWN[t]) return;
+  DRAWN[t]=1;
+
+  if(t==='in'){
+    new Chart(document.getElementById('ci1'),{type:'bar',
+      data:{labels:['1월','2월','3월'],
+        datasets:[{data:[1237,786,1177],
+          backgroundColor:[C.green,C.green+'66',C.green+'99'],
+          borderRadius:5,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:scaleOpts({grid:{display:false}}),y:scaleOpts()}}});
+
+    new Chart(document.getElementById('ci2'),{type:'doughnut',
+      data:{labels:['생산산출 2,347','재고이동 534','재고생산 231','기타 88'],
+        datasets:[{data:[2347,534,231,88],
+          backgroundColor:[C.green,C.blue,C.violet,C.gray],
+          borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'64%',
+        plugins:{legend:legendOpts('right')}}});
+
+    new Chart(document.getElementById('ci3'),{type:'bar',
+      data:{
+        labels:['W02','W03','W04','W05','W06','W07','W08','W09','W10','W11','W12','W13','W14'],
+        datasets:[{
+          data:[189,360,365,323,234,229,88,235,226,278,287,276,110],
+          backgroundColor:[
+            C.green,C.green,C.green,C.green,
+            C.blue+'CC',C.blue+'CC',C.blue+'CC',C.blue+'CC',
+            C.violet+'CC',C.violet+'CC',C.violet+'CC',C.violet+'CC',C.violet+'CC'
+          ],
+          borderRadius:3,borderSkipped:false
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{x:scaleOpts({grid:{display:false},ticks:{font:{size:10}}}),y:scaleOpts()}}});
+  }
+
+  if(t==='qc'){
+    new Chart(document.getElementById('cq1'),{type:'bar',
+      data:{labels:['1월','2월','3월'],
+        datasets:[
+          {type:'bar',data:[14.69,40.76,12.04],
+            backgroundColor:[C.tertiary+'AA',C.red,C.tertiary+'AA'],
+            borderRadius:5,borderSkipped:false},
+          {type:'line',data:[1,1,1],
+            borderColor:C.green,borderDash:[5,4],
+            borderWidth:1.5,pointRadius:0,fill:false,tension:0}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:scaleOpts({grid:{display:false}}),
+          y:scaleOpts({max:50,ticks:{callback:function(v){return v+'%'}}})
+        }}});
+
+    new Chart(document.getElementById('cq2'),{type:'bar',
+      data:{labels:['1월','2월','3월'],
+        datasets:[
+          {label:'수량 정상',data:[972,696,1022],backgroundColor:C.green+'AA',borderRadius:3},
+          {label:'이슈 해결',data:[12,5,14],backgroundColor:C.tertiary+'AA',borderRadius:3},
+          {label:'미해결',data:[5,0,0],backgroundColor:C.red+'AA',borderRadius:3}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:legendOpts('top')},
+        scales:{
+          x:{stacked:true,...scaleOpts({grid:{display:false}})},
+          y:{stacked:true,...scaleOpts()}
+        }}});
+  }
+
+  if(t==='mt'){
+    new Chart(document.getElementById('cm1'),{type:'bar',
+      data:{labels:['품질불량','이동수량부족','기타/누락','외주샘플','임가공미숙'],
+        datasets:[{data:[103,78,25,16,13],
+          backgroundColor:[C.red,C.tertiary,C.gray,C.blue,C.violet],
+          borderRadius:4,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        indexAxis:'y',
+        plugins:{legend:{display:false}},
+        scales:{x:scaleOpts(),y:scaleOpts({grid:{display:false}})}}});
+
+    new Chart(document.getElementById('cm2'),{type:'line',
+      data:{labels:['1월','2월','3월'],
+        datasets:[
+          {label:'품질불량',data:[51,30,22],
+            borderColor:C.red,backgroundColor:C.r22,
+            tension:.3,fill:true,borderWidth:2,
+            pointRadius:4,pointBackgroundColor:C.red},
+          {label:'이동수량부족',data:[17,24,37],
+            borderColor:C.tertiary,backgroundColor:C.t22,
+            tension:.3,fill:true,borderWidth:2,
+            pointRadius:4,pointBackgroundColor:C.tertiary}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:legendOpts('top')},
+        scales:{x:scaleOpts({grid:{display:false}}),y:scaleOpts()}}});
+  }
+
+  if(t==='tm'){
+    new Chart(document.getElementById('ct1'),{type:'bar',
+      data:{labels:['조희선','이장훈','박종성'],
+        datasets:[
+          {label:'2월 달성률',data:[43.6,19.7,86.4],backgroundColor:C.blue+'AA',borderRadius:4},
+          {label:'3월 달성률',data:[30.3,34.8,27.9],backgroundColor:C.green+'AA',borderRadius:4}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:legendOpts('top')},
+        scales:{
+          x:scaleOpts({grid:{display:false}}),
+          y:scaleOpts({max:100,ticks:{callback:function(v){return v+'%'}}})
+        }}});
+
+    new Chart(document.getElementById('ct2'),{type:'bar',
+      data:{labels:['1월','2월','3월'],
+        datasets:[
+          {label:'출하건수',data:[595,255,315],
+            backgroundColor:[C.violet+'AA',C.violet+'66',C.violet+'AA'],
+            borderRadius:5,yAxisID:'y'},
+          {type:'line',label:'운송비용(만원)',data:[2128,1777,1789],
+            borderColor:C.tertiary,backgroundColor:C.t22,
+            tension:.3,fill:false,borderWidth:2,
+            pointRadius:4,pointBackgroundColor:C.tertiary,
+            yAxisID:'y1'}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:legendOpts('top')},
+        scales:{
+          x:scaleOpts({grid:{display:false}}),
+          y:{...scaleOpts(),position:'left'},
+          y1:{grid:{display:false},ticks:{color:C.tick,font:{size:11}},position:'right'}
+        }}});
+  }
+}
+
+draw('in');
+}());
+</script>
+</body>
+</html>
