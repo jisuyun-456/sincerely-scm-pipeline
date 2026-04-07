@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         로젠 → TMS 운송장 자동 전송
 // @namespace    sincerely-scm
-// @version      1.5
+// @version      1.6
 // @description  로젠택배 그리드의 운송장번호를 Airtable TMS Shipment에 자동 업데이트 (3단계 매칭)
 // @match        https://logis.ilogen.com/*
 // @all-frames
@@ -17,15 +17,17 @@
   const CONFIG = {
     TOKEN: 'patU9ew1rwbJbEpOn.d5c7c1bb42c3ad69edd2701ee0424ddcb04c4d261a0ed422f8e5edaf1fa20edc',
     BASE: 'app4x70a8mOrIKsMf',
-    // 배송요청 테이블 필드
-    TABLE_TO:         'tblfIEiPJaEF0DVoM',
-    FLD_TO_SHIPMENT:  'fld1rfeoDNQKASafk', // Shipment 링크
-    FLD_NAME:         'fldvjMoILhBKEAEuT', // 받는 분 성함 (최종)
-    FLD_PHONE:        'fld07fasAZbi9kTRd', // 수령인(연락처)
-    FLD_ADDRESS:      'fldQezevh20FuNvAM', // 받는 분 주소
-    // Shipment 테이블 필드
-    TABLE_SC:         'tbllg1JoHclGYer7m',
-    FLD_TRACKING:     'fldv4U6Gx4d8BWPTb', // 운송장번호
+
+    // ① ② TO/PNA 매칭용 — 배송요청 테이블
+    TABLE_TO:        'tblfIEiPJaEF0DVoM',
+    FLD_TO_SHIPMENT: 'fld1rfeoDNQKASafk', // 배송요청.Shipment 링크
+
+    // ③ fallback 매칭용 — Shipment 테이블 rollup 직접 조회
+    TABLE_SC:        'tbllg1JoHclGYer7m',
+    FLD_TRACKING:    'fldv4U6Gx4d8BWPTb', // 운송장번호 (저장 대상)
+    FLD_SC_NAME:     'fldetwyTU2ZZ9YgDs', // 수령인
+    FLD_SC_PHONE:    'fld7kFrMBiNDgptaw', // 수령인(연락처)
+    FLD_SC_ADDR:     'fldyJHUh9gN44Ggnh', // 수령인(주소)
   };
 
   const BTN_ID = 'tms-tracking-btn-wrapper';
@@ -45,7 +47,7 @@
           if (res.status >= 200 && res.status < 300) {
             resolve(JSON.parse(res.responseText));
           } else {
-            reject(new Error(`Airtable ${res.status}: ${res.responseText}`));
+            reject(new Error('Airtable ' + res.status + ': ' + res.responseText));
           }
         },
         onerror: (err) => reject(new Error('네트워크 오류: ' + JSON.stringify(err))),
@@ -158,28 +160,47 @@
     return groups;
   }
 
-  // ─── 배송요청 레코드에서 Shipment ID 취득 ────────────────────────────
-  async function findShipmentId(formula, nameHint) {
+  // ─── ①② TO/PNA 매칭: 배송요청 경유 → Shipment ID 취득 ──────────────
+  async function findShipmentByOrder(formula) {
     const encoded = encodeURIComponent(formula);
-    const flds = [CONFIG.FLD_TO_SHIPMENT, CONFIG.FLD_NAME]
-      .map(f => `fields[]=${f}`).join('&');
-    const res = await atFetch('GET', `${CONFIG.TABLE_TO}?filterByFormula=${encoded}&${flds}`);
+    const flds = [CONFIG.FLD_TO_SHIPMENT].map(f => 'fields[]=' + f).join('&');
+    const res = await atFetch('GET', CONFIG.TABLE_TO + '?filterByFormula=' + encoded + '&' + flds);
+    if (!res.records || res.records.length === 0) return null;
+
+    const links = res.records[0].fields[CONFIG.FLD_TO_SHIPMENT];
+    return links && links.length > 0 ? links[0] : null;
+  }
+
+  // ─── ③ fallback 매칭: Shipment 테이블 직접 조회 ──────────────────────
+  // 수령인(연락처) 기준 검색 → 성함 크로스검증 → Shipment record ID 직접 반환
+  async function findShipmentByContact(normPhone, rawPhone, name) {
+    // 하이픈 있는 형식·숫자만 형식 모두 검색
+    const formula = 'OR('
+      + 'FIND("' + normPhone + '",SUBSTITUTE({수령인(연락처)},"-","")),'
+      + 'FIND("' + rawPhone  + '",{수령인(연락처)})'
+      + ')';
+    const encoded = encodeURIComponent(formula);
+    const flds = [CONFIG.FLD_SC_NAME, CONFIG.FLD_SC_PHONE]
+      .map(f => 'fields[]=' + f).join('&');
+
+    const res = await atFetch('GET', CONFIG.TABLE_SC + '?filterByFormula=' + encoded + '&' + flds);
+    console.log('[TMS] 연락처 fallback 결과:', res);
+
     if (!res.records || res.records.length === 0) return null;
 
     let matched = res.records[0];
 
-    // 성함 크로스 검증 (여러 결과 시 이름 일치 우선)
-    if (nameHint && res.records.length > 1) {
-      const normHint = nameHint.replace(/\s/g, '');
+    // 복수 결과 시 수령인 성함 크로스검증
+    if (name && res.records.length > 1) {
+      const normName = name.replace(/\s/g, '');
       const byName = res.records.find(r => {
-        const aName = (r.fields[CONFIG.FLD_NAME] || '').replace(/\s/g, '');
-        return aName === normHint || aName.includes(normHint) || normHint.includes(aName);
+        const aName = (r.fields[CONFIG.FLD_SC_NAME] || '').replace(/\s/g, '');
+        return aName === normName || aName.includes(normName) || normName.includes(aName);
       });
       if (byName) matched = byName;
     }
 
-    const links = matched.fields[CONFIG.FLD_TO_SHIPMENT];
-    return links && links.length > 0 ? links[0] : null;
+    return matched.id; // Shipment record ID 직접 반환
   }
 
   // ─── 3단계 매칭 + 운송장 저장 ────────────────────────────────────────
@@ -188,29 +209,25 @@
     let matchType  = '';
 
     // ① TO/MM번호 매칭
-    if (group.orderNo && !shipmentId) {
-      shipmentId = await findShipmentId(`FIND("${group.orderNo}", {logistics_PK})`, group.name);
+    if (group.orderNo) {
+      shipmentId = await findShipmentByOrder('FIND("' + group.orderNo + '",{logistics_PK})');
       if (shipmentId) matchType = 'TO:' + group.orderNo;
     }
 
     // ② PNA번호 매칭
     if (!shipmentId && group.pnaNo) {
-      shipmentId = await findShipmentId(`FIND("${group.pnaNo}", {logistics_PK})`, group.name);
+      shipmentId = await findShipmentByOrder('FIND("' + group.pnaNo + '",{logistics_PK})');
       if (shipmentId) matchType = 'PNA:' + group.pnaNo;
     }
 
-    // ③ 연락처(휴대폰 우선) + 성함 fallback 매칭
+    // ③ 연락처 fallback — Shipment 테이블 직접 조회
     if (!shipmentId) {
       const rawPhone  = group.mobile || group.phone;
       const normPhone = normalizePhone(rawPhone);
 
       if (normPhone.length >= 9) {
-        // 하이픈 있는 형식과 숫자만 형식 둘 다 검색
-        const formula = `OR(FIND("${normPhone}",SUBSTITUTE({수령인(연락처)},"-","")),FIND("${rawPhone}",{수령인(연락처)}))`;
-        shipmentId = await findShipmentId(formula, group.name);
+        shipmentId = await findShipmentByContact(normPhone, rawPhone, group.name);
         if (shipmentId) matchType = '연락처:' + normPhone + '+성함:' + group.name;
-
-        console.log(`[TMS] 연락처 fallback ${normPhone} → ${shipmentId}`);
       }
     }
 
@@ -222,7 +239,7 @@
     }
 
     // 운송장번호 저장
-    await atFetch('PATCH', `${CONFIG.TABLE_SC}/${shipmentId}`, {
+    await atFetch('PATCH', CONFIG.TABLE_SC + '/' + shipmentId, {
       fields: { [CONFIG.FLD_TRACKING]: group.waybills.join('\n') },
     });
 
