@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         로젠 → TMS 운송장 자동 전송
 // @namespace    sincerely-scm
-// @version      1.3
-// @description  로젠택배 그리드의 운송장번호를 Airtable TMS Shipment에 자동 업데이트
+// @version      1.5
+// @description  로젠택배 그리드의 운송장번호를 Airtable TMS Shipment에 자동 업데이트 (3단계 매칭)
 // @match        https://logis.ilogen.com/*
 // @all-frames
 // @run-at       document-end
@@ -17,10 +17,15 @@
   const CONFIG = {
     TOKEN: 'patU9ew1rwbJbEpOn.d5c7c1bb42c3ad69edd2701ee0424ddcb04c4d261a0ed422f8e5edaf1fa20edc',
     BASE: 'app4x70a8mOrIKsMf',
-    TABLE_TO: 'tblfIEiPJaEF0DVoM',       // 배송요청 테이블
-    FLD_TO_SHIPMENT: 'fld1rfeoDNQKASafk', // 배송요청.Shipment 링크 필드
-    TABLE_SC: 'tbllg1JoHclGYer7m',       // Shipment 테이블
-    FLD_TRACKING: 'fldv4U6Gx4d8BWPTb',   // Shipment.운송장번호 필드
+    // 배송요청 테이블 필드
+    TABLE_TO:         'tblfIEiPJaEF0DVoM',
+    FLD_TO_SHIPMENT:  'fld1rfeoDNQKASafk', // Shipment 링크
+    FLD_NAME:         'fldvjMoILhBKEAEuT', // 받는 분 성함 (최종)
+    FLD_PHONE:        'fld07fasAZbi9kTRd', // 수령인(연락처)
+    FLD_ADDRESS:      'fldQezevh20FuNvAM', // 받는 분 주소
+    // Shipment 테이블 필드
+    TABLE_SC:         'tbllg1JoHclGYer7m',
+    FLD_TRACKING:     'fldv4U6Gx4d8BWPTb', // 운송장번호
   };
 
   const BTN_ID = 'tms-tracking-btn-wrapper';
@@ -48,147 +53,234 @@
     });
   }
 
-  // ─── 그리드 파싱 ────────────────────────────────────────────────────
-  // 핵심 수정: thead/tbody를 분리해서 헤더와 데이터 행을 올바르게 구분
+  // ─── 전화번호 정규화 (숫자만) ────────────────────────────────────────
+  function normalizePhone(phone) {
+    return (phone || '').replace(/\D/g, '');
+  }
+
+  // ─── 그리드 파싱 ─────────────────────────────────────────────────────
+  // 반환: [{ tracking, orderNo, pnaNo, name, phone, mobile, address }]
   function parseGrid() {
-    const map = {};
+    const rows = [];
 
     for (const table of document.querySelectorAll('table')) {
-      let trackingIdx = -1;
-      let itemIdx = -1;
-
-      // 1) thead 안의 th 먼저 탐색
+      const headers = {};
       const theadCells = table.querySelectorAll('thead th, thead td');
       if (theadCells.length > 0) {
-        theadCells.forEach((cell, idx) => {
-          const text = cell.innerText.trim();
-          if (text === '운송장번호') trackingIdx = idx;
-          if (text === '물품명') itemIdx = idx;
-        });
-      }
-
-      // 2) thead가 없으면 첫 번째 tr의 th/td로 탐색
-      if (trackingIdx === -1) {
+        theadCells.forEach((cell, idx) => { headers[cell.innerText.trim()] = idx; });
+      } else {
         const firstRow = table.querySelector('tr');
         if (firstRow) {
           firstRow.querySelectorAll('th, td').forEach((cell, idx) => {
-            const text = cell.innerText.trim();
-            if (text === '운송장번호') trackingIdx = idx;
-            if (text === '물품명') itemIdx = idx;
+            headers[cell.innerText.trim()] = idx;
           });
         }
       }
 
-      if (trackingIdx === -1 || itemIdx === -1) continue;
+      const tIdx = headers['운송장번호'];
+      if (tIdx === undefined) continue;
 
-      console.log(`[TMS] 그리드 발견 — 운송장번호 col:${trackingIdx}, 물품명 col:${itemIdx}`);
+      const itemIdx   = headers['물품명'];
+      const nameIdx   = headers['수하인'];
+      const phoneIdx  = headers['수하인전화'];
+      const mobileIdx = headers['수하인휴대폰'];
+      const addrIdx   = headers['수하인주소'];
 
-      // 3) 데이터 행 수집: tbody 있으면 tbody tr, 없으면 tr 전체에서 첫 행 제외
       const bodyRows = table.querySelector('tbody')
         ? Array.from(table.querySelectorAll('tbody tr'))
         : Array.from(table.querySelectorAll('tr')).slice(1);
 
       for (const tr of bodyRows) {
         const tds = tr.querySelectorAll('td');
-        if (tds.length <= Math.max(trackingIdx, itemIdx)) continue;
+        if (tds.length <= tIdx) continue;
 
-        const tracking = tds[trackingIdx].innerText.trim();
-        const itemName = tds[itemIdx].innerText.trim();
-
-        // 운송장번호 형식: 440-4299-7880
+        const tracking = tds[tIdx].innerText.trim();
         if (!tracking || !/^\d{3}-\d{4}-\d{4}$/.test(tracking)) continue;
-        // 물품명이 TO로 시작하고 / 포함
-        if (!itemName.startsWith('TO') || !itemName.includes('/')) continue;
 
-        const toNumber = itemName.split('/')[0].trim(); // "TO00015767"
-        if (!map[toNumber]) map[toNumber] = [];
-        if (!map[toNumber].includes(tracking)) map[toNumber].push(tracking);
+        const row = {
+          tracking,
+          orderNo: null,
+          pnaNo:   null,
+          name:    nameIdx   !== undefined ? (tds[nameIdx]?.innerText.trim()   || '') : '',
+          phone:   phoneIdx  !== undefined ? (tds[phoneIdx]?.innerText.trim()  || '') : '',
+          mobile:  mobileIdx !== undefined ? (tds[mobileIdx]?.innerText.trim() || '') : '',
+          address: addrIdx   !== undefined ? (tds[addrIdx]?.innerText.trim()   || '') : '',
+        };
+
+        // 물품명에서 TO/MM/PNA 추출
+        if (itemIdx !== undefined && tds[itemIdx]) {
+          const item = tds[itemIdx].innerText.trim();
+          if (/^(TO|MM)\d+/.test(item)) {
+            row.orderNo = item.split('/')[0].trim();
+          }
+          const pnaMatch = item.match(/PNA(\d+)/i);
+          if (pnaMatch) row.pnaNo = 'PNA' + pnaMatch[1];
+        }
+
+        rows.push(row);
       }
 
-      // 테이블을 찾았으면 첫 번째 결과 사용
-      if (Object.keys(map).length > 0) break;
+      if (rows.length > 0) break;
     }
 
-    console.log('[TMS] parseGrid 결과:', map);
-    return Object.keys(map).length > 0 ? map : null;
+    console.log('[TMS] parseGrid 결과:', rows);
+    return rows.length > 0 ? rows : null;
   }
 
-  // ─── 1건 처리 ────────────────────────────────────────────────────────
-  async function syncOne(toNumber, trackingNumbers) {
-    // 배송요청 테이블에서 TO 번호로 레코드 검색
-    const encoded = encodeURIComponent(`FIND("${toNumber}", {logistics_PK})`);
-    const toRes = await atFetch(
-      'GET',
-      `${CONFIG.TABLE_TO}?filterByFormula=${encoded}&fields[]=${CONFIG.FLD_TO_SHIPMENT}`
-    );
+  // ─── 그룹핑 (TO/PNA 동일 = 같은 Shipment, 운송장 여러 개 묶음) ──────
+  function groupRows(rows) {
+    const groupMap = {};
+    const groups   = [];
 
-    console.log(`[TMS] ${toNumber} 조회 결과:`, toRes);
+    for (const row of rows) {
+      const key = row.orderNo || row.pnaNo
+        || ('__fb__' + normalizePhone(row.mobile || row.phone) + '__' + row.tracking);
 
-    if (!toRes.records || toRes.records.length === 0) {
-      return { ok: false, reason: 'TMS에서 배송요청 레코드를 찾을 수 없음' };
+      if (!groupMap[key]) {
+        groupMap[key] = {
+          key,
+          orderNo: row.orderNo,
+          pnaNo:   row.pnaNo,
+          name:    row.name,
+          phone:   row.phone,
+          mobile:  row.mobile,
+          address: row.address,
+          waybills: [],
+        };
+        groups.push(groupMap[key]);
+      }
+      const normalized = row.tracking.replace(/-/g, '');
+      if (!groupMap[key].waybills.includes(normalized)) {
+        groupMap[key].waybills.push(normalized);
+      }
     }
 
-    const shipmentLinks = toRes.records[0].fields[CONFIG.FLD_TO_SHIPMENT];
-    if (!shipmentLinks || shipmentLinks.length === 0) {
-      return { ok: false, reason: '배송요청에 연결된 Shipment 레코드 없음' };
+    return groups;
+  }
+
+  // ─── 배송요청 레코드에서 Shipment ID 취득 ────────────────────────────
+  async function findShipmentId(formula, nameHint) {
+    const encoded = encodeURIComponent(formula);
+    const flds = [CONFIG.FLD_TO_SHIPMENT, CONFIG.FLD_NAME]
+      .map(f => `fields[]=${f}`).join('&');
+    const res = await atFetch('GET', `${CONFIG.TABLE_TO}?filterByFormula=${encoded}&${flds}`);
+    if (!res.records || res.records.length === 0) return null;
+
+    let matched = res.records[0];
+
+    // 성함 크로스 검증 (여러 결과 시 이름 일치 우선)
+    if (nameHint && res.records.length > 1) {
+      const normHint = nameHint.replace(/\s/g, '');
+      const byName = res.records.find(r => {
+        const aName = (r.fields[CONFIG.FLD_NAME] || '').replace(/\s/g, '');
+        return aName === normHint || aName.includes(normHint) || normHint.includes(aName);
+      });
+      if (byName) matched = byName;
     }
 
-    const shipmentId = shipmentLinks[0];
-    console.log(`[TMS] ${toNumber} → Shipment ID: ${shipmentId}, 운송장: ${trackingNumbers}`);
+    const links = matched.fields[CONFIG.FLD_TO_SHIPMENT];
+    return links && links.length > 0 ? links[0] : null;
+  }
 
+  // ─── 3단계 매칭 + 운송장 저장 ────────────────────────────────────────
+  async function syncGroup(group) {
+    let shipmentId = null;
+    let matchType  = '';
+
+    // ① TO/MM번호 매칭
+    if (group.orderNo && !shipmentId) {
+      shipmentId = await findShipmentId(`FIND("${group.orderNo}", {logistics_PK})`, group.name);
+      if (shipmentId) matchType = 'TO:' + group.orderNo;
+    }
+
+    // ② PNA번호 매칭
+    if (!shipmentId && group.pnaNo) {
+      shipmentId = await findShipmentId(`FIND("${group.pnaNo}", {logistics_PK})`, group.name);
+      if (shipmentId) matchType = 'PNA:' + group.pnaNo;
+    }
+
+    // ③ 연락처(휴대폰 우선) + 성함 fallback 매칭
+    if (!shipmentId) {
+      const rawPhone  = group.mobile || group.phone;
+      const normPhone = normalizePhone(rawPhone);
+
+      if (normPhone.length >= 9) {
+        // 하이픈 있는 형식과 숫자만 형식 둘 다 검색
+        const formula = `OR(FIND("${normPhone}",SUBSTITUTE({수령인(연락처)},"-","")),FIND("${rawPhone}",{수령인(연락처)}))`;
+        shipmentId = await findShipmentId(formula, group.name);
+        if (shipmentId) matchType = '연락처:' + normPhone + '+성함:' + group.name;
+
+        console.log(`[TMS] 연락처 fallback ${normPhone} → ${shipmentId}`);
+      }
+    }
+
+    if (!shipmentId) {
+      return {
+        ok: false,
+        reason: 'TO/PNA 없음, 연락처(' + (group.phone || group.mobile) + ') 매칭 실패',
+      };
+    }
+
+    // 운송장번호 저장
     await atFetch('PATCH', `${CONFIG.TABLE_SC}/${shipmentId}`, {
-      fields: { [CONFIG.FLD_TRACKING]: trackingNumbers.join('\n') },
+      fields: { [CONFIG.FLD_TRACKING]: group.waybills.join('\n') },
     });
 
-    return { ok: true };
+    return { ok: true, matchType };
+  }
+
+  // ─── 결과 라인을 DOM으로 추가 (innerHTML 미사용) ─────────────────────
+  function appendResult(container, text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    container.appendChild(div);
   }
 
   // ─── 메인 실행 ───────────────────────────────────────────────────────
   async function run(statusEl) {
-    const map = parseGrid();
-
-    if (!map) {
-      statusEl.textContent = '⚠️ TO번호/운송장번호가 있는 행을 찾을 수 없습니다. (콘솔 확인)';
+    const rows = parseGrid();
+    if (!rows) {
+      statusEl.textContent = '⚠️ 운송장번호가 있는 행을 찾을 수 없습니다. (콘솔 확인)';
       statusEl.style.color = 'orange';
       return;
     }
 
-    const keys = Object.keys(map);
-    statusEl.textContent = `처리 중... (0 / ${keys.length})`;
+    const groups = groupRows(rows);
+    statusEl.textContent = '처리 중... (0 / ' + groups.length + ')';
     statusEl.style.color = '#555';
 
     const results = [];
-    for (let i = 0; i < keys.length; i++) {
-      const to = keys[i];
-      const trackings = map[to];
-      statusEl.textContent = `처리 중... (${i + 1} / ${keys.length}) ${to}`;
+    for (let i = 0; i < groups.length; i++) {
+      const g = groups[i];
+      const label = g.orderNo || g.pnaNo || g.name || g.phone || g.mobile || '?';
+      statusEl.textContent = '처리 중... (' + (i + 1) + ' / ' + groups.length + ') ' + label;
 
       try {
-        const res = await syncOne(to, trackings);
+        const res = await syncGroup(g);
         results.push(res.ok
-          ? `✓ ${to} → ${trackings.join(', ')}`
-          : `✗ ${to} — ${res.reason}`
+          ? '✓ ' + label + ' [' + res.matchType + '] → ' + g.waybills.join(', ')
+          : '✗ ' + label + ' — ' + res.reason
         );
       } catch (e) {
-        console.error(`[TMS] ${to} 오류:`, e);
-        results.push(`✗ ${to} — ${e.message}`);
+        console.error('[TMS] ' + label + ' 오류:', e);
+        results.push('✗ ' + label + ' — ' + e.message);
       }
     }
 
-    const allOk = results.every((r) => r.startsWith('✓'));
-    statusEl.innerHTML = results.map((r) => `<div>${r}</div>`).join('');
+    // 결과 표시 (DOM 직접 생성, innerHTML 미사용)
+    while (statusEl.firstChild) statusEl.removeChild(statusEl.firstChild);
+    const allOk = results.every(r => r.startsWith('✓'));
     statusEl.style.color = allOk ? 'green' : '#c00';
+    for (const r of results) appendResult(statusEl, r);
   }
 
   // ─── 버튼 주입 ───────────────────────────────────────────────────────
   function inject() {
     if (document.getElementById(BTN_ID)) return;
 
-    // 운송장번호 + 물품명 컬럼이 모두 있는 테이블 탐색
     let targetTable = null;
     for (const table of document.querySelectorAll('table')) {
-      const text = table.innerText;
-      if (text.includes('운송장번호') && text.includes('물품명')) {
+      if (table.innerText.includes('운송장번호')) {
         targetTable = table;
         break;
       }
@@ -220,17 +312,19 @@
     console.log('[TMS] 버튼 주입 완료');
   }
 
-  // ─── MutationObserver로 동적 DOM 대기 ────────────────────────────────
+  // ─── MutationObserver로 동적 DOM 감시 (영구) ─────────────────────────
+  // 조회(F2) 클릭 시 테이블 DOM이 교체되어 버튼이 사라지므로
+  // observer를 disconnect하지 않고 계속 감시 → 버튼 없으면 재주입
   function waitAndInject() {
     inject();
-    if (document.getElementById(BTN_ID)) return;
 
     const observer = new MutationObserver(() => {
-      inject();
-      if (document.getElementById(BTN_ID)) observer.disconnect();
+      if (!document.getElementById(BTN_ID)) {
+        inject();
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
-    setTimeout(() => observer.disconnect(), 30000);
+    // 타임아웃 제거 — 페이지가 살아있는 동안 계속 감시
   }
 
   waitAndInject();
