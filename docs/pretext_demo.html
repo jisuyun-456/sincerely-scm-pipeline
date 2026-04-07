@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pretext — 텍스트 흐름 데모</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:#030507;
+  --amber:#f59e0b;
+  --text-1:#e5e7eb;
+  --text-2:#9ca3af;
+  --text-3:#4b5563;
+}
+
+html,body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:var(--bg);
+  color:var(--text-1);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+  overflow:hidden;
+}
+
+/* 노이즈 텍스처 */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px;
+  opacity:0.04;
+  pointer-events:none;z-index:0;
+}
+
+.page{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:36px 24px 24px;
+  min-height:100vh;
+}
+
+/* 헤더 */
+.hd{
+  width:100%;max-width:800px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:12px;
+}
+.brand{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:64px;line-height:0.9;
+  letter-spacing:-1px;
+  background:linear-gradient(135deg,#fff 0%,var(--amber) 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.brand-sub{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--amber);
+  letter-spacing:0.15em;text-transform:uppercase;
+  margin-left:3px;margin-bottom:9px;
+}
+.desc{
+  text-align:right;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--text-3);
+  line-height:1.7;letter-spacing:0.02em;
+  max-width:260px;
+}
+.desc strong{color:var(--amber);font-weight:500;}
+
+/* 구분선 */
+.sep{
+  width:100%;max-width:800px;
+  height:1px;background:var(--amber);
+  margin-bottom:16px;
+  position:relative;
+}
+.sep::after{
+  content:'';
+  position:absolute;top:0;left:0;
+  height:1px;width:120px;
+  background:linear-gradient(90deg,var(--amber),transparent);
+}
+
+/* 캔버스 */
+#c{
+  display:block;
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:8px;
+  cursor:crosshair;
+}
+
+/* 하단 범례 */
+.legend{
+  width:100%;max-width:800px;
+  display:flex;gap:24px;
+  margin-top:12px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--text-3);
+  letter-spacing:0.04em;
+}
+.lg-item{display:flex;align-items:center;gap:7px;}
+.lg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* 로딩 */
+#loading{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:100;
+  gap:16px;
+}
+.ld-ring{
+  width:36px;height:36px;
+  border:2px solid rgba(245,158,11,0.15);
+  border-top-color:var(--amber);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+.ld-text{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--text-3);
+  letter-spacing:0.1em;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-ring"></div>
+  <div class="ld-text">loading pretext...</div>
+</div>
+
+<div class="page" id="app" style="opacity:0;transition:opacity .4s;">
+  <div class="hd">
+    <div>
+      <div class="brand">PRETEXT</div>
+      <div class="brand-sub">by Cheng Lou · @chenglou/pretext</div>
+    </div>
+    <div class="desc">
+      DOM 없이 Canvas로<br>
+      텍스트 레이아웃 계산.<br>
+      <strong>마우스를 올려 컬럼을 눌러보세요.</strong><br>
+      CSS로는 불가능한 실시간 재배치.
+    </div>
+  </div>
+  <div class="sep"></div>
+  <canvas id="c"></canvas>
+  <div class="legend">
+    <div class="lg-item"><div class="lg-dot" style="background:rgba(245,158,11,0.6)"></div>컬럼 경계 (마우스로 변형)</div>
+    <div class="lg-item"><div class="lg-dot" style="background:rgba(96,165,250,0.5)"></div>텍스트 라인</div>
+    <div class="lg-item" id="perf-label"><div class="lg-dot" style="background:rgba(16,185,129,0.6)"></div>layout: —ms</div>
+    <div class="lg-item" id="lines-label"><div class="lg-dot" style="background:rgba(139,92,246,0.5)"></div>— lines</div>
+  </div>
+</div>
+
+<script type="module">
+// ── Pretext 로드 ──
+import { prepareWithSegments, layoutNextLine } from 'https://esm.sh/@chenglou/pretext';
+
+await document.fonts.ready;
+document.getElementById('loading').style.display = 'none';
+const app = document.getElementById('app');
+app.style.opacity = '1';
+
+// ── 캔버스 설정 ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const W = Math.min(800, window.innerWidth - 48);
+const H = Math.round(W * 0.68);
+canvas.width  = W * devicePixelRatio;
+canvas.height = H * devicePixelRatio;
+canvas.style.width  = W + 'px';
+canvas.style.height = H + 'px';
+ctx.scale(devicePixelRatio, devicePixelRatio);
+
+// ── 설정값 ──
+const PAD       = 28;
+const LINE_H    = 26;
+const BASE_FONT = `15px "Noto Sans KR"`;
+const MONO_FONT = `11px "JetBrains Mono"`;
+
+// ── 텍스트 준비 (한 번만) ──
+const DEMO_TEXT =
+  `Pretext는 DOM 없이 Canvas 기반으로 텍스트를 측정하고 배치하는 라이브러리입니다. ` +
+  `브라우저 레이아웃 리플로우를 유발하지 않아 매우 빠릅니다. ` +
+  `prepare() 함수가 한 번만 비용을 치르고, layout() 은 캐시된 너비로 순수 산술만 수행합니다. ` +
+  `500개 텍스트 배치에 약 0.09ms 라는 놀라운 성능을 보입니다. ` +
+  `이 데모에서 마우스 커서는 텍스트 컬럼을 밀어내며, ` +
+  `Pretext 가 매 프레임마다 라인을 다시 계산합니다. ` +
+  `CSS 의 column-count 나 shape-outside 로는 이런 유기적 변형이 불가능합니다. ` +
+  `신시어리 SCM 은 WMS/TMS 시스템을 Airtable 에서 Supabase PostgreSQL 로 전환 중이며, ` +
+  `재고 불변 원장과 K-IFRS 기준 자동 분개를 목표로 합니다. ` +
+  `1분기 입하건수 3,200건, 불량률 20.6%, 출하 가동률 27~57% 개선이 핵심 과제입니다.`;
+
+const prepared = prepareWithSegments(DEMO_TEXT, BASE_FONT);
+
+// ── 마우스 상태 ──
+let mouseX = -999, mouseY = -999;
+let isInside = false;
+
+canvas.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  mouseX = e.clientX - r.left;
+  mouseY = e.clientY - r.top;
+  isInside = true;
+});
+canvas.addEventListener('mouseleave', () => { isInside = false; mouseX = -999; mouseY = -999; });
+
+// ── 컬럼 경계 계산 ──
+// 기본: 사인파 형태, 마우스: 가우시안 덴트
+function getColumnRight(lineIdx) {
+  const y = PAD + lineIdx * LINE_H + LINE_H * 0.5;
+
+  // 기본 사인파
+  const base  = W * 0.62;
+  const amp   = 55;
+  const freq  = 0.38;
+  const phase = 0.6;
+  let boundary = base + amp * Math.sin(lineIdx * freq + phase);
+
+  // 마우스 영향 (가우시안 — 커서 위치에서 컬럼이 좁아짐)
+  if (isInside) {
+    const sigma = 50;
+    const dy    = y - mouseY;
+    const influence = 130 * Math.exp(-(dy * dy) / (2 * sigma * sigma));
+    // 마우스 X 위치에 따라 방향 결정 (왼쪽 절반이면 오른쪽으로 밀기)
+    if (mouseX < W * 0.7) {
+      boundary -= influence * (1 - mouseX / W);
+    }
+  }
+
+  return Math.min(W - PAD - 20, Math.max(PAD + 80, boundary));
+}
+
+// ── 렌더 루프 ──
+let frame = 0;
+let lastMs = 0;
+let lastLineCount = 0;
+const perfEl  = document.getElementById('perf-label');
+const linesEl = document.getElementById('lines-label');
+
+function render() {
+  frame++;
+  ctx.clearRect(0, 0, W, H);
+
+  // 배경
+  ctx.fillStyle = '#030507';
+  ctx.fillRect(0, 0, W, H);
+
+  // ── 오른쪽 영역 분위기 ──
+  const atmoGrad = ctx.createLinearGradient(W * 0.55, 0, W, 0);
+  atmoGrad.addColorStop(0, 'transparent');
+  atmoGrad.addColorStop(1, 'rgba(245,158,11,0.025)');
+  ctx.fillStyle = atmoGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── 컬럼 경계선 (곡선) ──
+  ctx.beginPath();
+  const maxLines = Math.ceil(H / LINE_H) + 2;
+  for (let i = 0; i <= maxLines * 2; i++) {
+    const t = i / (maxLines * 2);
+    const lineIdxF = t * maxLines;
+    const x = getColumnRight(lineIdxF);
+    const y = PAD + lineIdxF * LINE_H;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = 'rgba(245,158,11,0.18)';
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([3, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ── 마우스 글로우 ──
+  if (isInside) {
+    const g = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 80);
+    g.addColorStop(0, 'rgba(245,158,11,0.07)');
+    g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // ── Pretext 레이아웃 ──
+  const t0     = performance.now();
+  let cursor   = { segmentIndex: 0, graphemeIndex: 0 };
+  const lines  = [];
+  const LINES_MAX = Math.floor((H - PAD * 2) / LINE_H);
+
+  for (let i = 0; i < LINES_MAX; i++) {
+    const colRight = getColumnRight(i);
+    const maxW     = colRight - PAD - 4;
+    if (maxW < 40) { lines.push(null); continue; }
+
+    const line = layoutNextLine(prepared, cursor, maxW);
+    if (!line) break;
+
+    lines.push({ text: line.text, w: line.width, colRight, y: PAD + i * LINE_H });
+    cursor = line.end;
+  }
+
+  const t1 = performance.now();
+  lastMs        = t1 - t0;
+  lastLineCount = lines.filter(Boolean).length;
+
+  // ── 텍스트 그리기 ──
+  ctx.font      = BASE_FONT;
+  ctx.textBaseline = 'alphabetic';
+
+  lines.forEach((line, i) => {
+    if (!line) return;
+
+    // 라인 배경 (미세한 hover 효과)
+    const lineY = line.y;
+    if (isInside && Math.abs(mouseY - (lineY + LINE_H / 2)) < LINE_H) {
+      ctx.fillStyle = 'rgba(255,255,255,0.02)';
+      ctx.fillRect(PAD, lineY, line.colRight - PAD, LINE_H);
+    }
+
+    // 텍스트
+    const alpha = Math.min(1, (i + 1) / 3);
+    ctx.fillStyle = `rgba(209,213,219,${alpha})`;
+    ctx.fillText(line.text, PAD, lineY + 18);
+
+    // 라인 폭 표시 (미세한 언더라인)
+    ctx.strokeStyle = 'rgba(96,165,250,0.08)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD, lineY + LINE_H - 1);
+    ctx.lineTo(PAD + line.w, lineY + LINE_H - 1);
+    ctx.stroke();
+  });
+
+  // ── 오른쪽 데코레이션 영역 ──
+  // 경계 오른쪽에 흐릿한 "오버플로우" 텍스트 효과
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.font        = BASE_FONT;
+  ctx.fillStyle   = '#9ca3af';
+  lines.forEach(line => {
+    if (!line) return;
+    const overflowX = line.colRight + 16;
+    if (overflowX < W - 20) {
+      ctx.fillText(line.text, overflowX, line.y + 18);
+    }
+  });
+  ctx.restore();
+
+  // ── 좌하단 성능 표시 ──
+  ctx.font      = MONO_FONT;
+  ctx.fillStyle = 'rgba(245,158,11,0.7)';
+  ctx.fillText(`layout: ${lastMs.toFixed(3)}ms`, PAD, H - 10);
+
+  ctx.fillStyle = 'rgba(107,114,128,0.6)';
+  ctx.fillText(`${lastLineCount} lines · esm.sh/@chenglou/pretext`, PAD + 130, H - 10);
+
+  // UI 업데이트 (매 30프레임)
+  if (frame % 30 === 0) {
+    perfEl.lastChild.textContent  = ` layout: ${lastMs.toFixed(3)}ms`;
+    linesEl.lastChild.textContent = ` ${lastLineCount} lines`;
+  }
+
+  requestAnimationFrame(render);
+}
+
+// ── 시작 ──
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

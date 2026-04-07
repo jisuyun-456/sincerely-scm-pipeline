@@ -31,3 +31,9 @@ sincerely-scm-pipeline-github/
 
 # dbt logs
 sincerely_scm_dbt/logs/
+
+# temp / runtime outputs
+tmp_*.json
+*.csv
+.playwright-mcp/
+.claude/logs/
