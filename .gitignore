@@ -37,3 +37,4 @@ tmp_*.json
 *.csv
 .playwright-mcp/
 .claude/logs/
+.worktrees/
