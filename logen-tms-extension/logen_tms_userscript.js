@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         로젠 → TMS 운송장 자동 전송
 // @namespace    sincerely-scm
-// @version      1.6
+// @version      1.11
 // @description  로젠택배 그리드의 운송장번호를 Airtable TMS Shipment에 자동 업데이트 (3단계 매칭)
 // @match        https://logis.ilogen.com/*
 // @all-frames
@@ -62,71 +62,77 @@
 
   // ─── 그리드 파싱 ─────────────────────────────────────────────────────
   // 반환: [{ tracking, orderNo, pnaNo, name, phone, mobile, address }]
+  // v1.11: 헤더/컬럼맵 완전 제거 → 패턴 스캔 방식
   function parseGrid() {
-    const rows = [];
+    const WAYBILL_RE = /^\d{3}-\d{4}-\d{4}$/;
+    const PHONE_RE   = /^0\d{1,2}-\d{3,4}-\d{4}$/;
+    const ORDER_RE   = /^(TO|MM)\d+/;
+    const PNA_RE     = /PNA(\d+)/i;
 
-    for (const table of document.querySelectorAll('table')) {
-      const headers = {};
-      const theadCells = table.querySelectorAll('thead th, thead td');
-      if (theadCells.length > 0) {
-        theadCells.forEach((cell, idx) => { headers[cell.innerText.trim()] = idx; });
-      } else {
-        const firstRow = table.querySelector('tr');
-        if (firstRow) {
-          firstRow.querySelectorAll('th, td').forEach((cell, idx) => {
-            headers[cell.innerText.trim()] = idx;
-          });
-        }
+    // 로젠 운송장은 1~9로 시작, 한국 전화번호는 0으로 시작 → 구분
+    const isWaybill = (t) => WAYBILL_RE.test(t) && !t.startsWith('0');
+
+    // title 속성 우선 취득 → CSS 잘림 시에도 전체 텍스트 획득
+    const cellText = (td) => {
+      if (!td) return '';
+      return td.title?.trim()
+        || td.querySelector('[title]')?.title?.trim()
+        || td.innerText.trim()
+        || '';
+    };
+
+    // 접근 가능한 iframe 목록
+    function getIframeDocs() {
+      const docs = [];
+      for (const f of document.querySelectorAll('iframe')) {
+        try {
+          const doc = f.contentDocument || f.contentWindow?.document;
+          if (doc) docs.push(doc);
+        } catch (e) { /* cross-origin, skip */ }
       }
-
-      const tIdx = headers['운송장번호'];
-      if (tIdx === undefined) continue;
-
-      const itemIdx   = headers['물품명'];
-      const nameIdx   = headers['수하인'];
-      const phoneIdx  = headers['수하인전화'];
-      const mobileIdx = headers['수하인휴대폰'];
-      const addrIdx   = headers['수하인주소'];
-
-      const bodyRows = table.querySelector('tbody')
-        ? Array.from(table.querySelectorAll('tbody tr'))
-        : Array.from(table.querySelectorAll('tr')).slice(1);
-
-      for (const tr of bodyRows) {
-        const tds = tr.querySelectorAll('td');
-        if (tds.length <= tIdx) continue;
-
-        const tracking = tds[tIdx].innerText.trim();
-        if (!tracking || !/^\d{3}-\d{4}-\d{4}$/.test(tracking)) continue;
-
-        const row = {
-          tracking,
-          orderNo: null,
-          pnaNo:   null,
-          name:    nameIdx   !== undefined ? (tds[nameIdx]?.innerText.trim()   || '') : '',
-          phone:   phoneIdx  !== undefined ? (tds[phoneIdx]?.innerText.trim()  || '') : '',
-          mobile:  mobileIdx !== undefined ? (tds[mobileIdx]?.innerText.trim() || '') : '',
-          address: addrIdx   !== undefined ? (tds[addrIdx]?.innerText.trim()   || '') : '',
-        };
-
-        // 물품명에서 TO/MM/PNA 추출
-        if (itemIdx !== undefined && tds[itemIdx]) {
-          const item = tds[itemIdx].innerText.trim();
-          if (/^(TO|MM)\d+/.test(item)) {
-            row.orderNo = item.split('/')[0].trim();
-          }
-          const pnaMatch = item.match(/PNA(\d+)/i);
-          if (pnaMatch) row.pnaNo = 'PNA' + pnaMatch[1];
-        }
-
-        rows.push(row);
-      }
-
-      if (rows.length > 0) break;
+      return docs;
     }
 
-    console.log('[TMS] parseGrid 결과:', rows);
-    return rows.length > 0 ? rows : null;
+    // doc 전체 td를 스캔 — 운송장 패턴 셀 발견 시 같은 tr에서 나머지 추출
+    function scanDoc(doc) {
+      const found = [];
+      for (const td of doc.querySelectorAll('td')) {
+        const tracking = td.innerText.trim();
+        if (!isWaybill(tracking)) continue;
+
+        const row = td.closest('tr');
+        if (!row) continue;
+        const siblings = Array.from(row.querySelectorAll('td'));
+
+        let orderNo = null, pnaNo = null, phone = '', mobile = '';
+        for (const sib of siblings) {
+          const t = cellText(sib);
+          if (ORDER_RE.test(t) && !orderNo) orderNo = t.split('/')[0].trim();
+          const pm = t.match(PNA_RE);
+          if (pm && !pnaNo) pnaNo = 'PNA' + pm[1];
+          if (PHONE_RE.test(t)) {
+            const isMobile = /^01[016789]/.test(t);
+            if (isMobile && !mobile) mobile = t;
+            else if (!isMobile && !phone) phone = t;
+          }
+        }
+
+        found.push({ tracking, orderNo, pnaNo, name: '', phone, mobile, address: '' });
+      }
+      return found;
+    }
+
+    // 메인문서 먼저, 없으면 iframe 순서대로
+    for (const doc of [document, ...getIframeDocs()]) {
+      const rows = scanDoc(doc);
+      if (rows.length > 0) {
+        console.log('[TMS] parseGrid 결과:', rows);
+        return rows;
+      }
+    }
+
+    console.log('[TMS] parseGrid: 데이터 행 없음');
+    return null;
   }
 
   // ─── 그룹핑 (TO/PNA 동일 = 같은 Shipment, 운송장 여러 개 묶음) ──────
