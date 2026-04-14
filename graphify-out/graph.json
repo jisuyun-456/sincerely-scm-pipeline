@@ -53,9 +53,9 @@
       "file_type": "rationale",
       "source_file": "tmp_event_backfill.py",
       "source_location": "L1",
-      "id": "tmp_event_backfill_rationale_1",
       "community": 26,
-      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173 \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 1-2\u110b\u116f\u11af shipment \u2192 \u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173(\u1107\u1162\u1109\u1169\u11bc\u110b\u116a\u11ab\u1105\u116d) \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc"
+      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173 \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 1-2\u110b\u116f\u11af shipment \u2192 \u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173(\u1107\u1162\u1109\u1169\u11bc\u110b\u116a\u11ab\u1105\u116d) \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc",
+      "id": "tmp_event_backfill_rationale_1"
     },
     {
       "label": "tmp_otif_backfill.py",
@@ -98,27 +98,27 @@
       "file_type": "rationale",
       "source_file": "tmp_otif_backfill.py",
       "source_location": "L1",
-      "id": "tmp_otif_backfill_rationale_1",
       "community": 17,
-      "norm_label": "otif \u1107\u1162\u11a8\u1111\u1175\u11af \u1109\u1173\u110f\u1173\u1105\u1175\u11b8\u1110\u1173: 2026\u1102\u1167\u11ab 1-2\u110b\u116f\u11af shipment \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc - \u110c\u1169\u1100\u1165\u11ab: \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 1/1~2/28, \u1107\u1161\u11af\u1109\u1169\u11bc\u1109\u1161\u11bc\u1110\u1162_tms=\u110e\u116e\u11af"
+      "norm_label": "otif \u1107\u1162\u11a8\u1111\u1175\u11af \u1109\u1173\u110f\u1173\u1105\u1175\u11b8\u1110\u1173: 2026\u1102\u1167\u11ab 1-2\u110b\u116f\u11af shipment \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc - \u110c\u1169\u1100\u1165\u11ab: \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 1/1~2/28, \u1107\u1161\u11af\u1109\u1169\u11bc\u1109\u1161\u11bc\u1110\u1162_tms=\u110e\u116e\u11af",
+      "id": "tmp_otif_backfill_rationale_1"
     },
     {
       "label": "\ucd9c\ud558\ud655\uc815\uc77c 1-2\uc6d4, \ucd9c\ud558\uc644\ub8cc, OTIF \ubbf8\uc5f0\uacb0 Shipment \uc870\ud68c",
       "file_type": "rationale",
       "source_file": "tmp_otif_backfill.py",
       "source_location": "L21",
-      "id": "tmp_otif_backfill_rationale_21",
       "community": 17,
-      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 1-2\u110b\u116f\u11af, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, otif \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af shipment \u110c\u1169\u1112\u116c"
+      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 1-2\u110b\u116f\u11af, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, otif \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af shipment \u110c\u1169\u1112\u116c",
+      "id": "tmp_otif_backfill_rationale_21"
     },
     {
       "label": "Shipment record ID \ubaa9\ub85d \u2192 OTIF \ub808\ucf54\ub4dc \ubc30\uce58 \uc0dd\uc131",
       "file_type": "rationale",
       "source_file": "tmp_otif_backfill.py",
       "source_location": "L62",
-      "id": "tmp_otif_backfill_rationale_62",
       "community": 17,
-      "norm_label": "shipment record id \u1106\u1169\u11a8\u1105\u1169\u11a8 \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1107\u1162\u110e\u1175 \u1109\u1162\u11bc\u1109\u1165\u11bc"
+      "norm_label": "shipment record id \u1106\u1169\u11a8\u1105\u1169\u11a8 \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1107\u1162\u110e\u1175 \u1109\u1162\u11bc\u1109\u1165\u11bc",
+      "id": "tmp_otif_backfill_rationale_62"
     },
     {
       "label": "tmp_process_shipments.py",
@@ -179,18 +179,18 @@
       "file_type": "rationale",
       "source_file": "tmp_zone_classify.py",
       "source_location": "L1",
-      "id": "tmp_zone_classify_rationale_1",
       "community": 18,
-      "norm_label": "shipment \u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc \u1107\u1162\u11a8\u1111\u1175\u11af: \u1109\u116e\u1105\u1167\u11bc\u110b\u1175\u11ab(\u110c\u116e\u1109\u1169) \u1100\u1175\u1107\u1161\u11ab \u110c\u1161\u1103\u1169\u11bc \u1107\u116e\u11ab\u1105\u1172 - \u1109\u116e\u1103\u1169\u1100\u116f\u11ab: \u1109\u1165\u110b\u116e\u11af, \u1100\u1167\u11bc\u1100\u1175, \u110b\u1175\u11ab\u110e\u1165\u11ab - \u110c\u1175\u1107\u1161\u11bc(\u1100\u116a\u11bc\u110b\u1167\u11a8\u1109\u1175): \u1107\u116e\u1109\u1161\u11ab, \u1103\u1162\u1100\u116e, \u1100\u116a\u11bc\u110c\u116e, \u1103\u1162\u110c\u1165\u11ab,"
+      "norm_label": "shipment \u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc \u1107\u1162\u11a8\u1111\u1175\u11af: \u1109\u116e\u1105\u1167\u11bc\u110b\u1175\u11ab(\u110c\u116e\u1109\u1169) \u1100\u1175\u1107\u1161\u11ab \u110c\u1161\u1103\u1169\u11bc \u1107\u116e\u11ab\u1105\u1172 - \u1109\u116e\u1103\u1169\u1100\u116f\u11ab: \u1109\u1165\u110b\u116e\u11af, \u1100\u1167\u11bc\u1100\u1175, \u110b\u1175\u11ab\u110e\u1165\u11ab - \u110c\u1175\u1107\u1161\u11bc(\u1100\u116a\u11bc\u110b\u1167\u11a8\u1109\u1175): \u1107\u116e\u1109\u1161\u11ab, \u1103\u1162\u1100\u116e, \u1100\u116a\u11bc\u110c\u116e, \u1103\u1162\u110c\u1165\u11ab,",
+      "id": "tmp_zone_classify_rationale_1"
     },
     {
       "label": "\uc8fc\uc18c \uc788\uace0 \uad6c\uac04\uc720\ud615 \ubbf8\uc785\ub825 Shipment \uc870\ud68c",
       "file_type": "rationale",
       "source_file": "tmp_zone_classify.py",
       "source_location": "L60",
-      "id": "tmp_zone_classify_rationale_60",
       "community": 18,
-      "norm_label": "\u110c\u116e\u1109\u1169 \u110b\u1175\u11bb\u1100\u1169 \u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc \u1106\u1175\u110b\u1175\u11b8\u1105\u1167\u11a8 shipment \u110c\u1169\u1112\u116c"
+      "norm_label": "\u110c\u116e\u1109\u1169 \u110b\u1175\u11bb\u1100\u1169 \u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc \u1106\u1175\u110b\u1175\u11b8\u1105\u1167\u11a8 shipment \u110c\u1169\u1112\u116c",
+      "id": "tmp_zone_classify_rationale_60"
     },
     {
       "label": "background.js",
@@ -422,18 +422,18 @@
       "file_type": "rationale",
       "source_file": "scripts\\backfill_actual_delivery_days.py",
       "source_location": "L43",
-      "id": "backfill_actual_delivery_days_rationale_43",
       "community": 19,
-      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u1107\u1161\u11bc\u1109\u1175\u11a8\u1100\u116a \u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc\u110b\u1173\u1105\u1169 \u1109\u1175\u11af\u110c\u1166\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u11af\u1109\u116e \u1100\u1168\u1109\u1161\u11ab. \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af \u110b\u1165\u11b9\u110b\u1173\u1106\u1167\u11ab none."
+      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u1107\u1161\u11bc\u1109\u1175\u11a8\u1100\u116a \u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc\u110b\u1173\u1105\u1169 \u1109\u1175\u11af\u110c\u1166\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u11af\u1109\u116e \u1100\u1168\u1109\u1161\u11ab. \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af \u110b\u1165\u11b9\u110b\u1173\u1106\u1167\u11ab none.",
+      "id": "backfill_actual_delivery_days_rationale_43"
     },
     {
       "label": "\ud544\ud130 \uc870\uac74\uc5d0 \ub9de\ub294 Shipment \ub808\ucf54\ub4dc \uc804\uccb4 \uc870\ud68c (\ud398\uc774\uc9c0\ub124\uc774\uc158).",
       "file_type": "rationale",
       "source_file": "scripts\\backfill_actual_delivery_days.py",
       "source_location": "L60",
-      "id": "backfill_actual_delivery_days_rationale_60",
       "community": 19,
-      "norm_label": "\u1111\u1175\u11af\u1110\u1165 \u110c\u1169\u1100\u1165\u11ab\u110b\u1166 \u1106\u1161\u11bd\u1102\u1173\u11ab shipment \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1165\u11ab\u110e\u1166 \u110c\u1169\u1112\u116c (\u1111\u1166\u110b\u1175\u110c\u1175\u1102\u1166\u110b\u1175\u1109\u1167\u11ab)."
+      "norm_label": "\u1111\u1175\u11af\u1110\u1165 \u110c\u1169\u1100\u1165\u11ab\u110b\u1166 \u1106\u1161\u11bd\u1102\u1173\u11ab shipment \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1165\u11ab\u110e\u1166 \u110c\u1169\u1112\u116c (\u1111\u1166\u110b\u1175\u110c\u1175\u1102\u1166\u110b\u1175\u1109\u1167\u11ab).",
+      "id": "backfill_actual_delivery_days_rationale_60"
     },
     {
       "label": "backfill_event_apr.py",
@@ -476,18 +476,18 @@
       "file_type": "rationale",
       "source_file": "scripts\\backfill_event_apr.py",
       "source_location": "L1",
-      "id": "backfill_event_apr_rationale_1",
       "community": 27,
-      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173 \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 4\u110b\u116f\u11af 1-10\u110b\u1175\u11af shipment \u2192 \u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173(\u1107\u1162\u1109\u1169\u11bc\u110b\u116a\u11ab\u1105\u116d) \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc"
+      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173 \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 4\u110b\u116f\u11af 1-10\u110b\u1175\u11af shipment \u2192 \u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173(\u1107\u1162\u1109\u1169\u11bc\u110b\u116a\u11ab\u1105\u116d) \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc",
+      "id": "backfill_event_apr_rationale_1"
     },
     {
       "label": "\ucd9c\ud558\ud655\uc815\uc77c 4/1~4/10, \ucd9c\ud558\uc644\ub8cc, \ubc30\uc1a1\uc774\ubca4\ud2b8 \ubbf8\uc5f0\uacb0 Shipment \uc870\ud68c",
       "file_type": "rationale",
       "source_file": "scripts\\backfill_event_apr.py",
       "source_location": "L20",
-      "id": "backfill_event_apr_rationale_20",
       "community": 27,
-      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, \u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173 \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af shipment \u110c\u1169\u1112\u116c"
+      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, \u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u1107\u1166\u11ab\u1110\u1173 \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af shipment \u110c\u1169\u1112\u116c",
+      "id": "backfill_event_apr_rationale_20"
     },
     {
       "label": "backfill_otif_apr.py",
@@ -530,27 +530,27 @@
       "file_type": "rationale",
       "source_file": "scripts\\backfill_otif_apr.py",
       "source_location": "L1",
-      "id": "backfill_otif_apr_rationale_1",
       "community": 20,
-      "norm_label": "otif \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 4\u110b\u116f\u11af 1-10\u110b\u1175\u11af shipment \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc - \u110c\u1169\u1100\u1165\u11ab: \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u1107\u1161\u11af\u1109\u1169\u11bc\u1109\u1161\u11bc\u1110\u1162_tms=\u110e\u116e\u11af\u1112\u1161"
+      "norm_label": "otif \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 4\u110b\u116f\u11af 1-10\u110b\u1175\u11af shipment \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc - \u110c\u1169\u1100\u1165\u11ab: \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u1107\u1161\u11af\u1109\u1169\u11bc\u1109\u1161\u11bc\u1110\u1162_tms=\u110e\u116e\u11af\u1112\u1161",
+      "id": "backfill_otif_apr_rationale_1"
     },
     {
       "label": "\ucd9c\ud558\ud655\uc815\uc77c 4/1~4/10, \ucd9c\ud558\uc644\ub8cc, OTIF \ubbf8\uc5f0\uacb0 Shipment \uc870\ud68c",
       "file_type": "rationale",
       "source_file": "scripts\\backfill_otif_apr.py",
       "source_location": "L21",
-      "id": "backfill_otif_apr_rationale_21",
       "community": 20,
-      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, otif \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af shipment \u110c\u1169\u1112\u116c"
+      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, otif \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af shipment \u110c\u1169\u1112\u116c",
+      "id": "backfill_otif_apr_rationale_21"
     },
     {
       "label": "Shipment record ID \ubaa9\ub85d \u2192 OTIF \ub808\ucf54\ub4dc \ubc30\uce58 \uc0dd\uc131",
       "file_type": "rationale",
       "source_file": "scripts\\backfill_otif_apr.py",
       "source_location": "L59",
-      "id": "backfill_otif_apr_rationale_59",
       "community": 20,
-      "norm_label": "shipment record id \u1106\u1169\u11a8\u1105\u1169\u11a8 \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1107\u1162\u110e\u1175 \u1109\u1162\u11bc\u1109\u1165\u11bc"
+      "norm_label": "shipment record id \u1106\u1169\u11a8\u1105\u1169\u11a8 \u2192 otif \u1105\u1166\u110f\u1169\u1103\u1173 \u1107\u1162\u110e\u1175 \u1109\u1162\u11bc\u1109\u1165\u11bc",
+      "id": "backfill_otif_apr_rationale_59"
     },
     {
       "label": "backfill_tracking_apr.py",
@@ -602,27 +602,27 @@
       "file_type": "rationale",
       "source_file": "scripts\\backfill_tracking_apr.py",
       "source_location": "L1",
-      "id": "backfill_tracking_apr_rationale_1",
       "community": 10,
-      "norm_label": "\u1110\u1162\u11a8\u1107\u1162\u110e\u116e\u110c\u1165\u11a8\u1105\u1169\u1100\u1173 \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 4\u110b\u116f\u11af 1-10\u110b\u1175\u11af shipment \u2192 \u1110\u1162\u11a8\u1107\u1162\u110e\u116e\u110c\u1165\u11a8\u1105\u1169\u1100\u1173 \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc - \u110c\u1169\u1100\u1165\u11ab: \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, \u110b\u116e\u11ab"
+      "norm_label": "\u1110\u1162\u11a8\u1107\u1162\u110e\u116e\u110c\u1165\u11a8\u1105\u1169\u1100\u1173 \u1107\u1162\u11a8\u1111\u1175\u11af: 2026\u1102\u1167\u11ab 4\u110b\u116f\u11af 1-10\u110b\u1175\u11af shipment \u2192 \u1110\u1162\u11a8\u1107\u1162\u110e\u116e\u110c\u1165\u11a8\u1105\u1169\u1100\u1173 \u1105\u1166\u110f\u1169\u1103\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc - \u110c\u1169\u1100\u1165\u11ab: \u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, \u110b\u116e\u11ab",
+      "id": "backfill_tracking_apr_rationale_1"
     },
     {
       "label": "\ucd9c\ud558\ud655\uc815\uc77c 4/1~4/10, \ucd9c\ud558\uc644\ub8cc, \uc6b4\uc1a1\uc7a5\ubc88\ud638 \uc788\uc74c, \ud0dd\ubc30\ucd94\uc801\ub85c\uadf8 \ubbf8\uc5f0\uacb0",
       "file_type": "rationale",
       "source_file": "scripts\\backfill_tracking_apr.py",
       "source_location": "L22",
-      "id": "backfill_tracking_apr_rationale_22",
       "community": 10,
-      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc\u1107\u1165\u11ab\u1112\u1169 \u110b\u1175\u11bb\u110b\u1173\u11b7, \u1110\u1162\u11a8\u1107\u1162\u110e\u116e\u110c\u1165\u11a8\u1105\u1169\u1100\u1173 \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af"
+      "norm_label": "\u110e\u116e\u11af\u1112\u1161\u1112\u116a\u11a8\u110c\u1165\u11bc\u110b\u1175\u11af 4/1~4/10, \u110e\u116e\u11af\u1112\u1161\u110b\u116a\u11ab\u1105\u116d, \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc\u1107\u1165\u11ab\u1112\u1169 \u110b\u1175\u11bb\u110b\u1173\u11b7, \u1110\u1162\u11a8\u1107\u1162\u110e\u116e\u110c\u1165\u11a8\u1105\u1169\u1100\u1173 \u1106\u1175\u110b\u1167\u11ab\u1100\u1167\u11af",
+      "id": "backfill_tracking_apr_rationale_22"
     },
     {
       "label": "\uc904\ubc14\uafc8/\uacf5\ubc31 \uad6c\ubd84 \uc6b4\uc1a1\uc7a5\ubc88\ud638 \ud30c\uc2f1, \uc22b\uc790\ub9cc \ucd94\ucd9c",
       "file_type": "rationale",
       "source_file": "scripts\\backfill_tracking_apr.py",
       "source_location": "L61",
-      "id": "backfill_tracking_apr_rationale_61",
       "community": 10,
-      "norm_label": "\u110c\u116e\u11af\u1107\u1161\u1101\u116e\u11b7/\u1100\u1169\u11bc\u1107\u1162\u11a8 \u1100\u116e\u1107\u116e\u11ab \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc\u1107\u1165\u11ab\u1112\u1169 \u1111\u1161\u1109\u1175\u11bc, \u1109\u116e\u11ba\u110c\u1161\u1106\u1161\u11ab \u110e\u116e\u110e\u116e\u11af"
+      "norm_label": "\u110c\u116e\u11af\u1107\u1161\u1101\u116e\u11b7/\u1100\u1169\u11bc\u1107\u1162\u11a8 \u1100\u116e\u1107\u116e\u11ab \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc\u1107\u1165\u11ab\u1112\u1169 \u1111\u1161\u1109\u1175\u11bc, \u1109\u116e\u11ba\u110c\u1161\u1106\u1161\u11ab \u110e\u116e\u110e\u116e\u11af",
+      "id": "backfill_tracking_apr_rationale_61"
     },
     {
       "label": "fix_taxi_delivery_days.py",
@@ -665,9 +665,9 @@
       "file_type": "rationale",
       "source_file": "scripts\\fix_taxi_delivery_days.py",
       "source_location": "L42",
-      "id": "fix_taxi_delivery_days_rationale_42",
       "community": 32,
-      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u1107\u1161\u11bc\u1109\u1175\u11a8='\u1110\u1162\u11a8\u1107\u1162' and \u1109\u1175\u11af\u110c\u1166\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u11af\u1109\u116e=0 \u110b\u1175\u11ab \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1165\u11ab\u110e\u1166 \u110c\u1169\u1112\u116c."
+      "norm_label": "\u1107\u1162\u1109\u1169\u11bc\u1107\u1161\u11bc\u1109\u1175\u11a8='\u1110\u1162\u11a8\u1107\u1162' and \u1109\u1175\u11af\u110c\u1166\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u11af\u1109\u116e=0 \u110b\u1175\u11ab \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1165\u11ab\u110e\u1166 \u110c\u1169\u1112\u116c.",
+      "id": "fix_taxi_delivery_days_rationale_42"
     },
     {
       "label": "fix_taxi_final.py",
@@ -701,9 +701,9 @@
       "file_type": "rationale",
       "source_file": "scripts\\fix_taxi_final.py",
       "source_location": "L24",
-      "id": "fix_taxi_final_rationale_24",
       "community": 36,
-      "norm_label": "\u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc\u1107\u1167\u11af \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1169\u1112\u116c \u1112\u116e \u1109\u1175\u11af\u110c\u1166\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u11af\u1109\u116e \u110b\u1165\u11b8\u1103\u1166\u110b\u1175\u1110\u1173. \u110e\u1165\u1105\u1175 \u1100\u1165\u11ab\u1109\u116e \u1107\u1161\u11ab\u1112\u116a\u11ab."
+      "norm_label": "\u1100\u116e\u1100\u1161\u11ab\u110b\u1172\u1112\u1167\u11bc\u1107\u1167\u11af \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1169\u1112\u116c \u1112\u116e \u1109\u1175\u11af\u110c\u1166\u1107\u1162\u1109\u1169\u11bc\u110b\u1175\u11af\u1109\u116e \u110b\u1165\u11b8\u1103\u1166\u110b\u1175\u1110\u1173. \u110e\u1165\u1105\u1175 \u1100\u1165\u11ab\u1109\u116e \u1107\u1161\u11ab\u1112\u116a\u11ab.",
+      "id": "fix_taxi_final_rationale_24"
     },
     {
       "label": "fix_taxi_metro_2days.py",
@@ -1133,72 +1133,72 @@
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L1",
-      "id": "generate_scm_report_rationale_1",
       "community": 0,
-      "norm_label": "sincerely scm \u1110\u1169\u11bc\u1112\u1161\u11b8 \u1105\u1175\u1111\u1169\u1110\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc\u1100\u1175 ======================================================"
+      "norm_label": "sincerely scm \u1110\u1169\u11bc\u1112\u1161\u11b8 \u1105\u1175\u1111\u1169\u1110\u1173 \u1109\u1162\u11bc\u1109\u1165\u11bc\u1100\u1175 ======================================================",
+      "id": "generate_scm_report_rationale_1"
     },
     {
       "label": "view_type: \"project\" | \"a1_to_partner\"     project:       \uc774\ub3d9\ubaa9\uc801=\uc870\ub9bd\ud22c\uc785 + \uc790\uc7ac\ud22c\uc785\ud604\ud669=\uc790\uc7ac",
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L258",
-      "id": "generate_scm_report_rationale_258",
       "community": 0,
-      "norm_label": "view_type: \"project\" | \"a1_to_partner\"     project:       \u110b\u1175\u1103\u1169\u11bc\u1106\u1169\u11a8\u110c\u1165\u11a8=\u110c\u1169\u1105\u1175\u11b8\u1110\u116e\u110b\u1175\u11b8 + \u110c\u1161\u110c\u1162\u1110\u116e\u110b\u1175\u11b8\u1112\u1167\u11ab\u1112\u116a\u11bc=\u110c\u1161\u110c\u1162"
+      "norm_label": "view_type: \"project\" | \"a1_to_partner\"     project:       \u110b\u1175\u1103\u1169\u11bc\u1106\u1169\u11a8\u110c\u1165\u11a8=\u110c\u1169\u1105\u1175\u11b8\u1110\u116e\u110b\u1175\u11b8 + \u110c\u1161\u110c\u1162\u1110\u116e\u110b\u1175\u11b8\u1112\u1167\u11ab\u1112\u116a\u11bc=\u110c\u1161\u110c\u1162",
+      "id": "generate_scm_report_rationale_258"
     },
     {
       "label": "CBM \uc6b0\uc120\uc21c\uc704: Total_CBM(\uc218\ub3d9) > \ubc15\uc2a4\ud30c\uc2f1 > 0 (unmatched)          \ubc84\uadf8 \uc218\uc815: product_match \uc81c",
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L349",
-      "id": "generate_scm_report_rationale_349",
       "community": 0,
-      "norm_label": "cbm \u110b\u116e\u1109\u1165\u11ab\u1109\u116e\u11ab\u110b\u1171: total_cbm(\u1109\u116e\u1103\u1169\u11bc) > \u1107\u1161\u11a8\u1109\u1173\u1111\u1161\u1109\u1175\u11bc > 0 (unmatched)          \u1107\u1165\u1100\u1173 \u1109\u116e\u110c\u1165\u11bc: product_match \u110c\u1166"
+      "norm_label": "cbm \u110b\u116e\u1109\u1165\u11ab\u1109\u116e\u11ab\u110b\u1171: total_cbm(\u1109\u116e\u1103\u1169\u11bc) > \u1107\u1161\u11a8\u1109\u1173\u1111\u1161\u1109\u1175\u11bc > 0 (unmatched)          \u1107\u1165\u1100\u1173 \u1109\u116e\u110c\u1165\u11bc: product_match \u110c\u1166",
+      "id": "generate_scm_report_rationale_349"
     },
     {
       "label": "\uac80\uc218 \ub85c\uc9c1 \ubc18\uc601:     - \ucde8\uc18c \ub808\ucf54\ub4dc \uc81c\uc678 \ud6c4 \uc9d1\uacc4     - \uac80\uc218 \uac74\uc218 = \uc720\ud6a8 \uc785\ud558\uac74\uc218 (\ud45c\ubcf8 \uac80\uc218 \ubc29\uc2dd\uc774\ubbc0\ub85c \ubaa8\ub4e0 \uac74\uc5d0 \ub300\ud574 \uac80\uc218",
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L416",
-      "id": "generate_scm_report_rationale_416",
       "community": 0,
-      "norm_label": "\u1100\u1165\u11b7\u1109\u116e \u1105\u1169\u110c\u1175\u11a8 \u1107\u1161\u11ab\u110b\u1167\u11bc:     - \u110e\u1171\u1109\u1169 \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1166\u110b\u116c \u1112\u116e \u110c\u1175\u11b8\u1100\u1168     - \u1100\u1165\u11b7\u1109\u116e \u1100\u1165\u11ab\u1109\u116e = \u110b\u1172\u1112\u116d \u110b\u1175\u11b8\u1112\u1161\u1100\u1165\u11ab\u1109\u116e (\u1111\u116d\u1107\u1169\u11ab \u1100\u1165\u11b7\u1109\u116e \u1107\u1161\u11bc\u1109\u1175\u11a8\u110b\u1175\u1106\u1173\u1105\u1169 \u1106\u1169\u1103\u1173\u11ab \u1100\u1165\u11ab\u110b\u1166 \u1103\u1162\u1112\u1162 \u1100\u1165\u11b7\u1109\u116e"
+      "norm_label": "\u1100\u1165\u11b7\u1109\u116e \u1105\u1169\u110c\u1175\u11a8 \u1107\u1161\u11ab\u110b\u1167\u11bc:     - \u110e\u1171\u1109\u1169 \u1105\u1166\u110f\u1169\u1103\u1173 \u110c\u1166\u110b\u116c \u1112\u116e \u110c\u1175\u11b8\u1100\u1168     - \u1100\u1165\u11b7\u1109\u116e \u1100\u1165\u11ab\u1109\u116e = \u110b\u1172\u1112\u116d \u110b\u1175\u11b8\u1112\u1161\u1100\u1165\u11ab\u1109\u116e (\u1111\u116d\u1107\u1169\u11ab \u1100\u1165\u11b7\u1109\u116e \u1107\u1161\u11bc\u1109\u1175\u11a8\u110b\u1175\u1106\u1173\u1105\u1169 \u1106\u1169\u1103\u1173\u11ab \u1100\u1165\u11ab\u110b\u1166 \u1103\u1162\u1112\u1162 \u1100\u1165\u11b7\u1109\u116e",
+      "id": "generate_scm_report_rationale_416"
     },
     {
       "label": "\ud53c\ud0b9 \ub808\ucf54\ub4dc \u2192 \uac74\uc218 + \ub0a0\uc9dc\ubcc4 \uac74\uc218 (project: \uc784\uac00\uacf5\uc608\uc815\uc77c \ud30c\uc2f1 \ud6c4 \ubc94\uc704 \ud544\ud130\ub9c1)",
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L512",
-      "id": "generate_scm_report_rationale_512",
       "community": 0,
-      "norm_label": "\u1111\u1175\u110f\u1175\u11bc \u1105\u1166\u110f\u1169\u1103\u1173 \u2192 \u1100\u1165\u11ab\u1109\u116e + \u1102\u1161\u11af\u110d\u1161\u1107\u1167\u11af \u1100\u1165\u11ab\u1109\u116e (project: \u110b\u1175\u11b7\u1100\u1161\u1100\u1169\u11bc\u110b\u1168\u110c\u1165\u11bc\u110b\u1175\u11af \u1111\u1161\u1109\u1175\u11bc \u1112\u116e \u1107\u1165\u11b7\u110b\u1171 \u1111\u1175\u11af\u1110\u1165\u1105\u1175\u11bc)"
+      "norm_label": "\u1111\u1175\u110f\u1175\u11bc \u1105\u1166\u110f\u1169\u1103\u1173 \u2192 \u1100\u1165\u11ab\u1109\u116e + \u1102\u1161\u11af\u110d\u1161\u1107\u1167\u11af \u1100\u1165\u11ab\u1109\u116e (project: \u110b\u1175\u11b7\u1100\u1161\u1100\u1169\u11bc\u110b\u1168\u110c\u1165\u11bc\u110b\u1175\u11af \u1111\u1161\u1109\u1175\u11bc \u1112\u116e \u1107\u1165\u11b7\u110b\u1171 \u1111\u1175\u11af\u1110\u1165\u1105\u1175\u11bc)",
+      "id": "generate_scm_report_rationale_512"
     },
     {
       "label": "\uc790\uc7ac\uad00\ub9ac base \uc7ac\uace0\ud300_\uc774\uc288\uc815\ub9ac \ud14c\uc774\ube14 \uc870\ud68c",
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L540",
-      "id": "generate_scm_report_rationale_540",
       "community": 0,
-      "norm_label": "\u110c\u1161\u110c\u1162\u1100\u116a\u11ab\u1105\u1175 base \u110c\u1162\u1100\u1169\u1110\u1175\u11b7_\u110b\u1175\u1109\u1172\u110c\u1165\u11bc\u1105\u1175 \u1110\u1166\u110b\u1175\u1107\u1173\u11af \u110c\u1169\u1112\u116c"
+      "norm_label": "\u110c\u1161\u110c\u1162\u1100\u116a\u11ab\u1105\u1175 base \u110c\u1162\u1100\u1169\u1110\u1175\u11b7_\u110b\u1175\u1109\u1172\u110c\u1165\u11bc\u1105\u1175 \u1110\u1166\u110b\u1175\u1107\u1173\u11af \u110c\u1169\u1112\u116c",
+      "id": "generate_scm_report_rationale_540"
     },
     {
       "label": "\uc790\uc7ac\uad00\ub9ac base sync_parts \ud14c\uc774\ube14\uc5d0\uc11c 2026 \ub204\uc801 \ucd94\uac00\uc0ac\uc6a9\uc561 \uc870\ud68c.     \uae30\uac04\ubcc4 \uae08\uc561\uc740 fetch_issue_list()\uc758 us",
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L567",
-      "id": "generate_scm_report_rationale_567",
       "community": 0,
-      "norm_label": "\u110c\u1161\u110c\u1162\u1100\u116a\u11ab\u1105\u1175 base sync_parts \u1110\u1166\u110b\u1175\u1107\u1173\u11af\u110b\u1166\u1109\u1165 2026 \u1102\u116e\u110c\u1165\u11a8 \u110e\u116e\u1100\u1161\u1109\u1161\u110b\u116d\u11bc\u110b\u1162\u11a8 \u110c\u1169\u1112\u116c.     \u1100\u1175\u1100\u1161\u11ab\u1107\u1167\u11af \u1100\u1173\u11b7\u110b\u1162\u11a8\u110b\u1173\u11ab fetch_issue_list()\u110b\u1174 us"
+      "norm_label": "\u110c\u1161\u110c\u1162\u1100\u116a\u11ab\u1105\u1175 base sync_parts \u1110\u1166\u110b\u1175\u1107\u1173\u11af\u110b\u1166\u1109\u1165 2026 \u1102\u116e\u110c\u1165\u11a8 \u110e\u116e\u1100\u1161\u1109\u1161\u110b\u116d\u11bc\u110b\u1162\u11a8 \u110c\u1169\u1112\u116c.     \u1100\u1175\u1100\u1161\u11ab\u1107\u1167\u11af \u1100\u1173\u11b7\u110b\u1162\u11a8\u110b\u1173\u11ab fetch_issue_list()\u110b\u1174 us",
+      "id": "generate_scm_report_rationale_567"
     },
     {
       "label": "\uce74\uce74\uc624 \uae38\ucc3e\uae30 API -> (km, minutes) \ud29c\ud50c \ubc18\ud658. \uc2e4\ud328\uc2dc (0.0, 0).",
       "file_type": "rationale",
       "source_file": "sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pages\\generate_scm_report.py",
       "source_location": "L763",
-      "id": "generate_scm_report_rationale_763",
       "community": 0,
-      "norm_label": "\u110f\u1161\u110f\u1161\u110b\u1169 \u1100\u1175\u11af\u110e\u1161\u11bd\u1100\u1175 api -> (km, minutes) \u1110\u1172\u1111\u1173\u11af \u1107\u1161\u11ab\u1112\u116a\u11ab. \u1109\u1175\u11af\u1111\u1162\u1109\u1175 (0.0, 0)."
+      "norm_label": "\u110f\u1161\u110f\u1161\u110b\u1169 \u1100\u1175\u11af\u110e\u1161\u11bd\u1100\u1175 api -> (km, minutes) \u1110\u1172\u1111\u1173\u11af \u1107\u1161\u11ab\u1112\u116a\u11ab. \u1109\u1175\u11af\u1111\u1162\u1109\u1175 (0.0, 0).",
+      "id": "generate_scm_report_rationale_763"
     },
     {
       "label": "helper.js",
@@ -1466,18 +1466,18 @@
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\logen_waybill\\logen_waybill.py",
       "source_location": "L1",
-      "id": "logen_waybill_rationale_1",
       "community": 11,
-      "norm_label": "\u1105\u1169\u110c\u1166\u11ab\u1110\u1162\u11a8\u1107\u1162 \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc\u1107\u1165\u11ab\u1112\u1169 \u2192 airtable \u110c\u1161\u1103\u1169\u11bc \u110c\u1165\u110c\u1161\u11bc \u1109\u1161\u110b\u116d\u11bc\u1107\u1165\u11b8: python logen_waybill.py"
+      "norm_label": "\u1105\u1169\u110c\u1166\u11ab\u1110\u1162\u11a8\u1107\u1162 \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc\u1107\u1165\u11ab\u1112\u1169 \u2192 airtable \u110c\u1161\u1103\u1169\u11bc \u110c\u1165\u110c\u1161\u11bc \u1109\u1161\u110b\u116d\u11bc\u1107\u1165\u11b8: python logen_waybill.py",
+      "id": "logen_waybill_rationale_1"
     },
     {
       "label": "\ud604\uc7ac \ub85c\uc820 \ud398\uc774\uc9c0\uc5d0\uc11c \uc6b4\uc1a1\uc7a5 + \uc8fc\ubb38\ubc88\ud638 \ucd94\ucd9c",
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\logen_waybill\\logen_waybill.py",
       "source_location": "L99",
-      "id": "logen_waybill_rationale_99",
       "community": 11,
-      "norm_label": "\u1112\u1167\u11ab\u110c\u1162 \u1105\u1169\u110c\u1166\u11ab \u1111\u1166\u110b\u1175\u110c\u1175\u110b\u1166\u1109\u1165 \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc + \u110c\u116e\u1106\u116e\u11ab\u1107\u1165\u11ab\u1112\u1169 \u110e\u116e\u110e\u116e\u11af"
+      "norm_label": "\u1112\u1167\u11ab\u110c\u1162 \u1105\u1169\u110c\u1166\u11ab \u1111\u1166\u110b\u1175\u110c\u1175\u110b\u1166\u1109\u1165 \u110b\u116e\u11ab\u1109\u1169\u11bc\u110c\u1161\u11bc + \u110c\u116e\u1106\u116e\u11ab\u1107\u1165\u11ab\u1112\u1169 \u110e\u116e\u110e\u116e\u11af",
+      "id": "logen_waybill_rationale_99"
     },
     {
       "label": "generate_meeting_pdf.py",
@@ -1556,9 +1556,9 @@
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\scripts\\generate_meeting_pdf.py",
       "source_location": "L1",
-      "id": "generate_meeting_pdf_rationale_1",
       "community": 4,
-      "norm_label": "\u1109\u1175\u11ab\u1109\u1175\u110b\u1165\u1105\u1175 scm \u1112\u116c\u110b\u1174\u1105\u1169\u11a8 \u1107\u116e\u11ab\u1109\u1165\u11a8 pdf \u1109\u1162\u11bc\u1109\u1165\u11bc\u1100\u1175 \u1109\u1161\u110b\u116d\u11bc\u1107\u1165\u11b8: python generate_meeting_pdf.py"
+      "norm_label": "\u1109\u1175\u11ab\u1109\u1175\u110b\u1165\u1105\u1175 scm \u1112\u116c\u110b\u1174\u1105\u1169\u11a8 \u1107\u116e\u11ab\u1109\u1165\u11a8 pdf \u1109\u1162\u11bc\u1109\u1165\u11bc\u1100\u1175 \u1109\u1161\u110b\u116d\u11bc\u1107\u1165\u11b8: python generate_meeting_pdf.py",
+      "id": "generate_meeting_pdf_rationale_1"
     },
     {
       "label": "ecosystem.config.js",
@@ -3914,36 +3914,36 @@
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pipeline.py",
       "source_location": "L1",
-      "id": "pipeline_rationale_1",
       "community": 1,
-      "norm_label": "sincerely scm \u2014 airtable \u2192 supabase \u1109\u1173\u1102\u1162\u11b8\u1109\u1163\u11ba \u1111\u1161\u110b\u1175\u1111\u1173\u1105\u1161\u110b\u1175\u11ab usage:     python pipeline.py"
+      "norm_label": "sincerely scm \u2014 airtable \u2192 supabase \u1109\u1173\u1102\u1162\u11b8\u1109\u1163\u11ba \u1111\u1161\u110b\u1175\u1111\u1173\u1105\u1161\u110b\u1175\u11ab usage:     python pipeline.py",
+      "id": "pipeline_rationale_1"
     },
     {
       "label": "\ud398\uc774\uc9c0\ub124\uc774\uc158\uc73c\ub85c \ud14c\uc774\ube14 \uc804\uccb4 \ub808\ucf54\ub4dc \ucd94\ucd9c",
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pipeline.py",
       "source_location": "L58",
-      "id": "pipeline_rationale_58",
       "community": 1,
-      "norm_label": "\u1111\u1166\u110b\u1175\u110c\u1175\u1102\u1166\u110b\u1175\u1109\u1167\u11ab\u110b\u1173\u1105\u1169 \u1110\u1166\u110b\u1175\u1107\u1173\u11af \u110c\u1165\u11ab\u110e\u1166 \u1105\u1166\u110f\u1169\u1103\u1173 \u110e\u116e\u110e\u116e\u11af"
+      "norm_label": "\u1111\u1166\u110b\u1175\u110c\u1175\u1102\u1166\u110b\u1175\u1109\u1167\u11ab\u110b\u1173\u1105\u1169 \u1110\u1166\u110b\u1175\u1107\u1173\u11af \u110c\u1165\u11ab\u110e\u1166 \u1105\u1166\u110f\u1169\u1103\u1173 \u110e\u116e\u110e\u116e\u11af",
+      "id": "pipeline_rationale_58"
     },
     {
       "label": "Airtable \ub808\ucf54\ub4dc \u2192 Supabase row\ub85c \ubcc0\ud658",
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pipeline.py",
       "source_location": "L106",
-      "id": "pipeline_rationale_106",
       "community": 1,
-      "norm_label": "airtable \u1105\u1166\u110f\u1169\u1103\u1173 \u2192 supabase row\u1105\u1169 \u1107\u1167\u11ab\u1112\u116a\u11ab"
+      "norm_label": "airtable \u1105\u1166\u110f\u1169\u1103\u1173 \u2192 supabase row\u1105\u1169 \u1107\u1167\u11ab\u1112\u116a\u11ab",
+      "id": "pipeline_rationale_106"
     },
     {
       "label": "rows\ub97c Supabase \ud14c\uc774\ube14\uc5d0 bulk insert",
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\pipeline.py",
       "source_location": "L162",
-      "id": "pipeline_rationale_162",
       "community": 1,
-      "norm_label": "rows\u1105\u1173\u11af supabase \u1110\u1166\u110b\u1175\u1107\u1173\u11af\u110b\u1166 bulk insert"
+      "norm_label": "rows\u1105\u1173\u11af supabase \u1110\u1166\u110b\u1175\u1107\u1173\u11af\u110b\u1166 bulk insert",
+      "id": "pipeline_rationale_162"
     },
     {
       "label": "field_mapping.py",
@@ -3959,9 +3959,9 @@
       "file_type": "rationale",
       "source_file": "\ud14c\uc2a4\ud2b8\\sincerely-scm-pipeline-github\\sincerely-scm-pipeline-gh\\config\\field_mapping.py",
       "source_location": "L1",
-      "id": "field_mapping_rationale_1",
       "community": 84,
-      "norm_label": "airtable \u2192 supabase \u1111\u1175\u11af\u1103\u1173 \u1106\u1162\u1111\u1175\u11bc \u1109\u1165\u11af\u110c\u1165\u11bc \u110c\u1162\u1100\u1169 \u1105\u1169\u110c\u1175\u11a8 \u1107\u116e\u11ab\u1109\u1165\u11a8 \u1100\u1167\u11af\u1100\u116a \u1100\u1175\u1107\u1161\u11ab \u2014 \u110c\u1162\u1100\u1169 \u1100\u116a\u11ab\u1105\u1167\u11ab \u1112\u1162\u11a8\u1109\u1175\u11b7 \u1111\u1175\u11af\u1103\u1173\u1106\u1161\u11ab \u110e\u116e\u110e\u116e\u11af  base id: applui4z"
+      "norm_label": "airtable \u2192 supabase \u1111\u1175\u11af\u1103\u1173 \u1106\u1162\u1111\u1175\u11bc \u1109\u1165\u11af\u110c\u1165\u11bc \u110c\u1162\u1100\u1169 \u1105\u1169\u110c\u1175\u11a8 \u1107\u116e\u11ab\u1109\u1165\u11a8 \u1100\u1167\u11af\u1100\u116a \u1100\u1175\u1107\u1161\u11ab \u2014 \u110c\u1162\u1100\u1169 \u1100\u116a\u11ab\u1105\u1167\u11ab \u1112\u1162\u11a8\u1109\u1175\u11b7 \u1111\u1175\u11af\u1103\u1173\u1106\u1161\u11ab \u110e\u116e\u110e\u116e\u11af  base id: applui4z",
+      "id": "field_mapping_rationale_1"
     },
     {
       "label": "__init__.py",
