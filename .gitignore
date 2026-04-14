@@ -38,3 +38,6 @@ tmp_*.json
 .playwright-mcp/
 .claude/logs/
 .worktrees/
+
+# graphify cache (auto-generated, large)
+graphify-out/cache/

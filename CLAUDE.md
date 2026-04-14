@@ -5,8 +5,16 @@
 ## 이 프로젝트 열면 자동 실행
 다른 것보다 먼저, 아래를 즉시 실행할 것:
 1. `git log --oneline -10` → 최근 작업 히스토리 확인
+2. `_AutoResearch/SCM/wiki/log.md` → 마지막 AutoResearch 상태 확인 (Obsidian MCP 또는 직접 읽기)
 실행 후 "현재 상태 요약 + 다음 추천 태스크 1개"를 나에게 말해줄 것.
 세션 종료 시: git commit 필수.
+
+## Graphify Knowledge Graph
+코드베이스 knowledge graph (`pip install graphifyy` 기반, Karpathy Wiki 패턴):
+- 그래프 위치: `graphify-out/graph.json` (441 nodes, 506 edges, 93 communities)
+- Claude에서 코드 구조 탐색: `/graphify query "질문"` 또는 `/graphify path A B`
+- 커밋 시 자동 업데이트 (git hook 설치됨)
+- 수동 업데이트: `python -m graphify update .` (또는 `graphify update .`)
 
 ## 데이터 정합성 원칙
 - Airtable: 운영 입력 레이어 — API로만 읽기, 직접 수정 금지
