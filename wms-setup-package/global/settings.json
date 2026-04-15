@@ -1,0 +1,60 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c \"echo '\\n=== Session End Checklist ===' && echo '1. git add + commit'\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -c \"[console]::beep(800,300)\""
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "playground@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "bencium-controlled-ux-designer@bencium-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+      }
+    },
+    "bencium-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "bencium/bencium-claude-code-design-skill"
+      }
+    }
+  },
+  "effortLevel": "max",
+  "autoUpdatesChannel": "latest",
+  "autoMemoryEnabled": true,
+  "model": "sonnet"
+}

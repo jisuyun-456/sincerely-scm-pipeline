@@ -1,0 +1,4 @@
+[2026-04-15 07:41 UTC] === TMS Obsidian 동기화 시작 ===
+[2026-04-15 07:41 UTC]   복사: week_20260415.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\outputs\week_20260415.md
+[2026-04-15 07:41 UTC]   복사: index.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\wiki\index.md
+[2026-04-15 07:41 UTC] === 완료: outputs 1개 + wiki 1개 복사 ===

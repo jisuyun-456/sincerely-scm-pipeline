@@ -66,15 +66,16 @@ ClaudeVault 경로: {VAULT_PATH}   (예: ~/Documents/ClaudeVault)
 
 아래 순서대로 실행해줘:
 1. {SETUP_PACKAGE_PATH}/global/CLAUDE.md → ~/.claude/CLAUDE.md 복사
-2. {SETUP_PACKAGE_PATH}/project/CLAUDE.md → {WMS_PROJECT_PATH}/CLAUDE.md 복사
-3. {SETUP_PACKAGE_PATH}/project/.claude/ → {WMS_PROJECT_PATH}/.claude/ 전체 복사
-4. chmod +x {WMS_PROJECT_PATH}/.claude/hooks/*.sh
-5. pip install graphifyy
-6. graphify install claude
-7. cd {WMS_PROJECT_PATH} && graphify update .
-8. graphify hook install
-9. Obsidian _AutoResearch 폴더 구조 생성 (아래 명세 참조)
-10. 각 파일 존재 여부 확인 후 결과 보고
+2. {SETUP_PACKAGE_PATH}/global/settings.json → ~/.claude/settings.json 복사
+3. {SETUP_PACKAGE_PATH}/project/CLAUDE.md → {WMS_PROJECT_PATH}/CLAUDE.md 복사
+4. {SETUP_PACKAGE_PATH}/project/.claude/ → {WMS_PROJECT_PATH}/.claude/ 전체 복사
+5. chmod +x {WMS_PROJECT_PATH}/.claude/hooks/*.sh
+6. pip install graphifyy
+7. graphify install claude
+8. cd {WMS_PROJECT_PATH} && graphify update .
+9. graphify hook install
+10. Obsidian _AutoResearch 폴더 구조 생성 (아래 명세 참조)
+11. 각 파일 존재 여부 확인 후 결과 보고
 ```
 
 ---
@@ -85,7 +86,8 @@ ClaudeVault 경로: {VAULT_PATH}   (예: ~/Documents/ClaudeVault)
 wms-setup-package/
 ├── SETUP_GUIDE.md              ← 지금 읽는 이 파일
 ├── global/
-│   └── CLAUDE.md               ← 글로벌 설정 (~/.claude/CLAUDE.md)
+│   ├── CLAUDE.md               ← 글로벌 설정 (~/.claude/CLAUDE.md)
+│   └── settings.json           ← 글로벌 설정 (~/.claude/settings.json)
 └── project/
     ├── CLAUDE.md               ← 프로젝트 루트에 복사
     └── .claude/
@@ -144,11 +146,34 @@ Claude Code 실행 후:
 
 ---
 
-## Layer 3 — 글로벌 CLAUDE.md
+## Layer 3 — 글로벌 CLAUDE.md + settings.json
 
 ```bash
 cp wms-setup-package/global/CLAUDE.md ~/.claude/CLAUDE.md
+cp wms-setup-package/global/settings.json ~/.claude/settings.json
 ```
+
+**settings.json 포함 내용:**
+- `effortLevel: max` — 최대 사고 품질
+- `autoMemoryEnabled: true` — 자동 메모리 저장
+- `model: sonnet` — 기본 모델 Sonnet 4.6
+- `enabledPlugins` — 아래 10개 플러그인 자동 활성화
+- `extraKnownMarketplaces` — 서드파티 마켓플레이스 3개 등록
+
+| 플러그인 | 용도 |
+|---------|------|
+| `superpowers` | 핵심 워크플로우 스킬 번들 |
+| `feature-dev` | 기능 개발 가이드 |
+| `frontend-design` | UI/UX 디자인 전문 |
+| `code-review` | 코드 리뷰 |
+| `playground` | 인터랙티브 HTML 플레이그라운드 |
+| `playwright` | 브라우저 자동화 |
+| `typescript-lsp` | TS 타입 검사 |
+| `security-guidance` | 보안 가이드 |
+| `ui-ux-pro-max` | 50+ 스타일, 161 팔레트 |
+| `bencium-controlled-ux-designer` | 접근성 UI/UX 전문 |
+
+> settings.json 복사 후 플러그인은 Claude Code 첫 실행 시 자동 다운로드됨
 
 포함 내용:
 - D1~D5 전문가 정체성 (D1 SCM/WMS 핵심)
@@ -426,19 +451,21 @@ claude mcp add lightrag --url http://localhost:8020
 [ ] 3.  Claude Code CLI 설치: npm install -g @anthropic-ai/claude-code
 [ ] 4.  Claude Code 로그인: claude auth login
 [ ] 5.  Superpowers 플러그인: claude → /plugins → superpowers → install
+         (나머지 플러그인은 settings.json 복사 후 첫 실행 시 자동 설치됨)
 [ ] 6.  글로벌 CLAUDE.md 복사: cp global/CLAUDE.md ~/.claude/CLAUDE.md
-[ ] 7.  프로젝트 폴더 이동: cd {WMS_PROJECT_PATH}
-[ ] 8.  프로젝트 CLAUDE.md 복사: cp project/CLAUDE.md ./CLAUDE.md
-[ ] 9.  .claude 폴더 복사: cp -r project/.claude/ ./.claude/
-[ ] 10. 훅 권한 부여: chmod +x .claude/hooks/*.sh
-[ ] 11. Graphify 설치: pip install graphifyy
-[ ] 12. Graphify Claude skill 등록: graphify install claude
-[ ] 13. 코드 그래프 빌드: graphify update .
-[ ] 14. Git hook 설치: graphify hook install
-[ ] 15. Obsidian 설치 + Vault 지정
-[ ] 16. obsidian-local-rest-api 플러그인 설치 + Enable
-[ ] 17. _AutoResearch/WMS/ 폴더 구조 생성 (program.md + wiki/log.md)
-[ ] 18. LightRAG MCP 설정: claude mcp add lightrag --url http://localhost:8020
+[ ] 7.  글로벌 settings.json 복사: cp global/settings.json ~/.claude/settings.json
+[ ] 8.  프로젝트 폴더 이동: cd {WMS_PROJECT_PATH}
+[ ] 9.  프로젝트 CLAUDE.md 복사: cp project/CLAUDE.md ./CLAUDE.md
+[ ] 10. .claude 폴더 복사: cp -r project/.claude/ ./.claude/
+[ ] 11. 훅 권한 부여: chmod +x .claude/hooks/*.sh
+[ ] 12. Graphify 설치: pip install graphifyy
+[ ] 13. Graphify Claude skill 등록: graphify install claude
+[ ] 14. 코드 그래프 빌드: graphify update .
+[ ] 15. Git hook 설치: graphify hook install
+[ ] 16. Obsidian 설치 + Vault 지정
+[ ] 17. obsidian-local-rest-api 플러그인 설치 + Enable
+[ ] 18. _AutoResearch/WMS/ 폴더 구조 생성 (program.md + wiki/log.md)
+[ ] 19. LightRAG MCP 설정: claude mcp add lightrag --url http://localhost:8020
 [ ] 19. Airtable MCP 설정 (PAT 필요)
 [ ] 20. 세션 시작 확인: claude → /start
 ```
