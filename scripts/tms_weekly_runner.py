@@ -40,6 +40,7 @@ TBL_SHIPMENT = "tbllg1JoHclGYer7m"
 TBL_DISPATCH = "tbl0YCjOC7rYtyXHV"    # 배차일지
 TBL_OTIF = "tbl4WfEuGLDlqCTQH"
 TBL_SLA = "tblbPC6z0AsbvcVxJ"
+TBL_CLAIM = "tblIZ9kco1QDpUz0u"    # 배송클레임
 
 AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
 HEADERS = {
@@ -162,13 +163,32 @@ def step_pull_data() -> dict:
         if (r["fields"].get("fldQvmEwwzvQW95h9") or "") >= cutoff
     ]
 
-    # 배차일지 (최근 30일)
-    dispatch_recs = get_all_records(TBL_DISPATCH, [
+    # 배차일지 (최근 30일) — 날짜 필터 적용
+    dispatch_cutoff = (date.today() - timedelta(days=30)).isoformat()
+    all_dispatch_recs = get_all_records(TBL_DISPATCH, [
         "fldZh2mZDIPQXfOcO",  # 날짜
         "fldyQAoRZFn6oeQ0E",  # 차량이용률(%)
         "fldVJoKjjzcwpHIHC",  # Total_CBM
         "fldwrsxDL2VFdmUKo",  # 오버부킹
     ])
+    dispatch_recs = [
+        r for r in all_dispatch_recs
+        if (r["fields"].get("fldZh2mZDIPQXfOcO") or "") >= dispatch_cutoff
+    ]
+
+    # 배송클레임 (최근 90일)
+    claim_cutoff = (date.today() - timedelta(days=90)).isoformat()
+    all_claim_recs = get_all_records(TBL_CLAIM, [
+        "fldL2x3aqDQ4qjlD6",  # 클레임유형
+        "fldiNGNqgmQH1MFB7",  # 발생일
+        "fldxBT0XumwS7u3Kk",  # 피해금액
+        "fldk6eb7QZar8tzBR",  # 보상금액
+        "fldevAs6IBB0rN2MY",  # 처리상태
+    ])
+    claim_recs = [
+        r for r in all_claim_recs
+        if (r["fields"].get("fldiNGNqgmQH1MFB7") or "") >= claim_cutoff
+    ]
 
     # OTIF (전체)
     otif_recs = get_all_records(TBL_OTIF, [
@@ -179,7 +199,8 @@ def step_pull_data() -> dict:
     ])
 
     print(f"  Shipment(최근30일): {len(recent_ships)}건")
-    print(f"  배차일지(최근30일): {len(dispatch_recs)}건")
+    print(f"  배차일지(최근30일): {len(dispatch_recs)}건 (전체 {len(all_dispatch_recs)}건 중)")
+    print(f"  배송클레임(최근90일): {len(claim_recs)}건")
     print(f"  OTIF(전체): {len(otif_recs)}건")
 
     return {
@@ -187,6 +208,7 @@ def step_pull_data() -> dict:
         "dispatches": dispatch_recs,
         "otifs": otif_recs,
         "all_shipments": ship_recs,
+        "claims": claim_recs,
     }
 
 
@@ -227,11 +249,22 @@ def analyze_iter2_utilization(data: dict) -> dict:
     dispatches = data["dispatches"]
     rates = []
     overbooking_count = 0
+    skipped_zero_cbm = 0
 
     for rec in dispatches:
         f = rec["fields"]
+        cbm_raw = f.get("fldVJoKjjzcwpHIHC")
         rate_raw = f.get("fldyQAoRZFn6oeQ0E")
         overbook = f.get("fldwrsxDL2VFdmUKo")
+
+        # Bug 3: CBM=0인 미운행일 제외 (이용률 평균 왜곡 방지)
+        try:
+            cbm_val = float(cbm_raw) if cbm_raw is not None else 0.0
+        except (ValueError, TypeError):
+            cbm_val = 0.0
+        if cbm_val <= 0:
+            skipped_zero_cbm += 1
+            continue
 
         if rate_raw is not None:
             try:
@@ -240,16 +273,21 @@ def analyze_iter2_utilization(data: dict) -> dict:
                 rates.append(float(rate_str))
             except (ValueError, TypeError):
                 pass
-        if overbook and str(overbook).lower() not in ("false", "0", ""):
+
+        # Bug 2: 오버부킹 필드는 "✅ 정상" / "🚨 N일 오버부킹" 형식 문자열
+        if overbook and "오버부킹" in str(overbook):
             overbooking_count += 1
 
     avg_rate = sum(rates) / len(rates) if rates else 0
     min_rate = min(rates) if rates else 0
     max_rate = max(rates) if rates else 0
     below_target = sum(1 for r in rates if r < 70)
+    active_days = len(rates)
 
     return {
         "total_days": len(dispatches),
+        "active_days": active_days,
+        "skipped_zero_cbm": skipped_zero_cbm,
         "avg_utilization": round(avg_rate, 1),
         "min_utilization": round(min_rate, 1),
         "max_utilization": round(max_rate, 1),
@@ -286,9 +324,10 @@ def analyze_iter3_cost(data: dict) -> dict:
 
 
 def analyze_iter4_otif(data: dict) -> dict:
-    """Iteration 4: OTIF 실측 전환 현황"""
+    """Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석"""
     otifs = data["otifs"]
     ships = data["all_shipments"]
+    claims = data.get("claims", [])
 
     on_time_count = 0
     in_full_count = 0
@@ -328,6 +367,35 @@ def analyze_iter4_otif(data: dict) -> dict:
     )
     conversion_rate = round((1 - proxy_count / max(len(ships), 1)) * 100, 1)
 
+    # 배송클레임 분석 (최근 90일)
+    claim_type_count: dict[str, int] = {}
+    claim_total_damage = 0.0
+    claim_total_compensation = 0.0
+    claim_pending = 0
+
+    for rec in claims:
+        f = rec["fields"]
+        c_type = f.get("fldL2x3aqDQ4qjlD6") or "미분류"
+        claim_type_count[c_type] = claim_type_count.get(c_type, 0) + 1
+
+        damage = f.get("fldxBT0XumwS7u3Kk")
+        if damage is not None:
+            try:
+                claim_total_damage += float(damage)
+            except (TypeError, ValueError):
+                pass
+
+        compensation = f.get("fldk6eb7QZar8tzBR")
+        if compensation is not None:
+            try:
+                claim_total_compensation += float(compensation)
+            except (TypeError, ValueError):
+                pass
+
+        status = f.get("fldevAs6IBB0rN2MY") or ""
+        if status not in ("완료", "종결"):
+            claim_pending += 1
+
     return {
         "total_otif_records": len(otifs),
         "on_time_rate": round(on_time_count / total_otif * 100, 1),
@@ -335,6 +403,12 @@ def analyze_iter4_otif(data: dict) -> dict:
         "avg_otif_score": round(sum(otif_scores) / len(otif_scores) * 100, 1) if otif_scores else 0,
         "avg_delay_days": round(sum(delay_days) / len(delay_days), 1) if delay_days else 0,
         "proxy_conversion_rate": conversion_rate,
+        # 배송클레임
+        "claim_count": len(claims),
+        "claim_by_type": claim_type_count,
+        "claim_total_damage": round(claim_total_damage),
+        "claim_total_compensation": round(claim_total_compensation),
+        "claim_pending": claim_pending,
     }
 
 
@@ -384,7 +458,7 @@ def step_save_report(results: dict, week_str: str) -> Path:
 
 ## Iteration 2: 차량이용률
 
-- 분석 기간: {r2["total_days"]}일
+- 분석 기간: {r2["total_days"]}일 (운행일 {r2["active_days"]}일, 미운행일 {r2["skipped_zero_cbm"]}일 제외)
 - 평균 이용률: **{r2["avg_utilization"]}%** (범위: {r2["min_utilization"]}~{r2["max_utilization"]}%)
 - 70% 미달 일수: {r2["below_70pct_days"]}일
 - 오버부킹 발생: {r2["overbooking_count"]}건
@@ -409,6 +483,14 @@ def step_save_report(results: dict, week_str: str) -> Path:
 - In-Full율: **{r4["in_full_rate"]}%**
 - 평균 납기차이: {r4["avg_delay_days"]}일
 - 약속납기일 실측 전환율: **{r4["proxy_conversion_rate"]}%**
+
+### 배송클레임 (최근 90일)
+
+- 총 클레임: {r4["claim_count"]}건 (미처리 {r4["claim_pending"]}건)
+- 피해금액 합계: {r4["claim_total_damage"]:,}원 / 보상금액: {r4["claim_total_compensation"]:,}원
+
+유형별 분포:
+{chr(10).join(f"  {k}: {v}건" for k, v in r4["claim_by_type"].items()) if r4["claim_by_type"] else "  (클레임 없음)"}
 
 ---
 
