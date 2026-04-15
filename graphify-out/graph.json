@@ -935,18 +935,18 @@
       "file_type": "rationale",
       "source_file": "scripts\\sync_tms_to_obsidian.py",
       "source_location": "L41",
-      "id": "sync_tms_to_obsidian_rationale_41",
       "community": 23,
-      "norm_label": "git pull \u1109\u1175\u11af\u1112\u1162\u11bc. \u1109\u1165\u11bc\u1100\u1169\u11bc \u1109\u1175 true."
+      "norm_label": "git pull \u1109\u1175\u11af\u1112\u1162\u11bc. \u1109\u1165\u11bc\u1100\u1169\u11bc \u1109\u1175 true.",
+      "id": "sync_tms_to_obsidian_rationale_41"
     },
     {
       "label": "src\uc758 \ubaa8\ub4e0 .md \ud30c\uc77c\uc744 dst\ub85c \ubcf5\uc0ac. \ubcf5\uc0ac\ub41c \ud30c\uc77c\uba85 \ubaa9\ub85d \ubc18\ud658.",
       "file_type": "rationale",
       "source_file": "scripts\\sync_tms_to_obsidian.py",
       "source_location": "L58",
-      "id": "sync_tms_to_obsidian_rationale_58",
       "community": 23,
-      "norm_label": "src\u110b\u1174 \u1106\u1169\u1103\u1173\u11ab .md \u1111\u1161\u110b\u1175\u11af\u110b\u1173\u11af dst\u1105\u1169 \u1107\u1169\u11a8\u1109\u1161. \u1107\u1169\u11a8\u1109\u1161\u1103\u116c\u11ab \u1111\u1161\u110b\u1175\u11af\u1106\u1167\u11bc \u1106\u1169\u11a8\u1105\u1169\u11a8 \u1107\u1161\u11ab\u1112\u116a\u11ab."
+      "norm_label": "src\u110b\u1174 \u1106\u1169\u1103\u1173\u11ab .md \u1111\u1161\u110b\u1175\u11af\u110b\u1173\u11af dst\u1105\u1169 \u1107\u1169\u11a8\u1109\u1161. \u1107\u1169\u11a8\u1109\u1161\u1103\u116c\u11ab \u1111\u1161\u110b\u1175\u11af\u1106\u1167\u11bc \u1106\u1169\u11a8\u1105\u1169\u11a8 \u1107\u1161\u11ab\u1112\u116a\u11ab.",
+      "id": "sync_tms_to_obsidian_rationale_58"
     },
     {
       "label": "tms_weekly_runner.py",
