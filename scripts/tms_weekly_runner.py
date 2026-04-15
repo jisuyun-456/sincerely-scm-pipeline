@@ -41,6 +41,7 @@ TBL_DISPATCH = "tbl0YCjOC7rYtyXHV"    # 배차일지
 TBL_OTIF = "tbl4WfEuGLDlqCTQH"
 TBL_SLA = "tblbPC6z0AsbvcVxJ"
 TBL_CLAIM = "tblIZ9kco1QDpUz0u"    # 배송클레임
+TBL_PARTNER = "tblI4ZXrte7WyhXyd"  # 배송파트너
 
 AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
 HEADERS = {
@@ -50,12 +51,21 @@ HEADERS = {
 
 
 # ── Airtable 헬퍼 ──────────────────────────────────────────────────────────────
-def get_all_records(table_id: str, fields: list[str]) -> list[dict]:
+def get_all_records(
+    table_id: str,
+    fields: list[str],
+    formula: str | None = None,
+    max_records: int | None = None,
+) -> list[dict]:
     records, offset = [], None
     while True:
         params: dict = {"fields[]": fields, "pageSize": 100, "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
+        if formula:
+            params["filterByFormula"] = formula
+        if max_records:
+            params["maxRecords"] = max_records
         resp = requests.get(
             f"https://api.airtable.com/v0/{BASE_ID}/{table_id}",
             headers=HEADERS, params=params,
@@ -64,10 +74,26 @@ def get_all_records(table_id: str, fields: list[str]) -> list[dict]:
         data = resp.json()
         records.extend(data.get("records", []))
         offset = data.get("offset")
-        if not offset:
+        if not offset or (max_records and len(records) >= max_records):
             break
         time.sleep(0.2)
     return records
+
+
+# ── 배송파트너 분류 ────────────────────────────────────────────────────────────
+INTERNAL_KEYWORDS = ("이장훈", "조희선", "박종성", "물류팀")
+GOGOX_KEYWORDS    = ("고고엑스",)
+
+
+def classify_partner(name: str) -> str:
+    """배송파트너 이름 → 'internal' / 'gogox' / 'external'"""
+    for kw in INTERNAL_KEYWORDS:
+        if kw in name:
+            return "internal"
+    for kw in GOGOX_KEYWORDS:
+        if kw in name:
+            return "gogox"
+    return "external"
 
 
 def patch_records(table_id: str, updates: list[dict]) -> None:
@@ -163,12 +189,28 @@ def step_pull_data() -> dict:
         if (r["fields"].get("fldQvmEwwzvQW95h9") or "") >= cutoff
     ]
 
+    # 배송파트너 이름 캐시 (ID → 이름)
+    partner_recs = get_all_records(TBL_PARTNER, ["fldUCl2kD890FqRkt"])  # 배송파트너 이름
+    partner_cache = {r["id"]: r["fields"].get("fldUCl2kD890FqRkt", "") for r in partner_recs}
+
+    # 퀵(수도권) Shipment (최근 30일, 최대 300건) — 내부 소화율 계산용
+    quik_all = get_all_records(
+        TBL_SHIPMENT,
+        fields=["fldM2u6RwLRrO7ymW", "fldtEykbFxkO31FZP"],  # 배송파트너, 출하일자
+        formula="FIND('퀵(수도권)', {배송 방식}) > 0",
+        max_records=300,
+    )
+    quik_ships = [
+        r for r in quik_all
+        if (r["fields"].get("fldtEykbFxkO31FZP") or "") >= cutoff
+    ]
+
     # 배차일지 (최근 30일) — 날짜 필터 적용
     dispatch_cutoff = (date.today() - timedelta(days=30)).isoformat()
     all_dispatch_recs = get_all_records(TBL_DISPATCH, [
         "fldZh2mZDIPQXfOcO",  # 날짜
-        "fldyQAoRZFn6oeQ0E",  # 차량이용률(%)
         "fldVJoKjjzcwpHIHC",  # Total_CBM
+        "fldIQqaoj2CYlCSFH",  # 배송파트너 (링크)
         "fldwrsxDL2VFdmUKo",  # 오버부킹
     ])
     dispatch_recs = [
@@ -199,6 +241,7 @@ def step_pull_data() -> dict:
     ])
 
     print(f"  Shipment(최근30일): {len(recent_ships)}건")
+    print(f"  퀵(수도권)(최근30일): {len(quik_ships)}건")
     print(f"  배차일지(최근30일): {len(dispatch_recs)}건 (전체 {len(all_dispatch_recs)}건 중)")
     print(f"  배송클레임(최근90일): {len(claim_recs)}건")
     print(f"  OTIF(전체): {len(otif_recs)}건")
@@ -209,6 +252,8 @@ def step_pull_data() -> dict:
         "otifs": otif_recs,
         "all_shipments": ship_recs,
         "claims": claim_recs,
+        "quik_ships": quik_ships,
+        "partner_cache": partner_cache,
     }
 
 
@@ -244,55 +289,47 @@ def analyze_iter1_volume(data: dict) -> dict:
     }
 
 
-def analyze_iter2_utilization(data: dict) -> dict:
-    """Iteration 2: 차량이용률"""
-    dispatches = data["dispatches"]
-    rates = []
-    overbooking_count = 0
-    skipped_zero_cbm = 0
+def analyze_iter2_dispatch_efficiency(data: dict) -> dict:
+    """Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일)"""
+    quik_ships    = data["quik_ships"]
+    partner_cache = data["partner_cache"]
+    dispatches    = data["dispatches"]
 
+    # ── 내부 소화율 (퀵 수도권 Shipment 기준) ──────────────────────────────────
+    cat: dict[str, int] = {"internal": 0, "gogox": 0, "external": 0, "none": 0}
+    for rec in quik_ships:
+        partners = rec["fields"].get("fldM2u6RwLRrO7ymW") or []
+        if not partners:
+            cat["none"] += 1
+            continue
+        # 첫 번째 파트너 기준으로 분류
+        name = partner_cache.get(partners[0], "")
+        cat[classify_partner(name)] += 1
+
+    total = sum(cat.values()) or 1
+
+    # ── 기사별 운행일 (배차일지 CBM>0 기준) ───────────────────────────────────
+    driver_days: dict[str, int] = {}
     for rec in dispatches:
         f = rec["fields"]
         cbm_raw = f.get("fldVJoKjjzcwpHIHC")
-        rate_raw = f.get("fldyQAoRZFn6oeQ0E")
-        overbook = f.get("fldwrsxDL2VFdmUKo")
-
-        # Bug 3: CBM=0인 미운행일 제외 (이용률 평균 왜곡 방지)
         try:
             cbm_val = float(cbm_raw) if cbm_raw is not None else 0.0
         except (ValueError, TypeError):
             cbm_val = 0.0
         if cbm_val <= 0:
-            skipped_zero_cbm += 1
             continue
-
-        if rate_raw is not None:
-            try:
-                # formula 결과가 문자열 "%XX" 또는 숫자일 수 있음
-                rate_str = str(rate_raw).replace("%", "").strip()
-                rates.append(float(rate_str))
-            except (ValueError, TypeError):
-                pass
-
-        # Bug 2: 오버부킹 필드는 "✅ 정상" / "🚨 N일 오버부킹" 형식 문자열
-        if overbook and "오버부킹" in str(overbook):
-            overbooking_count += 1
-
-    avg_rate = sum(rates) / len(rates) if rates else 0
-    min_rate = min(rates) if rates else 0
-    max_rate = max(rates) if rates else 0
-    below_target = sum(1 for r in rates if r < 70)
-    active_days = len(rates)
+        for pid in (f.get("fldIQqaoj2CYlCSFH") or []):
+            name = partner_cache.get(pid, pid)
+            driver_days[name] = driver_days.get(name, 0) + 1
 
     return {
-        "total_days": len(dispatches),
-        "active_days": active_days,
-        "skipped_zero_cbm": skipped_zero_cbm,
-        "avg_utilization": round(avg_rate, 1),
-        "min_utilization": round(min_rate, 1),
-        "max_utilization": round(max_rate, 1),
-        "below_70pct_days": below_target,
-        "overbooking_count": overbooking_count,
+        "sample_size":   len(quik_ships),
+        "internal_rate": round(cat["internal"] / total * 100, 1),
+        "gogox_rate":    round(cat["gogox"]    / total * 100, 1),
+        "external_rate": round(cat["external"] / total * 100, 1),
+        "none_rate":     round(cat["none"]     / total * 100, 1),
+        "driver_days":   driver_days,
     }
 
 
@@ -421,8 +458,7 @@ def step_save_report(results: dict, week_str: str) -> Path:
     r4 = results["iter4"]
     bf = results["backfill"]
 
-    # 이모지 없이 심플하게
-    util_status = "달성" if r2["avg_utilization"] >= 70 else "미달"
+    efficiency_status = "달성" if r2["internal_rate"] >= 80 else "미달"
     otif_status = "달성" if r4["on_time_rate"] >= 90 else "미달"
 
     report = f"""# TMS 주간 리포트 — {week_str}
@@ -435,7 +471,7 @@ def step_save_report(results: dict, week_str: str) -> Path:
 
 | 지표 | 실적 | 목표 | 상태 |
 |------|------|------|------|
-| 차량이용률 (평균) | {r2["avg_utilization"]}% | ≥70% | {util_status} |
+| 내부 소화율 (퀵 수도권) | {r2["internal_rate"]}% | ≥80% | {efficiency_status} |
 | OTIF On-Time율 | {r4["on_time_rate"]}% | ≥90% | {otif_status} |
 | In-Full율 | {r4["in_full_rate"]}% | ≥95% | - |
 | 약속납기일 실측 전환율 | {r4["proxy_conversion_rate"]}% | 100% | - |
@@ -456,14 +492,17 @@ def step_save_report(results: dict, week_str: str) -> Path:
 
 ---
 
-## Iteration 2: 차량이용률
+## Iteration 2: 배송 효율 (내부 소화율)
 
-- 분석 기간: {r2["total_days"]}일 (운행일 {r2["active_days"]}일, 미운행일 {r2["skipped_zero_cbm"]}일 제외)
-- 평균 이용률: **{r2["avg_utilization"]}%** (범위: {r2["min_utilization"]}~{r2["max_utilization"]}%)
-- 70% 미달 일수: {r2["below_70pct_days"]}일
-- 오버부킹 발생: {r2["overbooking_count"]}건
+- 분석 샘플: {r2["sample_size"]}건 (퀵 수도권 최근 30일)
+- 내부 소화율: **{r2["internal_rate"]}%** (목표 ≥80%)
+- 고고엑스 비중: {r2["gogox_rate"]}%
+- 외부 파트너: {r2["external_rate"]}%
 
-> 목표 70% {'달성중' if r2['avg_utilization'] >= 70 else f'미달 — {70 - r2["avg_utilization"]:.1f}%p 개선 필요'}
+기사별 운행일 (최근 30일):
+{chr(10).join(f"  {k}: {v}일" for k, v in r2["driver_days"].items()) if r2["driver_days"] else "  (데이터 없음)"}
+
+> {'목표 달성' if r2["internal_rate"] >= 80 else f'미달 — {80 - r2["internal_rate"]:.1f}%p 개선 필요 (고고엑스 건 내부 흡수 검토)'}
 
 ---
 
@@ -502,7 +541,7 @@ def step_save_report(results: dict, week_str: str) -> Path:
 
 ## 다음 주 체크포인트
 
-- [ ] 차량이용률 {'개선 방안 검토' if r2["avg_utilization"] < 70 else '유지 모니터링'}
+- [ ] 내부 소화율 {'개선 검토 (고고엑스 건 내부 흡수)' if r2["internal_rate"] < 80 else '목표 달성 — 유지 모니터링'}
 - [ ] OTIF {'원인 분석' if r4["on_time_rate"] < 90 else '목표 달성 유지'}
 - [ ] 약속납기일 전환율 {'개선 (구간유형/배송방식 매핑 확인)' if r4["proxy_conversion_rate"] < 90 else '100% 유지'}
 """
@@ -525,7 +564,7 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 **상태:** 완료
 
 ### KPI 스냅샷
-- 차량이용률: {r2["avg_utilization"]}% (목표 ≥70%)
+- 내부 소화율: {r2["internal_rate"]}% (목표 ≥80%) | 고고엑스: {r2["gogox_rate"]}%
 - OTIF On-Time: {r4["on_time_rate"]}% (목표 ≥90%)
 - 약속납기일 전환율: {r4["proxy_conversion_rate"]}%
 
@@ -533,7 +572,7 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 - [{report_path.name}](../outputs/{report_path.name})
 
 ### 다음 주 포커스
-- {'차량이용률 개선' if r2["avg_utilization"] < 70 else 'OTIF 실측 전환 완료' if r4["proxy_conversion_rate"] < 100 else '현상 유지 + 심화 분석'}
+- {'내부 소화율 개선 (고고엑스 건 흡수 검토)' if r2["internal_rate"] < 80 else 'OTIF 실측 전환 완료' if r4["proxy_conversion_rate"] < 100 else '현상 유지 + 심화 분석'}
 """
 
     existing = LOG_PATH.read_text(encoding="utf-8") if LOG_PATH.exists() else ""
@@ -572,11 +611,11 @@ def main(dry_run: bool) -> None:
     # 3. 분석
     print("\n[STEP 3] Iteration 분석")
     r1 = analyze_iter1_volume(data)
-    r2 = analyze_iter2_utilization(data)
+    r2 = analyze_iter2_dispatch_efficiency(data)
     r3 = analyze_iter3_cost(data)
     r4 = analyze_iter4_otif(data)
     print(f"  Iter1: 볼륨 {r1['total_shipments']}건, 피크 {r1['peak_day']}요일")
-    print(f"  Iter2: 평균 이용률 {r2['avg_utilization']}%, 오버부킹 {r2['overbooking_count']}건")
+    print(f"  Iter2: 내부 소화율 {r2['internal_rate']}%, 고고엑스 {r2['gogox_rate']}%")
     print(f"  Iter3: 배송방식 {len(r3['by_method'])}종")
     print(f"  Iter4: OTIF On-Time {r4['on_time_rate']}%, 전환율 {r4['proxy_conversion_rate']}%")
 
