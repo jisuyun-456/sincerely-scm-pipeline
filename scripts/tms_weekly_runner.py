@@ -43,6 +43,8 @@ TBL_SLA = "tblbPC6z0AsbvcVxJ"
 TBL_CLAIM = "tblIZ9kco1QDpUz0u"    # 배송클레임
 TBL_PARTNER = "tblI4ZXrte7WyhXyd"  # 배송파트너
 
+FORECAST_HIGH_THRESHOLD = 20  # 일별 건수 이 이상이면 추가 배차 권고
+
 AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
 HEADERS = {
     "Authorization": f"Bearer {AIRTABLE_PAT}",
@@ -449,6 +451,68 @@ def analyze_iter4_otif(data: dict) -> dict:
     }
 
 
+def analyze_iter5_forecast(data: dict) -> dict:
+    """Iteration 5: 다음 주 배송 볼륨 예측 (요일 패턴 기반)"""
+    from collections import defaultdict
+
+    ships = data["all_shipments"]
+    cutoff_90 = (date.today() - timedelta(days=90)).isoformat()
+    hist = [r for r in ships if (r["fields"].get("fldQvmEwwzvQW95h9") or "") >= cutoff_90]
+
+    weekday_map = {0: "월", 1: "화", 2: "수", 3: "목", 4: "금", 5: "토", 6: "일"}
+
+    # {year-Www: {요일: count}}
+    week_day: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for rec in hist:
+        confirmed = rec["fields"].get("fldQvmEwwzvQW95h9")
+        if not confirmed:
+            continue
+        try:
+            d = date.fromisoformat(confirmed)
+            if d > date.today():  # 미래 날짜 skip (약속납기일 혼입 방지)
+                continue
+            iso = d.isocalendar()
+            wk = f"{iso[0]}-W{iso[1]:02d}"
+            week_day[wk][weekday_map[d.weekday()]] += 1
+        except ValueError:
+            pass
+
+    sorted_weeks = sorted(week_day.keys())
+    recent_4 = sorted_weeks[-4:] if len(sorted_weeks) >= 4 else sorted_weeks
+    prior_8  = sorted_weeks[-12:-4] if len(sorted_weeks) >= 12 else sorted_weeks[:-4]
+
+    weekdays_order = ["월", "화", "수", "목", "금"]
+    day_forecast: dict[str, dict] = {}
+
+    for day in weekdays_order:
+        recent_vals = [week_day[w].get(day, 0) for w in recent_4]
+        prior_vals  = [week_day[w].get(day, 0) for w in prior_8] if prior_8 else []
+
+        avg_recent = sum(recent_vals) / len(recent_vals) if recent_vals else 0
+        avg_prior  = sum(prior_vals)  / len(prior_vals)  if prior_vals else avg_recent
+
+        trend = (avg_recent - avg_prior) / avg_prior if avg_prior > 0 else 0
+        forecast = max(0, round(avg_recent * (1 + trend * 0.3)))  # 30% 추세 반영
+
+        day_forecast[day] = {
+            "forecast":   forecast,
+            "avg_recent": round(avg_recent, 1),
+            "trend_pct":  round(trend * 100, 1),
+        }
+
+    total_forecast = sum(v["forecast"] for v in day_forecast.values())
+    high_days = [d for d, v in day_forecast.items() if v["forecast"] >= FORECAST_HIGH_THRESHOLD]
+    peak_day = max(day_forecast, key=lambda d: day_forecast[d]["forecast"]) if day_forecast else "-"
+
+    return {
+        "day_forecast":     day_forecast,
+        "total_forecast":   total_forecast,
+        "high_volume_days": high_days,
+        "data_weeks":       len(sorted_weeks),
+        "peak_day":         peak_day,
+    }
+
+
 # ── STEP 4: 리포트 저장 ────────────────────────────────────────────────────────
 def step_save_report(results: dict, week_str: str) -> Path:
     print("\n[STEP 4] 주간 리포트 저장")
@@ -456,6 +520,7 @@ def step_save_report(results: dict, week_str: str) -> Path:
     r2 = results["iter2"]
     r3 = results["iter3"]
     r4 = results["iter4"]
+    r5 = results["iter5"]
     bf = results["backfill"]
 
     efficiency_status = "달성" if r2["internal_rate"] >= 80 else "미달"
@@ -533,6 +598,19 @@ def step_save_report(results: dict, week_str: str) -> Path:
 
 ---
 
+## Iteration 5: 다음 주 배송 볼륨 예측
+
+> 기반 데이터: {r5["data_weeks"]}주치 패턴 (최근 90일) | 최근 4주 이동평균 + 추세 보정
+
+| 요일 | 예측 볼륨 | 최근 4주 평균 | 추세 |
+|------|----------|-------------|------|
+{chr(10).join(f"| {d} | {v['forecast']}건 | {v['avg_recent']}건 | {'+' if v['trend_pct'] >= 0 else ''}{v['trend_pct']}% |" for d, v in r5["day_forecast"].items())}
+
+- **주간 예측 합계: {r5["total_forecast"]}건**
+{f"- ⚠️ 배차 권고: **{'·'.join(r5['high_volume_days'])}요일** 볼륨 과다 → 고고엑스 사전 예약 또는 추가 기사 배정 검토" if r5["high_volume_days"] else "- 배차 이슈 없음 (전 요일 정상 범위)"}
+
+---
+
 ## 이번 주 백필
 
 - 약속납기일 업데이트: {bf["backfill_count"]}건{"(dry-run)" if bf["dry_run"] else ""}
@@ -557,6 +635,7 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
     print("\n[STEP 5] log.md 업데이트")
     r2 = results["iter2"]
     r4 = results["iter4"]
+    r5 = results["iter5"]
 
     entry = f"""
 ## [{date.today().isoformat()}] WEEKLY | 주간 분석 {week_str}
@@ -567,6 +646,7 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 - 내부 소화율: {r2["internal_rate"]}% (목표 ≥80%) | 고고엑스: {r2["gogox_rate"]}%
 - OTIF On-Time: {r4["on_time_rate"]}% (목표 ≥90%)
 - 약속납기일 전환율: {r4["proxy_conversion_rate"]}%
+- 다음 주 예측: {r5["total_forecast"]}건 (피크 {r5["peak_day"]}요일)
 
 ### 산출물
 - [{report_path.name}](../outputs/{report_path.name})
@@ -614,12 +694,14 @@ def main(dry_run: bool) -> None:
     r2 = analyze_iter2_dispatch_efficiency(data)
     r3 = analyze_iter3_cost(data)
     r4 = analyze_iter4_otif(data)
+    r5 = analyze_iter5_forecast(data)
     print(f"  Iter1: 볼륨 {r1['total_shipments']}건, 피크 {r1['peak_day']}요일")
     print(f"  Iter2: 내부 소화율 {r2['internal_rate']}%, 고고엑스 {r2['gogox_rate']}%")
     print(f"  Iter3: 배송방식 {len(r3['by_method'])}종")
     print(f"  Iter4: OTIF On-Time {r4['on_time_rate']}%, 전환율 {r4['proxy_conversion_rate']}%")
+    print(f"  Iter5: 다음 주 예측 합계 {r5['total_forecast']}건, 피크 {r5['peak_day']}요일")
 
-    results = {"backfill": bf_result, "iter1": r1, "iter2": r2, "iter3": r3, "iter4": r4}
+    results = {"backfill": bf_result, "iter1": r1, "iter2": r2, "iter3": r3, "iter4": r4, "iter5": r5}
 
     # 4. 리포트 저장
     report_path = step_save_report(results, week_str)
