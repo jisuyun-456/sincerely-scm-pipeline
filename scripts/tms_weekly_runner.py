@@ -514,7 +514,7 @@ def analyze_iter5_forecast(data: dict) -> dict:
 
 
 # ── STEP 4: 리포트 저장 ────────────────────────────────────────────────────────
-def step_save_report(results: dict, week_str: str) -> Path:
+def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path:
     print("\n[STEP 4] 주간 리포트 저장")
     r1 = results["iter1"]
     r2 = results["iter2"]
@@ -525,10 +525,11 @@ def step_save_report(results: dict, week_str: str) -> Path:
 
     efficiency_status = "달성" if r2["internal_rate"] >= 80 else "미달"
     otif_status = "달성" if r4["on_time_rate"] >= 90 else "미달"
+    header_label = f"{week_str}  ({date_range})" if date_range else week_str
 
-    report = f"""# TMS 주간 리포트 — {week_str}
+    report = f"""# TMS 주간 분석 — {header_label}
 
-> 생성: {date.today().isoformat()} | 기간: 최근 30일 기준
+> 자동 생성: {date.today().isoformat()} | 분석 기간: 최근 30일 기준
 
 ---
 
@@ -622,9 +623,21 @@ def step_save_report(results: dict, week_str: str) -> Path:
 - [ ] 내부 소화율 {'개선 검토 (고고엑스 건 내부 흡수)' if r2["internal_rate"] < 80 else '목표 달성 — 유지 모니터링'}
 - [ ] OTIF {'원인 분석' if r4["on_time_rate"] < 90 else '목표 달성 유지'}
 - [ ] 약속납기일 전환율 {'개선 (구간유형/배송방식 매핑 확인)' if r4["proxy_conversion_rate"] < 90 else '100% 유지'}
+
+---
+
+## 💬 개선 논의
+
+> 이 섹션은 Claude Code와의 검토 후 채워집니다.
+
+---
+
+## ✅ 확정 개선안
+
+> 이 섹션은 최종 논의 완료 후 다음 주 AutoResearch에 반영됩니다.
 """
 
-    output_path = OUTPUTS_DIR / f"week_{week_str}.md"
+    output_path = OUTPUTS_DIR / f"TMS-{week_str}.md"
     output_path.write_text(report, encoding="utf-8")
     print(f"  저장: {output_path}")
     return output_path
@@ -658,28 +671,47 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
     existing = LOG_PATH.read_text(encoding="utf-8") if LOG_PATH.exists() else ""
     LOG_PATH.write_text(existing + entry, encoding="utf-8")
 
-    # index.md 업데이트
+    # index.md 업데이트 (중복 방지)
     idx = INDEX_PATH.read_text(encoding="utf-8") if INDEX_PATH.exists() else ""
     new_row = f"| [{report_path.name}](../outputs/{report_path.name}) | 주간 | {date.today().isoformat()} | 완료 |\n"
-    # 테이블 헤더 뒤에 삽입
-    if "| (미생성)" in idx:
-        idx = idx.replace("| (미생성) iter1", new_row + "| (미생성) iter1")
-    else:
-        idx += new_row
-    INDEX_PATH.write_text(idx, encoding="utf-8")
+    if report_path.name not in idx:  # 동일 파일명 중복 삽입 방지
+        if "| (미생성)" in idx:
+            idx = idx.replace("| (미생성) iter1", new_row + "| (미생성) iter1")
+        else:
+            idx += new_row
+        INDEX_PATH.write_text(idx, encoding="utf-8")
 
     print("  log.md / index.md 업데이트 완료")
 
 
 # ── 메인 ───────────────────────────────────────────────────────────────────────
+def _compute_week_label() -> tuple[str, str, str]:
+    """실행일 기준 직전 주 레이블 계산.
+
+    Returns:
+        week_id:    "2026-W16"  (ISO 주차, 파일명용)
+        date_range: "04/13~04/17" (월~금, 헤더 표시용)
+        run_date:   "2026-04-20" (실행일)
+    """
+    today = date.today()
+    # 직전 월요일 = 오늘 - 7일 (GH Actions가 월요일 실행이므로)
+    prev_monday = today - timedelta(days=7)
+    prev_friday = prev_monday + timedelta(days=4)
+    iso_year, iso_week, _ = prev_monday.isocalendar()
+    week_id    = f"{iso_year}-W{iso_week:02d}"
+    date_range = f"{prev_monday.strftime('%m/%d')}~{prev_friday.strftime('%m/%d')}"
+    return week_id, date_range, today.isoformat()
+
+
 def main(dry_run: bool) -> None:
     if not AIRTABLE_PAT:
         print("[ERROR] AIRTABLE_PAT 환경변수 없음. .env 파일 확인")
         sys.exit(1)
 
-    week_str = date.today().strftime("%Y%m%d")
+    week_id, date_range, run_date = _compute_week_label()
+    week_str = week_id  # 하위 함수 호환용
     print(f"\n{'='*60}")
-    print(f"TMS 주간 AutoResearch | {week_str}")
+    print(f"TMS 주간 AutoResearch | {week_id} ({date_range})")
     print(f"{'='*60}")
 
     # 1. 백필
@@ -704,7 +736,7 @@ def main(dry_run: bool) -> None:
     results = {"backfill": bf_result, "iter1": r1, "iter2": r2, "iter3": r3, "iter4": r4, "iter5": r5}
 
     # 4. 리포트 저장
-    report_path = step_save_report(results, week_str)
+    report_path = step_save_report(results, week_str, date_range)
 
     # 5. log.md 업데이트
     step_update_log(results, report_path, week_str)

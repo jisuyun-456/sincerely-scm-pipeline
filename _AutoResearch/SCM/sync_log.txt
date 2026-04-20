@@ -6,3 +6,11 @@
 [2026-04-20 00:43 UTC] git pull 실행 중...
 [2026-04-20 00:43 UTC] git pull 완료: Already up to date.
 [2026-04-20 00:43 UTC] 신규 파일 없음. 이미 최신 상태.
+[2026-04-20 03:05 UTC] === TMS Obsidian 동기화 시작 ===
+[2026-04-20 03:05 UTC] git pull 실행 중...
+[2026-04-20 03:05 UTC] git pull 완료: Already up to date.
+[2026-04-20 03:05 UTC]   복사: TMS-2026-W16.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\outputs\TMS-2026-W16.md
+[2026-04-20 03:05 UTC]   복사: week_20260420.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\outputs\week_20260420.md
+[2026-04-20 03:05 UTC]   복사: index.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\wiki\index.md
+[2026-04-20 03:05 UTC]   복사: log.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\wiki\log.md
+[2026-04-20 03:05 UTC] === 완료: outputs 2개 + wiki 2개 복사 ===
