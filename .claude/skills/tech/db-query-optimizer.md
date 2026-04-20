@@ -1,12 +1,12 @@
 ---
 name: db-query-optimizer
-description: PostgreSQL 쿼리 최적화 — EXPLAIN ANALYZE, 인덱스 전략, 파티셔닝, Supabase 특화 튜닝
+description: PostgreSQL 쿼리 최적화 — EXPLAIN ANALYZE, 인덱스 전략, 파티셔닝
 ---
 
 # PostgreSQL 쿼리 최적화 — DBA 전문가 가이드
 
-> **환경:** Supabase PostgreSQL 15+, Transaction Pooler (port 6543)
-> **대상:** 6스키마 51테이블, 고용량 테이블: stock_movements, quants, accounting_entries
+> **환경:** PostgreSQL 15+
+> **대상:** 고용량 테이블: stock_movements, quants, accounting_entries
 
 ---
 
@@ -118,8 +118,7 @@ CREATE TABLE mm.stock_movements_2026_02
   PARTITION OF mm.stock_movements_partitioned
   FOR VALUES FROM ('2026-02-01') TO ('2026-03-01');
 
--- 자동 파티션 생성 (pg_partman 확장)
--- Supabase에서는 수동 생성 권장
+-- 자동 파티션 생성 (pg_partman 확장 필요)
 ```
 
 ### 파티셔닝 효과
@@ -129,35 +128,8 @@ CREATE TABLE mm.stock_movements_2026_02
 
 ---
 
-## 4. Supabase 특화 튜닝
+## 4. 커넥션 모니터링
 
-### Transaction Pooler 제한사항 (port 6543)
-```
-❌ PREPARE/EXECUTE (prepared statements 불가)
-❌ SET 명령어 (세션 변수 불가)
-❌ LISTEN/NOTIFY
-❌ TEMP TABLE (세션 종료 시 사라짐)
-✅ 일반 SELECT/INSERT/UPDATE/DELETE
-✅ 트랜잭션 (BEGIN/COMMIT)
-```
-
-**Retool 쿼리 작성 시 주의:**
-- `$1, $2` 파라미터 대신 `{{ variable }}` 인라인 사용
-- 각 쿼리가 독립 커넥션일 수 있음 → 세션 상태 의존 금지
-
-### RLS 성능 최적화
-```sql
--- RLS가 모든 쿼리에 WHERE 추가 → 성능 영향
--- 방법 1: RLS 정책에 인덱스 활용 가능한 조건 사용
-CREATE POLICY "Users see own team data" ON shared.projects
-  USING (cx_specialist_id = auth.uid());
--- cx_specialist_id에 인덱스 필수!
-
--- 방법 2: service_role 키로 RLS 우회 (Retool 내부 도구용)
--- Retool Resource에서 service_role 키 사용 시 RLS 미적용
-```
-
-### Connection Pooling 모니터링
 ```sql
 -- 활성 커넥션 수 확인
 SELECT count(*) FROM pg_stat_activity
@@ -232,7 +204,6 @@ COPY mm.stock_movements (movement_number, ...) FROM STDIN WITH CSV;
 
 ### pg_stat_statements (확장 필요)
 ```sql
--- Supabase 대시보드에서 확인 또는:
 SELECT
   calls,
   mean_exec_time::numeric(10,2) AS avg_ms,

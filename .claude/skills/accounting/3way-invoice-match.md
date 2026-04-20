@@ -173,7 +173,7 @@ WHERE iv.price_variance != 0
 ## 5. 더존 아마란스10 매입전표 연계
 
 ### 필드 매핑
-| Supabase | 더존 아마란스10 |
+| SCM 필드 | 더존 아마란스10 |
 |----------|---------------|
 | entry_number | 전표번호 |
 | entry_date | 전표일자 |

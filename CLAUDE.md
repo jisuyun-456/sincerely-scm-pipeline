@@ -1,6 +1,6 @@
 # Sincerely SCM
 
-신시어리 포장재 물류팀 SCM 시스템. Airtable 운영 데이터를 Supabase PostgreSQL 불변 원장으로 마이그레이션 중.
+신시어리 포장재 물류팀 SCM 시스템. Airtable 기반 WMS/TMS 운영 중 (SAP 기준 물류 프로세스 적용).
 
 ## 이 프로젝트 열면 자동 실행
 다른 것보다 먼저, 아래를 즉시 실행할 것:
@@ -18,7 +18,6 @@
 
 ## 데이터 정합성 원칙
 - Airtable: 운영 입력 레이어 — API로만 읽기, 직접 수정 금지
-- Supabase: 불변 원장 — mat_document INSERT ONLY, 수정/삭제 금지
 - 재고 정정 = Storno(역분개) 후 재기표. UPDATE/DELETE 절대 금지
 
 ## 회계/ERP 기준
@@ -29,16 +28,7 @@
 | 레이어 | 도구 | 상태 |
 |--------|------|------|
 | 운영 입력 | Airtable (WMS+TMS base) | 운영 중 |
-| 불변 원장 | Supabase PostgreSQL (sap 스키마) | 운영 중 |
-| 백엔드 | NestJS (PM2, ngrok→Railway 전환 예정) | 운영 중 |
 | 파이프라인 | GitHub Actions + Python | 운영 중 |
-| TO-BE DB | Supabase 6스키마 51테이블 (설계 완료) | 미적용 |
-| 테이블 탐색 | NocoDB (localhost:8080) | 미적용 |
-| 대시보드 | Metabase (localhost:3000) | 미적용 |
-
-## 전환 로드맵
-Airtable(AS-IS) → Supabase 51테이블 + NocoDB/Metabase UI + NestJS 백엔드 + 더존 아마란스10 연계(TO-BE)
-현재 위치: Shadow Ledger 운영 중 (Airtable webhook → NestJS → Supabase sap 스키마)
 
 ## 전문가 정체성 (SCM_WORK 특화)
 
