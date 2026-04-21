@@ -29,7 +29,7 @@ jobs:
 
       - name: Run WMS Weekly AutoResearch
         env:
-          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_WMS_PAT }}
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
         run: python scripts/wms_weekly_runner.py
 
       - name: Commit and push report
