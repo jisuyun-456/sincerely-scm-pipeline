@@ -42,10 +42,12 @@ python scripts/check_고객납품_TO정합성.py --start 2026-04-07 --end 2026-0
 ```
 결과: `reports/고객납품_TO정합성_YYYY-MM-DD.md`
 
-3가지 체크:
-1. **TO 미연결** — logistics_release 비어 있는 고객납품 MM
-2. **프로젝트별 TO 부분 누락** — 같은 PNA 프로젝트 내 일부 MM만 TO 연결
-3. **단일 MM에 복수 TO** — logistics_release에 TO 번호가 여러 개
+2가지 체크:
+1. **프로젝트별 TO 부분 누락** — 같은 PNA 프로젝트 내 일부 MM만 TO 연결 (나머지 누락 의심)
+2. **단일 MM에 복수 TO** — logistics_release에 TO 번호가 여러 개 (분할 출하 의도 여부 확인)
+
+> TO 미연결(logistics_release 비어있음)은 체크 제외 — 출하 전 상태(정상)이므로
+> 날짜 기준: 생성일자 (fldDXUAF4JOORLJ2v)
 
 ---
 
