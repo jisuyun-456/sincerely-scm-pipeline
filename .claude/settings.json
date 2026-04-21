@@ -7,7 +7,8 @@
       "Bash(bash .claude/hooks/*)",
       "mcp__claude_ai_Airtable__list_tables_for_base",
       "Bash(python3 -c ':*)",
-      "mcp__claude_ai_Airtable__list_records_for_table"
+      "mcp__claude_ai_Airtable__list_records_for_table",
+      "Bash(python3 -c ' *)"
     ],
     "deny": [
       "Bash(rm -rf:*)"

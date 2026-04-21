@@ -1,0 +1,41 @@
+name: WMS Weekly AutoResearch
+
+on:
+  schedule:
+    # 매주 월요일 02:00 UTC = 11:00 KST (TMS 2시간 후)
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    # 수동 실행 버튼 (GitHub Actions UI에서 테스트 가능)
+
+jobs:
+  weekly-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements-autoresearch.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-autoresearch.txt
+
+      - name: Run WMS Weekly AutoResearch
+        env:
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_WMS_PAT }}
+        run: python scripts/wms_weekly_runner.py
+
+      - name: Commit and push report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add _AutoResearch/WMS/outputs/ _AutoResearch/WMS/wiki/
+          git diff --cached --quiet || git commit -m "chore: WMS 주간 AutoResearch 자동 실행 $(date +'%Y-%m-%d')"
+          git push

@@ -80,36 +80,38 @@ def main():
     else:
         selected = [m.strip() for m in args.mode.split(",") if m.strip() in MODES]
 
-    print(f"{'[DRY RUN] ' if args.dry_run else ''}TMS 주간 백필 시작")
-    print(f"  대상 주간: {start} ~ {end}")
-    print(f"  실행 항목: {', '.join(selected)}\n")
+    _out = sys.stdout.buffer
+    prefix = "[DRY RUN] " if args.dry_run else ""
+    _out.write(f"{prefix}TMS 주간 백필 시작\n".encode("utf-8"))
+    _out.write(f"  대상 주간: {start} ~ {end}\n".encode("utf-8"))
+    _out.write(f"  실행 항목: {', '.join(selected)}\n\n".encode("utf-8"))
 
     summary = {}
     for mode in selected:
         label, run_fn = MODES[mode]
-        print(f"▶ {label} 백필...")
+        _out.write(f"▶ {label} 백필...\n".encode("utf-8"))
         try:
             result = run_fn(HEADERS, start, end, dry_run=args.dry_run)
             summary[label] = result
-            print(f"  완료: {result}")
+            _out.write(f"  완료: {result}\n".encode("utf-8"))
         except Exception as e:
             summary[label] = {"error": str(e)}
-            print(f"  오류: {e}")
-        print()
+            _out.write(f"  오류: {e}\n".encode("utf-8"))
+        _out.write(b"\n")
 
     # 결과 요약
-    print("=" * 50)
-    print("백필 요약")
-    print("=" * 50)
+    _out = sys.stdout.buffer
+    _out.write(("=" * 50 + "\n백필 요약\n" + "=" * 50 + "\n").encode("utf-8"))
     for label, result in summary.items():
         if "error" in result:
-            print(f"  {label}: ❌ {result['error']}")
+            line = f"  {label}: [오류] {result['error']}\n"
         else:
             created = result.get("created", 0)
             msg = result.get("message", "")
             suffix = f" ({msg})" if msg else ""
-            status = "✅" if not args.dry_run else "👀 DRY"
-            print(f"  {label}: {status} {created}건 처리{suffix}")
+            status = "[DRY]" if args.dry_run else "[완료]"
+            line = f"  {label}: {status} {created}건 처리{suffix}\n"
+        _out.write(line.encode("utf-8"))
 
     # 로그 저장
     log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "reports")

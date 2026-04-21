@@ -54,6 +54,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         "filterByFormula": formula,
         "fields[]": ["SC id", "출하확정일", FLD_SHP_WAYBILL],
         "pageSize": 100,
+        "returnFieldsByFieldId": "true",
     }
     all_shp = []
     offset = None
@@ -79,7 +80,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         batch = all_shp[i:i+10]
         records = []
         for rec in batch:
-            f = rec["cellValuesByFieldId"]
+            f = rec["fields"]
             sc_id   = f.get("SC id", rec["id"])
             waybill = (f.get(FLD_SHP_WAYBILL) or "").strip()
             shp_date = f.get("출하확정일", "")
@@ -98,8 +99,8 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
 
         if dry_run:
             for rec in batch:
-                sc_id = rec["cellValuesByFieldId"].get("SC id", rec["id"])
-                w = (rec["cellValuesByFieldId"].get(FLD_SHP_WAYBILL) or "").strip()
+                sc_id = rec["fields"].get("SC id", rec["id"])
+                w = (rec["fields"].get(FLD_SHP_WAYBILL) or "").strip()
                 print(f"  [DRY] 택배추적로그 생성 예정: {sc_id} / {w}")
         else:
             resp = requests.post(

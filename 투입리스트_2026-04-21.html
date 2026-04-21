@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자재 투입리스트 2026-04-21</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 13px;
+    color: #1a1a2e;
+    background: #f0f4f8;
+    padding: 16px;
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, #1a3a5c, #0d2236);
+    color: white;
+    border-radius: 10px;
+    padding: 16px 22px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  }
+  .page-header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .page-header .sub { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+  .page-header .meta { font-size: 11px; opacity: 0.82; text-align: right; line-height: 1.8; }
+
+  .summary-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .chip {
+    background: white; border-radius: 20px; padding: 5px 16px;
+    font-size: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+    border-left: 4px solid #1a3a5c;
+  }
+  .chip b { color: #1a3a5c; }
+  .chip.alert { border-left-color: #E53E3E; }
+  .chip.alert b { color: #C53030; }
+
+  .legend {
+    display: flex; gap: 16px; margin-bottom: 12px;
+    font-size: 11px; align-items: center; flex-wrap: wrap;
+    background: white; padding: 8px 14px; border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .legend b { margin-right: 6px; color: #444; }
+  .leg-dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 2px; margin-right: 4px; vertical-align: middle;
+  }
+  .dot-urgent  { background: #E53E3E; }
+  .dot-warning { background: #E67E22; }
+  .dot-normal  { background: #3B82F6; }
+
+  section { margin-bottom: 22px; }
+  .section-title {
+    font-size: 15px; font-weight: 700; color: #1a2744;
+    padding: 8px 0 8px 12px;
+    border-left: 4px solid #1a3a5c;
+    margin-bottom: 8px;
+  }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    background: white; border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.10);
+  }
+  thead tr { background: #1a3a5c; color: white; }
+  th {
+    padding: 9px 10px; font-size: 11px;
+    font-weight: 600; text-align: left; white-space: nowrap;
+  }
+  th:first-child { width: 34px; }
+
+  tr.pt-header td { padding: 11px 10px 9px; border-top: 2px solid #e2e8f0; }
+  tr.pt-header.urgent  { background: #FFF5F5; border-left: 5px solid #E53E3E; }
+  tr.pt-header.warning { background: #FFFBF0; border-left: 5px solid #E67E22; }
+  tr.pt-header.normal  { background: #EFF6FF; border-left: 5px solid #3B82F6; }
+  .pt-label { font-size: 13px; font-weight: 700; color: #1a2744; }
+  .sub-cnt { font-size: 11px; color: #888; }
+
+  td.chk-cell { width: 34px; text-align: center; }
+  td.chk-cell input[type=checkbox], .item-chk {
+    width: 16px; height: 16px; cursor: pointer; accent-color: #1a3a5c;
+  }
+
+  tr.item-row { border-left: 5px solid transparent; }
+  tr.item-row:nth-child(even) { background: #fafbff; }
+  tr.item-row:hover { background: #EFF6FF; }
+  tr.item-row td {
+    padding: 7px 10px; font-size: 12px;
+    border-bottom: 1px solid #eef0f6; vertical-align: middle;
+  }
+
+  .id-cell {
+    font-family: 'Consolas', 'D2Coding', monospace;
+    font-size: 11px; color: #4A5FA5; white-space: nowrap; font-weight: 600;
+  }
+  .proj-cell { color: #1a1a2e; font-weight: 500; }
+  .qty-num { color: #1a3a5c; font-size: 13px; font-weight: 700; }
+  .date-col { font-size: 11px; color: #555; white-space: nowrap; }
+
+  .status-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 3px;
+    white-space: nowrap;
+  }
+  .status-badge.wait   { background: #FED7D7; color: #C53030; }
+  .status-badge.req    { background: #BEE3F8; color: #2B6CB0; }
+  .status-badge.empty  { background: #f0f0f0; color: #999; }
+
+  td.date-cell { font-size: 12px; white-space: nowrap; color: #555; }
+  td.restock-cell { white-space: nowrap; text-align: right; padding-right: 14px; }
+
+  .badge {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 12px; font-size: 12px; font-weight: 700;
+  }
+  .badge.urgent  { background: #FED7D7; color: #C53030; }
+  .badge.warning { background: #FEEBC8; color: #9C6E00; }
+  .badge.normal  { background: #BEE3F8; color: #2B6CB0; }
+
+  .stock-cell { white-space: nowrap; }
+  .stock-neg { color: #C53030; font-weight: 700; }
+
+  .empty-msg { padding: 28px; text-align: center; color: #aaa; font-size: 13px; }
+
+  @media print {
+    body { background: white; padding: 6px; font-size: 11px; }
+    .page-header, tr.pt-header, .badge, thead {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .summary-row, .legend { page-break-inside: avoid; }
+    table { page-break-inside: auto; }
+    tr.pt-header { page-break-before: auto; page-break-after: avoid; }
+    tr.item-row { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <h1>📦 자재 투입리스트</h1>
+    <div class="sub">베스트원 외부창고 → 에이원지식산업센터</div>
+  </div>
+  <div class="meta">
+    조회 범위: 4/21 ~ 5/5 (14일)<br>
+    생성: 2026-04-21<br>
+    7개 파츠 · 보충필요
+  </div>
+</div>
+
+<div class="summary-row">
+  <div class="chip">조립투입 보충필요: <b>4개 파츠</b></div>
+  <div class="chip">생산투입 보충필요: <b>3개 파츠</b></div>
+  <div class="chip alert">⚠️ 에이원재고 음수: <b>PT0833</b></div>
+  <div class="chip">총 파츠: <b>7개</b></div>
+</div>
+
+<div class="legend">
+  <b>임박도 (조립투입)</b>
+  <span><span class="leg-dot dot-urgent"></span>오늘·내일 (긴급)</span>
+  <span><span class="leg-dot dot-warning"></span>3일 이내 (주의)</span>
+  <span><span class="leg-dot dot-normal"></span>4일 이후</span>
+  <span style="margin-left:auto;color:#888">보충수량 = MAX(0, 총발주 − 에이원재고 + 100)</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 그룹 1: 조립투입 재고자재 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="section-title">조립투입 재고자재 — 보충필요 4개 파츠</h2>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>이동ID</th>
+        <th>프로젝트</th>
+        <th>임가공예정일</th>
+        <th>발주요청</th>
+        <th>에이원재고</th>
+        <th>보충수량</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- PT4709 ─── 4/24 (금) warning -->
+      <tr class="pt-header warning">
+        <td class="chk-cell"><input type="checkbox"></td>
+        <td class="pt-name" colspan="5">
+          <span class="pt-label">PT4709-단품박스(전용)</span>
+          <span class="sub-cnt">&nbsp;1건</span>
+        </td>
+        <td class="date-cell">4/24 (금)</td>
+        <td class="restock-cell"><span class="badge warning">132개 보충</span></td>
+      </tr>
+      <tr class="item-row">
+        <td><input type="checkbox" class="item-chk"></td>
+        <td class="id-cell">MM00201139</td>
+        <td class="proj-cell">PNA51057-KBS</td>
+        <td class="date-col">4/24 (금)</td>
+        <td class="qty-cell"><b class="qty-num">105개</b></td>
+        <td class="stock-cell">73개</td>
+        <td></td>
+        <td><span class="status-badge wait">재고생산입고대기</span></td>
+      </tr>
+
+      <!-- PT5289 ─── 4/28 (화) normal -->
+      <tr class="pt-header normal">
+        <td class="chk-cell"><input type="checkbox"></td>
+        <td class="pt-name" colspan="5">
+          <span class="pt-label">PT5289-덮개박스(스탠다드)_블랙</span>
+          <span class="sub-cnt">&nbsp;1건</span>
+        </td>
+        <td class="date-cell">4/28 (화)</td>
+        <td class="restock-cell"><span class="badge normal">112개 보충</span></td>
+      </tr>
+      <tr class="item-row">
+        <td><input type="checkbox" class="item-chk"></td>
+        <td class="id-cell">MM00207546</td>
+        <td class="proj-cell">PNA51673-비트윈코리아</td>
+        <td class="date-col">4/28 (화)</td>
+        <td class="qty-cell"><b class="qty-num">120개</b></td>
+        <td class="stock-cell">108개</td>
+        <td></td>
+        <td><span class="status-badge req">이동요청</span></td>
+      </tr>
+
+      <!-- PT0388 ─── 4/28 (화) normal -->
+      <tr class="pt-header normal">
+        <td class="chk-cell"><input type="checkbox"></td>
+        <td class="pt-name" colspan="5">
+          <span class="pt-label">PT0388-단품박스(스탠다드)_화이트_000-15</span>
+          <span class="sub-cnt">&nbsp;1건</span>
+        </td>
+        <td class="date-cell">4/28 (화)</td>
+        <td class="restock-cell"><span class="badge normal">32개 보충</span></td>
+      </tr>
+      <tr class="item-row">
+        <td><input type="checkbox" class="item-chk"></td>
+        <td class="id-cell">MM00208010</td>
+        <td class="proj-cell">PNA51509-부산사회복지공동모금회</td>
+        <td class="date-col">4/28 (화)</td>
+        <td class="qty-cell"><b class="qty-num">317개</b></td>
+        <td class="stock-cell">385개</td>
+        <td></td>
+        <td><span class="status-badge empty">—</span></td>
+      </tr>
+
+      <!-- PT1517 ─── 5/4 (월) normal -->
+      <tr class="pt-header normal">
+        <td class="chk-cell"><input type="checkbox"></td>
+        <td class="pt-name" colspan="5">
+          <span class="pt-label">PT1517-단품박스(스탠다드)_웜그레이_100-4</span>
+          <span class="sub-cnt">&nbsp;1건</span>
+        </td>
+        <td class="date-cell">5/4 (월)</td>
+        <td class="restock-cell"><span class="badge normal">296개 보충</span></td>
+      </tr>
+      <tr class="item-row">
+        <td><input type="checkbox" class="item-chk"></td>
+        <td class="id-cell">MM00207804</td>
+        <td class="proj-cell">PNA51501-넷플릭스</td>
+        <td class="date-col">5/4 (월)</td>
+        <td class="qty-cell"><b class="qty-num">242개</b></td>
+        <td class="stock-cell">46개</td>
+        <td></td>
+        <td><span class="status-badge req">이동요청</span></td>
+      </tr>
+
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 그룹 2: 생산투입 (신시어리웨일즈) -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section>
+  <h2 class="section-title">생산투입 (신시어리웨일즈) — 보충필요 3개 파츠</h2>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>이동ID</th>
+        <th>프로젝트</th>
+        <th>발주요청</th>
+        <th>에이원재고</th>
+        <th>보충수량</th>
+        <th>상태</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- PT0833 ─── 보충수량 1506 (긴급: 재고 음수) -->
+      <tr class="pt-header urgent">
+        <td class="chk-cell"><input type="checkbox"></td>
+        <td class="pt-name" colspan="3">
+          <span class="pt-label">PT0833-레더스킨다이어리_블랙</span>
+          <span class="sub-cnt">&nbsp;1건 &nbsp;⚠️ 에이원재고 음수</span>
+        </td>
+        <td></td>
+        <td class="restock-cell" colspan="2"><span class="badge urgent">1,506개 보충</span></td>
+      </tr>
+      <tr class="item-row">
+        <td><input type="checkbox" class="item-chk"></td>
+        <td class="id-cell">MM00205803</td>
+        <td class="proj-cell">PNA51201-NanoH2O</td>
+        <td class="qty-cell"><b class="qty-num">0개</b></td>
+        <td class="stock-cell"><b class="stock-neg">-1,406개</b></td>
+        <td></td>
+        <td><span class="status-badge wait">재고생산입고대기</span></td>
+      </tr>
+
+      <!-- PT4722 ─── 보충수량 261 -->
+      <tr class="pt-header normal">
+        <td class="chk-cell"><input type="checkbox"></td>
+        <td class="pt-name" colspan="3">
+          <span class="pt-label">PT4722-오아시스미니마사지건_블랙</span>
+          <span class="sub-cnt">&nbsp;1건</span>
+        </td>
+        <td></td>
+        <td class="restock-cell" colspan="2"><span class="badge normal">261개 보충</span></td>
+      </tr>
+      <tr class="item-row">
+        <td><input type="checkbox" class="item-chk"></td>
+        <td class="id-cell">MM00207980</td>
+        <td class="proj-cell">PNA51585-더에스엠씨(마사지건본제작)</td>
+        <td class="qty-cell"><b class="qty-num">300개</b></td>
+        <td class="stock-cell">139개</td>
+        <td></td>
+        <td><span class="status-badge empty">—</span></td>
+      </tr>
+
+      <!-- PT1116 ─── 보충수량 205 -->
+      <tr class="pt-header normal">
+        <td class="chk-cell"><input type="checkbox"></td>
+        <td class="pt-name" colspan="3">
+          <span class="pt-label">PT1116-슈가케인펜_그린</span>
+          <span class="sub-cnt">&nbsp;1건</span>
+        </td>
+        <td></td>
+        <td class="restock-cell" colspan="2"><span class="badge normal">205개 보충</span></td>
+      </tr>
+      <tr class="item-row">
+        <td><input type="checkbox" class="item-chk"></td>
+        <td class="id-cell">MM00207493</td>
+        <td class="proj-cell">PNA51491-이노소셜랩</td>
+        <td class="qty-cell"><b class="qty-num">255개</b></td>
+        <td class="stock-cell">150개</td>
+        <td></td>
+        <td><span class="status-badge wait">자재투입대기</span></td>
+      </tr>
+
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

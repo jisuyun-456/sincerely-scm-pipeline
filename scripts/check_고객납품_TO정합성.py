@@ -107,7 +107,7 @@ def check1_to_missing(records: list[dict]) -> list[dict]:
     """[체크1] logistics_release 비어 있는 레코드"""
     result = []
     for rec in records:
-        f = rec["cellValuesByFieldId"]
+        f = rec["fields"]
         to_val = (f.get(FLD_MOV_TO) or "").strip()
         if not to_val:
             result.append({
@@ -125,7 +125,7 @@ def check2_partial_to(records: list[dict]) -> list[dict]:
     """[체크2] 같은 PNA 프로젝트 내 일부 MM만 TO 연결 → 나머지 누락 의심"""
     by_project: dict[str, list[dict]] = defaultdict(list)
     for rec in records:
-        f = rec["cellValuesByFieldId"]
+        f = rec["fields"]
         proj = (f.get(FLD_MOV_PROJECT) or "").strip()
         if proj:
             by_project[proj].append({
@@ -160,7 +160,7 @@ def check3_multi_to(records: list[dict]) -> list[dict]:
     """[체크3] 단일 MM에 복수 TO 혼재"""
     result = []
     for rec in records:
-        f = rec["cellValuesByFieldId"]
+        f = rec["fields"]
         to_val = (f.get(FLD_MOV_TO) or "").strip()
         to_list = _split_to_list(to_val)
         if len(to_list) > 1:

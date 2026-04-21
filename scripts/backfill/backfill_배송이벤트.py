@@ -52,6 +52,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         "filterByFormula": formula,
         "fields[]": ["SC id", "출하확정일"],
         "pageSize": 100,
+        "returnFieldsByFieldId": "true",
     }
     all_shp = []
     offset = None
@@ -80,8 +81,8 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         batch = all_shp[i:i+10]
         records = []
         for rec in batch:
-            sc_id = rec["cellValuesByFieldId"].get("SC id", rec["id"])
-            shp_date = rec["cellValuesByFieldId"].get("출하확정일", "")
+            sc_id = rec["fields"].get("SC id", rec["id"])
+            shp_date = rec["fields"].get("출하확정일", "")
             event_time = f"{shp_date}T09:00:00.000Z" if shp_date else datetime.now(timezone.utc).isoformat()
             fields = {
                 FLD_EVENT_SHIP: [{"id": rec["id"]}],
@@ -94,7 +95,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
 
         if dry_run:
             for rec in batch:
-                sc_id = rec["cellValuesByFieldId"].get("SC id", rec["id"])
+                sc_id = rec["fields"].get("SC id", rec["id"])
                 print(f"  [DRY] 배송이벤트 생성 예정: {sc_id}")
         else:
             resp = requests.post(

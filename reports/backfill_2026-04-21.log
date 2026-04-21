@@ -1,0 +1,12 @@
+
+[2026-04-21] 2026-04-13~2026-04-19 DRY
+  배차 일지: {'error': "string indices must be integers, not 'str'"}
+  OTIF: {'created': 0, 'message': '대상 없음'}
+  배송이벤트: {'created': 89}
+  택배추적로그: {'created': 23}
+
+[2026-04-21] 2026-04-13~2026-04-19 DRY
+  배차 일지: {'created': 0, 'skipped': 0, 'message': '대상 없음'}
+  OTIF: {'created': 0, 'message': '대상 없음'}
+  배송이벤트: {'created': 89}
+  택배추적로그: {'created': 23}

@@ -33,6 +33,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         "filterByFormula": formula,
         "fields[]": ["SC id", "출하확정일"],
         "pageSize": 100,
+        "returnFieldsByFieldId": "true",
     }
     all_shp = []
     offset = None
@@ -63,7 +64,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         ]
         if dry_run:
             for rec in batch:
-                sc_id = rec["cellValuesByFieldId"].get("SC id", rec["id"])
+                sc_id = rec["fields"].get("SC id", rec["id"])
                 print(f"  [DRY] OTIF 생성 예정: {sc_id}")
         else:
             resp = requests.post(

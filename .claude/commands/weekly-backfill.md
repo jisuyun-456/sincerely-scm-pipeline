@@ -2,22 +2,13 @@
 
 매주 **월~화요일** 전주(Mon~Sun) 기준으로 실행하는 루틴.
 
+> 배송요청 → Shipment 미연결 체크는 Airtable TMS 베이스에서 직접 필터 적용.
+
 ---
 
 ## 실행 순서
 
-### 1. 배송요청 → Shipment 미연결 체크 (TMS)
-```bash
-python scripts/check_배송요청_미연결.py                    # 2026-04-01 이후 기본
-python scripts/check_배송요청_미연결.py --from 2026-03-01   # 시작일 직접 지정
-python scripts/check_배송요청_미연결.py --all               # 전체 (느림)
-```
-결과: `reports/배송요청_미연결_YYYY-MM-DD.csv`
-→ 출력된 logistics_PK 목록을 Airtable에서 열어 Shipment 수동 연결 여부 결정.
-
----
-
-### 2. TMS 테이블 백필 (배차일지 / OTIF / 배송이벤트 / 택배추적로그)
+### 1. TMS 테이블 백필 (배차일지 / OTIF / 배송이벤트 / 택배추적로그)
 ```bash
 # dry-run 먼저 (실제 쓰기 없이 대상 확인)
 python scripts/tms_weekly_backfill.py --dry-run
@@ -26,7 +17,7 @@ python scripts/tms_weekly_backfill.py --dry-run
 python scripts/tms_weekly_backfill.py
 
 # 특정 항목만
-python scripts/tms_weekly_backfill.py --mode dispatch,otif
+python scripts/tms_weekly_backfill.py --mode event,tracking
 
 # 날짜 직접 지정
 python scripts/tms_weekly_backfill.py --start 2026-04-14 --end 2026-04-20
@@ -43,7 +34,7 @@ python scripts/tms_weekly_backfill.py --start 2026-04-14 --end 2026-04-20
 
 ---
 
-### 3. 고객납품 ↔ TO 정합성 체크 (WMS/SERPA)
+### 2. 고객납품 ↔ TO 정합성 체크 (WMS/SERPA)
 ```bash
 python scripts/check_고객납품_TO정합성.py           # 전주 기준
 python scripts/check_고객납품_TO정합성.py --weeks 2  # 최근 2주
@@ -62,13 +53,12 @@ python scripts/check_고객납품_TO정합성.py --start 2026-04-07 --end 2026-0
 
 | 스크립트 | 용도 |
 |---------|------|
-| `scripts/check_배송요청_미연결.py` | Task 1 — TMS 배송요청 미연결 조회 |
-| `scripts/tms_weekly_backfill.py` | Task 2 — TMS 백필 통합 실행기 |
-| `scripts/backfill/backfill_배차일지.py` | Task 2 모듈 |
-| `scripts/backfill/backfill_otif.py` | Task 2 모듈 |
-| `scripts/backfill/backfill_배송이벤트.py` | Task 2 모듈 |
-| `scripts/backfill/backfill_택배추적로그.py` | Task 2 모듈 |
-| `scripts/check_고객납품_TO정합성.py` | Task 3 — WMS TO 정합성 체크 |
+| `scripts/tms_weekly_backfill.py` | Task 1 — TMS 백필 통합 실행기 |
+| `scripts/backfill/backfill_배차일지.py` | Task 1 모듈 |
+| `scripts/backfill/backfill_otif.py` | Task 1 모듈 |
+| `scripts/backfill/backfill_배송이벤트.py` | Task 1 모듈 |
+| `scripts/backfill/backfill_택배추적로그.py` | Task 1 모듈 |
+| `scripts/check_고객납품_TO정합성.py` | Task 2 — WMS TO 정합성 체크 |
 
 ## 환경변수
 

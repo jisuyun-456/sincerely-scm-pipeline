@@ -46,6 +46,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         "filterByFormula": formula,
         "fields[]": ["SC id", FLD_SHP_DATE, FLD_SHP_PARTNER, FLD_SHP_DISPATCH],
         "pageSize": 100,
+        "returnFieldsByFieldId": "true",
     }
     all_shp = []
     offset = None
@@ -62,14 +63,16 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         time.sleep(0.2)
 
     # 2. 내부기사 배정 건만 필터 + 날짜×기사로 그룹핑
+    # REST API: 링크 필드는 record ID 문자열 배열 ["recXXX"] 반환
     groups = defaultdict(list)  # (date_str, driver_rec_id) → [shipment_rec_ids]
     for rec in all_shp:
-        f = rec["cellValuesByFieldId"]
+        f = rec["fields"]
         shp_date = f.get(FLD_SHP_DATE, "")
         partners = f.get(FLD_SHP_PARTNER, [])
         for p in (partners or []):
-            if p["id"] in INTERNAL_DRIVERS:
-                groups[(shp_date, p["id"])].append(rec["id"])
+            rec_id = p["id"] if isinstance(p, dict) else p
+            if rec_id in INTERNAL_DRIVERS:
+                groups[(shp_date, rec_id)].append(rec["id"])
 
     if not groups:
         return {"created": 0, "skipped": 0, "message": "대상 없음"}
@@ -82,15 +85,17 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         "filterByFormula": f'AND({{날짜}} >= "{start.isoformat()}", {{날짜}} <= "{end.isoformat()}")',
         "fields[]": [FLD_DISP_DATE, FLD_DISP_PARTNER],
         "pageSize": 100,
+        "returnFieldsByFieldId": "true",
     }
     resp2 = requests.get(url_dis, headers=headers, params=params2)
     resp2.raise_for_status()
     for rec in resp2.json().get("records", []):
-        f = rec["cellValuesByFieldId"]
+        f = rec["fields"]
         d = f.get(FLD_DISP_DATE, "")
         partners = f.get(FLD_DISP_PARTNER, []) or []
         for p in partners:
-            existing_keys.add((d, p["id"]))
+            rec_id = p["id"] if isinstance(p, dict) else p
+            existing_keys.add((d, rec_id))
 
     created, skipped = 0, 0
     for (date_str, driver_id), shp_ids in groups.items():
