@@ -122,15 +122,15 @@ def step_pull_data() -> dict:
         if (r["fields"].get(FLD_MOV_CREATED) or "") >= cutoff_30
     ]
 
-    # order (최근 90일, 입고예정일 기준)
+    # order (전체 fetch 후 Python에서 날짜 필터 — 입고예정일 또는 실제 입고일 기준)
     ord_recs = get_all_records(
         TBL_ORDER,
         fields=[FLD_ORD_PLANNED, FLD_ORD_ACTUAL, FLD_ORD_SUPPLIER, FLD_ORD_QC_RESULT],
-        max_records=500,
+        max_records=1000,
     )
     recent_ord = [
         r for r in ord_recs
-        if (r["fields"].get(FLD_ORD_PLANNED) or "") >= cutoff_90
+        if (r["fields"].get(FLD_ORD_PLANNED) or r["fields"].get(FLD_ORD_ACTUAL) or "") >= cutoff_90
     ]
 
     print(f"  movement (최근 30일): {len(recent_mov)}건 / 전체 {len(mov_recs)}건")
@@ -345,7 +345,7 @@ def step_save_report(
     report = f"""# WMS Weekly — {week_str}  ({date_range})
 
 > 자동 생성: {date.today().isoformat()} | 분석 기간: movement 최근 30일, order 최근 90일
-> ⚠️ AS-IS 분석 (스키마 변경 없음): 정밀도 제한 있음
+> [AS-IS] 스키마 변경 없음 - 정밀도 제한 있음
 
 ---
 
@@ -416,7 +416,8 @@ def step_save_report(
 
     if dry_run:
         print("  [dry-run] 파일 저장 건너뜀")
-        print(report[:500] + "\n  ...")
+        safe = report[:500].encode("cp949", errors="replace").decode("cp949")
+        print(safe + "\n  ...")
         return None
 
     output_path = OUTPUTS_DIR / f"WMS-{week_str}.md"
