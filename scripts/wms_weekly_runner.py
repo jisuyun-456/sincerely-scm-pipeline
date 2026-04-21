@@ -43,15 +43,14 @@ FLD_MOV_PURPOSE    = "fldFRNxG1pNooEOC7"  # 이동목적 (singleSelect)
 FLD_MOV_CREATED    = "fldDXUAF4JOORLJ2v"  # 생성일자 (dateTime)
 FLD_MOV_QC_STATUS  = "fldLpIDZBmq9jKYCh"  # 검수 status (multilineText)
 FLD_MOV_QC_INBOUND = "fldwIZKLqVgYFq0M0"  # 입고자재_검수 status (multilineText)
+FLD_MOV_ISSUE_CAT  = "fldudxogG53VjQmvX"  # 이슈카테고리 (multipleSelects)
+FLD_MOV_NO_ARRIVE  = "fldjZYoxIe1GI4DGa"  # 미입하 발생이력 (checkbox)
+FLD_MOV_EXP_DATE   = "fldlpGxylH72YPs7V"  # 입하예상일 (date)
+FLD_MOV_ACT_DATE   = "flduN8khmYwdn7uVD"  # 실제입하일 (date)
+FLD_MOV_SUPPLIER   = "fldqGAjPo0SHxx2qW"  # (파트너)발주협력사명 텍스트
 
-# order 필드 ID
-FLD_ORD_PLANNED    = "fldjhWR2fGbp8hOn5"  # 입고예정일 (date)
-FLD_ORD_ACTUAL     = "fld7NwzcwyjoCldle"  # 실제 입고일 (발주팀 작성) (date)
-FLD_ORD_SUPPLIER   = "fldsofqeebz4UnCRN"  # 협력사 (singleLineText)
-FLD_ORD_QC_RESULT  = "fldDlQdAT6L25QxEb"  # 표본 검수 결과 (singleSelect)
-
-# QC 불합격 판정 키워드
-DEFECT_KEYWORDS = ("불합격", "불량", "반품", "재검", "fail", "reject")
+# 이동목적 QC 분석 대상 (Airtable API는 option name 반환)
+MOV_PURPOSE_QC_TARGETS = {"생산산출", "재고생산"}
 
 AIRTABLE_PAT = os.environ.get("AIRTABLE_WMS_PAT", os.environ.get("AIRTABLE_PAT", ""))
 HEADERS = {
@@ -108,75 +107,75 @@ def parse_date(val: str | None) -> date | None:
 def step_pull_data() -> dict:
     print("\n[STEP 1] 데이터 Pull")
 
-    cutoff_30  = (date.today() - timedelta(days=30)).isoformat()
-    cutoff_90  = (date.today() - timedelta(days=90)).isoformat()
+    cutoff_30 = (date.today() - timedelta(days=30)).isoformat()
 
-    # movement (최근 30일, 생성일자 기준)
-    mov_recs = get_all_records(
+    # ① 볼륨 트렌드용 — 최근 1000건 (생성일자 최신순)
+    mov_vol = get_all_records(
         TBL_MOVEMENT,
-        fields=[FLD_MOV_PURPOSE, FLD_MOV_CREATED, FLD_MOV_QC_STATUS, FLD_MOV_QC_INBOUND],
+        fields=[FLD_MOV_PURPOSE, FLD_MOV_CREATED],
         max_records=1000,
     )
     recent_mov = [
-        r for r in mov_recs
+        r for r in mov_vol
         if (r["fields"].get(FLD_MOV_CREATED) or "") >= cutoff_30
     ]
 
-    # order (전체 fetch 후 Python에서 날짜 필터 — 입고예정일 또는 실제 입고일 기준)
-    ord_recs = get_all_records(
-        TBL_ORDER,
-        fields=[FLD_ORD_PLANNED, FLD_ORD_ACTUAL, FLD_ORD_SUPPLIER, FLD_ORD_QC_RESULT],
-        max_records=1000,
+    # ② QC 이슈 proxy — 이슈카테고리 있는 전체 레코드 (필터 pull)
+    qc_recs = get_all_records(
+        TBL_MOVEMENT,
+        fields=[FLD_MOV_PURPOSE, FLD_MOV_ISSUE_CAT],
+        formula=f"OR({{이동목적}}='생산산출', {{이동목적}}='재고생산')",
     )
-    recent_ord = [
-        r for r in ord_recs
-        if (r["fields"].get(FLD_ORD_PLANNED) or r["fields"].get(FLD_ORD_ACTUAL) or "") >= cutoff_90
-    ]
 
-    print(f"  movement (최근 30일): {len(recent_mov)}건 / 전체 {len(mov_recs)}건")
-    print(f"  order (최근 90일):    {len(recent_ord)}건 / 전체 {len(ord_recs)}건")
+    # ③ 미입하 발생이력 — checkbox=TRUE 레코드만 (필터 pull)
+    no_arrive_recs = get_all_records(
+        TBL_MOVEMENT,
+        fields=[FLD_MOV_NO_ARRIVE, FLD_MOV_EXP_DATE, FLD_MOV_ACT_DATE, FLD_MOV_SUPPLIER],
+        formula="{미입하 발생이력}=TRUE()",
+    )
 
-    return {"movements": recent_mov, "orders": recent_ord}
+    print(f"  movement 볼륨용 (최근 30일): {len(recent_mov)}건 / 전체 {len(mov_vol)}건")
+    print(f"  QC 이슈 대상 (생산산출+재고생산): {len(qc_recs)}건")
+    print(f"  미입하 발생이력 체크: {len(no_arrive_recs)}건")
+
+    return {
+        "movements":       recent_mov,
+        "all_movements":   qc_recs,
+        "no_arrive_recs":  no_arrive_recs,
+    }
 
 
 # ── STEP 2-A: QC 불량 proxy ───────────────────────────────────────────────────
 def analyze_qc_defect(data: dict) -> dict:
-    """order.표본 검수 결과 + movement.검수 status 텍스트 파싱"""
-    orders = data["orders"]
-    movements = data["movements"]
+    """이동목적(생산산출/재고생산) × 이슈카테고리 multiSelect 기반 QC proxy"""
+    all_movements = data["all_movements"]
 
-    # order 기반 — singleSelect
-    total_qc = 0
-    defect_qc = 0
-    for rec in orders:
-        result = rec["fields"].get(FLD_ORD_QC_RESULT) or ""
-        if result:
-            total_qc += 1
-            if any(kw in result for kw in DEFECT_KEYWORDS):
-                defect_qc += 1
+    by_category: dict[str, int] = {"품질이슈": 0, "수량이슈": 0, "운영이슈": 0}
 
-    # movement 기반 — 텍스트 파싱 (fallback 겸 cross-check)
-    total_mov_qc = 0
-    defect_mov_qc = 0
-    for rec in movements:
-        for fld in (FLD_MOV_QC_STATUS, FLD_MOV_QC_INBOUND):
-            text = (rec["fields"].get(fld) or "").lower()
-            if text:
-                total_mov_qc += 1
-                if any(kw in text for kw in DEFECT_KEYWORDS):
-                    defect_mov_qc += 1
-                break  # 한 레코드에서 중복 카운트 방지
+    target_total = 0
+    issue_total = 0
 
-    defect_rate_order = round(defect_qc / total_qc * 100, 1) if total_qc else None
-    defect_rate_mov   = round(defect_mov_qc / total_mov_qc * 100, 1) if total_mov_qc else None
+    for rec in all_movements:
+        f = rec["fields"]
+        purpose_choice = f.get(FLD_MOV_PURPOSE)
+        if purpose_choice not in MOV_PURPOSE_QC_TARGETS:
+            continue
+        target_total += 1
+
+        cats = f.get(FLD_MOV_ISSUE_CAT) or []
+        if cats:
+            issue_total += 1
+            for cat in cats:
+                if cat in by_category:
+                    by_category[cat] += 1
+
+    issue_rate = round(issue_total / target_total * 100, 1) if target_total else None
 
     return {
-        "order_total_qc": total_qc,
-        "order_defect":   defect_qc,
-        "order_defect_rate": defect_rate_order,
-        "mov_total_qc":   total_mov_qc,
-        "mov_defect":     defect_mov_qc,
-        "mov_defect_rate": defect_rate_mov,
+        "target_total": target_total,
+        "issue_total":  issue_total,
+        "issue_rate":   issue_rate,
+        "by_category":  by_category,
     }
 
 
@@ -226,71 +225,53 @@ def analyze_volume_trend(data: dict) -> dict:
 
 # ── STEP 2-C: 공급사 납기 proxy ───────────────────────────────────────────────
 def analyze_supplier_lead_time(data: dict) -> dict:
-    """order.입고예정일 vs 실제 입고일 → 공급사별 평균 납기 편차"""
-    orders = data["orders"]
+    """미입하 발생이력 checkbox 기반 공급사별 미입하 건수 + 입하예상일 vs 실제입하일 diff"""
+    no_arrive_recs = data["no_arrive_recs"]
 
-    supplier_diffs: dict[str, list[int]] = {}
-    no_actual = 0
-    no_planned = 0
+    supplier_no_arrive: dict[str, list[int | None]] = {}
 
-    for rec in orders:
+    for rec in no_arrive_recs:
         f = rec["fields"]
-        planned = parse_date(f.get(FLD_ORD_PLANNED))
-        actual  = parse_date(f.get(FLD_ORD_ACTUAL))
-        supplier = (f.get(FLD_ORD_SUPPLIER) or "협력사 미기재").strip()
-
-        if not planned:
-            no_planned += 1
-            continue
-        if not actual:
-            no_actual += 1
+        if not f.get(FLD_MOV_NO_ARRIVE):
             continue
 
-        diff = (actual - planned).days
-        if supplier not in supplier_diffs:
-            supplier_diffs[supplier] = []
-        supplier_diffs[supplier].append(diff)
+        supplier = (f.get(FLD_MOV_SUPPLIER) or "협력사 미기재").strip()
+        if not supplier:
+            supplier = "협력사 미기재"
 
-    # 공급사별 평균 편차 계산
+        exp  = parse_date(f.get(FLD_MOV_EXP_DATE))
+        act  = parse_date(f.get(FLD_MOV_ACT_DATE))
+        diff = (act - exp).days if (exp and act) else None
+
+        if supplier not in supplier_no_arrive:
+            supplier_no_arrive[supplier] = []
+        supplier_no_arrive[supplier].append(diff)
+
+    # 공급사별 통계
     supplier_stats: dict[str, dict] = {}
-    for sup, diffs in supplier_diffs.items():
-        avg = round(sum(diffs) / len(diffs), 1)
+    for sup, diffs in supplier_no_arrive.items():
+        measured = [d for d in diffs if d is not None]
         supplier_stats[sup] = {
-            "count": len(diffs),
-            "avg_diff": avg,
-            "late_count": sum(1 for d in diffs if d > 0),
-            "early_count": sum(1 for d in diffs if d < 0),
-            "on_time_count": sum(1 for d in diffs if d == 0),
+            "no_arrive_count": len(diffs),
+            "measured_count":  len(measured),
+            "avg_diff": round(sum(measured) / len(measured), 1) if measured else None,
         }
 
-    # 납기 지연 Top 3 (평균 편차 내림차순)
-    sorted_by_delay = sorted(
+    # Top 3: 미입하 건수 내림차순
+    top_late = sorted(
         supplier_stats.items(),
-        key=lambda x: x[1]["avg_diff"],
+        key=lambda x: x[1]["no_arrive_count"],
         reverse=True,
-    )
-    top_late = sorted_by_delay[:3]
-    top_early = sorted_by_delay[-3:][::-1]
+    )[:3]
 
-    total_with_data = sum(v["count"] for v in supplier_stats.values())
-    overall_avg = (
-        round(
-            sum(v["avg_diff"] * v["count"] for v in supplier_stats.values())
-            / total_with_data,
-            1,
-        )
-        if total_with_data
-        else None
-    )
+    no_arrive_total = sum(v["no_arrive_count"] for v in supplier_stats.values())
+    measured_total  = sum(v["measured_count"]  for v in supplier_stats.values())
 
     return {
-        "supplier_stats": supplier_stats,
-        "top_late": top_late,
-        "top_early": top_early,
-        "total_measured": total_with_data,
-        "no_actual": no_actual,
-        "no_planned": no_planned,
-        "overall_avg_diff": overall_avg,
+        "supplier_stats":  supplier_stats,
+        "top_late":        top_late,
+        "no_arrive_total": no_arrive_total,
+        "measured_count":  measured_total,
     }
 
 
@@ -309,10 +290,8 @@ def step_save_report(
 
     # QC 주요 수치
     qc_rate_str = (
-        f"{qc['order_defect_rate']}% (order 표본 검수 결과, {qc['order_total_qc']}건)"
-        if qc["order_defect_rate"] is not None
-        else f"{qc['mov_defect_rate']}% (movement 검수 status 텍스트, {qc['mov_total_qc']}건)"
-        if qc["mov_defect_rate"] is not None
+        f"{qc['issue_rate']}% ({qc['issue_total']}/{qc['target_total']}건)"
+        if qc["issue_rate"] is not None
         else "데이터 부족"
     )
 
@@ -327,24 +306,20 @@ def step_save_report(
         wk_total = sum(vol["weekly"].get(wk, {}).values())
         recent_trend += f"  {wk}: {wk_total}건\n"
 
-    # 공급사 납기 Top 3 지연
+    # 공급사 납기 Top 3 (미입하 건수 내림차순)
     late_lines = ""
-    for sup_name, stat in sup["top_late"]:
-        sign = "+" if stat["avg_diff"] > 0 else ""
-        late_lines += f"  {sup_name}: 평균 {sign}{stat['avg_diff']}일 ({stat['count']}건)\n"
+    for i, (sup_name, stat) in enumerate(sup["top_late"], 1):
+        diff_str = ""
+        if stat["avg_diff"] is not None:
+            sign = "+" if stat["avg_diff"] > 0 else ""
+            diff_str = f", 평균 {sign}{stat['avg_diff']}일"
+        late_lines += f"  {i}. {sup_name}: 미입하 {stat['no_arrive_count']}건{diff_str}\n"
     if not late_lines:
         late_lines = "  (데이터 없음)\n"
 
-    # 전체 납기 상태
-    overall_str = (
-        f"{'+' if (sup['overall_avg_diff'] or 0) > 0 else ''}{sup['overall_avg_diff']}일"
-        if sup["overall_avg_diff"] is not None
-        else "측정 불가"
-    )
-
     report = f"""# WMS Weekly — {week_str}  ({date_range})
 
-> 자동 생성: {date.today().isoformat()} | 분석 기간: movement 최근 30일, order 최근 90일
+> 자동 생성: {date.today().isoformat()} | 볼륨: movement 최근 30일 / QC·납기: 전체 누적
 > [AS-IS] 스키마 변경 없음 - 정밀도 제한 있음
 
 ---
@@ -353,9 +328,9 @@ def step_save_report(
 
 | 지표 | 실적 | 비고 |
 |------|------|------|
-| QC 불량 proxy | {qc_rate_str} | 코드 분류 불가, 키워드 파싱 |
+| QC 이슈 proxy | {qc_rate_str} | 생산산출+재고생산 중 이슈카테고리 발생률 |
 | 이번 주 입출고 볼륨 | {vol['this_total']}건 (전주 {vol['last_total']}건, WoW {'+' if vol['wow_change'] >= 0 else ''}{vol['wow_change']}건) | movement.이동목적 기준 |
-| 공급사 평균 납기 편차 | {overall_str} | 입고예정일 vs 실제 입고일 |
+| 미입하 발생이력 | {sup['no_arrive_total']}건 (diff 측정 {sup['measured_count']}건) | 미입하 발생이력 checkbox 기준 |
 
 ---
 
@@ -369,33 +344,30 @@ def step_save_report(
 
 ---
 
-## Iter 2: QC 불량 proxy
+## Iter 2: QC 이슈 proxy (이동목적 × 이슈카테고리)
 
-### order 표본 검수 결과 (최근 90일)
-- 검수 기록 있는 order: **{qc['order_total_qc']}건**
-- 불합격/불량 키워드 포함: **{qc['order_defect']}건**
-- 불량 proxy율: **{qc['order_defect_rate']}%**
+- 생산산출 + 재고생산 총: **{qc['target_total']}건**
+- 이슈 발생: **{qc['issue_total']}건** (이슈 proxy율 **{qc['issue_rate']}%**)
 
-### movement 검수 status 텍스트 (최근 30일)
-- 검수 텍스트 있는 movement: {qc['mov_total_qc']}건
-- 불량 키워드 포함: {qc['mov_defect']}건
-- 불량 proxy율: {qc['mov_defect_rate']}%
+| 이슈카테고리 | 건수 |
+|------------|------|
+| 품질이슈 | {qc['by_category']['품질이슈']}건 |
+| 수량이슈 | {qc['by_category']['수량이슈']}건 |
+| 운영이슈 | {qc['by_category']['운영이슈']}건 |
 
-> 한계: 불량 코드 분류 불가. Phase 1 (W-1 불량코드 마스터) 완료 후 정확 집계 가능.
+> 한계: Phase 1 (W-1 불량코드 마스터) 완료 후 불량코드별 Pareto 가능.
 
 ---
 
-## Iter 3: 공급사 납기 proxy
+## Iter 3: 공급사 납기 proxy (미입하 발생이력)
 
-- 납기 측정 가능 order: **{sup['total_measured']}건**
-- 실제 입고일 미기재: {sup['no_actual']}건 (분석 제외)
-- 입고예정일 미기재: {sup['no_planned']}건 (분석 제외)
-- 전체 평균 납기 편차: **{overall_str}** (양수=지연, 음수=조기)
+- 미입하 발생이력 체크 총: **{sup['no_arrive_total']}건**
+- diff 측정 가능 (입하예상일+실제입하일 모두 있음): {sup['measured_count']}건
 
-### 납기 지연 Top 3 공급사
+### 미입하 Top 3 협력사
 {late_lines.rstrip()}
 
-> 한계: SLA 기준 없어 "지연 여부" 판단 불가. 편차값만 제공.
+> 한계: SLA 기준 없어 "지연 여부" 판단 불가. 미입하 건수와 편차값만 제공.
 
 ---
 
@@ -435,12 +407,8 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
     sup = results["supplier"]
 
     qc_str = (
-        f"{qc['order_defect_rate']}%" if qc["order_defect_rate"] is not None
-        else f"{qc['mov_defect_rate']}% (텍스트 파싱)"
-    )
-    overall_str = (
-        f"{'+' if (sup['overall_avg_diff'] or 0) > 0 else ''}{sup['overall_avg_diff']}일"
-        if sup["overall_avg_diff"] is not None else "측정 불가"
+        f"{qc['issue_rate']}% ({qc['issue_total']}/{qc['target_total']}건)"
+        if qc["issue_rate"] is not None else "데이터 부족"
     )
 
     entry = f"""
@@ -449,9 +417,9 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 **상태:** 완료
 
 ### KPI 스냅샷
-- QC 불량 proxy: {qc_str}
+- QC 이슈 proxy: {qc_str} (생산산출+재고생산 중 이슈카테고리 발생률)
 - 입출고 볼륨: {vol['this_total']}건 (WoW {'+' if vol['wow_change'] >= 0 else ''}{vol['wow_change']}건)
-- 공급사 평균 납기 편차: {overall_str}
+- 미입하 발생이력: {sup['no_arrive_total']}건
 
 ### 산출물
 - [{report_path.name}](../outputs/{report_path.name})
@@ -522,9 +490,9 @@ def main(dry_run: bool, override_week: str | None = None) -> None:
     qc  = analyze_qc_defect(data)
     vol = analyze_volume_trend(data)
     sup = analyze_supplier_lead_time(data)
-    print(f"  QC 불량 proxy: order {qc['order_defect_rate']}% / movement {qc['mov_defect_rate']}%")
+    print(f"  QC 이슈 proxy: {qc['issue_rate']}% ({qc['issue_total']}/{qc['target_total']}건)")
     print(f"  볼륨: 이번 주 {vol['this_total']}건 (WoW {'+' if vol['wow_change'] >= 0 else ''}{vol['wow_change']}건)")
-    print(f"  공급사 평균 납기 편차: {sup['overall_avg_diff']}일 ({sup['total_measured']}건 측정)")
+    print(f"  미입하 발생이력: {sup['no_arrive_total']}건 (diff 측정 {sup['measured_count']}건)")
 
     results = {"qc": qc, "volume": vol, "supplier": sup}
 
