@@ -477,23 +477,39 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 
 
 # ── 주차 레이블 계산 ──────────────────────────────────────────────────────────
-def _compute_week_label() -> tuple[str, str]:
+def _compute_week_label(override_week: str | None = None) -> tuple[str, str]:
+    if override_week:
+        # 형식: "2026-W16" 또는 "2026-16"
+        part = override_week.replace("W", "").replace("-", " ").split()
+        if len(part) == 2:
+            year, week = int(part[0]), int(part[1])
+        else:
+            raise ValueError(f"--week 형식 오류: '{override_week}' → 예: 2026-W16")
+        monday = date.fromisocalendar(year, week, 1)
+        friday = date.fromisocalendar(year, week, 5)
+        week_id    = f"{year}-W{week:02d}"
+        date_range = f"{monday.strftime('%m/%d')}~{friday.strftime('%m/%d')}"
+        return week_id, date_range
+
     today = date.today()
-    prev_monday = today - timedelta(days=7)
+    # 직전 ISO 주(월~금) 계산
+    iso_year, iso_week, iso_dow = today.isocalendar()
+    # 이번 주 월요일에서 7일 전 = 직전 주 월요일
+    prev_monday = today - timedelta(days=iso_dow - 1 + 7)
     prev_friday = prev_monday + timedelta(days=4)
-    iso_year, iso_week, _ = prev_monday.isocalendar()
-    week_id    = f"{iso_year}-W{iso_week:02d}"
+    p_year, p_week, _ = prev_monday.isocalendar()
+    week_id    = f"{p_year}-W{p_week:02d}"
     date_range = f"{prev_monday.strftime('%m/%d')}~{prev_friday.strftime('%m/%d')}"
     return week_id, date_range
 
 
 # ── 메인 ───────────────────────────────────────────────────────────────────────
-def main(dry_run: bool) -> None:
+def main(dry_run: bool, override_week: str | None = None) -> None:
     if not AIRTABLE_PAT:
         print("[ERROR] AIRTABLE_WMS_PAT (또는 AIRTABLE_PAT) 환경변수 없음. .env 파일 확인")
         sys.exit(1)
 
-    week_id, date_range = _compute_week_label()
+    week_id, date_range = _compute_week_label(override_week)
     print(f"\n{'='*60}")
     print(f"WMS 주간 AutoResearch | {week_id} ({date_range})")
     print(f"{'='*60}")
@@ -529,5 +545,6 @@ def main(dry_run: bool) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="WMS 주간 AutoResearch 러너")
     parser.add_argument("--dry-run", action="store_true", help="분석만, 파일 저장 안 함")
+    parser.add_argument("--week", default=None, help="분석 주차 지정 (예: 2026-W16). 생략 시 직전 주 자동 계산")
     args = parser.parse_args()
-    main(args.dry_run)
+    main(args.dry_run, args.week)
