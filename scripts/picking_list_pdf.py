@@ -82,16 +82,15 @@ MAT_PROD  = {"생산품자재", "생산자재", "기타자재"}
 GROUP_LABELS = {0: "▪ 재고자재", 1: "▪ 생산품자재", 2: "▪ 기타"}
 GROUP_BG     = {0: COLOR_STOCK, 1: COLOR_PROD, 2: COLOR_OTHER}
 
-# 컬럼 너비 (INNER_W ≈ 170mm)
+# 컬럼 너비 (INNER_W ≈ 170mm) — 재고좌표 컬럼 제거, 헤더에 통합
 no_w   =  8 * mm
-pt_w   = 22 * mm
-name_w = 52 * mm
-loc_w  = 30 * mm
+pt_w   = 24 * mm
+name_w = 82 * mm
 qty_w  = 22 * mm
 box_w  = 18 * mm
-chk_w  = 18 * mm
-COL_W  = [no_w, pt_w, name_w, loc_w, qty_w, box_w, chk_w]
-HDR_ROW = ["No", "PT코드", "품목명", "재고좌표", "수량", "박스", "확인"]
+chk_w  = 16 * mm
+COL_W  = [no_w, pt_w, name_w, qty_w, box_w, chk_w]
+HDR_ROW = ["No", "PT코드", "품목명", "수량", "박스", "확인"]
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -312,14 +311,14 @@ def draw_subgroup(c, font, font_bold, group_key: int, items: list,
     c.setFont(font_bold, 8)
     c.drawString(MARGIN + 3*mm, y - 4.5*mm, GROUP_LABELS.get(group_key, "▪ 기타"))
 
-    # 재고자재: 공통 좌표 우측 표시
-    if group_key == 0:
-        locs = list(dict.fromkeys(r["location"] for r in items if r["location"]))
-        if locs:
-            c.setFont(font, 7.5)
-            c.setFillColor(colors.HexColor("#2c7a7b"))
-            c.drawRightString(MARGIN + INNER_W - 2*mm, y - 4.5*mm,
-                              "좌표: " + "  /  ".join(locs[:4]))
+    # 모든 그룹: 입고좌표를 서브섹션 헤더 우측에 표시
+    locs = list(dict.fromkeys(r["location"] for r in items if r["location"]))
+    if locs:
+        c.setFont(font, 7.5)
+        c.setFillColor(colors.HexColor("#2c7a7b"))
+        loc_str = "  /  ".join(locs[:4]) + (" ..." if len(locs) > 4 else "")
+        c.drawRightString(MARGIN + INNER_W - 2*mm, y - 4.5*mm,
+                          "입고좌표: " + loc_str)
     y -= sg_h + 1*mm
 
     # ── 테이블 ─────────────────────────────────────────────────────────────
@@ -328,8 +327,7 @@ def draw_subgroup(c, font, font_bold, group_key: int, items: list,
         rows.append([
             str(idx),
             r["pt"] or "-",
-            r["name"][:22] if r["name"] else "-",
-            r["location"] or "-",
+            r["name"][:30] if r["name"] else "-",
             f"{r['qty']:,}" if r["qty"] else "-",
             str(r["boxes"]) if r["boxes"] else "-",
             "",

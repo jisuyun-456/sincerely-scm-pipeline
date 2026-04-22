@@ -37,7 +37,9 @@ load_dotenv()
 BASE_ID  = "app4LvuNIDiqTmhnv"
 TBL_BC   = "tbl0K3QP5PCd06Cxv"   # 바코드 (외박스 단위)
 TBL_IL   = "tblnxU0PlegXT7bYj"   # 이동리스트
-PAT      = os.getenv("AIRTABLE_WMS_PAT") or os.getenv("AIRTABLE_PAT", "")
+PAT      = (os.getenv("AIRTABLE_API_KEY")
+            or os.getenv("AIRTABLE_WMS_PAT")
+            or os.getenv("AIRTABLE_PAT", ""))
 HEADERS  = {"Authorization": f"Bearer {PAT}"}
 
 LABEL_W  = 100 * mm
@@ -101,8 +103,8 @@ def fetch_labels(project_filter=None, pks_filter=None) -> list:
     il_by_id: dict[str, dict] = {}
     for r in il_recs:
         f  = r.get("fields", {})
-        pt = (f.get("파츠코드") or "").strip()
-        nm = (f.get("출고물품") or "").strip()
+        pt = (f.get("파츠코드") or "").strip().rstrip(";").strip()
+        nm = (f.get("출고물품") or "").strip().rstrip(";").strip()
         il_by_id[r["id"]] = {
             "pt":        pt,
             "name":      nm,
@@ -159,8 +161,8 @@ def fetch_labels(project_filter=None, pks_filter=None) -> list:
 
         # 폴백: 바코드 테이블 자체 필드
         if not products:
-            pt  = (f.get("파츠코드") or "").strip()
-            nm  = (f.get("출고물품") or f.get("출고자재") or "").strip()
+            pt  = (f.get("파츠코드") or "").strip().rstrip(";").strip()
+            nm  = (f.get("출고물품") or f.get("출고자재") or "").strip().rstrip(";").strip()
             products = [f"{pt}-{nm}" if pt and nm else (pt or nm)]
 
         qty      = total_qty or parse_int(f.get("이동수량") or f.get("출고수량"))
@@ -358,7 +360,7 @@ def main():
     args = parser.parse_args()
 
     if not PAT:
-        print("[ERROR] AIRTABLE_WMS_PAT 환경변수를 .env에 설정하세요")
+        print("[ERROR] AIRTABLE_API_KEY 환경변수를 .env에 설정하세요")
         sys.exit(1)
 
     print("▶ Barcode 베이스 조회 중…")
@@ -381,7 +383,7 @@ def main():
 
     today    = date.today().strftime("%Y-%m-%d")
     suffix   = f"_{args.project}" if args.project else (f"_{args.pks}" if args.pks else "")
-    out_path = rf"C:\Users\yjisu\Desktop\SCM_WORK\바코드라벨{suffix}_{today}.pdf"
+    out_path = rf"C:\Users\yjisu\Desktop\바코드라벨{suffix}_{today}.pdf"
 
     print(f"\n▶ PDF 생성 중… → {out_path}")
     n = generate_pdf(records, out_path)
