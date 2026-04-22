@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-04-21)
 
 ## Corpus Check
-- 111 files · ~171,602 words
+- 112 files · ~174,734 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 578 nodes · 687 edges · 116 communities detected
+- 601 nodes · 713 edges · 125 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -126,6 +126,15 @@
 - [[_COMMUNITY_Community 113|Community 113]]
 - [[_COMMUNITY_Community 114|Community 114]]
 - [[_COMMUNITY_Community 115|Community 115]]
+- [[_COMMUNITY_Community 116|Community 116]]
+- [[_COMMUNITY_Community 117|Community 117]]
+- [[_COMMUNITY_Community 118|Community 118]]
+- [[_COMMUNITY_Community 119|Community 119]]
+- [[_COMMUNITY_Community 120|Community 120]]
+- [[_COMMUNITY_Community 121|Community 121]]
+- [[_COMMUNITY_Community 122|Community 122]]
+- [[_COMMUNITY_Community 123|Community 123]]
+- [[_COMMUNITY_Community 124|Community 124]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `main()` - 23 edges
@@ -134,10 +143,10 @@
 4. `_fetch_all()` - 9 edges
 5. `InventoryService` - 9 edges
 6. `run_pipeline()` - 9 edges
-7. `GoodsReceiptController` - 8 edges
-8. `GoodsReceiptService` - 8 edges
-9. `WaveController` - 8 edges
-10. `WaveService` - 8 edges
+7. `main()` - 8 edges
+8. `GoodsReceiptController` - 8 edges
+9. `GoodsReceiptService` - 8 edges
+10. `WaveController` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `run()` --calls--> `_get_event_type_id()`  [EXTRACTED]
@@ -163,7 +172,7 @@ Nodes (8): AirtableExtractor, Sincerely SCM — Airtable → Supabase 스냅샷 
 
 ### Community 4 - "Community 4"
 Cohesion: 0.23
-Nodes (13): check1_to_missing(), check2_partial_to(), check3_multi_to(), fetch_movements(), last_week_range(), main(), 고객납품 ↔ TO 정합성 주간 체크 Base: SERPA_v3.0 (appLui4ZR5HWcQRri) Movement 테이블에서 이동목적=고객납, [체크1] logistics_release 비어 있는 레코드 (+5 more)
+Nodes (14): analyze_qc_defect(), analyze_supplier_lead_time(), analyze_volume_trend(), _compute_week_label(), get_all_records(), main(), parse_date(), wms_weekly_runner.py ─────────────────────────────────────────────────────────── (+6 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.35
@@ -174,236 +183,236 @@ Cohesion: 0.26
 Nodes (11): build_sla_lookup(), extract_method(), get_records(), load_shipments(), patch_records(), backfill_promised_delivery.py ──────────────────────────────────────────────────, mode='all'    : 약속납기일 == 출하확정일 인 모든 레코드     mode='weekly' : 최근 7일 출하확정일 기준 레코드, 배송 방식은 rollup이라 [{"value": "택배"}, ...] 또는 ["택배"] 형태일 수 있음.     첫 번째 값만 사용. 정규화 맵 (+3 more)
 
 ### Community 7 - "Community 7"
+Cohesion: 0.27
+Nodes (11): check1_partial_to(), check2_multi_to(), fetch_movements(), last_week_range(), main(), 고객납품 ↔ TO 정합성 주간 체크 Base: SERPA_v3.0 (appLui4ZR5HWcQRri) Movement 테이블에서 이동목적=고객납, [체크2] 단일 MM에 복수 TO 혼재, TO00016101 TO00016102' 또는 'TO00016101,TO00016102' 형태를 리스트로 분리 (+3 more)
+
+### Community 8 - "Community 8"
 Cohesion: 0.25
 Nodes (9): _detect_carrier(), fetch_all(), _get_event_type_id(), main(), patch_records(), 택배추적로그 주간 백필 - 조건: 출하확정일이 대상 주간이고, 운송장번호 있으나 택배추적로그 없음 - 동작: 택배사/운송장번호 기반 초기 추적로, 이벤트유형 singleSelect choice ID 조회 (배송접수), updates: [{"id": recXXX, "fields": {"출고물품": "..."}}] (+1 more)
 
-### Community 8 - "Community 8"
+### Community 9 - "Community 9"
 Cohesion: 0.31
 Nodes (10): airtable_get(), draw_label(), fetch_labels(), generate_pdf(), main(), make_barcode_buf(), parse_int(), barcode_label.py ─────────────────────────────────────────────────────────────── (+2 more)
 
-### Community 9 - "Community 9"
+### Community 10 - "Community 10"
 Cohesion: 0.31
 Nodes (10): airtable_get(), build_html(), fetch_picking(), group_by_project(), main(), parse_date_str(), parse_qty(), picking_list_html.py  (v2 — Barcode 베이스) ─────────────────────────────────────── (+2 more)
 
-### Community 10 - "Community 10"
+### Community 11 - "Community 11"
 Cohesion: 0.29
 Nodes (1): InventoryService
 
-### Community 11 - "Community 11"
+### Community 12 - "Community 12"
 Cohesion: 0.36
 Nodes (7): build_content(), callout(), code_block(), generate_pdf(), 신시어리 SCM 회의록 분석 PDF 생성기 사용법: python generate_meeting_pdf.py, section_header(), simple_table_style()
 
-### Community 12 - "Community 12"
+### Community 13 - "Community 13"
 Cohesion: 0.22
 Nodes (1): GoodsReceiptController
 
-### Community 13 - "Community 13"
+### Community 14 - "Community 14"
 Cohesion: 0.31
 Nodes (1): GoodsReceiptService
 
-### Community 14 - "Community 14"
+### Community 15 - "Community 15"
 Cohesion: 0.22
 Nodes (1): WaveController
 
-### Community 15 - "Community 15"
+### Community 16 - "Community 16"
 Cohesion: 0.31
 Nodes (1): WaveService
 
-### Community 16 - "Community 16"
+### Community 17 - "Community 17"
 Cohesion: 0.42
 Nodes (5): formatPeriod(), getDirection(), parseMovementItem(), parseSingleSelect(), parseWebhookPayload()
 
-### Community 17 - "Community 17"
+### Community 18 - "Community 18"
 Cohesion: 0.36
 Nodes (7): create_tracking_batch(), fetch_shipments(), main(), parse_waybills(), 택배추적로그 백필: 2026년 4월 1-10일 Shipment → 택배추적로그 레코드 생성 - 조건: 출하확정일 4/1~4/10, 출하완료, 운, 출하확정일 4/1~4/10, 출하완료, 운송장번호 있음, 택배추적로그 미연결, 줄바꿈/공백 구분 운송장번호 파싱, 숫자만 추출
 
-### Community 18 - "Community 18"
+### Community 19 - "Community 19"
 Cohesion: 0.39
 Nodes (7): airtable_get(), airtable_patch(), extract_waybills(), find_and_update_sc(), main(), 로젠택배 운송장번호 → Airtable 자동 저장 사용법: python logen_waybill.py, 현재 로젠 페이지에서 운송장 + 주문번호 추출
 
-### Community 19 - "Community 19"
+### Community 20 - "Community 20"
 Cohesion: 0.25
 Nodes (1): ItemController
 
-### Community 20 - "Community 20"
+### Community 21 - "Community 21"
 Cohesion: 0.36
 Nodes (1): ItemService
 
-### Community 21 - "Community 21"
+### Community 22 - "Community 22"
 Cohesion: 0.32
 Nodes (1): LocationService
 
-### Community 22 - "Community 22"
+### Community 23 - "Community 23"
 Cohesion: 0.25
 Nodes (1): SupplierController
 
-### Community 23 - "Community 23"
+### Community 24 - "Community 24"
 Cohesion: 0.36
 Nodes (1): SupplierService
 
-### Community 24 - "Community 24"
+### Community 25 - "Community 25"
 Cohesion: 0.38
 Nodes (6): create_otif_batch(), fetch_shipments(), main(), OTIF 백필 스크립트: 2026년 1-2월 Shipment → OTIF 레코드 생성 - 조건: 출하확정일 1/1~2/28, 발송상태_TMS=출, 출하확정일 1-2월, 출하완료, OTIF 미연결 Shipment 조회, Shipment record ID 목록 → OTIF 레코드 배치 생성
 
-### Community 25 - "Community 25"
+### Community 26 - "Community 26"
 Cohesion: 0.43
 Nodes (6): classify_address(), fetch_all_shipments(), main(), Shipment 구간유형 백필: 수령인(주소) 기반 자동 분류 - 수도권: 서울, 경기, 인천 - 지방(광역시): 부산, 대구, 광주, 대전,, 주소 있고 구간유형 미입력 Shipment 조회, update_zones()
 
-### Community 26 - "Community 26"
+### Community 27 - "Community 27"
 Cohesion: 0.43
 Nodes (6): calc_days(), fetch_all_records(), main(), patch_records(), 배송방식과 구간유형으로 실제배송일수 계산. 출하확정일 없으면 None., 필터 조건에 맞는 Shipment 레코드 전체 조회 (페이지네이션).
 
-### Community 27 - "Community 27"
+### Community 28 - "Community 28"
 Cohesion: 0.38
 Nodes (6): create_otif_batch(), fetch_shipments(), main(), OTIF 백필: 2026년 4월 1-10일 Shipment → OTIF 레코드 생성 - 조건: 출하확정일 4/1~4/10, 발송상태_TMS=출하, 출하확정일 4/1~4/10, 출하완료, OTIF 미연결 Shipment 조회, Shipment record ID 목록 → OTIF 레코드 배치 생성
 
-### Community 28 - "Community 28"
+### Community 29 - "Community 29"
 Cohesion: 0.52
 Nodes (6): git_pull(), _log(), main(), git pull 실행. 성공 시 True., src의 모든 .md 파일을 dst로 복사. 복사된 파일명 목록 반환., sync_directory()
 
-### Community 29 - "Community 29"
+### Community 30 - "Community 30"
+Cohesion: 0.52
+Nodes (6): git_pull(), _log(), main(), git pull 실행. 성공 시 True., src의 모든 .md 파일을 dst로 복사. 복사된 파일명 목록 반환., sync_directory()
+
+### Community 31 - "Community 31"
 Cohesion: 0.48
 Nodes (5): cleanup(), runTests(), sleep(), startServer(), waitForServer()
 
-### Community 30 - "Community 30"
+### Community 32 - "Community 32"
 Cohesion: 0.29
 Nodes (1): LocationController
 
-### Community 31 - "Community 31"
+### Community 33 - "Community 33"
 Cohesion: 0.29
 Nodes (1): ShipmentController
 
-### Community 32 - "Community 32"
+### Community 34 - "Community 34"
 Cohesion: 0.33
 Nodes (1): ShipmentService
 
-### Community 33 - "Community 33"
+### Community 35 - "Community 35"
 Cohesion: 0.48
 Nodes (6): atFetch(), inject(), parseGrid(), run(), syncOne(), waitAndInject()
 
-### Community 34 - "Community 34"
+### Community 36 - "Community 36"
 Cohesion: 0.53
 Nodes (5): create_events(), fetch_shipments(), main(), 배송이벤트 백필: 2026년 1-2월 Shipment → 배송이벤트(배송완료) 레코드 생성, test_single()
 
-### Community 35 - "Community 35"
+### Community 37 - "Community 37"
 Cohesion: 0.47
 Nodes (5): create_events(), fetch_shipments(), main(), 배송이벤트 백필: 2026년 4월 1-10일 Shipment → 배송이벤트(배송완료) 레코드 생성, 출하확정일 4/1~4/10, 출하완료, 배송이벤트 미연결 Shipment 조회
 
-### Community 36 - "Community 36"
+### Community 38 - "Community 38"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 37 - "Community 37"
+### Community 39 - "Community 39"
 Cohesion: 0.53
 Nodes (4): combineGraphs(), extractDotBlocks(), main(), renderToSvg()
 
-### Community 38 - "Community 38"
+### Community 40 - "Community 40"
 Cohesion: 0.4
 Nodes (1): LedgerService
 
-### Community 39 - "Community 39"
+### Community 41 - "Community 41"
 Cohesion: 0.6
 Nodes (4): inject(), parseGrid(), run(), waitAndInject()
 
-### Community 40 - "Community 40"
+### Community 42 - "Community 42"
 Cohesion: 0.6
 Nodes (4): get_all_records(), main(), post_records(), backfill_dispatch_log.py ───────────────────────────────────────────────────────
 
-### Community 41 - "Community 41"
-Cohesion: 0.6
-Nodes (4): fetch_unlinked(), format_row(), main(), check_배송요청_미연결.py ──────────────────────────────────────────────────────────────
-
-### Community 42 - "Community 42"
+### Community 43 - "Community 43"
 Cohesion: 0.6
 Nodes (4): fetch_taxi_records(), main(), patch_records(), 배송방식='택배' AND 실제배송일수=0 인 레코드 전체 조회.
 
-### Community 43 - "Community 43"
+### Community 44 - "Community 44"
 Cohesion: 0.6
 Nodes (3): fetchAirtableRecord(), main(), sleep()
 
-### Community 44 - "Community 44"
+### Community 45 - "Community 45"
 Cohesion: 0.6
 Nodes (3): buildRows(), fetchAllStockRecords(), main()
 
-### Community 45 - "Community 45"
+### Community 46 - "Community 46"
 Cohesion: 0.4
 Nodes (1): InventoryController
 
-### Community 46 - "Community 46"
+### Community 47 - "Community 47"
 Cohesion: 0.67
 Nodes (3): fetch_sample(), main(), debug_dispatch.py 배차일지 Airtable 필드 실제 타입/값 확인용 진단 스크립트
 
-### Community 47 - "Community 47"
+### Community 48 - "Community 48"
 Cohesion: 0.67
 Nodes (3): fetch_and_update(), main(), 구간유형별 레코드 조회 후 실제배송일수 업데이트. 처리 건수 반환.
 
-### Community 48 - "Community 48"
+### Community 49 - "Community 49"
 Cohesion: 0.83
 Nodes (3): fetch_records(), main(), patch_records()
 
-### Community 49 - "Community 49"
+### Community 50 - "Community 50"
 Cohesion: 0.67
 Nodes (3): last_week_range(), main(), tms_weekly_backfill.py ─────────────────────────────────────────────────────────
 
-### Community 50 - "Community 50"
+### Community 51 - "Community 51"
 Cohesion: 0.5
 Nodes (0): 
-
-### Community 51 - "Community 51"
-Cohesion: 0.67
-Nodes (2): main(), upsertBatch()
 
 ### Community 52 - "Community 52"
 Cohesion: 0.67
-Nodes (2): main(), printNegatives()
+Nodes (2): main(), upsertBatch()
 
 ### Community 53 - "Community 53"
-Cohesion: 0.5
-Nodes (1): AppController
+Cohesion: 0.67
+Nodes (2): main(), printNegatives()
 
 ### Community 54 - "Community 54"
 Cohesion: 0.5
-Nodes (1): SupabaseService
+Nodes (1): AppController
 
 ### Community 55 - "Community 55"
 Cohesion: 0.5
-Nodes (1): LedgerController
+Nodes (1): SupabaseService
 
 ### Community 56 - "Community 56"
 Cohesion: 0.5
-Nodes (1): TransactionController
+Nodes (1): LedgerController
 
 ### Community 57 - "Community 57"
+Cohesion: 0.5
+Nodes (1): TransactionController
+
+### Community 58 - "Community 58"
 Cohesion: 1.0
 Nodes (2): atFetch(), syncOne()
 
-### Community 58 - "Community 58"
+### Community 59 - "Community 59"
 Cohesion: 0.67
 Nodes (1): OTIF 주간 백필 - 조건: 출하확정일이 대상 주간이고, 발송상태_TMS=출하완료, OTIF 링크 없음 - 동작: Shipment별 OTIF
 
-### Community 59 - "Community 59"
-Cohesion: 0.67
-Nodes (0): 
-
 ### Community 60 - "Community 60"
 Cohesion: 0.67
-Nodes (1): AppService
+Nodes (0): 
 
 ### Community 61 - "Community 61"
 Cohesion: 0.67
-Nodes (1): InventoryModule
+Nodes (1): AppService
 
 ### Community 62 - "Community 62"
 Cohesion: 0.67
-Nodes (2): GoodsReceipt, GoodsReceiptLine
+Nodes (1): InventoryModule
 
 ### Community 63 - "Community 63"
 Cohesion: 0.67
-Nodes (1): InventoryTransaction
+Nodes (2): GoodsReceipt, GoodsReceiptLine
 
 ### Community 64 - "Community 64"
-Cohesion: 1.0
-Nodes (0): 
+Cohesion: 0.67
+Nodes (1): InventoryTransaction
 
 ### Community 65 - "Community 65"
 Cohesion: 1.0
@@ -423,123 +432,123 @@ Nodes (0):
 
 ### Community 69 - "Community 69"
 Cohesion: 1.0
-Nodes (1): AppModule
+Nodes (0): 
 
 ### Community 70 - "Community 70"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (1): AppModule
 
 ### Community 71 - "Community 71"
 Cohesion: 1.0
-Nodes (1): AnalyticsModule
+Nodes (0): 
 
 ### Community 72 - "Community 72"
 Cohesion: 1.0
-Nodes (1): PostMovementDto
+Nodes (1): AnalyticsModule
 
 ### Community 73 - "Community 73"
 Cohesion: 1.0
-Nodes (1): MasterModule
+Nodes (1): PostMovementDto
 
 ### Community 74 - "Community 74"
 Cohesion: 1.0
-Nodes (1): Item
+Nodes (1): MasterModule
 
 ### Community 75 - "Community 75"
 Cohesion: 1.0
-Nodes (1): ItemModule
+Nodes (1): Item
 
 ### Community 76 - "Community 76"
 Cohesion: 1.0
-Nodes (1): Location
+Nodes (1): ItemModule
 
 ### Community 77 - "Community 77"
 Cohesion: 1.0
-Nodes (1): LocationModule
+Nodes (1): Location
 
 ### Community 78 - "Community 78"
 Cohesion: 1.0
-Nodes (1): Supplier
+Nodes (1): LocationModule
 
 ### Community 79 - "Community 79"
 Cohesion: 1.0
-Nodes (1): SupplierModule
+Nodes (1): Supplier
 
 ### Community 80 - "Community 80"
 Cohesion: 1.0
-Nodes (1): ReturnModule
+Nodes (1): SupplierModule
 
 ### Community 81 - "Community 81"
 Cohesion: 1.0
-Nodes (1): ReturnRequest
+Nodes (1): ReturnModule
 
 ### Community 82 - "Community 82"
 Cohesion: 1.0
-Nodes (1): SupabaseModule
+Nodes (1): ReturnRequest
 
 ### Community 83 - "Community 83"
 Cohesion: 1.0
-Nodes (1): TmsModule
+Nodes (1): SupabaseModule
 
 ### Community 84 - "Community 84"
 Cohesion: 1.0
-Nodes (1): OtifRecord
+Nodes (1): TmsModule
 
 ### Community 85 - "Community 85"
 Cohesion: 1.0
-Nodes (1): Shipment
+Nodes (1): OtifRecord
 
 ### Community 86 - "Community 86"
 Cohesion: 1.0
-Nodes (1): ShipmentEvent
+Nodes (1): Shipment
 
 ### Community 87 - "Community 87"
 Cohesion: 1.0
-Nodes (1): WmsModule
+Nodes (1): ShipmentEvent
 
 ### Community 88 - "Community 88"
 Cohesion: 1.0
-Nodes (1): InboundModule
+Nodes (1): WmsModule
 
 ### Community 89 - "Community 89"
 Cohesion: 1.0
-Nodes (1): PutawayTask
+Nodes (1): InboundModule
 
 ### Community 90 - "Community 90"
 Cohesion: 1.0
-Nodes (1): QcRecord
+Nodes (1): PutawayTask
 
 ### Community 91 - "Community 91"
 Cohesion: 1.0
-Nodes (1): CycleCountRecord
+Nodes (1): QcRecord
 
 ### Community 92 - "Community 92"
 Cohesion: 1.0
-Nodes (1): InventoryLedger
+Nodes (1): CycleCountRecord
 
 ### Community 93 - "Community 93"
 Cohesion: 1.0
-Nodes (1): OutboundModule
+Nodes (1): InventoryLedger
 
 ### Community 94 - "Community 94"
 Cohesion: 1.0
-Nodes (1): PackingRecord
+Nodes (1): OutboundModule
 
 ### Community 95 - "Community 95"
 Cohesion: 1.0
-Nodes (1): PickingTask
+Nodes (1): PackingRecord
 
 ### Community 96 - "Community 96"
 Cohesion: 1.0
-Nodes (1): Wave
+Nodes (1): PickingTask
 
 ### Community 97 - "Community 97"
 Cohesion: 1.0
-Nodes (1): Airtable → Supabase 필드 매핑 설정 재고 로직 분석 결과 기반 — 재고 관련 핵심 필드만 추출  Base ID: appLui4Z
+Nodes (1): Wave
 
 ### Community 98 - "Community 98"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (1): Airtable → Supabase 필드 매핑 설정 재고 로직 분석 결과 기반 — 재고 관련 핵심 필드만 추출  Base ID: appLui4Z
 
 ### Community 99 - "Community 99"
 Cohesion: 1.0
@@ -571,157 +580,209 @@ Nodes (0):
 
 ### Community 106 - "Community 106"
 Cohesion: 1.0
-Nodes (1): 배송파트너 이름 → 'internal' / 'gogox' / 'external
+Nodes (0): 
 
 ### Community 107 - "Community 107"
 Cohesion: 1.0
-Nodes (1): Iteration 3: 운송비 (배송방식 분포 기반 추정)
+Nodes (1): order.표본 검수 결과 + movement.검수 status 텍스트 파싱
 
 ### Community 108 - "Community 108"
 Cohesion: 1.0
-Nodes (1): Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일)
+Nodes (1): movement.이동목적 × 생성일자 주간 집계
 
 ### Community 109 - "Community 109"
 Cohesion: 1.0
-Nodes (1): Iteration 3: 운송비 (배송방식 분포 기반 추정)
+Nodes (1): order.입고예정일 vs 실제 입고일 → 공급사별 평균 납기 편차
 
 ### Community 110 - "Community 110"
 Cohesion: 1.0
-Nodes (1): Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석
+Nodes (1): TO00016101 TO00016102' 또는 'TO00016101,TO00016102' 형태를 리스트로 분리
 
 ### Community 111 - "Community 111"
 Cohesion: 1.0
-Nodes (1): Iteration 1: 배송 볼륨 패턴
+Nodes (1): [체크1] logistics_release 비어 있는 레코드
 
 ### Community 112 - "Community 112"
 Cohesion: 1.0
-Nodes (1): Iteration 3: 운송비 (배송방식 분포 기반 추정)
+Nodes (1): [체크2] 같은 PNA 프로젝트 내 일부 MM만 TO 연결 → 나머지 누락 의심
 
 ### Community 113 - "Community 113"
 Cohesion: 1.0
-Nodes (1): Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석
+Nodes (1): [체크3] 단일 MM에 복수 TO 혼재
 
 ### Community 114 - "Community 114"
 Cohesion: 1.0
-Nodes (1): Iteration 1: 배송 볼륨 패턴
+Nodes (1): check_배송요청_미연결.py ──────────────────────────────────────────────────────────────
 
 ### Community 115 - "Community 115"
+Cohesion: 1.0
+Nodes (1): 배송파트너 이름 → 'internal' / 'gogox' / 'external
+
+### Community 116 - "Community 116"
+Cohesion: 1.0
+Nodes (1): Iteration 3: 운송비 (배송방식 분포 기반 추정)
+
+### Community 117 - "Community 117"
+Cohesion: 1.0
+Nodes (1): Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일)
+
+### Community 118 - "Community 118"
+Cohesion: 1.0
+Nodes (1): Iteration 3: 운송비 (배송방식 분포 기반 추정)
+
+### Community 119 - "Community 119"
+Cohesion: 1.0
+Nodes (1): Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석
+
+### Community 120 - "Community 120"
+Cohesion: 1.0
+Nodes (1): Iteration 1: 배송 볼륨 패턴
+
+### Community 121 - "Community 121"
+Cohesion: 1.0
+Nodes (1): Iteration 3: 운송비 (배송방식 분포 기반 추정)
+
+### Community 122 - "Community 122"
+Cohesion: 1.0
+Nodes (1): Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석
+
+### Community 123 - "Community 123"
+Cohesion: 1.0
+Nodes (1): Iteration 1: 배송 볼륨 패턴
+
+### Community 124 - "Community 124"
 Cohesion: 1.0
 Nodes (1): Iteration 4: OTIF 실측 전환 현황
 
 ## Knowledge Gaps
-- **109 isolated node(s):** `배송이벤트 백필: 2026년 1-2월 Shipment → 배송이벤트(배송완료) 레코드 생성`, `OTIF 백필 스크립트: 2026년 1-2월 Shipment → OTIF 레코드 생성 - 조건: 출하확정일 1/1~2/28, 발송상태_TMS=출`, `출하확정일 1-2월, 출하완료, OTIF 미연결 Shipment 조회`, `Shipment record ID 목록 → OTIF 레코드 배치 생성`, `Shipment 구간유형 백필: 수령인(주소) 기반 자동 분류 - 수도권: 서울, 경기, 인천 - 지방(광역시): 부산, 대구, 광주, 대전,` (+104 more)
+- **121 isolated node(s):** `배송이벤트 백필: 2026년 1-2월 Shipment → 배송이벤트(배송완료) 레코드 생성`, `OTIF 백필 스크립트: 2026년 1-2월 Shipment → OTIF 레코드 생성 - 조건: 출하확정일 1/1~2/28, 발송상태_TMS=출`, `출하확정일 1-2월, 출하완료, OTIF 미연결 Shipment 조회`, `Shipment record ID 목록 → OTIF 레코드 배치 생성`, `Shipment 구간유형 백필: 수령인(주소) 기반 자동 분류 - 수도권: 서울, 경기, 인천 - 지방(광역시): 부산, 대구, 광주, 대전,` (+116 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 64`** (2 nodes): `ws-protocol.test.js`, `runTests()`
+- **Thin community `Community 65`** (2 nodes): `ws-protocol.test.js`, `runTests()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 65`** (2 nodes): `main()`, `alter-mat-master.js`
+- **Thin community `Community 66`** (2 nodes): `main()`, `alter-mat-master.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 66`** (2 nodes): `main()`, `run-mat-master-sql.js`
+- **Thin community `Community 67`** (2 nodes): `main()`, `run-mat-master-sql.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 67`** (2 nodes): `main()`, `run-mat-master-sql2.js`
+- **Thin community `Community 68`** (2 nodes): `main()`, `run-mat-master-sql2.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 68`** (2 nodes): `main()`, `seed-mat-master.js`
+- **Thin community `Community 69`** (2 nodes): `main()`, `seed-mat-master.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 69`** (2 nodes): `AppModule`, `app.module.ts`
+- **Thin community `Community 70`** (2 nodes): `AppModule`, `app.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 70`** (2 nodes): `bootstrap()`, `main.ts`
+- **Thin community `Community 71`** (2 nodes): `bootstrap()`, `main.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 71`** (2 nodes): `AnalyticsModule`, `analytics.module.ts`
+- **Thin community `Community 72`** (2 nodes): `AnalyticsModule`, `analytics.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 72`** (2 nodes): `PostMovementDto`, `post-movement.dto.ts`
+- **Thin community `Community 73`** (2 nodes): `PostMovementDto`, `post-movement.dto.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 73`** (2 nodes): `MasterModule`, `master.module.ts`
+- **Thin community `Community 74`** (2 nodes): `MasterModule`, `master.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 74`** (2 nodes): `Item`, `item.entity.ts`
+- **Thin community `Community 75`** (2 nodes): `Item`, `item.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 75`** (2 nodes): `ItemModule`, `item.module.ts`
+- **Thin community `Community 76`** (2 nodes): `ItemModule`, `item.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 76`** (2 nodes): `Location`, `location.entity.ts`
+- **Thin community `Community 77`** (2 nodes): `Location`, `location.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 77`** (2 nodes): `LocationModule`, `location.module.ts`
+- **Thin community `Community 78`** (2 nodes): `LocationModule`, `location.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 78`** (2 nodes): `supplier.entity.ts`, `Supplier`
+- **Thin community `Community 79`** (2 nodes): `supplier.entity.ts`, `Supplier`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 79`** (2 nodes): `supplier.module.ts`, `SupplierModule`
+- **Thin community `Community 80`** (2 nodes): `supplier.module.ts`, `SupplierModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 80`** (2 nodes): `ReturnModule`, `return.module.ts`
+- **Thin community `Community 81`** (2 nodes): `ReturnModule`, `return.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 81`** (2 nodes): `ReturnRequest`, `return-request.entity.ts`
+- **Thin community `Community 82`** (2 nodes): `ReturnRequest`, `return-request.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 82`** (2 nodes): `supabase.module.ts`, `SupabaseModule`
+- **Thin community `Community 83`** (2 nodes): `supabase.module.ts`, `SupabaseModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 83`** (2 nodes): `tms.module.ts`, `TmsModule`
+- **Thin community `Community 84`** (2 nodes): `tms.module.ts`, `TmsModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 84`** (2 nodes): `OtifRecord`, `otif-record.entity.ts`
+- **Thin community `Community 85`** (2 nodes): `OtifRecord`, `otif-record.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 85`** (2 nodes): `Shipment`, `shipment.entity.ts`
+- **Thin community `Community 86`** (2 nodes): `Shipment`, `shipment.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 86`** (2 nodes): `ShipmentEvent`, `shipment-event.entity.ts`
+- **Thin community `Community 87`** (2 nodes): `ShipmentEvent`, `shipment-event.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 87`** (2 nodes): `wms.module.ts`, `WmsModule`
+- **Thin community `Community 88`** (2 nodes): `wms.module.ts`, `WmsModule`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 88`** (2 nodes): `InboundModule`, `inbound.module.ts`
+- **Thin community `Community 89`** (2 nodes): `InboundModule`, `inbound.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 89`** (2 nodes): `PutawayTask`, `putaway-task.entity.ts`
+- **Thin community `Community 90`** (2 nodes): `PutawayTask`, `putaway-task.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 90`** (2 nodes): `QcRecord`, `qc-record.entity.ts`
+- **Thin community `Community 91`** (2 nodes): `QcRecord`, `qc-record.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 91`** (2 nodes): `CycleCountRecord`, `cycle-count-record.entity.ts`
+- **Thin community `Community 92`** (2 nodes): `CycleCountRecord`, `cycle-count-record.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 92`** (2 nodes): `InventoryLedger`, `inventory-ledger.entity.ts`
+- **Thin community `Community 93`** (2 nodes): `InventoryLedger`, `inventory-ledger.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 93`** (2 nodes): `OutboundModule`, `outbound.module.ts`
+- **Thin community `Community 94`** (2 nodes): `OutboundModule`, `outbound.module.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 94`** (2 nodes): `PackingRecord`, `packing-record.entity.ts`
+- **Thin community `Community 95`** (2 nodes): `PackingRecord`, `packing-record.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 95`** (2 nodes): `PickingTask`, `picking-task.entity.ts`
+- **Thin community `Community 96`** (2 nodes): `PickingTask`, `picking-task.entity.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 96`** (2 nodes): `wave.entity.ts`, `Wave`
+- **Thin community `Community 97`** (2 nodes): `wave.entity.ts`, `Wave`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 97`** (2 nodes): `Airtable → Supabase 필드 매핑 설정 재고 로직 분석 결과 기반 — 재고 관련 핵심 필드만 추출  Base ID: appLui4Z`, `field_mapping.py`
+- **Thin community `Community 98`** (2 nodes): `Airtable → Supabase 필드 매핑 설정 재고 로직 분석 결과 기반 — 재고 관련 핵심 필드만 추출  Base ID: appLui4Z`, `field_mapping.py`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 98`** (1 nodes): `tmp_process_shipments.py`
+- **Thin community `Community 99`** (1 nodes): `tmp_process_shipments.py`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 99`** (1 nodes): `airtable_config.py`
+- **Thin community `Community 100`** (1 nodes): `airtable_config.py`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 100`** (1 nodes): `ecosystem.config.js`
+- **Thin community `Community 101`** (1 nodes): `ecosystem.config.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 101`** (1 nodes): `app.controller.spec.ts`
+- **Thin community `Community 102`** (1 nodes): `app.controller.spec.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 102`** (1 nodes): `enums.ts`
+- **Thin community `Community 103`** (1 nodes): `enums.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 103`** (1 nodes): `movement-type.map.ts`
+- **Thin community `Community 104`** (1 nodes): `movement-type.map.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 104`** (1 nodes): `app.e2e-spec.ts`
+- **Thin community `Community 105`** (1 nodes): `app.e2e-spec.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 105`** (1 nodes): `__init__.py`
+- **Thin community `Community 106`** (1 nodes): `__init__.py`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 106`** (1 nodes): `배송파트너 이름 → 'internal' / 'gogox' / 'external`
+- **Thin community `Community 107`** (1 nodes): `order.표본 검수 결과 + movement.검수 status 텍스트 파싱`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 107`** (1 nodes): `Iteration 3: 운송비 (배송방식 분포 기반 추정)`
+- **Thin community `Community 108`** (1 nodes): `movement.이동목적 × 생성일자 주간 집계`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 108`** (1 nodes): `Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일)`
+- **Thin community `Community 109`** (1 nodes): `order.입고예정일 vs 실제 입고일 → 공급사별 평균 납기 편차`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 109`** (1 nodes): `Iteration 3: 운송비 (배송방식 분포 기반 추정)`
+- **Thin community `Community 110`** (1 nodes): `TO00016101 TO00016102' 또는 'TO00016101,TO00016102' 형태를 리스트로 분리`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 110`** (1 nodes): `Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석`
+- **Thin community `Community 111`** (1 nodes): `[체크1] logistics_release 비어 있는 레코드`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 111`** (1 nodes): `Iteration 1: 배송 볼륨 패턴`
+- **Thin community `Community 112`** (1 nodes): `[체크2] 같은 PNA 프로젝트 내 일부 MM만 TO 연결 → 나머지 누락 의심`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 112`** (1 nodes): `Iteration 3: 운송비 (배송방식 분포 기반 추정)`
+- **Thin community `Community 113`** (1 nodes): `[체크3] 단일 MM에 복수 TO 혼재`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 113`** (1 nodes): `Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석`
+- **Thin community `Community 114`** (1 nodes): `check_배송요청_미연결.py ──────────────────────────────────────────────────────────────`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 114`** (1 nodes): `Iteration 1: 배송 볼륨 패턴`
+- **Thin community `Community 115`** (1 nodes): `배송파트너 이름 → 'internal' / 'gogox' / 'external`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 115`** (1 nodes): `Iteration 4: OTIF 실측 전환 현황`
+- **Thin community `Community 116`** (1 nodes): `Iteration 3: 운송비 (배송방식 분포 기반 추정)`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 117`** (1 nodes): `Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일)`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 118`** (1 nodes): `Iteration 3: 운송비 (배송방식 분포 기반 추정)`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 119`** (1 nodes): `Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 120`** (1 nodes): `Iteration 1: 배송 볼륨 패턴`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 121`** (1 nodes): `Iteration 3: 운송비 (배송방식 분포 기반 추정)`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 122`** (1 nodes): `Iteration 4: OTIF 실측 전환 현황 + 배송클레임 분석`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 123`** (1 nodes): `Iteration 1: 배송 볼륨 패턴`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 124`** (1 nodes): `Iteration 4: OTIF 실측 전환 현황`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `배송이벤트 백필: 2026년 1-2월 Shipment → 배송이벤트(배송완료) 레코드 생성`, `OTIF 백필 스크립트: 2026년 1-2월 Shipment → OTIF 레코드 생성 - 조건: 출하확정일 1/1~2/28, 발송상태_TMS=출`, `출하확정일 1-2월, 출하완료, OTIF 미연결 Shipment 조회` to the rest of the system?**
-  _109 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _121 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.1 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
