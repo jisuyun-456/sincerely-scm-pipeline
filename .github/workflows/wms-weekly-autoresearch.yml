@@ -27,6 +27,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-autoresearch.txt
 
+      - name: Run WMS SAP Weekly Backfill
+        env:
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+        run: python scripts/wms_sap_weekly.py
+
       - name: Run WMS Weekly AutoResearch
         env:
           AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
