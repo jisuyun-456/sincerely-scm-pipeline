@@ -480,8 +480,6 @@ def _draw_info_block(c: rl_canvas.Canvas, y: float, doc: dict,
         [lbl("연락처"),    val(doc["recipient_phone"])],
         [lbl("배송지"),    _para(doc["delivery_addr"], font, 8)],
         [lbl("하차 서비스"), val(doc["unload_service"])],
-        [lbl(""), val("")],
-        [lbl(""), val("")],
     ]
 
     def make_side(rows, bg, header_text) -> Table:
@@ -517,7 +515,7 @@ def _draw_box_block(c: rl_canvas.Canvas, y: float, doc: dict,
     box_qty = doc["box_qty"] or "—"
     tbl = Table(
         [[_para("총 박스 수량", font_bold, 10, COLOR_SECTION, "CENTER")],
-         [_para(f"{box_qty} 박스", font_bold, 18, colors.black, "CENTER")]],
+         [_para(f"{box_qty}", font_bold, 18, colors.black, "CENTER")]],
         colWidths=[INNER_W],
     )
     tbl.setStyle(TableStyle([
@@ -554,9 +552,9 @@ def _draw_items_table(c: rl_canvas.Canvas, y: float, doc: dict,
                       font: str, font_bold: str) -> float:
     items = list(doc["items"] or [])
 
-    # 최소 6행 보장
-    while len(items) < 6:
-        items.append({"no": len(items) + 1, "pt": "", "name": "", "qty": ""})
+    # 최소 1행 보장 (빈 테이블 방지)
+    if not items:
+        items.append({"no": 1, "pt": "", "name": "", "qty": "", "ordered_qty": "", "is_note": False})
 
     # 헤더: No | PT코드 | 품목명 | 수량 | 확인□
     COL_W = [10*mm, 28*mm, 86*mm, 26*mm, 30*mm]
