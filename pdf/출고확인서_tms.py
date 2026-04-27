@@ -80,7 +80,7 @@ _SCHEMA_CACHE: dict = {}
 _ATTACH_FIELD_ID: str | None = None
 _LOC_TABLE_ID: str | None = None
 
-ITEM_RE      = re.compile(r"^(?P<name>.+?[^\d\s])\s*(?P<qty>\d+)(?:\+(?P<extra>\d+))?\s*$")
+ITEM_RE      = re.compile(r"^(?P<name>.+?[^\d\s])\s*(?P<qty>\d+)(?:\+(?P<extra>\d+))?개?\s*$")
 STOCK_ITEM_RE = re.compile(r"^(?P<pt>PT\S+?)-(?P<name>.+?)\s*\|\|\s*\S+\s+(?P<qty>\d+)개\s*$")
 
 
@@ -205,7 +205,7 @@ def parse_ship_date(raw: str) -> str:
 
 
 def extract_item_name(s: str) -> str:
-    return re.sub(r"\s*\d+(\+\d+)?\s*$", "", s.strip()).strip()
+    return re.sub(r"\s*\d+(\+\d+)?개?\s*$", "", s.strip()).strip()
 
 
 def split_order_items(order_raw: str, actual_list: list[str]) -> list[str]:
@@ -268,11 +268,13 @@ def parse_stock_items(raw: str) -> list[dict]:
     return rows
 
 
+NOTE_LINE_RE = re.compile(r"^\+?잔여분|^고객물품")
+
 def parse_items(actual_raw: str, order_raw: str) -> list[dict]:
     actual_lines = [x.strip() for x in str(actual_raw or "").split("\n") if x.strip()]
 
     # note 행 제외한 실제 품목만 ordered 매핑에 사용 (note 행이 인덱스 어긋남 방지)
-    real_lines = [l for l in actual_lines if ITEM_RE.match(l)]
+    real_lines = [l for l in actual_lines if ITEM_RE.match(l) and not NOTE_LINE_RE.match(l)]
     order_list = split_order_items(order_raw or "", real_lines)
 
     rows = []
@@ -280,13 +282,13 @@ def parse_items(actual_raw: str, order_raw: str) -> list[dict]:
     item_no   = 1
     for actual_str in actual_lines:
         m = ITEM_RE.match(actual_str)
-        if m:
+        if m and not NOTE_LINE_RE.match(actual_str):
             name        = m.group("name").strip()
             shipped_qty = m.group("qty")
             extra       = m.group("extra") or ""
             order_str   = order_list[order_idx] if order_idx < len(order_list) else ""
             om          = ITEM_RE.match(order_str)
-            ordered_qty = om.group("qty") if om else ""
+            ordered_qty = om.group("qty") if om else shipped_qty
             order_idx  += 1
             rows.append({
                 "no":          item_no,
@@ -303,7 +305,9 @@ def parse_items(actual_raw: str, order_raw: str) -> list[dict]:
                     "no": None, "pt": "", "name": actual_str,
                     "ordered_qty": "", "qty": "", "is_note": True,
                 })
-    return rows
+    regular_rows = [r for r in rows if not r["is_note"]]
+    note_rows    = [r for r in rows if r["is_note"]]
+    return regular_rows + note_rows
 
 
 # ── 데이터 조립 ───────────────────────────────────────────────────────────────
@@ -471,19 +475,23 @@ def _draw_summary_row(c: rl_canvas.Canvas, y: float, doc: dict,
     def val(t, bold=False): return _para(t, font_bold if bold else font, 8.5)
 
     tbl = Table(
-        [[lbl("TO. No."), val(doc["to_no"], bold=True),
-          lbl("SC id"),   val(doc["sc_id"]),
-          lbl("출고 대기 좌표"), val(doc["location"])]],
+        [
+            [lbl("SC id"),        val(doc["sc_id"]),
+             lbl("TO. No."),      val(doc["to_no"], bold=True), "", ""],
+            [lbl("출고 좌표"), val(doc["location"]), "", "", "", ""],
+        ],
         colWidths=[18*mm, col1-18*mm, 16*mm, col2-16*mm, 24*mm, col3-24*mm],
     )
     cs = _cell_style_base(font, font_bold)
     cs += [
         ("BACKGROUND", (0, 0), (0, 0), LIGHT),
         ("BACKGROUND", (2, 0), (2, 0), LIGHT),
-        ("BACKGROUND", (4, 0), (4, 0), LIGHT),
+        ("BACKGROUND", (0, 1), (0, 1), LIGHT),
+        ("SPAN", (3, 0), (5, 0)),
+        ("SPAN", (1, 1), (5, 1)),
     ]
     tbl.setStyle(TableStyle(cs))
-    h = _draw_table(c, tbl, MARGIN, y, INNER_W, 20 * mm)
+    h = _draw_table(c, tbl, MARGIN, y, INNER_W, 30 * mm)
     return y - h - 3 * mm
 
 
