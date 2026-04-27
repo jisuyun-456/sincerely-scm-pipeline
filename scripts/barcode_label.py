@@ -137,7 +137,7 @@ def parse_int(v) -> int:
 # ────────────────────────────────────────────────────────────────────────────
 # 데이터 조회
 # ────────────────────────────────────────────────────────────────────────────
-def fetch_labels(project_filter=None, pks_filter=None) -> list:
+def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None) -> list:
     """
     바코드 테이블에서 다영기획 미출력 레코드 조회,
     이동리스트와 join해 PT코드 + 품목명 완성
@@ -145,10 +145,10 @@ def fetch_labels(project_filter=None, pks_filter=None) -> list:
     # ── 이동리스트 전체 → PT+품목명 매핑 ──────────────────────────────────
     il_recs = airtable_get(TBL_IL, {
         "fields[]": ["movement_id", "파츠코드", "출고물품", "출하장소",
-                     "이동수량", "계획수량", "라벨 박스수량"],
+                     "이동수량", "계획수량", "라벨 박스수량", "출고차수"],
         "pageSize": 100,
     })
-    # record_id → {pt, name, qty, box_count}
+    # record_id → {pt, name, qty, box_count, batch}
     il_by_id: dict[str, dict] = {}
     for r in il_recs:
         f  = r.get("fields", {})
@@ -161,6 +161,15 @@ def fetch_labels(project_filter=None, pks_filter=None) -> list:
             "qty":       parse_int(f.get("이동수량") or f.get("계획수량")),
             "box_count": parse_int(f.get("라벨 박스수량")),
             "location":  (f.get("출하장소") or "").strip(),
+            "batch":     (f.get("출고차수") or "").strip(),
+        }
+
+    # 차수 필터: 다른 차수가 명시된 IL ID 집합
+    excluded_il_ids: set[str] = set()
+    if batch_filter:
+        excluded_il_ids = {
+            rid for rid, v in il_by_id.items()
+            if v["batch"] and v["batch"] != batch_filter
         }
 
     # ── 바코드 테이블 조회 ─────────────────────────────────────────────────
@@ -201,6 +210,8 @@ def fetch_labels(project_filter=None, pks_filter=None) -> list:
 
         # 이동리스트 링크에서 PT+품목명 우선 합산
         linked_ids = f.get("이동리스트") or []
+        if batch_filter and linked_ids and set(linked_ids).issubset(excluded_il_ids):
+            continue
         products, total_qty = [], 0
         for lid in linked_ids:
             il = il_by_id.get(lid, {})
@@ -408,16 +419,18 @@ def main():
         sys.exit(1)
 
     # --record-id 모드: DC 레코드에서 프로젝트 코드 추출
+    batch = ""
     if record_id:
         print(f"▶ 출고확인서 레코드 조회 중… ({record_id})")
         dc_rec = fetch_dc_record(record_id)
         if not dc_rec:
             print("  레코드 없음"); return
         args.project = dc_rec["fields"].get("프로젝트명", "")
-        print(f"  프로젝트: {args.project}")
+        batch        = dc_rec["fields"].get("차수", "")
+        print(f"  프로젝트: {args.project}" + (f"  차수: {batch}" if batch else ""))
 
     print("▶ Barcode 베이스 조회 중…")
-    records = fetch_labels(project_filter=args.project, pks_filter=args.pks)
+    records = fetch_labels(project_filter=args.project, pks_filter=args.pks, batch_filter=batch)
 
     if not records:
         print("조회 결과 없음 (다영기획 이동 예정 레코드가 없거나 필터 확인)")

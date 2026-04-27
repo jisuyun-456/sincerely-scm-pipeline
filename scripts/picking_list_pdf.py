@@ -220,7 +220,7 @@ def upload_via_content_api(record_id: str, field_id: str,
         return False
 
 
-def fetch_picking(start_date=None, end_date=None, project_filter=None) -> list:
+def fetch_picking(start_date=None, end_date=None, project_filter=None, batch_filter=None) -> list:
     raw = airtable_get({"pageSize": 100})
     result = []
     for r in raw:
@@ -237,6 +237,10 @@ def fetch_picking(start_date=None, end_date=None, project_filter=None) -> list:
         proj = clean(f.get(F_PROJECT) or "")
         if project_filter and project_filter not in proj:
             continue
+        if batch_filter:
+            il_batch = clean(f.get("출고차수") or "")
+            if il_batch and il_batch != batch_filter:
+                continue
         qty   = parse_qty(f.get(F_QTY_CONF) or f.get(F_QTY_MOV) or f.get(F_QTY_PLAN))
         boxes = parse_qty(f.get(F_BOX)) or 0
         result.append({
@@ -432,12 +436,14 @@ def main():
     today = date.today()
 
     # --record-id 모드: DC 레코드에서 프로젝트 코드 추출
+    batch = ""
     if record_id:
         print(f"▶ 출고확인서 레코드 조회 중… ({record_id})")
         dc_rec = fetch_dc_record(record_id)
         if not dc_rec:
             print("  레코드 없음"); return
         proj_code = dc_rec["fields"].get("프로젝트명", "")
+        batch     = dc_rec["fields"].get("차수", "")
         args.project = proj_code
         dlabel = proj_code or record_id
         sd = ed = None
@@ -453,7 +459,7 @@ def main():
         dlabel = "전체"
 
     print(f"▶ 이동리스트 조회 중… ({dlabel})")
-    records = fetch_picking(sd, ed, args.project)
+    records = fetch_picking(sd, ed, args.project, batch_filter=batch)
     print(f"  {len(records)}건 조회")
 
     if not records:
