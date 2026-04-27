@@ -610,7 +610,8 @@ def main():
                 }
             g = pt_agg[key]
             g["_qty"]   += int(item.get("출고수량")                   or 0)
-            g["_boxes"] += int(item.get("최종출고수량(확인서노출됨)") or 0)
+            g["_boxes"] += (int(item.get("최종출고수량(확인서노출됨)") or 0) or
+                            int(item.get("라벨 박스수량") or 0))
             il_id = item.get("_record_id", "")
             for lbl in il_to_labels.get(il_id, []):
                 if lbl not in g["_labels"]:

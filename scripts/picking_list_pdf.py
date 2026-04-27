@@ -234,6 +234,13 @@ def fetch_picking(start_date=None, end_date=None, project_filter=None, batch_fil
                 continue
         pt   = clean(f.get(F_PT) or "")
         name = clean(f.get(F_OUT) or "")
+        if not name:
+            raw = clean(f.get("이동물품") or "")
+            if raw:
+                part = raw.split(" || ")[0].strip()
+                part = re.sub(r"_[0-9]{3,}-[0-9]+$", "", part)
+                part = re.sub(r"^PT\w+-", "", part)
+                name = part.strip()
         proj = clean(f.get(F_PROJECT) or "")
         if project_filter and project_filter not in proj:
             continue
