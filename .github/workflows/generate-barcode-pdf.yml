@@ -23,7 +23,7 @@ jobs:
 
       - name: Generate PDF
         env:
-          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_barcode_PAT }}
           PDF_OUTPUT_DIR: /tmp
         run: |
           PDF_TYPE="${{ github.event.client_payload.pdf_type }}"
