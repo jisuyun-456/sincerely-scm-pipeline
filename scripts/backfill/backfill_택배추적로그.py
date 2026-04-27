@@ -88,7 +88,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
             event_time = f"{shp_date}T09:00:00.000Z" if shp_date else datetime.now(timezone.utc).isoformat()
 
             fields = {
-                FLD_TRACK_SHIP:    [{"id": rec["id"]}],
+                FLD_TRACK_SHIP:    [rec["id"]],
                 FLD_TRACK_ID:      f"TRK-{sc_id}-01",
                 FLD_TRACK_WAYBILL: waybill,
                 FLD_TRACK_TIME:    event_time,

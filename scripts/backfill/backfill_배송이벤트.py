@@ -85,7 +85,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
             shp_date = rec["fields"].get("출하확정일", "")
             event_time = f"{shp_date}T09:00:00.000Z" if shp_date else datetime.now(timezone.utc).isoformat()
             fields = {
-                FLD_EVENT_SHIP: [{"id": rec["id"]}],
+                FLD_EVENT_SHIP: [rec["id"]],
                 FLD_EVENT_TIME: event_time,
                 FLD_EVENT_ID:   f"EVT-{sc_id}-01",
             }

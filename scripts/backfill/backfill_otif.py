@@ -59,7 +59,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
     for i in range(0, len(all_shp), 10):
         batch = all_shp[i:i+10]
         records = [
-            {"fields": {FLD_OTIF_SHIP: [{"id": rec["id"]}]}}
+            {"fields": {FLD_OTIF_SHIP: [rec["id"]]}}
             for rec in batch
         ]
         if dry_run:

@@ -1,0 +1,12 @@
+
+[2026-04-27] 2026-04-20~2026-04-26 RUN
+  배차 일지: {'error': '422 Client Error: Unprocessable Entity for url: https://api.airtable.com/v0/app4x70a8mOrIKsMf/tbl0YCjOC7rYtyXHV'}
+  OTIF: {'error': '422 Client Error: Unprocessable Entity for url: https://api.airtable.com/v0/app4x70a8mOrIKsMf/tbl4WfEuGLDlqCTQH'}
+  배송이벤트: {'error': '422 Client Error: Unprocessable Entity for url: https://api.airtable.com/v0/app4x70a8mOrIKsMf/tblQyuAW30yf21WEf'}
+  택배추적로그: {'error': '422 Client Error: Unprocessable Entity for url: https://api.airtable.com/v0/app4x70a8mOrIKsMf/tblonyqcHGa5V5zbj'}
+
+[2026-04-27] 2026-04-20~2026-04-26 RUN
+  배차 일지: {'created': 15, 'skipped': 0}
+  OTIF: {'created': 1}
+  배송이벤트: {'created': 86}
+  택배추적로그: {'created': 18}

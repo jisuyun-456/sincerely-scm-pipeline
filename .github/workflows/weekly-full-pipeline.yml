@@ -1,0 +1,63 @@
+name: Weekly Full Pipeline (TMS + WMS)
+
+on:
+  schedule:
+    # 매주 월요일 23:30 UTC = 08:30 KST
+    - cron: '30 23 * * 0'
+  workflow_dispatch:
+
+jobs:
+  weekly-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements-autoresearch.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-autoresearch.txt
+
+      # ── Step 1: TMS 주간분석 리포트 (백필) ──────────────────────────────
+      - name: TMS Weekly Backfill (주간분석 리포트)
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+        run: python scripts/tms_weekly_backfill.py
+
+      # ── Step 2: TMS AutoResearch ─────────────────────────────────────────
+      - name: TMS Weekly AutoResearch
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+        run: python scripts/tms_weekly_runner.py
+
+      # ── Step 3: WMS SAP 백필 ─────────────────────────────────────────────
+      - name: WMS SAP Weekly Backfill
+        env:
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+        run: python scripts/wms_sap_weekly.py
+
+      # ── Step 4: WMS AutoResearch ─────────────────────────────────────────
+      - name: WMS Weekly AutoResearch
+        env:
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+        run: python scripts/wms_weekly_runner.py
+
+      # ── Step 5: Commit & Push ─────────────────────────────────────────────
+      - name: Commit and push reports
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add \
+            reports/ \
+            _AutoResearch/SCM/outputs/ _AutoResearch/SCM/wiki/ \
+            _AutoResearch/WMS/outputs/ _AutoResearch/WMS/wiki/
+          git diff --cached --quiet || git commit -m "chore: 주간 파이프라인 자동 실행 $(date +'%Y-W%V')"
+          git push

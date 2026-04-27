@@ -21,3 +21,12 @@
 [2026-04-20 03:21 UTC]   복사: index.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\wiki\index.md
 [2026-04-20 03:21 UTC]   복사: log.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\wiki\log.md
 [2026-04-20 03:21 UTC] === 완료: outputs 1개 + wiki 2개 복사 ===
+[2026-04-27 00:43 UTC] === TMS Obsidian 동기화 시작 ===
+[2026-04-27 00:43 UTC] git pull 실행 중...
+[2026-04-27 00:43 UTC] git pull 완료: Already up to date.
+[2026-04-27 00:43 UTC] 신규 파일 없음. 이미 최신 상태.
+[2026-04-27 01:37 UTC] === TMS Obsidian 동기화 시작 ===
+[2026-04-27 01:37 UTC]   복사: TMS-2026-W17.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\outputs\TMS-2026-W17.md
+[2026-04-27 01:37 UTC]   복사: index.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\wiki\index.md
+[2026-04-27 01:37 UTC]   복사: log.md → C:\Users\yjisu\Documents\ClaudeVault\_AutoResearch\SCM\wiki\log.md
+[2026-04-27 01:37 UTC] === 완료: outputs 1개 + wiki 2개 복사 ===

@@ -105,8 +105,8 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         payload = {
             "fields": {
                 FLD_DISP_DATE: date_str,
-                FLD_DISP_PARTNER: [{"id": driver_id}],
-                FLD_DISP_SHIPMENTS: [{"id": s} for s in shp_ids],
+                FLD_DISP_PARTNER: [driver_id],
+                FLD_DISP_SHIPMENTS: shp_ids,
             }
         }
         if dry_run:
