@@ -212,18 +212,19 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None) -> lis
         linked_ids = f.get("이동리스트") or []
         if batch_filter and linked_ids and set(linked_ids).issubset(excluded_il_ids):
             continue
-        products, total_qty = [], 0
+        products_with_qty, total_qty = [], 0
         for lid in linked_ids:
             il = il_by_id.get(lid, {})
             if il.get("product"):
-                products.append(il["product"])
+                products_with_qty.append({"product": il["product"], "qty": il.get("qty", 0)})
             total_qty += il.get("qty", 0)
 
         # 폴백: 바코드 테이블 자체 필드
-        if not products:
+        if not products_with_qty:
             pt  = (f.get("파츠코드") or "").strip().rstrip(";").strip()
             nm  = (f.get("출고물품") or f.get("출고자재") or "").strip().rstrip(";").strip()
-            products = [f"{pt}-{nm}" if pt and nm else (pt or nm)]
+            fb_qty = total_qty or parse_int(f.get("이동수량") or f.get("출고수량"))
+            products_with_qty = [{"product": f"{pt}-{nm}" if pt and nm else (pt or nm), "qty": fb_qty}]
 
         qty      = total_qty or parse_int(f.get("이동수량") or f.get("출고수량"))
         box_tot  = parse_int(f.get("라벨 박스수량")) or 1
@@ -237,7 +238,7 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None) -> lis
             "rec_id":    r["id"],
             "bc_num":    bc_num,
             "project":   project,
-            "products":  products,   # 리스트 (여러 품목)
+            "products":  products_with_qty,   # 리스트 (여러 품목, 각각 qty 포함)
             "qty":       qty,
             "box_count": box_tot,
             "move_date": move_dt,
@@ -303,34 +304,46 @@ def draw_label(c: rl_canvas.Canvas, x: float, y: float,
     c.line(x + PAD, y + H - HDR_H - 10.5*mm,
            x + W - PAD, y + H - HDR_H - 10.5*mm)
 
-    # ── 품목 목록 (최대 3개) ────────────────────────────────────────────────
+    # ── 품목 목록 (최대 3개, 품목별 수량 우측 표시) ─────────────────────────
     c.setFillColor(colors.black)
     products = rec["products"][:3]
     LINE_H   = 6.5 * mm
     start_y  = y + H - HDR_H - 17*mm
-    for i, prod in enumerate(products):
+    is_mixed = len(rec["products"]) > 1   # 합포장 여부
+    for i, item in enumerate(products):
+        prod     = item["product"] if isinstance(item, dict) else item
+        item_qty = item.get("qty", 0) if isinstance(item, dict) else 0
+        # 합포장이고 개별 수량이 있으면 우측에 수량 표시
+        qty_label = f"{item_qty:,}개" if is_mixed and item_qty else ""
+        qty_label_w = c.stringWidth(qty_label, font, 9) + PAD if qty_label else 0
+
         dash_pos = prod.find("-")
         if dash_pos > 0:
             pt_part   = prod[:dash_pos]
             name_part = prod[dash_pos+1:]
-            # PT코드 (회색, 품목명과 동일 크기)
             pt_fs = 12
             c.setFont(font, pt_fs)
             c.setFillColor(colors.HexColor("#555555"))
             c.drawString(x + PAD, start_y - i * LINE_H, pt_part + "  ")
             pt_w = c.stringWidth(pt_part + " ", font, pt_fs)
-            # 품목명
             nm_fs = 12
             nm_font = font_bold if i == 0 else font
             c.setFont(nm_font, nm_fs)
             c.setFillColor(colors.black)
-            max_w = int((W - 2*PAD - pt_w) / c.stringWidth("가", nm_font, nm_fs)) + 2
+            avail_w = W - 2*PAD - pt_w - qty_label_w
+            max_w = max(1, int(avail_w / c.stringWidth("가", nm_font, nm_fs)) + 2)
             c.drawString(x + PAD + pt_w, start_y - i * LINE_H, name_part[:max_w])
         else:
             nm_fs = 12
             c.setFont(font_bold if i == 0 else font, nm_fs)
             c.setFillColor(colors.black)
             c.drawString(x + PAD, start_y - i * LINE_H, prod[:38])
+
+        # 개별 수량 우측 정렬
+        if qty_label:
+            c.setFont(font, 9)
+            c.setFillColor(colors.HexColor("#444444"))
+            c.drawRightString(x + W - PAD, start_y - i * LINE_H, qty_label)
 
     if len(rec["products"]) > 3:
         c.setFont(font, 8)
@@ -347,7 +360,8 @@ def draw_label(c: rl_canvas.Canvas, x: float, y: float,
 
     c.setFillColor(colors.HexColor("#666666"))
     c.setFont(font, 9)
-    c.drawString(x + PAD,       MID_Y + MID_H - 4*mm, "수   량")
+    qty_label_hdr = "합계 수량" if len(rec["products"]) > 1 else "수   량"
+    c.drawString(x + PAD,       MID_Y + MID_H - 4*mm, qty_label_hdr)
     c.drawString(x + W/2 + PAD, MID_Y + MID_H - 4*mm, "박   스")
 
     c.setFillColor(DARK)
