@@ -19,7 +19,15 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Cache NanumFont
+        id: cache-nanum
+        uses: actions/cache@v4
+        with:
+          path: /usr/share/fonts/truetype/nanum
+          key: nanum-font-v1
+
       - name: Install Korean font
+        if: steps.cache-nanum.outputs.cache-hit != 'true'
         run: |
           sudo apt-get install -y fonts-nanum
 
