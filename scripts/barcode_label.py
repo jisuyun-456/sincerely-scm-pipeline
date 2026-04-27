@@ -144,7 +144,7 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None, bc_id_
     """
     # ── 이동리스트 전체 → PT+품목명 매핑 ──────────────────────────────────
     il_recs = airtable_get(TBL_IL, {
-        "fields[]": ["movement_id", "파츠코드", "출고물품", "출하장소",
+        "fields[]": ["movement_id", "파츠코드", "출고물품", "이동물품", "출하장소",
                      "이동수량", "출고수량", "계획수량", "라벨 박스수량", "출고차수"],
         "pageSize": 100,
     })
@@ -154,6 +154,13 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None, bc_id_
         f  = r.get("fields", {})
         pt = (f.get("파츠코드") or "").strip().rstrip(";").strip()
         nm = (f.get("출고물품") or "").strip().rstrip(";").strip()
+        if not nm:
+            raw = (f.get("이동물품") or "").strip()
+            if raw:
+                part = raw.split(" || ")[0].strip()
+                part = re.sub(r"_[0-9]{3,}-[0-9]+$", "", part)
+                part = re.sub(r"^PT\w+-", "", part)
+                nm = part.strip()
         il_by_id[r["id"]] = {
             "pt":        pt,
             "name":      nm,
