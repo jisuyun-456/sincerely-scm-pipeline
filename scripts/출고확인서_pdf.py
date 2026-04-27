@@ -386,7 +386,7 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
         display_rows = box_rows[:MAX_BOX_ROWS]
         omit_count   = len(box_rows) - MAX_BOX_ROWS if len(box_rows) > MAX_BOX_ROWS else 0
 
-        for lable_str, pt_labels, is_mixed in display_rows:
+        for lable_str, pt_labels, is_mixed, box_cnt in display_rows:
             # 줄 수 계산 (너비 80단위 기준)
             lines   = split_to_lines(pt_labels, max_w=80)
             row_h   = max(LINE_H + 2*mm, len(lines) * LINE_H + 2*mm)
@@ -423,11 +423,17 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
                 line_y = y - LINE_H * (li + 1) - 0.5*mm
                 c.drawString(ARROW_X, line_y, line)
 
-            # 합포장 태그 (우상단)
+            # 박스수 + 합포장 태그 (우상단)
+            box_label = f"{box_cnt}박스"
             if is_mixed:
                 c.setFillColor(colors.HexColor("#d97706"))
-                c.setFont(font, 6.5)
-                c.drawRightString(MARGIN + INNER_W - 2*mm, y - 4*mm, "합포장")
+                c.setFont(font_bold, 7)
+                c.drawRightString(MARGIN + INNER_W - 2*mm, y - 4*mm,
+                                  f"합포장  {box_label}")
+            else:
+                c.setFillColor(COLOR_HEADER)
+                c.setFont(font_bold, 7)
+                c.drawRightString(MARGIN + INNER_W - 2*mm, y - 4*mm, box_label)
 
             y -= row_h
 
@@ -479,15 +485,17 @@ def build_box_rows(bc_records: list[dict], il_map: dict) -> tuple[dict, dict]:
       il_to_labels: IL record_id → [Lable-XXXXX, ...]
       label_to_box_row: Lable-XXXXX → (lable_str, [pt_label, ...], is_mixed)
     """
-    il_to_labels:    dict[str, list[str]] = defaultdict(list)
-    label_to_il_ids: dict[str, list[str]] = {}
+    il_to_labels:     dict[str, list[str]] = defaultdict(list)
+    label_to_il_ids:  dict[str, list[str]] = {}
+    label_box_counts: dict[str, int]       = {}
 
     for bc in bc_records:
         bf      = bc["fields"]
         lable   = bf.get("Barcode_Number", "")   # "Lable-03086"
         il_ids  = bf.get("이동리스트") or []
         if isinstance(il_ids, list):
-            label_to_il_ids[lable] = il_ids
+            label_to_il_ids[lable]  = il_ids
+            label_box_counts[lable] = int(bf.get("라벨 박스수량") or 1)
             for il_id in il_ids:
                 il_to_labels[il_id].append(lable)
 
@@ -505,7 +513,8 @@ def build_box_rows(bc_records: list[dict], il_map: dict) -> tuple[dict, dict]:
         if not pt_parts:
             continue
         is_mixed = len(pt_parts) > 1
-        box_rows.append((lable, pt_parts, is_mixed))
+        box_cnt  = label_box_counts.get(lable, 1)
+        box_rows.append((lable, pt_parts, is_mixed, box_cnt))
 
     return dict(il_to_labels), box_rows
 
@@ -636,7 +645,7 @@ def main():
         print("\n── 미리보기 ──────────────────────────────────────────")
         for d in docs:
             f         = d["fields"]
-            n_mixed   = sum(1 for _, _, m in d["box_rows"] if m)
+            n_mixed   = sum(1 for _, _, m, _ in d["box_rows"] if m)
             n_spread  = sum(1 for il_id, lbls in d["il_to_labels"].items() if len(lbls) > 1)
             print(f"  {f.get('프로젝트명','')}  |  예정일: {parse_date_rollup(f.get('임가공 예정일'))}  "
                   f"|  박스: {parse_total_boxes(f)}  |  품목 {len(d['items'])}건  "

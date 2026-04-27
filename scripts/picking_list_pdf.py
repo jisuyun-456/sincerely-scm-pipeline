@@ -66,7 +66,7 @@ F_QTY_PLAN = "계획수량"
 F_BOX      = "라벨 박스수량"
 F_PROJECT  = "project"
 F_DATE     = "임가공 예정일"
-F_LOCATION = "재고좌표(합산)"
+F_LOCATION = "입고좌표"
 F_STATUS   = "이동리스트현황(확정수량으로)"
 F_MAT_TYPE = "출고자재_자재구분"
 
@@ -297,6 +297,7 @@ def group_records(records: list) -> list:
             "total_qty":   sum(r["qty"]   for r in recs),
             "total_box":   sum(r["boxes"] for r in recs),
             "total_items": len(recs),
+            "locations":   list(dict.fromkeys(r["location"] for r in recs if r["location"])),
         })
 
     projects.sort(key=lambda p: p["min_date"] or date.max)
@@ -323,12 +324,13 @@ def draw_page_banner(c, font, font_bold, date_label: str,
 
 
 def draw_proj_block(c, font, font_bold, proj: dict, y: float) -> float:
-    urg = proj["urgency"]
-    bg  = colors.HexColor("#fef2f2") if urg == "urgent" else \
-          colors.HexColor("#fffbeb") if urg == "warning" else COLOR_INFO
-    bar = colors.HexColor("#E53E3E") if urg == "urgent" else \
-          colors.HexColor("#E67E22") if urg == "warning" else colors.HexColor("#3B82F6")
-    h = 14 * mm
+    urg  = proj["urgency"]
+    locs = proj.get("locations", [])
+    bg   = colors.HexColor("#fef2f2") if urg == "urgent" else \
+           colors.HexColor("#fffbeb") if urg == "warning" else COLOR_INFO
+    bar  = colors.HexColor("#E53E3E") if urg == "urgent" else \
+           colors.HexColor("#E67E22") if urg == "warning" else colors.HexColor("#3B82F6")
+    h = 20 * mm if locs else 14 * mm
     c.setFillColor(bg)
     c.roundRect(MARGIN, y - h, INNER_W, h, 3, fill=1, stroke=0)
     c.setStrokeColor(bar)
@@ -341,9 +343,14 @@ def draw_proj_block(c, font, font_bold, proj: dict, y: float) -> float:
     c.setFont(font, 8)
     c.setFillColor(colors.HexColor("#444"))
     date_str = proj["min_date"].strftime("%Y-%m-%d") if proj["min_date"] else "날짜 없음"
-    c.drawString(MARGIN + 5*mm, y - 11*mm,
+    c.drawString(MARGIN + 5*mm, y - 12*mm,
                  f"임가공 예정일: {date_str}   |   {proj['total_items']}품목 / "
                  f"총 {proj['total_qty']:,}개 / {proj['total_box']}박스")
+    if locs:
+        loc_str = "  /  ".join(locs[:5]) + (" ..." if len(locs) > 5 else "")
+        c.setFont(font, 8)
+        c.setFillColor(colors.HexColor("#2c7a7b"))
+        c.drawString(MARGIN + 5*mm, y - 17*mm, f"입고좌표: {loc_str}")
     return y - h - 3*mm
 
 
