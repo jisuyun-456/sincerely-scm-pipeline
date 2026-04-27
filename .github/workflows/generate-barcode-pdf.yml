@@ -1,0 +1,45 @@
+name: Barcode PDF 생성
+
+on:
+  repository_dispatch:
+    types: [generate-barcode-pdf]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system fonts (NanumGothic)
+        run: sudo apt-get install -y fonts-nanum
+
+      - name: Install Python dependencies
+        run: pip install reportlab requests python-dotenv pillow python-barcode
+
+      - name: Generate PDF
+        env:
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          PDF_OUTPUT_DIR: /tmp
+        run: |
+          PDF_TYPE="${{ github.event.client_payload.pdf_type }}"
+          RECORD_ID="${{ github.event.client_payload.record_id }}"
+          echo "PDF_TYPE=$PDF_TYPE  RECORD_ID=$RECORD_ID"
+          case "$PDF_TYPE" in
+            "출고확인서")
+              python scripts/출고확인서_pdf.py --record-id "$RECORD_ID"
+              ;;
+            "피킹리스트")
+              python scripts/picking_list_pdf.py --record-id "$RECORD_ID"
+              ;;
+            "라벨지")
+              python scripts/barcode_label.py --record-id "$RECORD_ID"
+              ;;
+            *)
+              echo "Unknown pdf_type: $PDF_TYPE"; exit 1
+              ;;
+          esac
