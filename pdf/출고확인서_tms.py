@@ -172,7 +172,8 @@ def get_field(f: dict, key: str, default: str = "") -> str:
     if val is None:
         return default
     if isinstance(val, list):
-        return ", ".join(str(v) for v in val) if val else default
+        items = [str(v) for v in val if v is not None]
+        return ", ".join(items) if items else default
     if isinstance(val, dict):
         return str(val.get("name", "")) if val else default
     return str(val) if val else default
