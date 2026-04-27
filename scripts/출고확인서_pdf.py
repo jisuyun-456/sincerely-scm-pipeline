@@ -14,7 +14,7 @@ Barcode 베이스 → 출고확인서 PDF 생성기
   python scripts/출고확인서_pdf.py --dry-run               # 미리보기만
 """
 
-import argparse, os, re, sys, time
+import argparse, base64, io, os, platform, re, sys, time
 from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
@@ -40,9 +40,16 @@ TBL_BC   = "tbl0K3QP5PCd06Cxv"   # 바코드 (외박스)
 API_KEY  = os.getenv("AIRTABLE_API_KEY", "")
 HEADERS  = {"Authorization": f"Bearer {API_KEY}"}
 
-FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
-FONT_BLD = r"C:\Windows\Fonts\malgunbd.ttf"
-OUT_DIR  = Path(r"C:\Users\yjisu\Desktop\SCM_WORK")
+ATTACH_FIELD_ID = "fldXde5mrRIaqZHiG"   # 출고확인서_python on TBL_DC
+
+if platform.system() == "Windows":
+    FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
+    FONT_BLD = r"C:\Windows\Fonts\malgunbd.ttf"
+else:
+    FONT_REG = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+    FONT_BLD = "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf"
+
+OUT_DIR = Path(os.getenv("PDF_OUTPUT_DIR", r"C:\Users\yjisu\Desktop"))
 
 A4_W, A4_H = A4
 MARGIN  = 20 * mm
@@ -66,6 +73,37 @@ def register_fonts():
         return "Malgun", "MalgunBold"
     except Exception:
         return "Helvetica", "Helvetica-Bold"
+
+
+def upload_via_content_api(record_id: str, field_id: str,
+                           filename: str, pdf_bytes: bytes) -> bool:
+    url = (f"https://content.airtable.com/v0/{BASE_ID}"
+           f"/{record_id}/{field_id}/uploadAttachment")
+    payload = {
+        "contentType": "application/pdf",
+        "filename":    filename,
+        "file":        base64.b64encode(pdf_bytes).decode("ascii"),
+    }
+    try:
+        r = requests.post(
+            url,
+            headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
+            json=payload, timeout=60,
+        )
+        if r.status_code == 429:
+            time.sleep(int(r.headers.get("Retry-After", 10)))
+            r = requests.post(url, headers={"Authorization": f"Bearer {API_KEY}",
+                                             "Content-Type": "application/json"},
+                              json=payload, timeout=60)
+        r.raise_for_status()
+        print(f"  ✅ 업로드: {filename}")
+        return True
+    except requests.HTTPError as e:
+        print(f"  ❌ 업로드 실패 {e.response.status_code}: {e.response.text[:200]}")
+        return False
+    except Exception as e:
+        print(f"  ❌ 업로드 실패: {e}")
+        return False
 
 
 def airtable_get(table_id: str, params: dict) -> list:
@@ -474,10 +512,13 @@ def build_box_rows(bc_records: list[dict], il_map: dict) -> tuple[dict, dict]:
 
 def main():
     parser = argparse.ArgumentParser(description="출고확인서 PDF 생성")
-    parser.add_argument("--project", help="프로젝트 코드 필터 (예: PNA38579)")
-    parser.add_argument("--date",    help="임가공 예정일 필터 (YYYY-MM-DD)")
-    parser.add_argument("--dry-run", action="store_true", help="PDF 미생성, 미리보기만")
+    parser.add_argument("--project",   help="프로젝트 코드 필터 (예: PNA38579)")
+    parser.add_argument("--date",      help="임가공 예정일 필터 (YYYY-MM-DD)")
+    parser.add_argument("--record-id", help="출고확인서 레코드 ID (Make/GitHub Actions 버튼 트리거)")
+    parser.add_argument("--no-upload", action="store_true", help="로컬 저장만, Airtable 업로드 안 함")
+    parser.add_argument("--dry-run",   action="store_true", help="PDF 미생성, 미리보기만")
     args = parser.parse_args()
+    record_id = getattr(args, "record_id", None)
 
     if not API_KEY:
         print("❌ AIRTABLE_API_KEY 환경변수 없음")
@@ -487,23 +528,25 @@ def main():
 
     # ── 출고확인서 조회 ───────────────────────────────────────────────────
     print("▶ 출고확인서 조회 중…")
-    formula_parts = []
-    if args.project:
-        formula_parts.append(f"FIND('{args.project}', {{프로젝트명}})")
-    if args.date:
-        try:
-            dt = datetime.strptime(args.date, "%Y-%m-%d")
-            date_en = dt.strftime("%B ") + str(dt.day) + dt.strftime(", %Y")
-        except Exception:
-            date_en = args.date
-        formula_parts.append(
-            f"OR(FIND('{args.date}', ARRAYJOIN({{임가공 예정일}})),"
-            f"FIND('{date_en}', ARRAYJOIN({{임가공 예정일}})))"
-        )
-
-    params = {"pageSize": 100}
-    if formula_parts:
-        params["filterByFormula"] = "AND(" + ",".join(formula_parts) + ")"
+    if record_id:
+        params = {"filterByFormula": f'RECORD_ID()="{record_id}"', "pageSize": 1}
+    else:
+        formula_parts = []
+        if args.project:
+            formula_parts.append(f"FIND('{args.project}', {{프로젝트명}})")
+        if args.date:
+            try:
+                dt = datetime.strptime(args.date, "%Y-%m-%d")
+                date_en = dt.strftime("%B ") + str(dt.day) + dt.strftime(", %Y")
+            except Exception:
+                date_en = args.date
+            formula_parts.append(
+                f"OR(FIND('{args.date}', ARRAYJOIN({{임가공 예정일}})),"
+                f"FIND('{date_en}', ARRAYJOIN({{임가공 예정일}})))"
+            )
+        params = {"pageSize": 100}
+        if formula_parts:
+            params["filterByFormula"] = "AND(" + ",".join(formula_parts) + ")"
 
     dc_records = airtable_get(TBL_DC, params)
     print(f"  {len(dc_records)}건 조회")
@@ -600,21 +643,34 @@ def main():
         return
 
     # ── PDF 출력 ───────────────────────────────────────────────────────────
-    today = date.today().strftime("%Y-%m-%d")
-    suffix = (f"_{args.project}" if args.project else
+    today_stamp = datetime.now().strftime("%Y%m%d-%H%M")
+    suffix = (f"_{record_id}"   if record_id  else
+              f"_{args.project}" if args.project else
               f"_{args.date}"    if args.date    else "")
-    out_path = OUT_DIR / f"출고확인서{suffix}_{today}.pdf"
 
-    c   = rl_canvas.Canvas(str(out_path), pagesize=A4)
-    total = len(docs)
-    page_cursor = 1
+    ok_count = 0
     for doc in docs:
-        last_page = draw_confirmation(c, doc, page_cursor, total, font, font_bold)
-        c.showPage()
-        page_cursor = last_page + 1
+        proj_code = doc["fields"].get("프로젝트명", doc["id"])
+        filename  = f"출고확인서_{proj_code}_{today_stamp}.pdf"
+        out_path  = OUT_DIR / filename
 
-    c.save()
-    print(f"\n✅ 완료 — {total}장 출고확인서 ({out_path})")
+        buf = io.BytesIO()
+        c   = rl_canvas.Canvas(buf, pagesize=A4)
+        draw_confirmation(c, doc, 1, 1, font, font_bold)
+        c.showPage()
+        c.save()
+        pdf_bytes = buf.getvalue()
+
+        if not record_id or args.no_upload:
+            out_path.write_bytes(pdf_bytes)
+            print(f"✅ 저장 — {filename} ({out_path})")
+        else:
+            print(f"\n▶ {filename} 업로드 중…")
+            if upload_via_content_api(doc["id"], ATTACH_FIELD_ID, filename, pdf_bytes):
+                ok_count += 1
+
+    if record_id and not args.no_upload:
+        print(f"\n✅ 완료 — {ok_count}/{len(docs)}건 업로드")
 
 
 if __name__ == "__main__":

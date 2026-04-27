@@ -18,7 +18,7 @@ picking_list_pdf.py
   python scripts/picking_list_pdf.py --dry-run          # 미리보기만
 """
 
-import argparse, os, re, sys, time
+import argparse, base64, io, os, platform, re, sys, time
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -40,11 +40,23 @@ load_dotenv()
 # 상수
 # ────────────────────────────────────────────────────────────────────────────
 BASE_ID  = "app4LvuNIDiqTmhnv"
-TABLE_ID = "tblnxU0PlegXT7bYj"
+TABLE_ID = "tblnxU0PlegXT7bYj"   # 이동리스트
+TBL_DC   = "tblMQG1PYioIUWdbe"   # 출고확인서
 PAT      = (os.getenv("AIRTABLE_API_KEY")
             or os.getenv("AIRTABLE_WMS_PAT")
             or os.getenv("AIRTABLE_PAT", ""))
 HEADERS  = {"Authorization": f"Bearer {PAT}"}
+
+ATTACH_FIELD_ID = "fldWczicq4KAoI5OX"   # 피킹리스트_python on TBL_DC
+
+if platform.system() == "Windows":
+    FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
+    FONT_BLD = r"C:\Windows\Fonts\malgunbd.ttf"
+else:
+    FONT_REG = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+    FONT_BLD = "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf"
+
+OUT_DIR = Path(os.getenv("PDF_OUTPUT_DIR", r"C:\Users\yjisu\Desktop"))
 
 F_PT       = "파츠코드"
 F_OUT      = "출고물품"
@@ -57,10 +69,6 @@ F_DATE     = "임가공 예정일"
 F_LOCATION = "재고좌표(합산)"
 F_STATUS   = "이동리스트현황(확정수량으로)"
 F_MAT_TYPE = "출고자재_자재구분"
-
-FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
-FONT_BLD = r"C:\Windows\Fonts\malgunbd.ttf"
-OUT_DIR  = Path(r"C:\Users\yjisu\Desktop\SCM_WORK")
 
 A4_W, A4_H = A4
 MARGIN  = 20 * mm
@@ -169,6 +177,47 @@ def airtable_get(params: dict) -> list:
             break
         time.sleep(0.2)
     return records
+
+
+def fetch_dc_record(record_id: str) -> dict | None:
+    url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_DC}"
+    r = requests.get(url, headers=HEADERS,
+                     params={"filterByFormula": f'RECORD_ID()="{record_id}"', "pageSize": 1},
+                     timeout=30)
+    r.raise_for_status()
+    recs = r.json().get("records", [])
+    return recs[0] if recs else None
+
+
+def upload_via_content_api(record_id: str, field_id: str,
+                           filename: str, pdf_bytes: bytes) -> bool:
+    url = (f"https://content.airtable.com/v0/{BASE_ID}"
+           f"/{record_id}/{field_id}/uploadAttachment")
+    payload = {
+        "contentType": "application/pdf",
+        "filename":    filename,
+        "file":        base64.b64encode(pdf_bytes).decode("ascii"),
+    }
+    try:
+        r = requests.post(
+            url,
+            headers={"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"},
+            json=payload, timeout=60,
+        )
+        if r.status_code == 429:
+            time.sleep(int(r.headers.get("Retry-After", 10)))
+            r = requests.post(url, headers={"Authorization": f"Bearer {PAT}",
+                                             "Content-Type": "application/json"},
+                              json=payload, timeout=60)
+        r.raise_for_status()
+        print(f"  ✅ 업로드: {filename}")
+        return True
+    except requests.HTTPError as e:
+        print(f"  ❌ 업로드 실패 {e.response.status_code}: {e.response.text[:200]}")
+        return False
+    except Exception as e:
+        print(f"  ❌ 업로드 실패: {e}")
+        return False
 
 
 def fetch_picking(start_date=None, end_date=None, project_filter=None) -> list:
@@ -367,11 +416,14 @@ def draw_subgroup(c, font, font_bold, group_key: int, items: list,
 # ────────────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="다영기획 이동 피킹리스트 PDF 생성")
-    parser.add_argument("--date",    help="임가공 예정일 (YYYY-MM-DD)")
-    parser.add_argument("--project", help="프로젝트 코드 필터 (예: PNA38579)")
-    parser.add_argument("--days",    type=int, help="N일 이내")
-    parser.add_argument("--dry-run", action="store_true", help="미리보기만")
+    parser.add_argument("--date",      help="임가공 예정일 (YYYY-MM-DD)")
+    parser.add_argument("--project",   help="프로젝트 코드 필터 (예: PNA38579)")
+    parser.add_argument("--days",      type=int, help="N일 이내")
+    parser.add_argument("--record-id", help="출고확인서 레코드 ID (Make/GitHub Actions 버튼 트리거)")
+    parser.add_argument("--no-upload", action="store_true", help="로컬 저장만, Airtable 업로드 안 함")
+    parser.add_argument("--dry-run",   action="store_true", help="미리보기만")
     args = parser.parse_args()
+    record_id = getattr(args, "record_id", None)
 
     if not PAT:
         print("❌ AIRTABLE_WMS_PAT 환경변수 없음"); sys.exit(1)
@@ -379,7 +431,17 @@ def main():
     font, font_bold = register_fonts()
     today = date.today()
 
-    if args.date:
+    # --record-id 모드: DC 레코드에서 프로젝트 코드 추출
+    if record_id:
+        print(f"▶ 출고확인서 레코드 조회 중… ({record_id})")
+        dc_rec = fetch_dc_record(record_id)
+        if not dc_rec:
+            print("  레코드 없음"); return
+        proj_code = dc_rec["fields"].get("프로젝트명", "")
+        args.project = proj_code
+        dlabel = proj_code or record_id
+        sd = ed = None
+    elif args.date:
         target = date.fromisoformat(args.date)
         sd, ed = target, target
         dlabel = args.date
@@ -413,10 +475,13 @@ def main():
     if args.dry_run:
         return
 
-    suffix   = f"_{args.project}" if args.project else (f"_{args.date}" if args.date else "")
-    out_path = OUT_DIR / f"다영기획_피킹리스트{suffix}_{today.strftime('%Y-%m-%d')}.pdf"
+    today_stamp = datetime.now().strftime("%Y%m%d-%H%M")
+    suffix      = f"_{args.project}" if args.project else (f"_{args.date}" if args.date else "")
+    filename    = f"다영기획_피킹리스트{suffix}_{today_stamp}.pdf"
+    out_path    = OUT_DIR / filename
 
-    c          = rl_canvas.Canvas(str(out_path), pagesize=A4)
+    buf        = io.BytesIO()
+    c          = rl_canvas.Canvas(buf, pagesize=A4)
     page_state = [1, max(len(projects), 1), dlabel]
 
     y = draw_page_banner(c, font, font_bold, dlabel, page_state[0], page_state[1])
@@ -438,7 +503,15 @@ def main():
         y -= 5*mm
 
     c.save()
-    print(f"\n✅ 완료 — {len(projects)}개 프로젝트 ({out_path})")
+    pdf_bytes = buf.getvalue()
+
+    if not record_id or args.no_upload:
+        out_path.write_bytes(pdf_bytes)
+        print(f"\n✅ 완료 — {len(projects)}개 프로젝트 ({out_path})")
+    else:
+        print(f"\n▶ {filename} 업로드 중…")
+        if upload_via_content_api(record_id, ATTACH_FIELD_ID, filename, pdf_bytes):
+            print(f"✅ 완료 — {len(projects)}개 프로젝트 업로드")
 
 
 if __name__ == "__main__":

@@ -15,8 +15,8 @@ Barcode 베이스 → 다영기획 이동 바코드 라벨 PDF 생성기
   python scripts/barcode_label.py --dry-run             # 미리보기만
 """
 
-import argparse, os, re, sys, time
-from datetime import date
+import argparse, base64, os, platform, re, sys, time
+from datetime import date, datetime
 from io import BytesIO
 
 import requests
@@ -37,15 +37,23 @@ load_dotenv()
 BASE_ID  = "app4LvuNIDiqTmhnv"
 TBL_BC   = "tbl0K3QP5PCd06Cxv"   # 바코드 (외박스 단위)
 TBL_IL   = "tblnxU0PlegXT7bYj"   # 이동리스트
+TBL_DC   = "tblMQG1PYioIUWdbe"   # 출고확인서
 PAT      = (os.getenv("AIRTABLE_API_KEY")
             or os.getenv("AIRTABLE_WMS_PAT")
             or os.getenv("AIRTABLE_PAT", ""))
 HEADERS  = {"Authorization": f"Bearer {PAT}"}
 
-LABEL_W  = 100 * mm
-LABEL_H  = 70  * mm
-FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
-FONT_BLD = r"C:\Windows\Fonts\malgunbd.ttf"
+ATTACH_FIELD_ID = "fldne6JVm3tLy0hJK"   # 라벨지_python on TBL_DC
+
+LABEL_W  = 150 * mm
+LABEL_H  = 100 * mm
+
+if platform.system() == "Windows":
+    FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
+    FONT_BLD = r"C:\Windows\Fonts\malgunbd.ttf"
+else:
+    FONT_REG = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf"
+    FONT_BLD = "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf"
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -76,6 +84,47 @@ def airtable_get(table_id: str, params: dict) -> list:
             break
         time.sleep(0.2)
     return records
+
+
+def fetch_dc_record(record_id: str) -> dict | None:
+    url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_DC}"
+    r = requests.get(url, headers=HEADERS,
+                     params={"filterByFormula": f'RECORD_ID()="{record_id}"', "pageSize": 1},
+                     timeout=30)
+    r.raise_for_status()
+    recs = r.json().get("records", [])
+    return recs[0] if recs else None
+
+
+def upload_via_content_api(record_id: str, field_id: str,
+                           filename: str, pdf_bytes: bytes) -> bool:
+    url = (f"https://content.airtable.com/v0/{BASE_ID}"
+           f"/{record_id}/{field_id}/uploadAttachment")
+    payload = {
+        "contentType": "application/pdf",
+        "filename":    filename,
+        "file":        base64.b64encode(pdf_bytes).decode("ascii"),
+    }
+    try:
+        r = requests.post(
+            url,
+            headers={"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"},
+            json=payload, timeout=60,
+        )
+        if r.status_code == 429:
+            time.sleep(int(r.headers.get("Retry-After", 10)))
+            r = requests.post(url, headers={"Authorization": f"Bearer {PAT}",
+                                             "Content-Type": "application/json"},
+                              json=payload, timeout=60)
+        r.raise_for_status()
+        print(f"  ✅ 업로드: {filename}")
+        return True
+    except requests.HTTPError as e:
+        print(f"  ❌ 업로드 실패 {e.response.status_code}: {e.response.text[:200]}")
+        return False
+    except Exception as e:
+        print(f"  ❌ 업로드 실패: {e}")
+        return False
 
 
 def parse_int(v) -> int:
@@ -210,7 +259,7 @@ def make_barcode_buf(value: str) -> BytesIO:
 def draw_label(c: rl_canvas.Canvas, x: float, y: float,
                rec: dict, box_num: int, font: str, font_bold: str):
     W, H  = LABEL_W, LABEL_H
-    PAD   = 3 * mm
+    PAD   = 4 * mm
     DARK  = colors.HexColor("#2E4057")
     GRAY  = colors.HexColor("#F0F4F8")
     LGRAY = colors.HexColor("#CCCCCC")
@@ -221,85 +270,88 @@ def draw_label(c: rl_canvas.Canvas, x: float, y: float,
     c.rect(x, y, W, H)
 
     # ── 헤더 띠 ─────────────────────────────────────────────────────────────
-    HDR_H = 8.5 * mm
+    HDR_H = 12 * mm
     c.setFillColor(DARK)
     c.rect(x, y + H - HDR_H, W, HDR_H, fill=1, stroke=0)
     c.setFillColor(colors.white)
-    c.setFont(font_bold, 7.5)
-    c.drawString(x + PAD, y + H - HDR_H + 2.8*mm, "에이원지식산업센터  →  다영기획")
+    c.setFont(font_bold, 11)
+    c.drawString(x + PAD, y + H - HDR_H + 4*mm, "에이원지식산업센터  →  다영기획")
     dt = rec["move_date"] or date.today().strftime("%Y-%m-%d")
-    c.setFont(font, 7)
-    c.drawRightString(x + W - PAD, y + H - HDR_H + 2.8*mm, dt)
+    c.setFont(font, 9)
+    c.drawRightString(x + W - PAD, y + H - HDR_H + 4*mm, dt)
 
     # ── 프로젝트명 ─────────────────────────────────────────────────────────
     proj = (rec["project"] or "-")[:40]
     c.setFillColor(DARK)
-    c.setFont(font_bold, 8.5)
-    c.drawString(x + PAD, y + H - HDR_H - 5.5*mm, proj)
+    c.setFont(font_bold, 13)
+    c.drawString(x + PAD, y + H - HDR_H - 8*mm, proj)
 
     # 구분선
     c.setStrokeColor(LGRAY)
-    c.setLineWidth(0.4)
-    c.line(x + PAD, y + H - HDR_H - 7.5*mm,
-           x + W - PAD, y + H - HDR_H - 7.5*mm)
+    c.setLineWidth(0.5)
+    c.line(x + PAD, y + H - HDR_H - 10.5*mm,
+           x + W - PAD, y + H - HDR_H - 10.5*mm)
 
     # ── 품목 목록 (최대 3개) ────────────────────────────────────────────────
     c.setFillColor(colors.black)
     products = rec["products"][:3]
-    LINE_H   = 4.5 * mm
-    start_y  = y + H - HDR_H - 12*mm
+    LINE_H   = 6.5 * mm
+    start_y  = y + H - HDR_H - 17*mm
     for i, prod in enumerate(products):
-        # PT코드 강조
         dash_pos = prod.find("-")
         if dash_pos > 0:
             pt_part   = prod[:dash_pos]
             name_part = prod[dash_pos+1:]
-            # PT코드 (작게, 회색)
-            c.setFont(font, 6.5)
+            # PT코드 (회색, 품목명과 동일 크기)
+            pt_fs = 12
+            c.setFont(font, pt_fs)
             c.setFillColor(colors.HexColor("#555555"))
             c.drawString(x + PAD, start_y - i * LINE_H, pt_part + "  ")
-            pt_w = c.stringWidth(pt_part + "  ", font, 6.5)
-            # 품목명 (굵게, 검정)
-            c.setFont(font_bold if i == 0 else font, 8 if i == 0 else 7)
+            pt_w = c.stringWidth(pt_part + " ", font, pt_fs)
+            # 품목명
+            nm_fs = 12
+            nm_font = font_bold if i == 0 else font
+            c.setFont(nm_font, nm_fs)
             c.setFillColor(colors.black)
-            max_w = int((W - 2*PAD - pt_w) / c.stringWidth("가", font_bold if i==0 else font, 8 if i==0 else 7)) + 2
-            c.drawString(x + PAD + pt_w, start_y - i * LINE_H,
-                         name_part[:max_w])
+            max_w = int((W - 2*PAD - pt_w) / c.stringWidth("가", nm_font, nm_fs)) + 2
+            c.drawString(x + PAD + pt_w, start_y - i * LINE_H, name_part[:max_w])
         else:
-            c.setFont(font_bold if i == 0 else font, 8 if i == 0 else 7)
+            nm_fs = 12
+            c.setFont(font_bold if i == 0 else font, nm_fs)
             c.setFillColor(colors.black)
             c.drawString(x + PAD, start_y - i * LINE_H, prod[:38])
 
     if len(rec["products"]) > 3:
-        c.setFont(font, 6)
+        c.setFont(font, 8)
         c.setFillColor(colors.HexColor("#888888"))
         c.drawString(x + PAD, start_y - 3 * LINE_H,
                      f"외 {len(rec['products'])-3}개 품목")
 
     # ── 수량 / 박스 (2단) ──────────────────────────────────────────────────
-    MID_Y = y + 22 * mm
+    MID_H = 15 * mm
+    MID_Y = y + 27 * mm
     c.setFillColor(GRAY)
-    c.rect(x, MID_Y, W/2, 10*mm, fill=1, stroke=0)
-    c.rect(x + W/2, MID_Y, W/2, 10*mm, fill=1, stroke=0)
+    c.rect(x, MID_Y, W/2, MID_H, fill=1, stroke=0)
+    c.rect(x + W/2, MID_Y, W/2, MID_H, fill=1, stroke=0)
 
     c.setFillColor(colors.HexColor("#666666"))
-    c.setFont(font, 6.5)
-    c.drawString(x + PAD,       MID_Y + 6.5*mm, "수   량")
-    c.drawString(x + W/2 + PAD, MID_Y + 6.5*mm, "박   스")
+    c.setFont(font, 9)
+    c.drawString(x + PAD,       MID_Y + MID_H - 4*mm, "수   량")
+    c.drawString(x + W/2 + PAD, MID_Y + MID_H - 4*mm, "박   스")
 
     c.setFillColor(DARK)
-    c.setFont(font_bold, 11)
+    c.setFont(font_bold, 16)
     qty_str = f"{rec['qty']:,}개" if rec["qty"] else "-"
     box_str = f"{box_num} / {rec['box_count']}"
-    c.drawString(x + PAD,       MID_Y + 2*mm, qty_str)
-    c.drawString(x + W/2 + PAD, MID_Y + 2*mm, box_str)
+    c.drawString(x + PAD,       MID_Y + 2.5*mm, qty_str)
+    c.drawString(x + W/2 + PAD, MID_Y + 2.5*mm, box_str)
 
     c.setStrokeColor(colors.HexColor("#AAAAAA"))
-    c.setLineWidth(0.3)
-    c.line(x + W/2, MID_Y, x + W/2, MID_Y + 10*mm)
+    c.setLineWidth(0.4)
+    c.line(x + W/2, MID_Y, x + W/2, MID_Y + MID_H)
 
     # ── 바코드 ─────────────────────────────────────────────────────────────
-    BAR_H = 18 * mm
+    BAR_H = 23 * mm
     BAR_Y = y + 2 * mm
     try:
         buf = make_barcode_buf(rec["bc_num"])
@@ -314,37 +366,26 @@ def draw_label(c: rl_canvas.Canvas, x: float, y: float,
         )
     except Exception:
         c.setFillColor(colors.black)
-        c.setFont(font, 7)
+        c.setFont(font, 9)
         c.drawCentredString(x + W/2, BAR_Y + BAR_H/2, rec["bc_num"][:25])
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# PDF 생성 (A4, 2×4 레이아웃)
+# PDF 생성 (15×10cm 스티커 1장 = 1페이지)
 # ────────────────────────────────────────────────────────────────────────────
-def generate_pdf(records: list, output_path: str) -> int:
+def generate_pdf(records: list, output) -> int:
+    """output: 파일 경로(str) 또는 BytesIO"""
     font, font_bold = register_fonts()
-    PAGE_W, PAGE_H  = A4
-    COLS, ROWS      = 2, 4
-    MX = (PAGE_W - COLS * LABEL_W) / 2
-    MY = (PAGE_H - ROWS * LABEL_H) / 2
+    PAGE_SIZE = (LABEL_W, LABEL_H)
 
-    # 박스 수만큼 라벨 복제
     label_list = []
     for rec in records:
         for i in range(1, max(1, rec["box_count"]) + 1):
             label_list.append((rec, i))
 
-    c       = rl_canvas.Canvas(output_path, pagesize=A4)
-    per_pg  = COLS * ROWS
-
-    for pg in range(0, len(label_list), per_pg):
-        batch = label_list[pg: pg + per_pg]
-        for idx, (rec, box_num) in enumerate(batch):
-            col = idx % COLS
-            row = idx // COLS
-            lx  = MX + col * LABEL_W
-            ly  = PAGE_H - MY - (row + 1) * LABEL_H
-            draw_label(c, lx, ly, rec, box_num, font, font_bold)
+    c = rl_canvas.Canvas(output, pagesize=PAGE_SIZE)
+    for rec, box_num in label_list:
+        draw_label(c, 0, 0, rec, box_num, font, font_bold)
         c.showPage()
 
     c.save()
@@ -354,14 +395,26 @@ def generate_pdf(records: list, output_path: str) -> int:
 # ────────────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="다영기획 이동 바코드 라벨 PDF")
-    parser.add_argument("--project", help="프로젝트 필터 (예: PNA36435)")
-    parser.add_argument("--pks",     help="피킹리스트 번호 (예: PKS017979)")
-    parser.add_argument("--dry-run", action="store_true", help="미리보기만")
+    parser.add_argument("--project",   help="프로젝트 필터 (예: PNA36435)")
+    parser.add_argument("--pks",       help="피킹리스트 번호 (예: PKS017979)")
+    parser.add_argument("--record-id", help="출고확인서 레코드 ID (Make/GitHub Actions 버튼 트리거)")
+    parser.add_argument("--no-upload", action="store_true", help="로컬 저장만, Airtable 업로드 안 함")
+    parser.add_argument("--dry-run",   action="store_true", help="미리보기만")
     args = parser.parse_args()
+    record_id = getattr(args, "record_id", None)
 
     if not PAT:
         print("[ERROR] AIRTABLE_API_KEY 환경변수를 .env에 설정하세요")
         sys.exit(1)
+
+    # --record-id 모드: DC 레코드에서 프로젝트 코드 추출
+    if record_id:
+        print(f"▶ 출고확인서 레코드 조회 중… ({record_id})")
+        dc_rec = fetch_dc_record(record_id)
+        if not dc_rec:
+            print("  레코드 없음"); return
+        args.project = dc_rec["fields"].get("프로젝트명", "")
+        print(f"  프로젝트: {args.project}")
 
     print("▶ Barcode 베이스 조회 중…")
     records = fetch_labels(project_filter=args.project, pks_filter=args.pks)
@@ -381,13 +434,24 @@ def main():
         print("\n[dry-run] PDF 생성 건너뜀")
         return
 
-    today    = date.today().strftime("%Y-%m-%d")
+    stamp    = datetime.now().strftime("%Y-%m-%d_%H%M")
     suffix   = f"_{args.project}" if args.project else (f"_{args.pks}" if args.pks else "")
-    out_path = rf"C:\Users\yjisu\Desktop\바코드라벨{suffix}_{today}.pdf"
+    filename = f"바코드라벨{suffix}_{stamp}.pdf"
 
-    print(f"\n▶ PDF 생성 중… → {out_path}")
-    n = generate_pdf(records, out_path)
-    print(f"✅ 완료 — {n}장 라벨 ({out_path})")
+    buf = BytesIO()
+    n   = generate_pdf(records, buf)
+    pdf_bytes = buf.getvalue()
+
+    if not record_id or args.no_upload:
+        from pathlib import Path
+        out_dir  = Path(os.getenv("PDF_OUTPUT_DIR", r"C:\Users\yjisu\Desktop"))
+        out_path = out_dir / filename
+        out_path.write_bytes(pdf_bytes)
+        print(f"✅ 완료 — {n}장 라벨 ({out_path})")
+    else:
+        print(f"\n▶ {filename} 업로드 중…")
+        if upload_via_content_api(record_id, ATTACH_FIELD_ID, filename, pdf_bytes):
+            print(f"✅ 완료 — {n}장 라벨 업로드")
 
 
 if __name__ == "__main__":
