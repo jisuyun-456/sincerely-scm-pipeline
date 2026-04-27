@@ -241,7 +241,7 @@ def fetch_picking(start_date=None, end_date=None, project_filter=None, batch_fil
             il_batch = clean(f.get("출고차수") or "")
             if il_batch and il_batch != batch_filter:
                 continue
-        qty   = parse_qty(f.get(F_QTY_CONF) or f.get(F_QTY_MOV) or f.get(F_QTY_PLAN))
+        qty   = parse_qty(f.get(F_QTY_CONF) or f.get(F_QTY_MOV) or f.get("출고수량") or f.get(F_QTY_PLAN))
         boxes = parse_qty(f.get(F_BOX)) or 0
         result.append({
             "rec_id":   r["id"],

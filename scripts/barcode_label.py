@@ -145,7 +145,7 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None) -> lis
     # ── 이동리스트 전체 → PT+품목명 매핑 ──────────────────────────────────
     il_recs = airtable_get(TBL_IL, {
         "fields[]": ["movement_id", "파츠코드", "출고물품", "출하장소",
-                     "이동수량", "계획수량", "라벨 박스수량", "출고차수"],
+                     "이동수량", "출고수량", "계획수량", "라벨 박스수량", "출고차수"],
         "pageSize": 100,
     })
     # record_id → {pt, name, qty, box_count, batch}
@@ -158,7 +158,7 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None) -> lis
             "pt":        pt,
             "name":      nm,
             "product":   f"{pt}-{nm}" if pt and nm else (pt or nm),
-            "qty":       parse_int(f.get("이동수량") or f.get("계획수량")),
+            "qty":       parse_int(f.get("이동수량") or f.get("출고수량") or f.get("계획수량")),
             "box_count": parse_int(f.get("라벨 박스수량")),
             "location":  (f.get("출하장소") or "").strip(),
             "batch":     (f.get("출고차수") or "").strip(),
