@@ -80,7 +80,7 @@ _SCHEMA_CACHE: dict = {}
 _ATTACH_FIELD_ID: str | None = None
 _LOC_TABLE_ID: str | None = None
 
-ITEM_RE      = re.compile(r"^(?P<name>.+?)\s+(?P<qty>\d+)(?:\+(?P<extra>\d+))?\s*$")
+ITEM_RE      = re.compile(r"^(?P<name>.+?[^\d\s])\s*(?P<qty>\d+)(?:\+(?P<extra>\d+))?\s*$")
 STOCK_ITEM_RE = re.compile(r"^(?P<pt>PT\S+?)-(?P<name>.+?)\s*\|\|\s*\S+\s+(?P<qty>\d+)개\s*$")
 
 
@@ -205,7 +205,7 @@ def parse_ship_date(raw: str) -> str:
 
 
 def extract_item_name(s: str) -> str:
-    return re.sub(r"\s+\d+(\+\d+)?\s*$", "", s.strip()).strip()
+    return re.sub(r"\s*\d+(\+\d+)?\s*$", "", s.strip()).strip()
 
 
 def split_order_items(order_raw: str, actual_list: list[str]) -> list[str]:
@@ -269,42 +269,39 @@ def parse_stock_items(raw: str) -> list[dict]:
 
 
 def parse_items(actual_raw: str, order_raw: str) -> list[dict]:
-    """레거시 호환용 — 현재는 parse_stock_items 사용"""
     actual_lines = [x.strip() for x in str(actual_raw or "").split("\n") if x.strip()]
-    order_list   = split_order_items(order_raw or "", actual_lines)
+
+    # note 행 제외한 실제 품목만 ordered 매핑에 사용 (note 행이 인덱스 어긋남 방지)
+    real_lines = [l for l in actual_lines if ITEM_RE.match(l)]
+    order_list = split_order_items(order_raw or "", real_lines)
 
     rows = []
-    max_len = max(len(actual_lines), len(order_list), 1)
-    for i in range(max_len):
-        actual_str = actual_lines[i] if i < len(actual_lines) else ""
-        order_str  = order_list[i]   if i < len(order_list)   else ""
-
+    order_idx = 0
+    item_no   = 1
+    for actual_str in actual_lines:
         m = ITEM_RE.match(actual_str)
         if m:
             name        = m.group("name").strip()
             shipped_qty = m.group("qty")
             extra       = m.group("extra") or ""
+            order_str   = order_list[order_idx] if order_idx < len(order_list) else ""
             om          = ITEM_RE.match(order_str)
             ordered_qty = om.group("qty") if om else ""
+            order_idx  += 1
             rows.append({
-                "no":          i + 1,
+                "no":          item_no,
                 "pt":          "",
                 "name":        name,
                 "ordered_qty": ordered_qty,
                 "qty":         f"{shipped_qty} (+{extra})" if extra else shipped_qty,
                 "is_note":     False,
             })
+            item_no += 1
         else:
-            # 수량 없는 줄 (잔여분, 메모 등) → 비고 행
-            note_text = actual_str or order_str
-            if note_text:
+            if actual_str:
                 rows.append({
-                    "no":          None,
-                    "pt":          "",
-                    "name":        note_text,
-                    "ordered_qty": "",
-                    "qty":         "",
-                    "is_note":     True,
+                    "no": None, "pt": "", "name": actual_str,
+                    "ordered_qty": "", "qty": "", "is_note": True,
                 })
     return rows
 
