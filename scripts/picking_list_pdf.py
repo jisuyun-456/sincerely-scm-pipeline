@@ -47,6 +47,9 @@ PAT      = (os.getenv("AIRTABLE_API_KEY")
             or os.getenv("AIRTABLE_PAT", ""))
 HEADERS  = {"Authorization": f"Bearer {PAT}"}
 
+# 피킹리스트 테이블 ID — 메타 API로 자동 발견 (런타임에 채워짐)
+TBL_PL: str = ""
+
 ATTACH_FIELD_ID = "fldWczicq4KAoI5OX"   # 피킹리스트_python on TBL_DC
 
 if platform.system() == "Windows":
@@ -179,6 +182,51 @@ def airtable_get(params: dict) -> list:
     return records
 
 
+def discover_picking_table_id() -> str:
+    """메타 API로 피킹리스트 테이블 ID 자동 발견"""
+    try:
+        r = requests.get(
+            f"https://api.airtable.com/v0/meta/bases/{BASE_ID}/tables",
+            headers=HEADERS, timeout=10,
+        )
+        if r.status_code == 200:
+            for tbl in r.json().get("tables", []):
+                if "피킹리스트" in tbl.get("name", ""):
+                    print(f"  ✔ 피킹리스트 테이블 발견: {tbl['id']}")
+                    return tbl["id"]
+    except Exception:
+        pass
+    return ""
+
+
+def fetch_by_ids(table_id: str, record_ids: list, batch_size: int = 30) -> list:
+    """임의 테이블 RECORD_ID() 기반 배치 조회"""
+    if not record_ids:
+        return []
+    url = f"https://api.airtable.com/v0/{BASE_ID}/{table_id}"
+    result = []
+    for i in range(0, len(record_ids), batch_size):
+        batch = record_ids[i:i + batch_size]
+        formula = "OR(" + ",".join(f'RECORD_ID()="{rid}"' for rid in batch) + ")"
+        records, offset = [], None
+        while True:
+            p = {"filterByFormula": formula, "pageSize": 100}
+            if offset:
+                p["offset"] = offset
+            rr = requests.get(url, headers=HEADERS, params=p, timeout=30)
+            rr.raise_for_status()
+            data = rr.json()
+            records.extend(data.get("records", []))
+            offset = data.get("offset")
+            if not offset:
+                break
+            time.sleep(0.2)
+        result.extend(records)
+        if i + batch_size < len(record_ids):
+            time.sleep(0.2)
+    return result
+
+
 def fetch_dc_record(record_id: str) -> dict | None:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_DC}"
     r = requests.get(url, headers=HEADERS,
@@ -221,7 +269,28 @@ def upload_via_content_api(record_id: str, field_id: str,
 
 
 def fetch_picking(start_date=None, end_date=None, project_filter=None, batch_filter=None) -> list:
+    global TBL_PL
     raw = airtable_get({"pageSize": 100})
+
+    # 피킹리스트 테이블에서 입고좌표 조회 (테이블 ID 자동 발견)
+    if not TBL_PL:
+        TBL_PL = discover_picking_table_id()
+    pl_coord_map: dict = {}  # PL record_id → 입고좌표 str
+    if TBL_PL:
+        pl_ids = []
+        for r in raw:
+            linked = r.get("fields", {}).get("피킹리스트") or []
+            if isinstance(linked, list):
+                pl_ids.extend(linked)
+        pl_ids = list(set(pl_ids))
+        if pl_ids:
+            pl_recs = fetch_by_ids(TBL_PL, pl_ids)
+            for pr in pl_recs:
+                coord = pr["fields"].get("입고좌표") or ""
+                if isinstance(coord, list):
+                    coord = next((v for v in coord if v), "")
+                pl_coord_map[pr["id"]] = str(coord).strip()
+
     result = []
     for r in raw:
         f   = r.get("fields", {})
@@ -250,6 +319,19 @@ def fetch_picking(start_date=None, end_date=None, project_filter=None, batch_fil
                 continue
         qty   = parse_qty(f.get(F_QTY_CONF) or f.get(F_QTY_MOV) or f.get("출고수량") or f.get(F_QTY_PLAN))
         boxes = parse_qty(f.get(F_BOX)) or 0
+        # 입고좌표: 피킹리스트 테이블 조인 우선, 없으면 이동리스트 직접 필드 폴백
+        pl_linked = f.get("피킹리스트") or []
+        if isinstance(pl_linked, str):
+            pl_linked = [pl_linked]
+        location = next(
+            (pl_coord_map[pid] for pid in pl_linked if pl_coord_map.get(pid)), ""
+        )
+        if not location:
+            raw_loc = f.get(F_LOCATION) or f.get("재고좌표(합산)") or ""
+            location = clean(
+                next((v for v in raw_loc if v), "") if isinstance(raw_loc, list)
+                else raw_loc
+            )
         result.append({
             "rec_id":   r["id"],
             "pt":       pt,
@@ -258,11 +340,7 @@ def fetch_picking(start_date=None, end_date=None, project_filter=None, batch_fil
             "date":     d,
             "qty":      qty,
             "boxes":    boxes,
-            "location": clean(
-                next((v for v in (f.get(F_LOCATION) or [])
-                      if v), "") if isinstance(f.get(F_LOCATION), list)
-                else (f.get(F_LOCATION) or f.get("재고좌표(합산)") or "")
-            ),
+            "location": location,
             "mat_type": clean(f.get(F_MAT_TYPE) or ""),
         })
     return result

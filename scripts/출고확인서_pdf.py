@@ -495,7 +495,7 @@ def build_box_rows(bc_records: list[dict], il_map: dict) -> tuple[dict, dict]:
         il_ids  = bf.get("이동리스트") or []
         if isinstance(il_ids, list):
             label_to_il_ids[lable]  = il_ids
-            label_box_counts[lable] = int(bf.get("라벨 박스수량") or 1)
+            label_box_counts[lable] = int(bf.get("라벨 박스수량") or 0)
             for il_id in il_ids:
                 il_to_labels[il_id].append(lable)
 
@@ -513,10 +513,8 @@ def build_box_rows(bc_records: list[dict], il_map: dict) -> tuple[dict, dict]:
         if not pt_parts:
             continue
         is_mixed = len(pt_parts) > 1
-        # IL 레코드의 라벨 박스수량 max → BC 테이블 폴백
-        il_boxes = [int(il_map.get(il_id, {}).get("라벨 박스수량") or 0) for il_id in il_ids]
-        max_il   = max(il_boxes, default=0)
-        box_cnt  = max_il if max_il > 0 else max(label_box_counts.get(lable, 1), 1)
+        # BC 테이블 라벨 박스수량 직접 사용 (primary source), 없으면 1
+        box_cnt  = label_box_counts.get(lable, 0) or 1
         box_rows.append((lable, pt_parts, is_mixed, box_cnt))
 
     return dict(il_to_labels), box_rows
