@@ -28,7 +28,8 @@ jobs:
         run: |
           PDF_TYPE="${{ github.event.client_payload.pdf_type }}"
           RECORD_ID="${{ github.event.client_payload.record_id }}"
-          echo "PDF_TYPE=$PDF_TYPE  RECORD_ID=$RECORD_ID"
+          BC_ID="${{ github.event.client_payload.bc_id }}"
+          echo "PDF_TYPE=$PDF_TYPE  RECORD_ID=$RECORD_ID  BC_ID=$BC_ID"
           case "$PDF_TYPE" in
             "출고확인서")
               python scripts/출고확인서_pdf.py --record-id "$RECORD_ID"
@@ -37,7 +38,14 @@ jobs:
               python scripts/picking_list_pdf.py --record-id "$RECORD_ID"
               ;;
             "라벨지")
-              python scripts/barcode_label.py --record-id "$RECORD_ID"
+              # BC_ID만: 특정 박스 라벨 재생성 (RECORD_ID도 있으면 DC 레코드에 업로드)
+              if [ -n "$BC_ID" ] && [ -n "$RECORD_ID" ]; then
+                python scripts/barcode_label.py --bc-id "$BC_ID" --record-id "$RECORD_ID"
+              elif [ -n "$BC_ID" ]; then
+                python scripts/barcode_label.py --bc-id "$BC_ID" --no-upload
+              else
+                python scripts/barcode_label.py --record-id "$RECORD_ID"
+              fi
               ;;
             *)
               echo "Unknown pdf_type: $PDF_TYPE"; exit 1

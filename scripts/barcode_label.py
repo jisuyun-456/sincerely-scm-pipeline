@@ -137,7 +137,7 @@ def parse_int(v) -> int:
 # ────────────────────────────────────────────────────────────────────────────
 # 데이터 조회
 # ────────────────────────────────────────────────────────────────────────────
-def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None) -> list:
+def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None, bc_id_filter=None) -> list:
     """
     바코드 테이블에서 다영기획 미출력 레코드 조회,
     이동리스트와 join해 PT코드 + 품목명 완성
@@ -176,6 +176,8 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None) -> lis
     # Barcode 베이스 자체가 다영기획 전용 — 목적지 필터 불필요
     # project는 바코드 테이블에서 linked 배열 필드
     formula_parts = []
+    if bc_id_filter:
+        formula_parts.append(f'RECORD_ID()="{bc_id_filter}"')
     if project_filter:
         formula_parts.append(f"FIND('{project_filter}', ARRAYJOIN({{project}}))")
     if pks_filter:
@@ -423,10 +425,12 @@ def main():
     parser.add_argument("--project",   help="프로젝트 필터 (예: PNA36435)")
     parser.add_argument("--pks",       help="피킹리스트 번호 (예: PKS017979)")
     parser.add_argument("--record-id", help="출고확인서 레코드 ID (Make/GitHub Actions 버튼 트리거)")
+    parser.add_argument("--bc-id",     help="바코드 레코드 ID — 특정 박스 라벨만 재생성 (예: recXXXXX)")
     parser.add_argument("--no-upload", action="store_true", help="로컬 저장만, Airtable 업로드 안 함")
     parser.add_argument("--dry-run",   action="store_true", help="미리보기만")
     args = parser.parse_args()
     record_id = getattr(args, "record_id", None)
+    bc_id     = getattr(args, "bc_id", None)
 
     if not PAT:
         print("[ERROR] AIRTABLE_API_KEY 환경변수를 .env에 설정하세요")
@@ -444,7 +448,7 @@ def main():
         print(f"  프로젝트: {args.project}" + (f"  차수: {batch}" if batch else ""))
 
     print("▶ Barcode 베이스 조회 중…")
-    records = fetch_labels(project_filter=args.project, pks_filter=args.pks, batch_filter=batch)
+    records = fetch_labels(project_filter=args.project, pks_filter=args.pks, batch_filter=batch, bc_id_filter=bc_id)
 
     if not records:
         print("조회 결과 없음 (다영기획 이동 예정 레코드가 없거나 필터 확인)")
@@ -454,7 +458,7 @@ def main():
     print(f"  {len(records)}건 조회 → 총 {total_labels}장 라벨")
     print()
     for r in records:
-        prods = " / ".join(r["products"][:2])
+        prods = " / ".join(p["product"] for p in r["products"][:2])
         print(f"  • {r['bc_num']:<8}  {r['project'][:25]:<25}  {prods[:40]:<40}  {r['qty']:>5}개  {r['box_count']}박스")
 
     if args.dry_run:
@@ -462,7 +466,14 @@ def main():
         return
 
     stamp    = datetime.now().strftime("%Y-%m-%d_%H%M")
-    suffix   = f"_{args.project}" if args.project else (f"_{args.pks}" if args.pks else "")
+    if bc_id:
+        suffix = f"_{bc_id}"
+    elif args.project:
+        suffix = f"_{args.project}"
+    elif args.pks:
+        suffix = f"_{args.pks}"
+    else:
+        suffix = ""
     filename = f"바코드라벨{suffix}_{stamp}.pdf"
 
     buf = BytesIO()
