@@ -513,7 +513,10 @@ def build_box_rows(bc_records: list[dict], il_map: dict) -> tuple[dict, dict]:
         if not pt_parts:
             continue
         is_mixed = len(pt_parts) > 1
-        box_cnt  = label_box_counts.get(lable, 1)
+        # IL 레코드의 라벨 박스수량 max → BC 테이블 폴백
+        il_boxes = [int(il_map.get(il_id, {}).get("라벨 박스수량") or 0) for il_id in il_ids]
+        max_il   = max(il_boxes, default=0)
+        box_cnt  = max_il if max_il > 0 else max(label_box_counts.get(lable, 1), 1)
         box_rows.append((lable, pt_parts, is_mixed, box_cnt))
 
     return dict(il_to_labels), box_rows

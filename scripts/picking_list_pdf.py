@@ -258,7 +258,11 @@ def fetch_picking(start_date=None, end_date=None, project_filter=None, batch_fil
             "date":     d,
             "qty":      qty,
             "boxes":    boxes,
-            "location": clean(f.get(F_LOCATION) or ""),
+            "location": clean(
+                next((v for v in (f.get(F_LOCATION) or [])
+                      if v), "") if isinstance(f.get(F_LOCATION), list)
+                else (f.get(F_LOCATION) or f.get("재고좌표(합산)") or "")
+            ),
             "mat_type": clean(f.get(F_MAT_TYPE) or ""),
         })
     return result
