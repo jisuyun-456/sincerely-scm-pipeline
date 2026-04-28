@@ -2,3 +2,18 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# Local Claude Code settings
+.claude/
+
+# Local tool settings
+.playwright-mcp/
+.worktrees/
+
+# Generated outputs
+graphify-out/
+*.pdf
+tmp_*.json
+
+# Superpowers plugin (local root only, not project code)
+/superpowers/
