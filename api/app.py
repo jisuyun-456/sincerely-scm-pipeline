@@ -8,11 +8,14 @@ GitHub Actions (generate-barcode-pdf, generate-pdf) 대체
   GET  /health                → 헬스체크
 """
 
-import os, subprocess, sys
+import logging, os, subprocess, sys
 from pathlib import Path
 
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException
 from pydantic import BaseModel
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -53,7 +56,8 @@ def _run(cmd: list[str]) -> dict:
 
 
 def _run_bg(cmd: list[str]):
-    subprocess.run(
+    logger.info(f"[BG] starting: {cmd}")
+    result = subprocess.run(
         cmd,
         cwd=REPO_ROOT,
         capture_output=True,
@@ -61,6 +65,10 @@ def _run_bg(cmd: list[str]):
         timeout=300,
         env={**os.environ, "PDF_OUTPUT_DIR": "/tmp"},
     )
+    if result.returncode != 0:
+        logger.error(f"[BG] FAILED rc={result.returncode}: {result.stderr[-800:]}")
+    else:
+        logger.info(f"[BG] OK: {result.stdout[-400:]}")
 
 
 # ── 엔드포인트 ───────────────────────────────────────────────────────────────
@@ -108,6 +116,7 @@ def generate_tms_pdf(
 ):
     """TMS 베이스: 출고확인서_tms"""
     _check_secret(x_webhook_secret)
+    logger.info(f"[TMS] request: record_id={payload.record_id!r}")
     cmd = [sys.executable, "pdf/출고확인서_tms.py", "--record-id", payload.record_id]
     background_tasks.add_task(_run_bg, cmd)
     return {"status": "accepted"}
