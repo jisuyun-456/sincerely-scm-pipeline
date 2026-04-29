@@ -11,7 +11,7 @@ GitHub Actions (generate-barcode-pdf, generate-pdf) 대체
 import os, subprocess, sys
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import BackgroundTasks, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -52,11 +52,23 @@ def _run(cmd: list[str]) -> dict:
     return {"status": "ok", "log": result.stdout[-300:]}
 
 
+def _run_bg(cmd: list[str]):
+    subprocess.run(
+        cmd,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=300,
+        env={**os.environ, "PDF_OUTPUT_DIR": "/tmp"},
+    )
+
+
 # ── 엔드포인트 ───────────────────────────────────────────────────────────────
 
 @app.post("/generate-barcode-pdf")
 def generate_barcode_pdf(
     payload: BarcodeRequest,
+    background_tasks: BackgroundTasks,
     x_webhook_secret: str = Header(default=""),
 ):
     """Barcode 베이스: 출고확인서 / 피킹리스트 / 라벨지"""
@@ -84,18 +96,21 @@ def generate_barcode_pdf(
     else:
         raise HTTPException(status_code=400, detail=f"Unknown pdf_type: {t}")
 
-    return _run(cmd)
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
 
 
 @app.post("/generate-tms-pdf")
 def generate_tms_pdf(
     payload: TMSRequest,
+    background_tasks: BackgroundTasks,
     x_webhook_secret: str = Header(default=""),
 ):
     """TMS 베이스: 출고확인서_tms"""
     _check_secret(x_webhook_secret)
     cmd = [sys.executable, "pdf/출고확인서_tms.py", "--record-id", payload.record_id]
-    return _run(cmd)
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
 
 
 @app.get("/health")
