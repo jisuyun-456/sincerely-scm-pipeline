@@ -15,5 +15,13 @@ graphify-out/
 *.pdf
 tmp_*.json
 
+# WMS backfill data files (generated, not source code)
+wms/txn_batches.json
+wms/ledger_batches.json
+wms/material_records.json
+
+# Python virtual environments
+.venv/
+
 # Superpowers plugin (local root only, not project code)
 /superpowers/

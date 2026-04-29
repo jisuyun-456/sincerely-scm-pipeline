@@ -15,6 +15,7 @@ Barcode 베이스 → 출고확인서 PDF 생성기
 """
 
 import argparse, base64, io, os, platform, re, sys, time
+from concurrent.futures import ThreadPoolExecutor
 from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
@@ -39,6 +40,8 @@ TBL_BC   = "tbl0K3QP5PCd06Cxv"   # 바코드 (외박스)
 
 API_KEY  = os.getenv("AIRTABLE_API_KEY", "")
 HEADERS  = {"Authorization": f"Bearer {API_KEY}"}
+_SESSION = requests.Session()
+_SESSION.headers.update(HEADERS)
 
 ATTACH_FIELD_ID = "fldXde5mrRIaqZHiG"   # 출고확인서_python on TBL_DC
 
@@ -85,15 +88,11 @@ def upload_via_content_api(record_id: str, field_id: str,
         "file":        base64.b64encode(pdf_bytes).decode("ascii"),
     }
     try:
-        r = requests.post(
-            url,
-            headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
-            json=payload, timeout=60,
-        )
+        r = _SESSION.post(url, headers={"Content-Type": "application/json"},
+                          json=payload, timeout=60)
         if r.status_code == 429:
             time.sleep(int(r.headers.get("Retry-After", 10)))
-            r = requests.post(url, headers={"Authorization": f"Bearer {API_KEY}",
-                                             "Content-Type": "application/json"},
+            r = _SESSION.post(url, headers={"Content-Type": "application/json"},
                               json=payload, timeout=60)
         r.raise_for_status()
         print(f"  ✅ 업로드: {filename}")
@@ -113,7 +112,7 @@ def airtable_get(table_id: str, params: dict) -> list:
         p = dict(params)
         if offset:
             p["offset"] = offset
-        r = requests.get(url, headers=HEADERS, params=p, timeout=30)
+        r = _SESSION.get(url, params=p, timeout=30)
         r.raise_for_status()
         data = r.json()
         records.extend(data.get("records", []))
@@ -313,20 +312,30 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
     col_w  = [no_w, pt_w, name_w, qty_w, box_w, lbl_w]
 
     rows = [header]
-    total_qty = total_box_cnt = 0
+    # 합포장 라벨 집합 (is_mixed=True인 라벨 → 박스 컬럼에 "(합)" 태그)
+    mixed_labels = {lable for lable, _, is_mixed, _ in box_rows if is_mixed}
+    # 총 박스 수: 고유 라벨 단위 합산 (합포장 중복 방지)
+    if box_rows:
+        total_box_cnt = sum(bc for _, _, _, bc in box_rows)
+    else:
+        unique_labels = {lbl for g in doc["grouped_items"] for lbl in g["_labels"]}
+        total_box_cnt = len(unique_labels) if unique_labels else sum(g["_boxes"] for g in doc["grouped_items"])
+    total_qty = 0
     for idx, g in enumerate(doc["grouped_items"], 1):
         pt      = g.get("파츠코드", "")
         name    = g["_name"]
         qty     = g["_qty"]
         boxes   = g["_boxes"]
         lbl_str = format_labels_for_cell(g["_labels"]) if g["_labels"] else "-"
+        box_str = f"{int(boxes)}박스" if boxes else "-"
+        if boxes and any(lbl in mixed_labels for lbl in g["_labels"]):
+            box_str += " (합)"
 
         rows.append([str(idx), pt, name,
                      f"{int(qty):,}" if qty else "-",
-                     f"{int(boxes)}박스" if boxes else "-",
+                     box_str,
                      lbl_str])
-        total_qty     += qty
-        total_box_cnt += boxes
+        total_qty += qty
 
     rows.append(["", "", "합  계", f"{total_qty:,}", f"{total_box_cnt}박스", ""])
 
@@ -577,13 +586,13 @@ def main():
     all_il_ids = list(set(all_il_ids))
     all_bc_ids = list(set(all_bc_ids))
 
-    print(f"  이동리스트 {len(all_il_ids)}건 조회 중…")
-    il_records = fetch_by_ids(TBL_IL, all_il_ids)
-    # record_id를 fields에 포함해 매핑 편의 도모
+    print(f"  이동리스트 {len(all_il_ids)}건 + 바코드 {len(all_bc_ids)}건 병렬 조회 중…")
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        f_il = ex.submit(fetch_by_ids, TBL_IL, all_il_ids)
+        f_bc = ex.submit(fetch_by_ids, TBL_BC, all_bc_ids)
+        il_records     = f_il.result()
+        bc_records_all = f_bc.result()
     il_map = {r["id"]: {**r["fields"], "_record_id": r["id"]} for r in il_records}
-
-    print(f"  바코드(외박스) {len(all_bc_ids)}건 조회 중…")
-    bc_records_all = fetch_by_ids(TBL_BC, all_bc_ids)
     bc_map = {r["id"]: r for r in bc_records_all}  # id → full record
 
     # ── 문서 조립 ──────────────────────────────────────────────────────────
