@@ -228,6 +228,10 @@ def update_log(res: dict) -> None:
 
     if LOG_PATH.exists():
         existing = LOG_PATH.read_text(encoding="utf-8")
+        today_header = f"## [{TODAY_DASH}] ITER1"
+        if today_header in existing:
+            print(f"  log.md: 오늘({TODAY_DASH}) 항목 이미 존재 → 스킵", flush=True)
+            return
         LOG_PATH.write_text(existing + entry, encoding="utf-8")
     else:
         LOG_PATH.write_text(
