@@ -117,6 +117,8 @@ def generate_tms_pdf(
     """TMS 베이스: 출고확인서_tms"""
     _check_secret(x_webhook_secret)
     logger.info(f"[TMS] request: record_id={payload.record_id!r}")
+    if not payload.record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
     cmd = [sys.executable, "pdf/출고확인서_tms.py", "--record-id", payload.record_id]
     background_tasks.add_task(_run_bg, cmd)
     return {"status": "accepted"}
