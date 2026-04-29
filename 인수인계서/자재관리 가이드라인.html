@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>자재관리 가이드라인 · 신시어리웨일즈</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<link rel="stylesheet" href="shared.css" />
+</head>
+<body data-density="normal">
+
+<div class="shell">
+
+<aside class="doc">
+  <div class="brand">
+    <div class="dot">SC</div>
+    <div>
+      <div class="name">자재관리 가이드라인</div>
+      <div class="sub">신시어리웨일즈 · 에이원센터</div>
+    </div>
+  </div>
+
+  <h4>탭 바로가기</h4>
+  <ul id="side-tabs">
+    <li><a data-tab="intro"><span class="idx">00</span>기업·근무 정보</a></li>
+    <li><a data-tab="wms"><span class="idx">01</span>재고 관리 (WMS)</a></li>
+    <li><a data-tab="picking"><span class="idx">02</span>피킹 프로세스</a></li>
+    <li><a data-tab="input"><span class="idx">03</span>투입 프로세스</a></li>
+    <li><a data-tab="special"><span class="idx">04</span>특수 케이스</a></li>
+    <li><a data-tab="ref"><span class="idx">05</span>참고·체크리스트</a></li>
+  </ul>
+
+  <div class="crossnav">
+    <h5>다른 문서</h5>
+    <a href="자재관리 가이드라인 (문서형).html">자재관리 — 문서형 버전<span class="arr">→</span></a>
+    <a href="TMS 인수인계서.html">TMS 배차 스케줄링 인수인계서<span class="arr">→</span></a>
+  </div>
+
+  <div class="meta">
+    <div><span class="k">기준일</span>&nbsp; 2026.03.13</div>
+    <div><span class="k">작성자</span>&nbsp; 물류부문 관리자</div>
+    <div><span class="k">대상</span>&nbsp; 자재관리 신규/기존 관리자</div>
+    <div><span class="k">장소</span>&nbsp; 에이원지식산업센터</div>
+  </div>
+</aside>
+
+<main>
+
+  <div class="eyebrow">Handover · 자재관리 (물류사업본부)</div>
+  <h1 class="doc-title">자재관리 관리자 교육용 가이드라인</h1>
+  <p class="lede">
+    신시어리웨일즈 물류사업본부의 <strong>자재관리</strong> 업무를 처음 시작하시거나 매뉴얼로 참고하시는 분들을 위한 가이드입니다.
+    재고 관리 · 피킹 · 투입 프로세스를 단계별로 안내하고, 자주 놓치는 주의사항을 함께 정리했습니다.
+  </p>
+
+  <!-- Tab navigation -->
+  <nav class="tabbar" role="tablist">
+    <div class="tab on" data-tab="intro"><span class="idx">00</span>기업·근무 정보</div>
+    <div class="tab" data-tab="wms"><span class="idx">01</span>재고 관리 (WMS)</div>
+    <div class="tab" data-tab="picking"><span class="idx">02</span>피킹 프로세스</div>
+    <div class="tab" data-tab="input"><span class="idx">03</span>투입 프로세스</div>
+    <div class="tab" data-tab="special"><span class="idx">04</span>특수 케이스</div>
+    <div class="tab" data-tab="ref"><span class="idx">05</span>참고·체크리스트</div>
+  </nav>
+
+  <!-- ============ TAB: INTRO ============ -->
+  <div class="panel on" data-panel="intro">
+
+    <section class="chapter">
+      <header>
+        <span class="cid">00·1</span>
+        <h2>기업 정보</h2>
+        <span class="path">신시어리 · 물류사업본부</span>
+      </header>
+      <div class="block">
+        <p>
+          신시어리는 투자회사 <strong>크레비스파트너스</strong>의 디지털 커머스 부문 사업으로,
+          기업과 개인을 대상으로 브랜드 굿즈를 제작합니다.
+          <strong>유통사업본부</strong>와 <strong>물류사업본부</strong>로 나뉘며, 현재 근무 위치인 <strong>서울숲 에이원센터</strong>는 물류사업본부입니다.
+          물류사업본부는 <strong>물류 파트</strong>와 <strong>패키징 파트</strong>로 나뉘며, 관리자님은 <strong>물류 파트의 자재관리 부문</strong>을 담당합니다.
+        </p>
+      </div>
+
+      <div class="block">
+        <h3>근무정보</h3>
+        <div class="rules">
+          <div class="rule"><div class="n">›</div><div class="body">최초 입사 시 <strong>1개월 이내 수습기간</strong></div></div>
+          <div class="rule"><div class="n">›</div><div class="body">이후 <strong>2년 이내 계약직</strong>으로 전환</div></div>
+          <div class="rule"><div class="n">›</div><div class="body">2년차 이후 희망 시 <strong>정규직 전환 가능</strong></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">00·2</span>
+        <h2>시설 용어</h2>
+        <span class="path">3개 시설의 역할 구분</span>
+      </header>
+      <div class="block">
+        <div class="facility">
+          <div class="f mine">
+            <div class="k">현재 위치</div>
+            <div class="n">에이원</div>
+            <div class="d">에이원지식산업센터. 자재관리 관리자님의 실제 근무 장소이자 임가공·투입 작업이 이루어지는 곳.</div>
+            <span class="tag">MINE</span>
+          </div>
+          <div class="f">
+            <div class="k">창고</div>
+            <div class="n">베스트원</div>
+            <div class="d">신시어리의 <strong>재고 보관 창고</strong>. 에이원에 없는 파츠는 베스트원에 <span class="pill violet">이동요청</span>하여 가져옵니다.</div>
+          </div>
+          <div class="f">
+            <div class="k">외주 업체</div>
+            <div class="n">다영기획</div>
+            <div class="d">임가공 <strong>외주 업체</strong>. 임가공 장소가 다영기획인 프로젝트는 해당 업체에서 임가공을 수행합니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">00·3</span>
+        <h2>계정 정보</h2>
+        <span class="path">로그인·네트워크·메신저</span>
+      </header>
+      <div class="block">
+        <div class="creds" id="creds">
+          <div class="row"><span class="k">노트북 비밀번호</span><span class="v">1231</span><button class="copy" data-val="1231">복사</button></div>
+          <div class="row"><span class="k">Wi-Fi</span><span class="v">Crevisse</span><button class="copy" data-val="Crevisse">복사</button></div>
+          <div class="row"><span class="k">Wi-Fi 비밀번호</span><span class="v">crvs025692431</span><button class="copy" data-val="crvs025692431">복사</button></div>
+          <div class="row"><span class="k">Gmail</span><span class="v">sincerely.inventory@gmail.com</span><button class="copy" data-val="sincerely.inventory@gmail.com">복사</button></div>
+          <div class="row"><span class="k">Gmail 비밀번호</span><span class="v">sin12345!!!</span><button class="copy" data-val="sin12345!!!">복사</button></div>
+          <div class="row"><span class="k">Slack</span><span class="v">비즈니스 업무 메신저 — 직원들과 소통</span><span style="color:var(--muted);font-size:10.5px">앱 사용</span></div>
+        </div>
+        <div class="callout warn">
+          <div class="icon">BOUND</div>
+          <div>계정 정보는 <strong>공식 인수인계 문서에 한해 열람</strong>합니다. 외부 공유·스크린샷 유출에 주의하세요. 퇴사·변경 시 담당 관리자에게 갱신 요청.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">00·4</span>
+        <h2>업무 개요</h2>
+        <span class="path">패키징 파트에 자재를 전달·관리</span>
+      </header>
+      <div class="block">
+        <p>
+          신시어리웨일즈는 기업과 개인을 대상으로 브랜드 굿즈를 제작합니다.
+          관리자님께서는 <strong>패키징 파트에 투입될 물류 자재들을 전달하고 관리하는 역할</strong>을 맡습니다.
+          업무는 크게 세 단계로 구성됩니다.
+        </p>
+        <div class="rules">
+          <div class="rule"><div class="n">1</div><div class="body"><strong>재고 관리 (WMS)</strong> <span class="arrow">—</span> 파츠의 보관 상태와 좌표를 최신으로 유지</div></div>
+          <div class="rule"><div class="n">2</div><div class="body"><strong>피킹 (Picking)</strong> <span class="arrow">—</span> 이동스케줄에 맞춰 필요한 파츠를 골라내고 라벨 부착</div></div>
+          <div class="rule"><div class="n">3</div><div class="body"><strong>투입</strong> <span class="arrow">—</span> 지정된 좌표에 자재/샘플을 투입</div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ TAB: WMS ============ -->
+  <div class="panel" data-panel="wms">
+
+    <section class="chapter">
+      <header>
+        <span class="cid">01·1</span>
+        <h2>WMS 접근 · 파츠 검색</h2>
+        <span class="path">크롬 자재관리 › 재고 정보</span>
+      </header>
+      <div class="block">
+        <p>검색창에 <code class="inl">파츠번호</code>를 입력해 찾고자 하는 파츠의 상세 정보를 확인할 수 있습니다.</p>
+
+        <!-- WMS 재고 정보 재현 -->
+        <div class="chrome" id="wms-inventory">
+          <div class="bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="url"><span class="lock">🔒</span>wms.sincerely.co.kr/inventory/parts</div>
+          </div>
+          <div class="wms-nav">
+            <span class="logo">자재관리</span>
+            <span class="nv on" data-wms-go="wms-inventory">재고 정보</span>
+            <span class="nv" data-wms-go="wms-schedule">이동스케줄</span>
+            <span class="nv" data-wms-go="wms-check">자재 체크</span>
+            <span class="nv" data-wms-go="wms-label">피킹 라벨 출력</span>
+            <span class="right"><span>sincerely.inventory</span><span>▾</span></span>
+          </div>
+          <div class="wms-body">
+            <div class="wms-toolbar">
+              <div class="search">🔍 <span>PT4762</span></div>
+              <button class="date-today">Today</button>
+              <span class="date-picker">2026.03.13</span>
+            </div>
+
+            <!-- Parts detail header -->
+            <div style="border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:14px;background:#fff">
+              <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+                <div style="font-family:var(--mono);font-size:18px;font-weight:600">PT4762</div>
+                <div style="color:var(--muted);font-size:13px">현대자동차 PNA38930 투입용 파츠</div>
+                <span class="pill green" style="margin-left:auto">활성</span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
+                <div><div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono)">묶음단위</div><div style="margin-top:4px;font-family:var(--mono)">100개 / 1묶음</div></div>
+                <div><div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono)">개당무게</div><div style="margin-top:4px;font-family:var(--mono)">2.4 g</div></div>
+                <div><div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono)">바스켓당수량</div><div style="margin-top:4px;font-family:var(--mono)">500</div></div>
+                <div><div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono)">졸업 Status</div><div style="margin-top:4px;color:var(--muted)">—</div></div>
+              </div>
+
+              <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)">
+                <div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono);margin-bottom:4px">재고관련메모</div>
+                <div style="font-size:12.5px;color:var(--ink-2);line-height:1.6">A1AC1 정규좌표 외 <strong>A3DD2</strong>에 120개 추가 보관 (26.03.10)</div>
+              </div>
+            </div>
+
+            <!-- Location table -->
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin:14px 0 6px">위치별 재고 현황</div>
+            <div class="dgrid">
+              <table>
+                <thead><tr><th>센터</th><th>좌표</th><th>수량</th><th>묶음</th><th>최근 업데이트</th><th>메모</th></tr></thead>
+                <tbody>
+                  <tr class="hi"><td>에이원지식산업센터</td><td><span class="coord">A1AC1</span></td><td class="mono">368</td><td class="mono">3</td><td class="mono">26.03.12</td><td class="muted">—</td></tr>
+                  <tr><td>에이원지식산업센터</td><td><span class="coord">A3DD2</span></td><td class="mono">120</td><td class="mono">1</td><td class="mono">26.03.10</td><td>추가 보관</td></tr>
+                  <tr><td>베스트원 창고</td><td><span class="coord">B-07-03</span></td><td class="mono">2,400</td><td class="mono">24</td><td class="mono">26.03.05</td><td class="muted">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="icon">확인</div>
+          <div>관리자님은 항상 <strong>에이원지식산업센터</strong>의 좌표와 수량을 기준으로 확인하시면 됩니다. 좌표 변경이 필요하면 해당 좌표 셀을 클릭해 수정하세요.</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>필드 사전</h3>
+        <div class="mapping">
+          <div class="row header"><div class="from">필드</div><div class="eq">—</div><div class="to">설명</div></div>
+          <div class="row"><div class="from">묶음단위</div><div class="eq">—</div><div class="to">보관 중인 파츠의 묶음단위 (예: <code class="inl">100</code> = 100개 / 1묶음)</div></div>
+          <div class="row"><div class="from">개당무게</div><div class="eq">—</div><div class="to">파츠 1개당 무게. 공정 차이로 변동이 있어 <strong>적절한 수정</strong>이 필요할 수 있음</div></div>
+          <div class="row"><div class="from">바스켓당수량</div><div class="eq">—</div><div class="to">파란색 바스켓의 최대 용량</div></div>
+          <div class="row"><div class="from">재고관련메모</div><div class="eq">—</div><div class="to">재고 특이사항, 지정 좌표 외 보관 시 <strong>위치와 수량</strong>을 기록</div></div>
+          <div class="row"><div class="from">졸업 Status</div><div class="eq">—</div><div class="to">관리 종료된 재고에 <code class="inl">졸업</code> 기록</div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ TAB: PICKING ============ -->
+  <div class="panel" data-panel="picking">
+
+    <section class="chapter">
+      <header>
+        <span class="cid">02·1</span>
+        <h2>이동스케줄 확인</h2>
+        <span class="path">크롬 자재관리 › 이동스케줄 탭</span>
+      </header>
+      <div class="block">
+        <p>
+          우측 상단 녹색 <code class="inl">Today</code> 버튼을 눌러 날짜를 금일로 변경합니다.
+          이동스케줄 탭에서 관리자님이 <strong>피킹 후 패키징 파트에 전달해야 할 프로젝트</strong>를 확인합니다.
+        </p>
+
+        <div class="callout warn">
+          <div class="icon">TIP</div>
+          <div>금일로 변경하지 않으면 <strong>이전 스케줄까지 모두 노출</strong>되어 보기 불편해집니다. 출근 후 첫 작업으로 <code class="inl">Today</code>를 눌러주세요.</div>
+        </div>
+
+        <!-- WMS 이동스케줄 재현 -->
+        <div class="chrome" id="wms-schedule">
+          <div class="bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="url"><span class="lock">🔒</span>wms.sincerely.co.kr/schedule</div>
+          </div>
+          <div class="wms-nav">
+            <span class="logo">자재관리</span>
+            <span class="nv" data-wms-go="wms-inventory">재고 정보</span>
+            <span class="nv on" data-wms-go="wms-schedule">이동스케줄</span>
+            <span class="nv" data-wms-go="wms-check">자재 체크</span>
+            <span class="nv" data-wms-go="wms-label">피킹 라벨 출력</span>
+            <span class="right"><span>sincerely.inventory</span><span>▾</span></span>
+          </div>
+          <div class="wms-body">
+            <div class="wms-toolbar">
+              <div class="search">🔍 <span style="color:var(--muted-2)">프로젝트 검색</span></div>
+              <button class="date-today">Today</button>
+              <span class="date-picker">2026.03.19 (금)</span>
+            </div>
+            <div class="dgrid">
+              <table>
+                <thead>
+                  <tr>
+                    <th>이동 요청일</th>
+                    <th>임가공 장소</th>
+                    <th>임가공 필요여부</th>
+                    <th>project</th>
+                    <th>진행현황</th>
+                    <th>자재메모</th>
+                    <th>샘플박스</th>
+                    <th>자재투입현황</th>
+                    <th>자재피킹현황</th>
+                    <th>입고좌표</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">3/19(금)</td>
+                    <td>에이원지식산업센터</td>
+                    <td><span class="pill yellow">임가공 필요</span></td>
+                    <td class="mono">PNA50827 LG전자</td>
+                    <td class="muted">—</td>
+                    <td class="muted">—</td>
+                    <td class="muted">—</td>
+                    <td class="muted">—</td>
+                    <td><span class="pill green">자재입고완료</span></td>
+                    <td><span class="coord">A2BB2</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">3/19(금)</td>
+                    <td>다영기획</td>
+                    <td><span class="pill gray">임가공 필요 없음</span></td>
+                    <td class="mono">PNA38930 현대자동차</td>
+                    <td><span class="pill blue">1. 입고완료</span></td>
+                    <td>PT4762 여분포함 발주</td>
+                    <td>입고존_투입완료</td>
+                    <td><span class="pill green">입고완료</span></td>
+                    <td><span class="pill yellow">자재입고대기</span></td>
+                    <td><span class="coord">A1AC1</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">3/19(금)</td>
+                    <td>에이원지식산업센터</td>
+                    <td><span class="pill yellow">임가공 필요</span></td>
+                    <td class="mono">PNA49211 LG이노텍</td>
+                    <td><span class="pill green">5. 임가공 완료</span></td>
+                    <td class="muted">—</td>
+                    <td class="muted">—</td>
+                    <td><span class="pill green">입고완료</span></td>
+                    <td><span class="pill gray">자재투입없음</span></td>
+                    <td><span class="coord">A2CC3</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>이동스케줄 · 필드 설명</h3>
+        <div class="mapping">
+          <div class="row header"><div class="from">필드</div><div class="eq">—</div><div class="to">설명</div></div>
+          <div class="row"><div class="from">이동 요청일</div><div class="eq">—</div><div class="to">패키징 파트에서 임가공을 진행하는 날짜 (예: <code class="inl">3/19(금)</code>)</div></div>
+          <div class="row"><div class="from">임가공 장소</div><div class="eq">—</div><div class="to"><code class="inl">에이원지식산업센터</code> / <code class="inl">다영기획</code> 중 하나</div></div>
+          <div class="row"><div class="from">임가공 필요여부</div><div class="eq">—</div><div class="to"><code class="inl">임가공 필요</code> / <code class="inl">임가공 필요 없음</code></div></div>
+          <div class="row"><div class="from">project</div><div class="eq">—</div><div class="to">프로젝트 번호 + 기업명 (예: <code class="inl">PNA50827 LG전자</code>)</div></div>
+          <div class="row"><div class="from">진행현황</div><div class="eq">—</div><div class="to"><code class="inl">1. 입고완료</code> / <code class="inl">5. 임가공 완료</code></div></div>
+          <div class="row"><div class="from">자재메모</div><div class="eq">—</div><div class="to">프로젝트 자재 특이사항 기록란</div></div>
+          <div class="row"><div class="from">샘플박스</div><div class="eq">—</div><div class="to"><code class="inl">입고존_투입완료</code> 등 샘플 투입 여부</div></div>
+          <div class="row"><div class="from">자재투입현황</div><div class="eq">—</div><div class="to">자재가 좌표에 투입되었는지 (<code class="inl">입고완료</code>)</div></div>
+          <div class="row"><div class="from">자재피킹현황</div><div class="eq">—</div><div class="to"><code class="inl">자재입고대기</code> / <code class="inl">자재입고완료</code> / <code class="inl">자재투입없음</code></div></div>
+          <div class="row"><div class="from">입고좌표</div><div class="eq">—</div><div class="to">샘플·자재를 투입해야 할 좌표 (예: <code class="inl">A2BB2</code>)</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">02·2</span>
+        <h2>자재 체크 · 파츠별 투입 준비</h2>
+        <span class="path">크롬 자재관리 › 자재 체크 탭</span>
+      </header>
+      <div class="block">
+        <p>
+          <code class="inl">Today</code>로 날짜 변경 → 🔍 아이콘으로 프로젝트명 검색. 프로젝트에 필요한 파츠 목록과 좌표·수량을 확인합니다.
+          예시: <strong>PNA38930 현대자동차</strong> — 투입해야 할 파츠 3종.
+        </p>
+
+        <div class="chrome" id="wms-check">
+          <div class="bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="url"><span class="lock">🔒</span>wms.sincerely.co.kr/material-check?project=PNA38930</div>
+          </div>
+          <div class="wms-nav">
+            <span class="logo">자재관리</span>
+            <span class="nv" data-wms-go="wms-inventory">재고 정보</span>
+            <span class="nv" data-wms-go="wms-schedule">이동스케줄</span>
+            <span class="nv on" data-wms-go="wms-check">자재 체크</span>
+            <span class="nv" data-wms-go="wms-label">피킹 라벨 출력</span>
+            <span class="right"><span>sincerely.inventory</span><span>▾</span></span>
+          </div>
+          <div class="wms-body">
+            <div class="wms-toolbar">
+              <div class="search">🔍 <span>PNA38930 현대자동차</span></div>
+              <button class="date-today">Today</button>
+              <span class="date-picker">2026.03.19 (금)</span>
+              <button class="btn" style="font-size:11.5px;padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer">투입자재라벨출력</button>
+            </div>
+            <div class="dgrid">
+              <table>
+                <thead>
+                  <tr><th>취소 여부</th><th>파츠번호</th><th>출고자재좌표</th><th>계획수량</th><th>발주수량</th><th>출고수량</th><th>보충요청수량</th><th>자재투입현황</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="muted">—</td>
+                    <td class="mono"><strong>PT4762</strong></td>
+                    <td><span class="coord">A1AC1</span></td>
+                    <td class="mono">350</td>
+                    <td class="mono">368</td>
+                    <td class="mono">368</td>
+                    <td class="muted">—</td>
+                    <td><span class="pill green">자재투입완료</span></td>
+                  </tr>
+                  <tr>
+                    <td class="muted">—</td>
+                    <td class="mono">PT5120</td>
+                    <td><span class="coord">A1AC2</span></td>
+                    <td class="mono">350</td>
+                    <td class="mono">368</td>
+                    <td class="mono">368</td>
+                    <td class="muted">—</td>
+                    <td><span class="pill yellow">자재투입대기</span></td>
+                  </tr>
+                  <tr>
+                    <td class="muted">—</td>
+                    <td class="mono">PT5988</td>
+                    <td><span class="coord">—</span></td>
+                    <td class="mono">350</td>
+                    <td class="mono">368</td>
+                    <td class="muted">—</td>
+                    <td class="mono">368</td>
+                    <td><span class="pill violet">이동요청</span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="pill red">취소</span></td>
+                    <td class="mono" style="text-decoration:line-through;color:var(--muted)">PT6201</td>
+                    <td class="muted">—</td>
+                    <td class="mono muted">100</td>
+                    <td class="muted">—</td>
+                    <td class="muted">—</td>
+                    <td class="muted">—</td>
+                    <td><span class="pill gray">취소</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>자재투입현황 · 4가지 상태</h3>
+        <div class="statgrid">
+          <div class="st"><span class="pill yellow">자재투입대기</span><div class="nm">투입 가능</div><div class="d">해당 파츠를 <strong>에이원에 보유</strong>하고 있어, 좌표에 투입할 수 있는 상태.</div></div>
+          <div class="st"><span class="pill green">자재투입완료</span><div class="nm">투입 완료</div><div class="d">해당 파츠를 이미 <strong>좌표에 투입한 상태</strong>.</div></div>
+          <div class="st"><span class="pill violet">이동요청</span><div class="nm">베스트원 이동</div><div class="d">에이원에 재고 없음 → <strong>베스트원에 이동 요청</strong>한 상태.</div></div>
+          <div class="st"><span class="pill red">구매요청</span><div class="nm">신규 구매</div><div class="d">에이원·베스트원 모두 재고 없음 → <strong>구매 요청</strong>한 상태.</div></div>
+        </div>
+
+        <div class="callout warn">
+          <div class="icon">주의</div>
+          <div>
+            <strong>출고수량</strong>은 <strong>발주수량과 일치</strong>하게 작성해야 합니다 (예: 발주 368 → 출고 368).
+            <br><strong>이동요청</strong> / <strong>구매요청</strong>을 진행할 때는 <code class="inl">보충요청수량</code>란에 수량을 입력하고,
+            이동스케줄 탭의 <code class="inl">자재메모</code>란에 <strong>파츠번호와 "입고전"</strong>이라고 작성해주세요.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">02·3</span>
+        <h2>피킹 라벨 출력</h2>
+        <span class="path">크롬 자재관리 › 피킹 라벨 출력</span>
+      </header>
+      <div class="block">
+        <p>프로젝트의 모든 파츠 투입이 완료되면, 피킹 라벨을 출력해 회색 박스에 부착합니다.</p>
+
+        <!-- WMS 피킹 라벨 출력 재현 -->
+        <div class="chrome" id="wms-label">
+          <div class="bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="url"><span class="lock">🔒</span>wms.sincerely.co.kr/label-print</div>
+          </div>
+          <div class="wms-nav">
+            <span class="logo">자재관리</span>
+            <span class="nv" data-wms-go="wms-inventory">재고 정보</span>
+            <span class="nv" data-wms-go="wms-schedule">이동스케줄</span>
+            <span class="nv" data-wms-go="wms-check">자재 체크</span>
+            <span class="nv on" data-wms-go="wms-label">피킹 라벨 출력</span>
+            <span class="right"><span>sincerely.inventory</span><span>▾</span></span>
+          </div>
+          <div class="wms-body">
+            <div class="wms-toolbar">
+              <div class="search">🔍 <span>PNA38930 현대자동차</span></div>
+              <span class="date-picker">대상 프린터: Xprinter XP D4602B</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+              <!-- Label preview -->
+              <div style="border:1px solid var(--line);border-radius:8px;padding:14px;background:#fafafa">
+                <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px">라벨 미리보기</div>
+                <div style="border:2px dashed #bbb;background:#fff;padding:14px;border-radius:4px;font-family:var(--mono);font-size:12px;line-height:1.7">
+                  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:8px">
+                    <strong style="font-size:14px">PNA38930</strong>
+                    <span style="color:var(--muted);font-size:10.5px">2026.03.19(금)</span>
+                  </div>
+                  <div style="font-size:13px">현대자동차</div>
+                  <div style="color:var(--muted);font-size:11px;margin-top:4px">자재 3종 · 샘플 포함</div>
+                  <div style="margin-top:10px;display:flex;gap:4px">
+                    <span style="display:inline-block;width:3px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:1px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:4px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:2px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:1px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:3px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:2px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:1px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:4px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:2px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:1px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:3px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:1px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:2px;height:24px;background:#000"></span>
+                    <span style="display:inline-block;width:4px;height:24px;background:#000"></span>
+                  </div>
+                  <div style="font-size:10.5px;color:var(--muted);margin-top:4px">A1AC1 / A1AC2</div>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px">출력 순서</div>
+                <div class="rules">
+                  <div class="rule"><div class="n">1</div><div class="body">🔍 프로젝트명 검색</div></div>
+                  <div class="rule"><div class="n">2</div><div class="body"><code class="inl">투입자재라벨출력</code> 버튼 클릭</div></div>
+                  <div class="rule"><div class="n">3</div><div class="body">인쇄 → Print → 대상 <code class="inl">Xprinter XP D4602B</code> → 인쇄</div></div>
+                  <div class="rule"><div class="n">4</div><div class="body">출력된 라벨을 <strong>회색 박스</strong>에 부착 → 피킹존 보관</div></div>
+                </div>
+                <button style="margin-top:10px;background:var(--ink);color:#fff;border:0;padding:8px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit">🖨 라벨 인쇄</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="icon">TIP</div>
+          <div><strong>자재 체크 (미완료)</strong> 탭을 쓰면 프로젝트 자재 중 투입 완료되지 않은 파츠만 모아볼 수 있어요. 검색·사용법은 일반 자재 체크 탭과 동일.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ TAB: INPUT ============ -->
+  <div class="panel" data-panel="input">
+
+    <section class="chapter">
+      <header>
+        <span class="cid">03·1</span>
+        <h2>좌표 투입 기본</h2>
+        <span class="path">임가공 하루 전까지 완료</span>
+      </header>
+      <div class="block">
+        <p>
+          기존 피킹된 프로젝트는 지정된 좌표에 투입합니다. 좌표 투입이 끝나면 임가공 날짜에 패키징 파트에서 가져갑니다.
+          임가공 <strong>하루 전</strong>에는 투입이 완료되어 있어야 사전 샘플 촬영이 가능합니다.
+        </p>
+
+        <div class="callout warn">
+          <div class="icon">DEADLINE</div>
+          <div>임가공 날짜가 <strong>15일</strong>이면, 자재 투입은 <strong>14일까지</strong> 완료해야 합니다.</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>투입 유형 2가지</h3>
+        <div class="statgrid">
+          <div class="st">
+            <span class="pill gray" style="background:#fff;border:1px dashed var(--muted-2);color:var(--ink-2)">샘플투입</span>
+            <div class="nm">샘플 촬영용</div>
+            <div class="d">파츠별로 <strong>1개씩</strong> 투입. 좌표에 있는 <strong>하얀색 샘플 바스켓</strong>에 넣습니다.</div>
+          </div>
+          <div class="st">
+            <span class="pill blue">자재투입</span>
+            <div class="nm">본물량 투입</div>
+            <div class="d">샘플을 제외한 나머지 파츠를 <strong>좌표</strong>에 투입합니다.</div>
+          </div>
+        </div>
+
+        <div class="block" style="margin-top:14px">
+          <div class="locbox">
+            <div>
+              <div class="coord-lbl">좌표</div>
+              <div class="coord-val">A1AC1</div>
+              <div class="basket-row">
+                <div class="basket sample"><span class="sq"></span> 샘플 바스켓 (하얀색) · 1개</div>
+                <div class="basket full"><span class="sq"></span> 자재 바스켓 (파란색) · 500</div>
+              </div>
+            </div>
+            <div class="photo-grid" style="grid-template-columns:1fr 1fr">
+              <div class="photo"><div class="lbl">Sample Basket<br>Top Position</div><div class="caption">샘플 바스켓이 가장 위로 가게 배치</div></div>
+              <div class="photo"><div class="lbl">Main Basket<br>Full</div><div class="caption">샘플 제외 파츠 투입</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="icon">배치</div>
+          <div>투입 시 <strong>샘플 바스켓이 가장 위로 가게</strong> 위치를 조정해주세요. 꺼내기 쉬워야 촬영이 빠릅니다.</div>
+        </div>
+
+        <div class="callout warn">
+          <div class="icon">대체 위치</div>
+          <div>투입할 자재가 많아 <strong>입고 좌표에 다 들어가지 않는</strong> 경우, 임가공 투입 하루 전에 <strong>임가공존</strong>에 투입해도 무방합니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">03·2</span>
+        <h2>투입 주의사항</h2>
+        <span class="path">자주 놓치는 3가지 케이스</span>
+      </header>
+      <div class="block">
+        <h3>① Movement (MM)가 여러 개인 경우</h3>
+        <p>동일한 파츠인데 <code class="inl">movement (MM)</code>가 여러 개인 경우가 있습니다. <strong>MM 개수만큼 샘플을 투입</strong>합니다.</p>
+        <div class="rules">
+          <div class="rule"><div class="n">ex</div><div class="body"><code class="inl">PT1147</code>: MM 2개 → 샘플 <strong>2개 투입</strong></div></div>
+          <div class="rule"><div class="n">ex</div><div class="body"><code class="inl">PT1560</code>: MM 2개 → 샘플 <strong>2개 투입</strong></div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>② 단위 수량 필드가 있는 경우</h3>
+        <p>일부 파츠는 샘플투입이 1개가 아닌 여러 개입니다. <code class="inl">단위 수량 필드</code>에 적힌 수량을 그대로 투입합니다.</p>
+        <div class="rules">
+          <div class="rule"><div class="n">ex</div><div class="body"><code class="inl">PT1619</code>: 단위 수량 <strong>2</strong> → 샘플 <strong>2개 투입</strong></div></div>
+          <div class="rule"><div class="n">ex</div><div class="body">단위 수량이 <strong>공백</strong>이면 → 기본값 <strong>1개 투입</strong></div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>③ 세트 임가공 파츠</h3>
+        <p>세트로 임가공되기에 <strong>출고수량을 같게</strong> 투입해야 하는 경우가 있습니다. 두 파츠의 발주요청수량 중 <strong>높은 수량</strong>에 맞춰 같은 수량으로 투입합니다.</p>
+        <div class="dgrid" style="margin-top:6px">
+          <table>
+            <thead><tr><th>세트</th><th>파츠 A</th><th>파츠 B</th><th>기준</th><th>예시</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>세트 1</td>
+                <td class="mono">PT2330</td>
+                <td class="mono">PT2331</td>
+                <td>둘 중 높은 발주수량</td>
+                <td>20개 통일 (여유분 5개 추가 시 25개)</td>
+              </tr>
+              <tr>
+                <td>세트 2</td>
+                <td class="mono">PT3343</td>
+                <td class="mono">PT3344</td>
+                <td>둘 중 높은 발주수량</td>
+                <td>동일 수량으로 투입</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout info">
+          <div class="icon">기준일</div>
+          <div>작성일 기준 (<code class="inl">26.03.13</code>) 세트로 투입되는 파츠 목록입니다. 신규 세트가 지정되면 이 표에 추가해주세요.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ TAB: SPECIAL ============ -->
+  <div class="panel" data-panel="special">
+
+    <section class="chapter">
+      <header>
+        <span class="cid">04·1</span>
+        <h2>PT2300 · 사이즈별 분리 보관</h2>
+        <span class="path">특수 케이스</span>
+      </header>
+      <div class="block">
+        <p>
+          <code class="inl">PT2300</code>은 <strong>여러 사이즈를 한 좌표에 보관</strong>하고 있어 재고 개수 파악이 어렵습니다.
+          WMS에 <code class="inl">PT2300</code> 검색 후 <strong>재고관련메모</strong>에서 사이즈별 개수를 확인할 수 있습니다.
+        </p>
+
+        <div class="chrome">
+          <div class="bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="url"><span class="lock">🔒</span>wms.sincerely.co.kr/inventory/parts?q=PT2300</div>
+          </div>
+          <div class="wms-body">
+            <div style="border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff">
+              <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+                <div style="font-family:var(--mono);font-size:18px;font-weight:600">PT2300</div>
+                <div style="color:var(--muted);font-size:13px">다중 사이즈 · 통합 보관</div>
+                <span class="pill yellow" style="margin-left:auto">주의</span>
+              </div>
+              <div style="color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;font-family:var(--mono);margin-bottom:6px">재고관련메모</div>
+              <div class="dgrid">
+                <table>
+                  <thead><tr><th>사이즈</th><th>수량</th><th>최근 갱신</th></tr></thead>
+                  <tbody>
+                    <tr><td class="mono">S</td><td class="mono">420</td><td class="mono">26.03.12</td></tr>
+                    <tr><td class="mono">M</td><td class="mono">188</td><td class="mono">26.03.12</td></tr>
+                    <tr><td class="mono">L</td><td class="mono">95</td><td class="mono">26.03.11</td></tr>
+                    <tr><td class="mono">XL</td><td class="mono">62</td><td class="mono">26.03.09</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <div class="icon">갱신 필수</div>
+          <div>PT2300은 <strong>재고 수량에 변동이 생길 때마다 날짜와 수량을 갱신</strong>해야 합니다. 방치하면 다른 프로젝트에 영향이 갑니다.</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>투입 수량 확인 방법</h3>
+        <div class="rules">
+          <div class="rule"><div class="n">1</div><div class="body">WMS가 아닌 <strong>Dropbox Link</strong>를 통해 확인합니다.</div></div>
+          <div class="rule"><div class="n">2</div><div class="body">링크에서 <code class="inl">견적서</code> 파일 클릭 → PDF 열기</div></div>
+          <div class="rule"><div class="n">3</div><div class="body">PDF의 <strong>제품 견적 → 사이즈 별 투입 수량</strong>에서 확인</div></div>
+        </div>
+
+        <div class="photo" style="max-width:520px;margin-top:10px">
+          <div class="lbl">Dropbox<br>· 견적서.pdf ·<br>제품 견적 > 사이즈별 투입 수량</div>
+          <div class="caption">예시 화면 플레이스홀더</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">04·2</span>
+        <h2>세트 임가공 파츠 (재확인)</h2>
+        <span class="path">투입 시 짝 맞추기 필요</span>
+      </header>
+      <div class="block">
+        <p>투입 프로세스에서 설명한 <strong>세트 파츠</strong>만 따로 모았습니다. 작성일 <code class="inl">26.03.13</code> 기준.</p>
+        <div class="mapping">
+          <div class="row header"><div class="from">세트</div><div class="eq">—</div><div class="to">규칙</div></div>
+          <div class="row"><div class="from">PT2330 &amp; PT2331</div><div class="eq">=</div><div class="to">두 파츠 발주수량 중 <strong>높은 수량</strong>에 맞춰 동일 투입</div></div>
+          <div class="row"><div class="from">PT3343 &amp; PT3344</div><div class="eq">=</div><div class="to">두 파츠 발주수량 중 <strong>높은 수량</strong>에 맞춰 동일 투입</div></div>
+          <div class="row" style="color:var(--muted)"><div class="from" style="color:var(--muted)">…추가 발견 시 기록</div><div class="eq">—</div><div class="to" style="color:var(--muted)">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">04·3</span>
+        <h2>이동/구매요청 메모 규칙</h2>
+        <span class="path">자재메모 기입 표준</span>
+      </header>
+      <div class="block">
+        <p>보충요청(이동요청/구매요청)을 진행한 파츠는 반드시 이동스케줄 탭 <code class="inl">자재메모</code>에 <strong>"파츠번호 + 입고전"</strong> 형식으로 기록합니다.</p>
+        <div class="mapping">
+          <div class="row header"><div class="from">상태</div><div class="eq">—</div><div class="to">자재메모 표기 예시</div></div>
+          <div class="row"><div class="from">이동요청 파츠</div><div class="eq">=</div><div class="to"><code class="inl">PT5988 입고전</code></div></div>
+          <div class="row"><div class="from">구매요청 파츠</div><div class="eq">=</div><div class="to"><code class="inl">PT6090 입고전</code></div></div>
+          <div class="row"><div class="from">여러 건</div><div class="eq">=</div><div class="to"><code class="inl">PT5988 / PT6090 입고전</code></div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ TAB: REF ============ -->
+  <div class="panel" data-panel="ref">
+
+    <section class="chapter">
+      <header>
+        <span class="cid">05·1</span>
+        <h2>WMS 화면 요약</h2>
+        <span class="path">4개 탭 역할</span>
+      </header>
+      <div class="block">
+        <div class="mapping">
+          <div class="row header"><div class="from">탭</div><div class="eq">—</div><div class="to">주요 용도</div></div>
+          <div class="row"><div class="from">재고 정보</div><div class="eq">—</div><div class="to">파츠번호 검색 → 상세/좌표/메모 확인 및 수정</div></div>
+          <div class="row"><div class="from">이동스케줄</div><div class="eq">—</div><div class="to">금일 피킹해야 할 프로젝트 목록 확인 (<code class="inl">Today</code> 필수)</div></div>
+          <div class="row"><div class="from">자재 체크</div><div class="eq">—</div><div class="to">프로젝트별 파츠 리스트 · 출고수량 입력 · 보충요청</div></div>
+          <div class="row"><div class="from">피킹 라벨 출력</div><div class="eq">—</div><div class="to">투입 완료 프로젝트 라벨 출력 (Xprinter XP D4602B)</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">05·2</span>
+        <h2>하루 업무 체크리스트</h2>
+        <span class="path">출근 직후 → 임가공 전일까지</span>
+      </header>
+      <div class="block">
+        <div class="rules">
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">이동스케줄 탭에서 <code class="inl">Today</code> 클릭 → 금일 프로젝트 확인</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">각 프로젝트의 <strong>자재 체크 탭</strong> 열어 파츠별 상태 점검</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">에이원 재고 있는 파츠 → <strong>자재투입완료</strong>로 처리하고 좌표 투입</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">에이원에 없는 파츠 → <strong>이동요청 / 구매요청</strong> + 보충요청수량 입력 + 자재메모 "입고전" 기록</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">세트 파츠(PT2330&amp;PT2331 등)는 <strong>동일 수량</strong>으로 투입 짝 맞추기</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">PT2300 투입 시 <strong>Dropbox 견적서</strong>에서 사이즈별 수량 확인, 재고메모 갱신</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">샘플 바스켓이 <strong>가장 위</strong>에 오게 배치</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">프로젝트 전체 투입 완료 → <strong>피킹 라벨 출력</strong> → 회색 박스에 부착 → 피킹존 보관</div></div>
+          <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">임가공 <strong>하루 전</strong>까지 모든 투입 마감 확인</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter">
+      <header>
+        <span class="cid">05·3</span>
+        <h2>용어 사전</h2>
+        <span class="path">자주 쓰는 용어 모음</span>
+      </header>
+      <div class="block">
+        <div class="mapping">
+          <div class="row header"><div class="from">용어</div><div class="eq">—</div><div class="to">의미</div></div>
+          <div class="row"><div class="from">에이원</div><div class="eq">—</div><div class="to">에이원지식산업센터 (현재 근무지, 임가공/투입 장소)</div></div>
+          <div class="row"><div class="from">베스트원</div><div class="eq">—</div><div class="to">신시어리 재고 보관 창고</div></div>
+          <div class="row"><div class="from">다영기획</div><div class="eq">—</div><div class="to">임가공 외주 업체</div></div>
+          <div class="row"><div class="from">임가공</div><div class="eq">—</div><div class="to">자재를 조립·가공하여 굿즈를 완성하는 공정</div></div>
+          <div class="row"><div class="from">피킹</div><div class="eq">—</div><div class="to">프로젝트에 필요한 파츠를 좌표에서 골라내는 작업</div></div>
+          <div class="row"><div class="from">투입</div><div class="eq">—</div><div class="to">피킹된 파츠를 지정 좌표에 넣는 작업</div></div>
+          <div class="row"><div class="from">파츠 / PT****</div><div class="eq">—</div><div class="to">투입 자재 단위 (예: PT4762)</div></div>
+          <div class="row"><div class="from">프로젝트 / PNA*****</div><div class="eq">—</div><div class="to">고객사 발주 단위 (예: PNA38930 현대자동차)</div></div>
+          <div class="row"><div class="from">좌표</div><div class="eq">—</div><div class="to">에이원 창고 내 파츠 보관 위치 (예: A1AC1)</div></div>
+          <div class="row"><div class="from">바스켓</div><div class="eq">—</div><div class="to">파란색 = 자재 보관 / 하얀색 = 샘플 전용</div></div>
+          <div class="row"><div class="from">MM (Movement)</div><div class="eq">—</div><div class="to">투입 단위 식별자. 여러 개인 경우 수만큼 샘플 투입</div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="doc-end">
+    <div>자재관리 가이드라인 · 신시어리웨일즈 물류사업본부 · 내부 참고용</div>
+    <div>v0.1 · 기준일 2026.03.13</div>
+  </footer>
+
+</main>
+
+</div>
+
+<!-- Tweaks -->
+<div id="tweaks">
+  <h5><span>Tweaks</span><button class="x" id="tw-close">×</button></h5>
+  <div class="row"><label>밀도</label>
+    <select id="tw-density"><option value="normal">보통</option><option value="compact">컴팩트</option></select>
+  </div>
+  <div class="row"><label>포인트 컬러</label>
+    <select id="tw-accent"><option value="indigo">인디고</option><option value="slate">슬레이트</option><option value="teal">틸</option><option value="warm">웜</option></select>
+  </div>
+  <div class="row"><label>계정정보 마스킹</label><input type="checkbox" id="tw-mask"></div>
+</div>
+
+<script>
+// ===== Tab switching =====
+const tabs = document.querySelectorAll('.tabbar .tab');
+const panels = document.querySelectorAll('.panel');
+const sideTabs = document.querySelectorAll('#side-tabs a[data-tab]');
+
+function activate(name){
+  tabs.forEach(t => t.classList.toggle('on', t.dataset.tab === name));
+  panels.forEach(p => p.classList.toggle('on', p.dataset.panel === name));
+  sideTabs.forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+  try { localStorage.setItem('mat-guide-tab', name); } catch(e){}
+  window.scrollTo({top:0, behavior:'instant'});
+}
+tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab)));
+sideTabs.forEach(a => a.addEventListener('click', e => { e.preventDefault(); activate(a.dataset.tab); }));
+
+// ===== WMS internal nav: click a fake WMS tab to jump to that section's chrome frame =====
+// Each chrome frame has an id (wms-inventory/wms-schedule/wms-check/wms-label);
+// each .nv has data-wms-go pointing to the target id. Cross-tab jumps switch to the correct panel first.
+const WMS_TARGETS = {
+  'wms-inventory': 'wms',
+  'wms-schedule':  'picking',
+  'wms-check':     'picking',
+  'wms-label':     'picking',
+};
+function scrollToEl(el){
+  const r = el.getBoundingClientRect();
+  const y = window.scrollY + r.top - 20;
+  window.scrollTo({top: y, behavior:'smooth'});
+}
+function jumpToWms(id){
+  const targetTab = WMS_TARGETS[id];
+  const target = document.getElementById(id);
+  if (!target) return;
+  const currentPanelName = [...panels].find(p => p.classList.contains('on'))?.dataset.panel;
+  if (targetTab && targetTab !== currentPanelName) {
+    activate(targetTab);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      scrollToEl(target);
+      flash(target);
+    }));
+  } else {
+    scrollToEl(target);
+    flash(target);
+  }
+}
+function flash(el){
+  el.style.transition = 'box-shadow .3s';
+  el.style.boxShadow = '0 0 0 3px oklch(88% 0.12 265), 0 8px 24px rgba(0,0,0,.08)';
+  setTimeout(() => { el.style.boxShadow = ''; }, 900);
+}
+document.querySelectorAll('[data-wms-go]').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    jumpToWms(el.dataset.wmsGo);
+  });
+});
+
+// ===== Deep-link: if URL has a hash matching a WMS frame id, jump there on load =====
+function handleHashJump(){
+  const hash = (window.location.hash || '').replace('#','');
+  if (!hash) return;
+  if (WMS_TARGETS[hash]) {
+    jumpToWms(hash);
+  } else {
+    // Otherwise treat as main tab id
+    const t = [...tabs].find(t => t.dataset.tab === hash);
+    if (t) activate(hash);
+  }
+}
+window.addEventListener('load', handleHashJump);
+window.addEventListener('hashchange', handleHashJump);
+
+try {
+  const saved = localStorage.getItem('mat-guide-tab');
+  if (saved && [...tabs].some(t => t.dataset.tab === saved)) activate(saved);
+} catch(e){}
+
+// ===== Copy buttons =====
+document.querySelectorAll('#creds .copy').forEach(b => {
+  b.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(b.dataset.val);
+      const prev = b.textContent;
+      b.textContent = '✓ 복사됨';
+      b.classList.add('ok');
+      setTimeout(() => { b.textContent = prev; b.classList.remove('ok'); }, 1400);
+    } catch(e) {
+      b.textContent = '복사 실패';
+    }
+  });
+});
+
+// ===== Tweaks =====
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "density": "normal",
+  "accent": "indigo",
+  "mask": false
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  indigo: { accent:'oklch(55% 0.12 265)', soft:'oklch(96% 0.02 265)', line:'oklch(88% 0.04 265)' },
+  slate:  { accent:'oklch(48% 0.03 250)', soft:'oklch(96% 0.01 250)', line:'oklch(88% 0.02 250)' },
+  teal:   { accent:'oklch(55% 0.09 190)', soft:'oklch(96% 0.02 190)', line:'oklch(88% 0.04 190)' },
+  warm:   { accent:'oklch(52% 0.08 50)',  soft:'oklch(96% 0.02 50)',  line:'oklch(88% 0.04 50)'  }
+};
+
+function applyTweaks(t){
+  document.body.dataset.density = t.density;
+  const a = ACCENTS[t.accent] || ACCENTS.indigo;
+  document.documentElement.style.setProperty('--accent', a.accent);
+  document.documentElement.style.setProperty('--accent-soft', a.soft);
+  document.documentElement.style.setProperty('--accent-line', a.line);
+
+  const creds = document.querySelectorAll('#creds .row');
+  creds.forEach(r => {
+    const k = r.querySelector('.k').textContent;
+    const v = r.querySelector('.v');
+    const btn = r.querySelector('.copy');
+    if(!v.dataset.orig) v.dataset.orig = v.textContent;
+    const isPw = /비밀번호/.test(k) || /Gmail$/.test(k);
+    if(t.mask && isPw) {
+      v.textContent = '●'.repeat(Math.min(v.dataset.orig.length, 14));
+      if(btn) btn.style.visibility = 'hidden';
+    } else {
+      v.textContent = v.dataset.orig;
+      if(btn) btn.style.visibility = '';
+    }
+  });
+}
+applyTweaks(TWEAKS);
+
+const panel = document.getElementById('tweaks');
+const dSel = document.getElementById('tw-density');
+const aSel = document.getElementById('tw-accent');
+const mChk = document.getElementById('tw-mask');
+dSel.value = TWEAKS.density; aSel.value = TWEAKS.accent; mChk.checked = !!TWEAKS.mask;
+
+function push(edits){
+  Object.assign(TWEAKS, edits);
+  applyTweaks(TWEAKS);
+  try { window.parent.postMessage({type:'__edit_mode_set_keys', edits}, '*'); } catch(e){}
+}
+dSel.addEventListener('change', e => push({density: e.target.value}));
+aSel.addEventListener('change', e => push({accent: e.target.value}));
+mChk.addEventListener('change', e => push({mask: e.target.checked}));
+document.getElementById('tw-close').addEventListener('click', () => panel.classList.remove('on'));
+
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode') panel.classList.add('on');
+  if (d.type === '__deactivate_edit_mode') panel.classList.remove('on');
+});
+try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>TMS 인수인계서</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  :root{
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --surface-2: #fbfaf7;
+    --ink: #1a1a1d;
+    --ink-2: #3a3a3f;
+    --muted: #6b6b72;
+    --line: #e6e3dc;
+    --line-2: #ededea;
+    --accent: oklch(55% 0.12 265);
+    --accent-soft: oklch(96% 0.02 265);
+    --accent-line: oklch(88% 0.04 265);
+    --warn: oklch(62% 0.14 45);
+    --warn-soft: oklch(97% 0.03 45);
+    --ok: oklch(58% 0.11 150);
+    --ok-soft: oklch(96% 0.04 150);
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11";}
+  body{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+  /* ===== Sidebar ===== */
+  aside.nav{
+    position:sticky;top:0;align-self:start;
+    height:100vh;overflow-y:auto;
+    background:var(--surface-2);
+    border-right:1px solid var(--line);
+    padding:28px 20px 40px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+  .brand .dot{width:28px;height:28px;border-radius:8px;background:var(--ink);display:grid;place-items:center;color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:-0.02em;font-weight:500}
+  .brand .name{font-size:14px;font-weight:600;letter-spacing:-0.01em}
+  .brand .sub{font-size:11px;color:var(--muted);margin-top:1px;font-family:var(--mono)}
+  .nav h4{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:18px 0 8px;font-weight:500;font-family:var(--mono)}
+  .nav ul{list-style:none;padding:0;margin:0}
+  .nav li a{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 10px;margin:1px 0;
+    border-radius:6px;
+    color:var(--ink-2);text-decoration:none;
+    font-size:13.5px;line-height:1.4;
+    transition:background 0.12s, color 0.12s;
+  }
+  .nav li a:hover{background:var(--line-2);color:var(--ink)}
+  .nav li a.active{background:var(--ink);color:#fff}
+  .nav li a.active .idx{color:rgba(255,255,255,.55)}
+  .nav li a .idx{font-family:var(--mono);font-size:11px;color:var(--muted);width:22px;flex:none}
+  .nav .meta{margin-top:32px;padding-top:20px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.6;font-family:var(--mono)}
+  .nav .meta div{margin:2px 0}
+  .nav .meta .k{color:var(--ink-2)}
+
+  /* ===== Main ===== */
+  main{padding:56px 64px 120px;max-width:1040px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  h1.doc-title{font-size:34px;font-weight:700;letter-spacing:-0.02em;line-height:1.15;margin:0 0 12px}
+  .lede{font-size:15px;color:var(--muted);line-height:1.6;max-width:640px;margin:0 0 32px}
+
+  .summary{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+    margin-bottom:56px;
+  }
+  .summary .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:18px 18px 20px;
+  }
+  .summary .card .num{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.05em}
+  .summary .card .t{font-size:14px;font-weight:600;margin-top:6px;letter-spacing:-0.01em}
+  .summary .card .d{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.55}
+
+  /* Section */
+  section.chapter{margin-bottom:88px;scroll-margin-top:20px}
+  section.chapter > header{
+    display:flex;align-items:baseline;gap:14px;
+    padding-bottom:16px;margin-bottom:28px;
+    border-bottom:1px solid var(--line);
+  }
+  section.chapter > header .cid{
+    font-family:var(--mono);font-size:12px;color:var(--accent);
+    padding:3px 8px;border:1px solid var(--accent-line);border-radius:4px;background:var(--accent-soft);
+    flex:none;
+  }
+  section.chapter > header h2{font-size:22px;font-weight:600;letter-spacing:-0.015em;margin:0;flex:1}
+  section.chapter > header .path{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+
+  .block{margin-bottom:28px}
+  .block h3{font-size:14px;font-weight:600;margin:0 0 12px;color:var(--ink);letter-spacing:-0.005em;display:flex;align-items:center;gap:8px}
+  .block h3::before{content:"";width:3px;height:13px;background:var(--ink);border-radius:1px;display:inline-block}
+
+  /* Rule list */
+  .rules{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .rules .rule{padding:16px 18px;border-top:1px solid var(--line-2);display:grid;grid-template-columns:28px 1fr;gap:14px;align-items:start}
+  .rules .rule:first-child{border-top:0}
+  .rules .rule .n{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:2px}
+  .rules .rule .body{font-size:14px;line-height:1.65;color:var(--ink-2)}
+  .rules .rule .body strong{color:var(--ink);font-weight:600}
+  .rules .rule .body code{font-family:var(--mono);font-size:12.5px;background:var(--accent-soft);color:var(--accent);padding:1px 6px;border-radius:4px;border:1px solid var(--accent-line)}
+  .rules .rule .body .arrow{color:var(--muted);padding:0 6px;font-family:var(--mono)}
+
+  /* Mapping table */
+  .mapping{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;margin-top:8px}
+  .mapping .row{display:grid;grid-template-columns:1fr 24px 1fr;padding:11px 18px;border-top:1px solid var(--line-2);font-size:13.5px;align-items:center}
+  .mapping .row:first-child{border-top:0}
+  .mapping .row .from{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+  .mapping .row .eq{color:var(--muted);font-family:var(--mono);text-align:center}
+  .mapping .row .to{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:500}
+  .mapping .header{background:var(--surface-2);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)}
+  .mapping .header .from,.mapping .header .to{color:var(--muted);font-weight:500}
+
+  /* Screenshot */
+  .shot{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px;margin-top:6px}
+  .shot img{display:block;width:100%;border-radius:6px}
+  .shot figcaption{font-family:var(--mono);font-size:11px;color:var(--muted);padding:10px 6px 4px;display:flex;justify-content:space-between;gap:12px}
+  .shot figcaption .tag{padding:2px 7px;border-radius:3px;background:var(--line-2);color:var(--ink-2)}
+
+  /* Callout */
+  .callout{
+    display:grid;grid-template-columns:auto 1fr;gap:14px;
+    padding:14px 16px;border-radius:8px;
+    background:var(--warn-soft);border:1px solid oklch(90% 0.05 45);
+    font-size:13.5px;line-height:1.6;color:var(--ink-2);
+    margin-top:18px;
+  }
+  .callout.ok{background:var(--ok-soft);border-color:oklch(88% 0.06 150)}
+  .callout .icon{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--warn);padding-top:1px;letter-spacing:0.05em}
+  .callout.ok .icon{color:var(--ok)}
+  .callout strong{color:var(--ink);font-weight:600}
+
+  /* Status pill */
+  .status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:999px;background:var(--ok-soft);color:var(--ok);border:1px solid oklch(88% 0.06 150);margin-left:auto}
+  .status::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--ok)}
+  .status.todo{background:var(--surface-2);color:var(--muted);border-color:var(--line)}
+  .status.todo::before{background:var(--muted)}
+
+  /* Table slot logic */
+  .slotmap{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+  .slotmap .cell{
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;
+  }
+  .slotmap .cell .in{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase}
+  .slotmap .cell .val{font-size:15px;font-weight:600;margin:4px 0 10px;letter-spacing:-0.01em}
+  .slotmap .cell .arrow{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em}
+  .slotmap .cell .out{font-family:var(--mono);font-size:12.5px;color:var(--accent);margin-top:4px;background:var(--accent-soft);border:1px solid var(--accent-line);padding:5px 8px;border-radius:5px;display:inline-block}
+
+  /* Toggle screenshots */
+  .shot-collapse{margin-top:10px}
+  details summary{cursor:pointer;font-size:12px;color:var(--muted);font-family:var(--mono);padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"▸";transition:transform 0.15s;display:inline-block;font-size:10px}
+  details[open] summary::before{transform:rotate(90deg)}
+  details summary:hover{color:var(--ink-2)}
+
+  /* Footer */
+  footer.doc-end{margin-top:80px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  /* Tweaks panel */
+  #tweaks{
+    position:fixed;right:20px;bottom:20px;z-index:50;
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:14px;width:240px;box-shadow:0 10px 30px rgba(0,0,0,0.06);
+    display:none;font-size:12px;
+  }
+  #tweaks.on{display:block}
+  #tweaks h5{margin:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-family:var(--mono);font-weight:500;display:flex;justify-content:space-between;align-items:center}
+  #tweaks h5 .closex{cursor:pointer;font-size:14px;color:var(--muted);background:none;border:0}
+  #tweaks label{display:block;margin-bottom:10px}
+  #tweaks .row{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:8px}
+  #tweaks input[type=checkbox]{accent-color:var(--accent)}
+  #tweaks select{width:100%;padding:5px 8px;font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);margin-top:3px}
+
+  /* Density tweak */
+  body[data-density="compact"] main{padding:40px 48px 100px}
+  body[data-density="compact"] section.chapter{margin-bottom:56px}
+  body[data-density="compact"] .rules .rule{padding:12px 16px}
+
+  /* Hide shots tweak */
+  body[data-shots="off"] .shot-collapse{display:none}
+
+  @media (max-width: 900px){
+    body{grid-template-columns:1fr}
+    aside.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+    main{padding:32px 24px 80px}
+    .summary{grid-template-columns:1fr}
+    .slotmap{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body data-density="normal" data-shots="on">
+
+<aside class="nav">
+  <div class="brand">
+    <div class="dot">TMS</div>
+    <div>
+      <div class="name">인수인계서</div>
+      <div class="sub">handover · v0.1 draft</div>
+    </div>
+  </div>
+
+  <h4>섹션</h4>
+  <ul id="sec-list">
+    <li><a href="#overview" data-sec="overview"><span class="idx">00</span>개요</a></li>
+    <li><a href="#ch1" data-sec="ch1"><span class="idx">01</span>배차 스케줄링</a></li>
+    <li><a href="#ch2" data-sec="ch2"><span class="idx">02</span>임가공·출하장소 일치</a></li>
+    <li><a href="#ch3" data-sec="ch3"><span class="idx">03</span>배송슬롯 설정</a></li>
+  </ul>
+
+  <h4>참고</h4>
+  <ul>
+    <li><a href="#glossary" data-sec="glossary"><span class="idx">A</span>용어 매핑표</a></li>
+    <li><a href="#checklist" data-sec="checklist"><span class="idx">B</span>체크리스트</a></li>
+  </ul>
+
+  <div class="meta">
+    <div><span class="k">System</span>&nbsp; TMS</div>
+    <div><span class="k">Updated</span>&nbsp; 2026.04.20</div>
+    <div><span class="k">Status</span>&nbsp; draft</div>
+  </div>
+</aside>
+
+<main>
+
+  <div class="eyebrow">Handover · TMS 운영</div>
+  <h1 class="doc-title">TMS 배차·출하 운영 인수인계서</h1>
+  <p class="lede">
+    TMS(Transport Management System)의 배차 스케줄링 화면을 사용하면서
+    반복적으로 챙겨야 하는 규칙들을 한데 모았습니다.
+    항목별로 <strong>무엇을</strong>, <strong>어떻게</strong>, <strong>왜</strong> 맞춰야 하는지 순서대로 정리했어요.
+  </p>
+
+  <!-- Summary cards -->
+  <div class="summary">
+    <div class="card">
+      <div class="num">01</div>
+      <div class="t">배차 스케줄링</div>
+      <div class="d">임가공 장소와 출하장소가 일치하도록 정리합니다.</div>
+    </div>
+    <div class="card">
+      <div class="num">02</div>
+      <div class="t">명칭 통일</div>
+      <div class="d">센터/업체명을 표준 명칭으로 통일시킵니다.</div>
+    </div>
+    <div class="card">
+      <div class="num">03</div>
+      <div class="t">배송슬롯</div>
+      <div class="d">수령시간·고객희망 시간에 맞춰 슬롯을 지정합니다.</div>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <section class="chapter" id="overview">
+    <header>
+      <span class="cid">00</span>
+      <h2>개요</h2>
+      <span class="path">TMS › 배송요청 › Shipment</span>
+    </header>
+
+    <div class="block">
+      <h3>이 문서의 목적</h3>
+      <p style="font-size:14px;line-height:1.7;color:var(--ink-2);margin:0;max-width:680px">
+        TMS 배차 스케줄링 화면에서 데이터를 정돈할 때 자주 수행하는 세 가지 작업의 규칙을 기록합니다.
+        신규 담당자는 섹션 순서대로 따라가면 되고, 기존 담당자는 필요한 규칙만 바로 참고할 수 있습니다.
+      </p>
+    </div>
+
+    <div class="block">
+      <h3>작업 위치</h3>
+      <div class="rules">
+        <div class="rule">
+          <div class="n">›</div>
+          <div class="body"><strong>Section</strong> <span class="arrow">—</span> <code>배차 스케줄링</code></div>
+        </div>
+        <div class="rule">
+          <div class="n">›</div>
+          <div class="body"><strong>Table</strong> <span class="arrow">—</span> <code>Shipment</code></div>
+        </div>
+        <div class="rule">
+          <div class="n">›</div>
+          <div class="body"><strong>주요 컬럼</strong> <span class="arrow">—</span> <code>임가공 장소</code>, <code>출하장소</code>, <code>배송슬롯</code>, <code>배송 방식</code>, <code>수령 시간</code>, <code>고객 희망 수령 시간</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chapter 1 -->
+  <section class="chapter" id="ch1">
+    <header>
+      <span class="cid">01</span>
+      <h2>배차 스케줄링 · 장소 정합 작업</h2>
+      <span class="path">Section: 배차 스케줄링 / Table: Shipment</span>
+    </header>
+
+    <div class="block">
+      <h3>규칙 <span class="status todo">작업 전</span></h3>
+      <div class="rules">
+        <div class="rule">
+          <div class="n">1</div>
+          <div class="body">
+            <strong>임가공 장소 = 출하장소</strong> <span class="arrow">→</span>
+            두 컬럼의 값이 서로 일치하도록 맞춘다.
+          </div>
+        </div>
+        <div class="rule">
+          <div class="n">2</div>
+          <div class="body">
+            표기가 다른 같은 장소는 <strong>표준 명칭</strong>으로 통일한다.
+            (예: <code>에이원지식산업센터</code> = <code>에이윈지식산업센터</code>, <code>다영기획</code> = <code>다영기획</code>, <code>베스트원</code> = <code>베스트원</code> 등)
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="icon">WHY</div>
+        <div>
+          출하 리포트와 임가공 내역이 <strong>다른 이름</strong>으로 기록되면
+          추후 집계·정산 시 같은 장소가 중복 계산되거나 누락됩니다.
+          작업 전 반드시 이름을 하나로 맞춰주세요.
+        </div>
+      </div>
+
+      <details class="shot-collapse" open>
+        <summary>원본 스크린샷 보기</summary>
+        <figure class="shot">
+          <img src="assets/01-bacha-scheduling.png" alt="TMS 배차 스케줄링 화면 – 임가공 장소/출하장소 컬럼" />
+          <figcaption>
+            <span>배차 스케줄링 화면 · 임가공 장소 / 출하장소 컬럼 강조</span>
+            <span class="tag">before</span>
+          </figcaption>
+        </figure>
+      </details>
+    </div>
+
+    <div class="block">
+      <h3>완료 예시</h3>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 10px;line-height:1.6">두 컬럼의 값이 동일하게 맞춰진 상태입니다. 이 상태를 목표로 정리하면 됩니다.</p>
+      <details class="shot-collapse" open>
+        <summary>완료 후 스크린샷 보기</summary>
+        <figure class="shot">
+          <img src="assets/02-imgagong-complete.png" alt="임가공 장소와 출하장소 값이 일치된 완료 상태" />
+          <figcaption>
+            <span>임가공 장소 = 출하장소 일치 완료</span>
+            <span class="tag">after</span>
+          </figcaption>
+        </figure>
+      </details>
+      <div class="callout ok">
+        <div class="icon">DONE</div>
+        <div>두 컬럼이 한 줄씩 같은 값으로 맞춰지면 이 섹션 작업은 완료입니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chapter 2 -->
+  <section class="chapter" id="ch2">
+    <header>
+      <span class="cid">02</span>
+      <h2>명칭 매핑 · 표준 명칭 통일</h2>
+      <span class="path">Shipment › 임가공 장소 / 출하장소</span>
+    </header>
+
+    <div class="block">
+      <h3>표준 명칭 매핑</h3>
+      <p style="font-size:13.5px;color:var(--muted);margin:0 0 10px;line-height:1.6">
+        같은 장소를 서로 다르게 기록한 사례들을 표준명으로 통일합니다.
+        발견할 때마다 아래 표에 추가해 나가면 됩니다.
+      </p>
+      <div class="mapping">
+        <div class="row header">
+          <div class="from">입력된 표기 (입력 예시)</div>
+          <div class="eq">→</div>
+          <div class="to">표준 명칭</div>
+        </div>
+        <div class="row">
+          <div class="from">에이원지식산업센터</div>
+          <div class="eq">=</div>
+          <div class="to">에이윈지식산업센터</div>
+        </div>
+        <div class="row">
+          <div class="from">다영기획</div>
+          <div class="eq">=</div>
+          <div class="to">다영기획</div>
+        </div>
+        <div class="row">
+          <div class="from">베스트원</div>
+          <div class="eq">=</div>
+          <div class="to">베스트원</div>
+        </div>
+        <div class="row" style="color:var(--muted)">
+          <div class="from" style="color:var(--muted)">…추가 발견 시 이어 기록</div>
+          <div class="eq">—</div>
+          <div class="to" style="color:var(--muted)">—</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="icon">TIP</div>
+        <div>
+          새로운 변형 표기가 발견되면 <strong>즉시 이 매핑표에 추가</strong>하세요.
+          동일 장소 명칭이 두 가지 이상 섞여 있는지 주기적으로 필터를 걸어 확인하는 것이 좋습니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chapter 3 -->
+  <section class="chapter" id="ch3">
+    <header>
+      <span class="cid">03</span>
+      <h2>배송슬롯 설정</h2>
+      <span class="path">Shipment › 배송슬롯 (참고 컬럼: 수령시간, 고객 희망 수령 시간)</span>
+    </header>
+
+    <div class="block">
+      <h3>규칙</h3>
+      <div class="rules">
+        <div class="rule">
+          <div class="n">›</div>
+          <div class="body">
+            <strong>수령시간</strong>과 <strong>고객 희망 수령 시간</strong>을 참고해서
+            <code>배송슬롯</code> 컬럼 값을 지정한다.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>매핑 규칙</h3>
+      <div class="slotmap">
+        <div class="cell">
+          <div class="in">입력 · 수령시간</div>
+          <div class="val">오전</div>
+          <div class="arrow">↓ SLOT</div>
+          <div class="out">오전</div>
+        </div>
+        <div class="cell">
+          <div class="in">입력 · 수령시간</div>
+          <div class="val">오후</div>
+          <div class="arrow">↓ SLOT</div>
+          <div class="out">오후</div>
+        </div>
+        <div class="cell">
+          <div class="in">입력 · 수령시간</div>
+          <div class="val">무관</div>
+          <div class="arrow">↓ SLOT</div>
+          <div class="out">오전&nbsp; or&nbsp; 오후</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="icon">NOTE</div>
+        <div>
+          <strong>무관</strong>으로 표시된 건은 <strong>고객 희망 수령 시간</strong>을 우선 확인하여
+          오전/오후 중 적절한 슬롯으로 지정합니다.
+          예: 희망시간 <code>10:00 ~ 13:00</code> → <code>오전</code>, <code>14:00 ~ 17:00</code> → <code>오후</code>.
+        </div>
+      </div>
+
+      <details class="shot-collapse" open>
+        <summary>원본 스크린샷 보기</summary>
+        <figure class="shot">
+          <img src="assets/03-delivery-slot.png" alt="배송슬롯 / 수령 시간 / 고객 희망 수령 시간 컬럼" />
+          <figcaption>
+            <span>배송슬롯 · 수령 시간 · 고객 희망 수령 시간</span>
+            <span class="tag">reference</span>
+          </figcaption>
+        </figure>
+      </details>
+    </div>
+
+    <div class="block">
+      <h3>케이스 예시 (스크린샷 기준)</h3>
+      <div class="rules">
+        <div class="rule">
+          <div class="n">A</div>
+          <div class="body">수령시간 <code>오전</code> / 희망 <code>10–18:00</code> <span class="arrow">→</span> 슬롯 <strong>오전</strong></div>
+        </div>
+        <div class="rule">
+          <div class="n">B</div>
+          <div class="body">수령시간 <code>오후 1 (2시~4시)</code> / 희망 <code>14:00–17:00</code> <span class="arrow">→</span> 슬롯 <strong>오후</strong></div>
+        </div>
+        <div class="rule">
+          <div class="n">C</div>
+          <div class="body">수령시간 <code>무관</code> / 희망 <code>09:00–13:00 / 14:00–17:00</code> <span class="arrow">→</span> 고객 상황에 맞춰 <strong>오전 또는 오후</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Glossary -->
+  <section class="chapter" id="glossary">
+    <header>
+      <span class="cid">A</span>
+      <h2>용어 매핑표</h2>
+      <span class="path">참고</span>
+    </header>
+
+    <div class="block">
+      <div class="mapping">
+        <div class="row header">
+          <div class="from">필드</div>
+          <div class="eq">—</div>
+          <div class="to">설명</div>
+        </div>
+        <div class="row"><div class="from">SC id</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">배차 스케줄 고유 ID</div></div>
+        <div class="row"><div class="from">TO id</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">Transport Order 번호</div></div>
+        <div class="row"><div class="from">임가공 장소</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">임가공이 수행되는 장소</div></div>
+        <div class="row"><div class="from">출하장소</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">실제 출하가 시작되는 장소 (임가공 장소와 일치해야 함)</div></div>
+        <div class="row"><div class="from">배송슬롯</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">오전 / 오후 중 하나로 지정하는 배송 시간대</div></div>
+        <div class="row"><div class="from">수령 시간</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">오전 / 오후 / 무관</div></div>
+        <div class="row"><div class="from">고객 희망 수령 시간</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">고객이 기입한 구체 시간대</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Checklist -->
+  <section class="chapter" id="checklist">
+    <header>
+      <span class="cid">B</span>
+      <h2>작업 체크리스트</h2>
+      <span class="path">매일 / 출하일 기준</span>
+    </header>
+
+    <div class="block">
+      <div class="rules" id="checklist-rules">
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">배차 스케줄링 Section으로 이동</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">Shipment 테이블에서 금일 출하 건 필터</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body"><strong>임가공 장소 ↔ 출하장소</strong> 값 일치 여부 확인</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">표기가 다른 동일 장소가 있으면 <strong>표준 명칭</strong>으로 통일</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body"><strong>수령 시간</strong> / <strong>고객 희망 수령 시간</strong> 기준으로 <strong>배송슬롯</strong> 지정</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">무관 건 → 고객 희망 시간으로 재분류</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="doc-end">
+    <div>TMS 인수인계서 · 내부 참고용</div>
+    <div>v0.1 · 2026.04.20</div>
+  </footer>
+
+</main>
+
+<!-- Tweaks panel -->
+<div id="tweaks">
+  <h5>
+    <span>Tweaks</span>
+    <button class="closex" id="tw-close" title="닫기">×</button>
+  </h5>
+  <div class="row">
+    <label for="tw-density">밀도</label>
+    <select id="tw-density">
+      <option value="normal">보통</option>
+      <option value="compact">컴팩트</option>
+    </select>
+  </div>
+  <div class="row">
+    <label for="tw-shots">스크린샷 펼치기</label>
+    <input type="checkbox" id="tw-shots" checked>
+  </div>
+  <div class="row">
+    <label for="tw-accent">포인트 컬러</label>
+    <select id="tw-accent">
+      <option value="indigo">인디고</option>
+      <option value="slate">슬레이트</option>
+      <option value="teal">틸</option>
+      <option value="warm">웜 브라운</option>
+    </select>
+  </div>
+</div>
+
+<script>
+// ===== Persisted defaults =====
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "density": "normal",
+  "shots": true,
+  "accent": "indigo"
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  indigo: { accent:'oklch(55% 0.12 265)', soft:'oklch(96% 0.02 265)', line:'oklch(88% 0.04 265)' },
+  slate:  { accent:'oklch(48% 0.03 250)', soft:'oklch(96% 0.01 250)', line:'oklch(88% 0.02 250)' },
+  teal:   { accent:'oklch(55% 0.09 190)', soft:'oklch(96% 0.02 190)', line:'oklch(88% 0.04 190)' },
+  warm:   { accent:'oklch(52% 0.08 50)',  soft:'oklch(96% 0.02 50)',  line:'oklch(88% 0.04 50)'  }
+};
+
+function applyTweaks(t){
+  document.body.dataset.density = t.density;
+  document.body.dataset.shots = t.shots ? 'on' : 'off';
+  document.querySelectorAll('details.shot-collapse').forEach(d => { d.open = !!t.shots; });
+  const a = ACCENTS[t.accent] || ACCENTS.indigo;
+  document.documentElement.style.setProperty('--accent', a.accent);
+  document.documentElement.style.setProperty('--accent-soft', a.soft);
+  document.documentElement.style.setProperty('--accent-line', a.line);
+}
+applyTweaks(TWEAKS);
+
+// ===== Active section on scroll =====
+const links = document.querySelectorAll('aside.nav a[data-sec]');
+const secs = [...links].map(l => document.querySelector(l.getAttribute('href')));
+function onScroll(){
+  const y = window.scrollY + 120;
+  let idx = 0;
+  secs.forEach((s,i)=>{ if(s && s.offsetTop <= y) idx = i; });
+  links.forEach((l,i)=> l.classList.toggle('active', i===idx));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+// ===== Edit mode (Tweaks) =====
+const panel = document.getElementById('tweaks');
+const dSel = document.getElementById('tw-density');
+const sChk = document.getElementById('tw-shots');
+const aSel = document.getElementById('tw-accent');
+dSel.value = TWEAKS.density;
+sChk.checked = TWEAKS.shots;
+aSel.value = TWEAKS.accent;
+
+function push(edits){
+  Object.assign(TWEAKS, edits);
+  applyTweaks(TWEAKS);
+  try { window.parent.postMessage({type:'__edit_mode_set_keys', edits}, '*'); } catch(e){}
+}
+dSel.addEventListener('change', e => push({density: e.target.value}));
+sChk.addEventListener('change', e => push({shots: e.target.checked}));
+aSel.addEventListener('change', e => push({accent: e.target.value}));
+document.getElementById('tw-close').addEventListener('click', () => {
+  panel.classList.remove('on');
+  try { window.parent.postMessage({type:'__edit_mode_deactivated'}, '*'); } catch(e){}
+});
+
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode') panel.classList.add('on');
+  if (d.type === '__deactivate_edit_mode') panel.classList.remove('on');
+});
+try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
+</script>
+
+</body>
+</html>

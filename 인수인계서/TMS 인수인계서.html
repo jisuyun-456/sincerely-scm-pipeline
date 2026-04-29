@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>TMS 인수인계 · 배차 스케줄링</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  :root{
+    --bg: #f7f7f9;
+    --surface: #ffffff;
+    --surface-2: #fafafa;
+    --surface-3: #f3f3f5;
+    --ink: #1b1b1f;
+    --ink-2: #3d3d44;
+    --muted: #80808a;
+    --muted-2: #a6a6ae;
+    --line: #e6e6ea;
+    --line-2: #ededef;
+    --line-3: #f0f0f2;
+    --at-blue: #1d6ef0;
+    --at-blue-bg: #eaf1ff;
+    --at-header: #166ee1;
+    --at-header-2: #0d4fb0;
+    --accent: oklch(55% 0.12 265);
+    --accent-soft: oklch(96% 0.02 265);
+    --accent-line: oklch(88% 0.04 265);
+    --pill-blue: #dbeafe; --pill-blue-ink: #1e40af;
+    --pill-orange: #ffedd5; --pill-orange-ink: #9a3412;
+    --pill-gray: #eef0f3; --pill-gray-ink: #52525b;
+    --pill-green: #dcfce7; --pill-green-ink: #14532d;
+    --pill-yellow: #fef3c7; --pill-yellow-ink: #854d0e;
+    --highlight: #fff8c2;
+    --highlight-bd: #f2d64b;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11";font-size:14px}
+  button{font-family:inherit}
+
+  /* ===== Top app shell ===== */
+  .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+  /* Doc sidebar */
+  aside.doc{
+    position:sticky;top:0;align-self:start;
+    height:100vh;overflow-y:auto;
+    background:#fbfaf7;
+    border-right:1px solid var(--line);
+    padding:24px 20px 40px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+  .brand .dot{width:28px;height:28px;border-radius:8px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:-0.02em}
+  .brand .name{font-size:14px;font-weight:600}
+  .brand .sub{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:1px}
+  aside.doc h4{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:16px 0 6px;font-weight:500;font-family:var(--mono)}
+  aside.doc ul{list-style:none;padding:0;margin:0}
+  aside.doc li a{
+    display:flex;gap:10px;padding:7px 10px;margin:1px 0;border-radius:6px;
+    color:var(--ink-2);text-decoration:none;font-size:13px;line-height:1.35;
+    transition:background 0.1s, color 0.1s;cursor:pointer;
+  }
+  aside.doc li a:hover{background:var(--line-2);color:var(--ink)}
+  aside.doc li a.active{background:var(--ink);color:#fff}
+  aside.doc li a.active .idx{color:rgba(255,255,255,0.55)}
+  aside.doc li a .idx{font-family:var(--mono);font-size:10.5px;color:var(--muted);width:22px;flex:none;padding-top:1px}
+  aside.doc .meta{margin-top:28px;padding-top:18px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);line-height:1.6;font-family:var(--mono)}
+  aside.doc .meta div{margin:2px 0}
+  aside.doc .meta .k{color:var(--ink-2)}
+
+  /* Main column */
+  main{padding:40px 48px 120px;max-width:1280px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  h1.doc-title{font-size:30px;font-weight:700;letter-spacing:-0.02em;margin:0 0 10px;line-height:1.2}
+  .lede{font-size:14px;color:var(--muted);line-height:1.6;max-width:680px;margin:0 0 28px}
+
+  section.chapter{margin-bottom:72px;scroll-margin-top:20px}
+  section.chapter > header{
+    display:flex;align-items:baseline;gap:14px;
+    padding-bottom:14px;margin-bottom:24px;border-bottom:1px solid var(--line);
+  }
+  section.chapter > header .cid{
+    font-family:var(--mono);font-size:11.5px;color:var(--accent);
+    padding:3px 8px;border:1px solid var(--accent-line);border-radius:4px;background:var(--accent-soft);
+    flex:none;
+  }
+  section.chapter > header h2{font-size:20px;font-weight:600;letter-spacing:-0.015em;margin:0;flex:1}
+  section.chapter > header .path{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  .block{margin-bottom:24px}
+  .block h3{font-size:13.5px;font-weight:600;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .block h3::before{content:"";width:3px;height:13px;background:var(--ink);border-radius:1px;display:inline-block}
+
+  /* ===== Fake Airtable frame ===== */
+  .airtable{
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    background:var(--surface);box-shadow:0 1px 0 rgba(0,0,0,0.02);
+    margin-bottom:16px;
+  }
+  .at-header{
+    background:linear-gradient(180deg, var(--at-header), var(--at-header-2));
+    color:#fff;padding:6px 12px;display:flex;align-items:center;gap:14px;font-size:12.5px;font-weight:500;
+    border-bottom:1px solid rgba(0,0,0,0.1);
+  }
+  .at-header .logo{display:flex;align-items:center;gap:6px;font-weight:600}
+  .at-header .logo svg{width:14px;height:14px}
+  .at-header .tabs{display:flex;gap:0;margin-left:6px}
+  .at-header .tab{padding:4px 10px;border-radius:4px;cursor:pointer;color:rgba(255,255,255,0.75);font-size:12px}
+  .at-header .tab.on{background:rgba(255,255,255,0.15);color:#fff}
+  .at-header .tab:hover:not(.on){background:rgba(255,255,255,0.08);color:#fff}
+  .at-subheader{
+    background:#fff;padding:6px 10px;display:flex;align-items:center;gap:14px;font-size:12px;
+    border-bottom:1px solid var(--line);color:var(--ink-2);
+  }
+  .at-subheader .crumb{display:flex;align-items:center;gap:6px;font-weight:500}
+  .at-subheader .crumb .chev{color:var(--muted-2)}
+  .at-subheader .pill{background:var(--surface-3);padding:3px 9px;border-radius:4px;font-size:11.5px;color:var(--ink-2)}
+  .at-subheader .pill.sel{background:var(--at-blue-bg);color:var(--at-blue)}
+  .at-toolbar{
+    background:#fff;padding:6px 10px;display:flex;align-items:center;gap:4px;font-size:12px;
+    border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;
+  }
+  .at-tool{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:4px;cursor:pointer;color:var(--ink-2);font-size:11.5px}
+  .at-tool:hover{background:var(--surface-3)}
+  .at-tool .chip{font-family:var(--mono);font-size:10px;background:var(--surface-3);padding:1px 5px;border-radius:3px;margin-left:2px;color:var(--muted)}
+  .at-tool.active{background:#fff2d4;color:#a86a00}
+  .at-tool.active .chip{background:#ffe0a0;color:#a86a00}
+  .at-tool.filter{background:#e9f7ee;color:#1f7a3f}
+  .at-tool.filter .chip{background:#c6ecd2;color:#1f7a3f}
+  .at-tool.group{background:#f1e6ff;color:#6d28d9}
+  .at-tool.group .chip{background:#ddc9ff;color:#6d28d9}
+  .at-tool.sort{background:#ffe8dc;color:#a0441b}
+  .at-tool.sort .chip{background:#ffd1b5;color:#a0441b}
+  .at-tool.color{background:#e5f0ff;color:#1d4ed8}
+  .at-tool.color .chip{background:#cbd9f7;color:#1d4ed8}
+  .at-tool .dot{width:8px;height:8px;border-radius:50%}
+  .at-tool.share{margin-left:auto;color:var(--ink-2)}
+
+  /* Table body */
+  .at-grid{
+    display:grid;
+    grid-template-columns: 34px 130px 80px 110px 130px 220px 110px 150px 150px 110px 100px 120px 160px;
+    min-width:100%;overflow-x:auto;
+    font-size:12px;
+  }
+  .at-grid > div{
+    border-right:1px solid var(--line-3);
+    border-bottom:1px solid var(--line-3);
+    padding:6px 10px;
+    min-height:30px;
+    display:flex;align-items:center;
+    background:#fff;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .at-grid .hcell{
+    background:var(--surface-2);font-size:11px;color:var(--ink-2);
+    position:sticky;top:0;z-index:2;
+    font-weight:500;
+    border-bottom:1px solid var(--line);
+    gap:6px;
+  }
+  .at-grid .hcell svg{width:11px;height:11px;flex:none;color:var(--muted)}
+  .at-grid .checkhead{background:var(--surface-2);justify-content:center;border-bottom:1px solid var(--line)}
+  .at-grid .checkhead input,.at-grid .check input{accent-color:var(--at-blue);transform:scale(0.85)}
+  .at-grid .check{justify-content:center;color:var(--muted)}
+  .at-grid .rownum{color:var(--muted-2);font-family:var(--mono);font-size:10.5px;justify-content:center}
+
+  /* Group row (expanded) */
+  .at-group{
+    grid-column: 1 / -1;background:#eaf4ec;color:#1f7a3f;
+    font-size:11.5px;padding:5px 12px;display:flex;align-items:center;gap:8px;
+    border-bottom:1px solid #cfe8d5;border-top:1px solid #cfe8d5;
+    font-weight:500;
+  }
+  .at-group .triangle{font-size:9px}
+  .at-group .count{background:rgba(31,122,63,0.12);padding:1px 7px;border-radius:3px;font-family:var(--mono);font-size:10.5px;margin-left:4px}
+  .at-group.sub{background:#f0f7f1;border-color:#dceadf;padding-left:28px}
+  .at-group.sub .emptytag{background:#fff;border:1px dashed #bcd4c1;padding:1px 8px;border-radius:3px;font-size:10.5px;color:#52725a}
+
+  /* Pills and cell formats */
+  .pill{display:inline-flex;align-items:center;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:500}
+  .pill.blue{background:var(--pill-blue);color:var(--pill-blue-ink)}
+  .pill.orange{background:var(--pill-orange);color:var(--pill-orange-ink)}
+  .pill.gray{background:var(--pill-gray);color:var(--pill-gray-ink)}
+  .pill.green{background:var(--pill-green);color:var(--pill-green-ink)}
+  .pill.yellow{background:var(--pill-yellow);color:var(--pill-yellow-ink)}
+  .link{color:var(--at-blue);text-decoration:none;font-family:var(--mono);font-size:11.5px}
+
+  /* Highlight for attention */
+  .at-grid .hi{position:relative;background:#fffbe2 !important}
+  .at-grid .hi::before{content:"";position:absolute;inset:0;border:1px dashed #d9bc3b;pointer-events:none}
+  .at-grid .hi-col{background:#fff8c2 !important}
+  .at-grid .hcell.hi-col{background:#fff3a3 !important;color:#6a4b00}
+
+  /* Bottom bar (record count) */
+  .at-footer{
+    background:var(--surface-2);border-top:1px solid var(--line);
+    padding:6px 12px;font-size:11px;color:var(--muted);display:flex;gap:16px;font-family:var(--mono)
+  }
+
+  /* Callouts / rule cards */
+  .rules{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .rules .rule{padding:14px 16px;border-top:1px solid var(--line-2);display:grid;grid-template-columns:28px 1fr;gap:12px}
+  .rules .rule:first-child{border-top:0}
+  .rules .rule .n{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:1px}
+  .rules .rule .body{font-size:13.5px;line-height:1.65;color:var(--ink-2)}
+  .rules .rule .body strong{color:var(--ink);font-weight:600}
+  .rules .rule .body code{font-family:var(--mono);font-size:12px;background:var(--accent-soft);color:var(--accent);padding:1px 6px;border-radius:4px;border:1px solid var(--accent-line)}
+  .rules .rule .body .arrow{color:var(--muted);padding:0 4px;font-family:var(--mono)}
+
+  .callout{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;margin-top:14px}
+  .callout.warn{background:oklch(97% 0.03 45);border:1px solid oklch(90% 0.05 45);color:var(--ink-2)}
+  .callout.ok{background:oklch(96% 0.04 150);border:1px solid oklch(88% 0.06 150);color:var(--ink-2)}
+  .callout .icon{font-family:var(--mono);font-size:10.5px;font-weight:600;padding-top:1px;letter-spacing:0.05em}
+  .callout.warn .icon{color:oklch(62% 0.14 45)}
+  .callout.ok .icon{color:oklch(58% 0.11 150)}
+  .callout strong{color:var(--ink);font-weight:600}
+
+  /* Mapping */
+  .mapping{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .mapping .row{display:grid;grid-template-columns:1fr 24px 1fr;padding:10px 16px;border-top:1px solid var(--line-2);font-size:13px;align-items:center}
+  .mapping .row:first-child{border-top:0}
+  .mapping .row .from{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+  .mapping .row .eq{color:var(--muted);text-align:center;font-family:var(--mono)}
+  .mapping .row .to{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  .mapping .header{background:var(--surface-2);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)}
+  .mapping .header .from,.mapping .header .to{color:var(--muted)}
+
+  /* Slot map */
+  .slotmap{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+  .slotmap .cell{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+  .slotmap .cell .in{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+  .slotmap .cell .val{font-size:15px;font-weight:600;margin:4px 0 10px}
+  .slotmap .cell .arrow{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em}
+  .slotmap .cell .out{font-family:var(--mono);font-size:12px;color:var(--accent);margin-top:4px;background:var(--accent-soft);border:1px solid var(--accent-line);padding:4px 8px;border-radius:5px;display:inline-block}
+
+  /* Buttons */
+  .btnrow{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .btn{font-size:11.5px;padding:5px 10px;border-radius:5px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink-2);font-family:inherit;display:inline-flex;align-items:center;gap:5px}
+  .btn:hover{background:var(--surface-3)}
+  .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn .dotk{width:8px;height:8px;border-radius:50%;background:var(--muted-2)}
+  .btn.on .dotk{background:#9ae6c0}
+
+  footer.doc-end{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  /* Tweaks panel */
+  #tweaks{position:fixed;right:20px;bottom:20px;z-index:50;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;width:240px;box-shadow:0 10px 30px rgba(0,0,0,0.08);display:none;font-size:12px}
+  #tweaks.on{display:block}
+  #tweaks h5{margin:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-family:var(--mono);font-weight:500;display:flex;justify-content:space-between;align-items:center}
+  #tweaks h5 .x{cursor:pointer;font-size:14px;color:var(--muted);background:none;border:0}
+  #tweaks .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  #tweaks select{width:110px;padding:4px 6px;font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2)}
+  #tweaks input[type=checkbox]{accent-color:var(--accent)}
+
+  body[data-density="compact"] main{padding:32px 36px 80px}
+  body[data-density="compact"] section.chapter{margin-bottom:48px}
+  body[data-density="compact"] .at-grid > div{padding:4px 8px;min-height:26px}
+
+  @media (max-width: 900px){
+    .shell{grid-template-columns:1fr}
+    aside.doc{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+    main{padding:28px 20px 80px}
+    .slotmap{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body data-density="normal">
+
+<div class="shell">
+
+<!-- Doc sidebar -->
+<aside class="doc">
+  <div class="brand">
+    <div class="dot">TMS</div>
+    <div>
+      <div class="name">인수인계서</div>
+      <div class="sub">Airtable · 배차 스케줄링</div>
+    </div>
+  </div>
+
+  <h4>섹션</h4>
+  <ul id="sec-list">
+    <li><a href="#overview" data-sec="overview"><span class="idx">00</span>개요</a></li>
+    <li><a href="#ch1" data-sec="ch1"><span class="idx">01</span>임가공 = 출하장소</a></li>
+    <li><a href="#ch2" data-sec="ch2"><span class="idx">02</span>명칭 통일</a></li>
+    <li><a href="#ch3" data-sec="ch3"><span class="idx">03</span>배송슬롯 설정</a></li>
+  </ul>
+
+  <h4>참고</h4>
+  <ul>
+    <li><a href="#glossary" data-sec="glossary"><span class="idx">A</span>필드 사전</a></li>
+    <li><a href="#checklist" data-sec="checklist"><span class="idx">B</span>체크리스트</a></li>
+  </ul>
+
+  <div style="margin-top:18px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:12px">
+    <div style="margin:0 0 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;font-family:var(--mono)">다른 문서</div>
+    <a href="자재관리 가이드라인.html" style="display:block;padding:6px 0;color:var(--ink-2);text-decoration:none;border-bottom:1px dashed var(--line)">자재관리 — 인터랙티브<span style="float:right;color:var(--muted-2);font-family:var(--mono)">→</span></a>
+    <a href="자재관리 가이드라인 (문서형).html" style="display:block;padding:6px 0;color:var(--ink-2);text-decoration:none">자재관리 — 문서형<span style="float:right;color:var(--muted-2);font-family:var(--mono)">→</span></a>
+  </div>
+
+  <div class="meta">
+    <div><span class="k">Base</span>&nbsp; TMS</div>
+    <div><span class="k">Table</span>&nbsp; Shipment</div>
+    <div><span class="k">Updated</span>&nbsp; 2026.04.20</div>
+    <div><span class="k">Status</span>&nbsp; prototype</div>
+  </div>
+</aside>
+
+<main>
+
+  <div class="eyebrow">Handover · TMS 배차 스케줄링</div>
+  <h1 class="doc-title">TMS 배차·출하 인수인계서</h1>
+  <p class="lede">
+    Airtable <strong>TMS Base</strong>의 배차 스케줄링 화면에서 매일 수행하는 세 가지 정돈 작업(장소 일치 · 명칭 통일 · 배송슬롯 지정)을 정리했습니다.
+    아래 테이블은 실제 화면을 그대로 재현한 인터랙티브 미리보기예요. 규칙 버튼을 누르면 해당 컬럼이 강조됩니다.
+  </p>
+
+  <!-- OVERVIEW -->
+  <section class="chapter" id="overview">
+    <header>
+      <span class="cid">00</span>
+      <h2>개요 · 작업 위치</h2>
+      <span class="path">TMS › 배송요청 › Shipment</span>
+    </header>
+
+    <div class="block">
+      <div class="rules">
+        <div class="rule"><div class="n">›</div><div class="body"><strong>Section</strong><span class="arrow">—</span><code>배차 스케줄링</code></div></div>
+        <div class="rule"><div class="n">›</div><div class="body"><strong>Table</strong><span class="arrow">—</span><code>Shipment</code></div></div>
+        <div class="rule"><div class="n">›</div><div class="body"><strong>필터 / 그룹</strong><span class="arrow">—</span>출하확정일 기준 그룹, 배송예정서 정렬</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 1 -->
+  <section class="chapter" id="ch1">
+    <header>
+      <span class="cid">01</span>
+      <h2>임가공 장소 = 출하장소 일치</h2>
+      <span class="path">Shipment › 임가공 장소 / 출하장소</span>
+    </header>
+
+    <div class="block">
+      <h3>규칙</h3>
+      <div class="rules">
+        <div class="rule"><div class="n">1</div><div class="body"><strong>임가공 장소</strong>와 <strong>출하장소</strong>가 서로 같도록 맞춘다.</div></div>
+        <div class="rule"><div class="n">2</div><div class="body">같은 장소인데 표기가 다르면 하나의 <strong>표준 명칭</strong>으로 통일한다. (섹션 02 참고)</div></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>작업 전 / 작업 후 보기</h3>
+      <div class="btnrow">
+        <button class="btn on" data-state="before" id="btn-before">Before · 미정렬</button>
+        <button class="btn" data-state="after" id="btn-after">After · 정렬 완료</button>
+        <button class="btn" id="btn-highlight"><span class="dotk"></span>장소 컬럼 강조</button>
+      </div>
+
+      <!-- ===== Airtable frame #1 ===== -->
+      <div class="airtable" id="at1">
+        <div class="at-header">
+          <div class="logo">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 L20 7 L12 11 L4 7 Z M4 9 L12 13 L12 21 L4 17 Z M20 9 L20 17 L12 21 L12 13 Z"/></svg>
+            TMS
+          </div>
+          <div class="tabs">
+            <div class="tab on">Data</div>
+            <div class="tab">Automations</div>
+            <div class="tab">Interfaces</div>
+            <div class="tab">Forms</div>
+          </div>
+        </div>
+        <div class="at-subheader">
+          <div class="crumb">📦 배송요청 <span class="chev">›</span> Shipment <span class="chev">›</span> 배차 스케줄링 <span class="chev">›</span> Location <span class="chev">›</span> 출하장소 <span class="chev">›</span> Member</div>
+        </div>
+        <div class="at-toolbar">
+          <div class="at-tool">≡ Views</div>
+          <div class="at-tool">👁 배차 스케줄링 9개</div>
+          <div class="at-tool active">145 hidden fields <span class="chip">·</span></div>
+          <div class="at-tool filter">⚲ Filtered by 출하확정일, 배송요청 <span class="chip">·</span></div>
+          <div class="at-tool group">⎘ Grouped by 2 fields <span class="chip">·</span></div>
+          <div class="at-tool sort">⇅ Sorted by 4 fields <span class="chip">·</span></div>
+          <div class="at-tool color">◑ Color <span class="chip">·</span></div>
+          <div class="at-tool share">↗ Share and sync</div>
+        </div>
+
+        <div class="at-grid" id="grid1">
+          <!-- header row -->
+          <div class="hcell checkhead"><input type="checkbox" disabled></div>
+          <div class="hcell"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 3h8v2H4zM4 7h8v2H4zM4 11h8v2H4z"/></svg>SC id</div>
+          <div class="hcell">📅 출하일 (요일)</div>
+          <div class="hcell">📅 출하확정일</div>
+          <div class="hcell">≡ 배송요청</div>
+          <div class="hcell">≡ project</div>
+          <div class="hcell">⌖ Location</div>
+          <div class="hcell">≡ 발송상태_TMS</div>
+          <div class="hcell col-imga">⌖ 임가공 장소</div>
+          <div class="hcell col-chul">≡ 출하장소</div>
+          <div class="hcell">● 배송슬롯</div>
+          <div class="hcell">● 배송 방식</div>
+          <div class="hcell">● 수령 시간 / 희망</div>
+
+          <!-- Group header -->
+          <div class="at-group">
+            <span class="triangle">▼</span>출하확정일 · 2025.4.11<span class="count">8</span>
+          </div>
+          <div class="at-group sub">
+            <span class="triangle">▼</span>배송요청서<span class="count">8</span><span class="emptytag">(Empty)</span>
+          </div>
+        </div>
+        <div class="at-footer">
+          <span>8 records · 그룹 열림</span><span>2025.4.11 (금)</span>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <div class="icon">WHY</div>
+        <div>두 컬럼의 값이 다르면 <strong>같은 장소가 중복 집계</strong>되거나 출하 리포트에서 <strong>누락</strong>됩니다. 하루 정리의 첫 단계로 가장 먼저 수행하세요.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 2 -->
+  <section class="chapter" id="ch2">
+    <header>
+      <span class="cid">02</span>
+      <h2>명칭 통일 · 표준 장소명 매핑</h2>
+      <span class="path">Shipment › 임가공 장소 / 출하장소</span>
+    </header>
+
+    <div class="block">
+      <h3>매핑표</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.6">같은 장소인데 다르게 입력된 표기를 표준명으로 모읍니다. 새로 발견되면 이 표에 이어 기록하세요.</p>
+      <div class="mapping">
+        <div class="row header"><div class="from">입력된 표기</div><div class="eq">→</div><div class="to">표준 명칭</div></div>
+        <div class="row"><div class="from">에이원지식산업센터</div><div class="eq">=</div><div class="to">에이윈지식산업센터</div></div>
+        <div class="row"><div class="from">다영기획</div><div class="eq">=</div><div class="to">다영기획</div></div>
+        <div class="row"><div class="from">베스트원</div><div class="eq">=</div><div class="to">베스트원</div></div>
+        <div class="row" style="color:var(--muted)"><div class="from" style="color:var(--muted)">…발견 시 이어 기록</div><div class="eq">—</div><div class="to" style="color:var(--muted)">—</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="icon">TIP</div>
+        <div>매주 한 번, <strong>임가공 장소 / 출하장소</strong> 컬럼에 필터를 걸어 변형 표기가 섞여 있지는 않은지 확인하는 습관을 추천합니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAPTER 3 -->
+  <section class="chapter" id="ch3">
+    <header>
+      <span class="cid">03</span>
+      <h2>배송슬롯 설정</h2>
+      <span class="path">Shipment › 배송슬롯 (참고: 수령 시간 / 고객 희망 수령 시간)</span>
+    </header>
+
+    <div class="block">
+      <h3>규칙</h3>
+      <div class="rules">
+        <div class="rule"><div class="n">›</div><div class="body"><strong>수령 시간</strong>과 <strong>고객 희망 수령 시간</strong>을 참고해 <code>배송슬롯</code>을 지정한다.</div></div>
+      </div>
+
+      <div class="slotmap">
+        <div class="cell"><div class="in">수령시간</div><div class="val">오전</div><div class="arrow">↓ SLOT</div><div class="out">오전</div></div>
+        <div class="cell"><div class="in">수령시간</div><div class="val">오후</div><div class="arrow">↓ SLOT</div><div class="out">오후</div></div>
+        <div class="cell"><div class="in">수령시간</div><div class="val">무관</div><div class="arrow">↓ SLOT</div><div class="out">오전 or 오후</div></div>
+      </div>
+
+      <div class="callout warn">
+        <div class="icon">NOTE</div>
+        <div><strong>무관</strong>인 건은 <strong>고객 희망 수령 시간</strong>으로 판단합니다. 예: <code>09:00–13:00</code> → <code>오전</code>, <code>14:00–17:00</code> → <code>오후</code>.</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>케이스별 예시 (배송슬롯 컬럼 하이라이트)</h3>
+      <div class="btnrow">
+        <button class="btn on" data-hi="slot" id="hi-slot">배송슬롯 컬럼</button>
+        <button class="btn" data-hi="time" id="hi-time">수령시간 컬럼</button>
+        <button class="btn" data-hi="hope" id="hi-hope">고객 희망시간 컬럼</button>
+        <button class="btn" data-hi="none" id="hi-none">하이라이트 해제</button>
+      </div>
+
+      <!-- ===== Airtable frame #2 — slot mapping ===== -->
+      <div class="airtable">
+        <div class="at-header">
+          <div class="logo">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 L20 7 L12 11 L4 7 Z M4 9 L12 13 L12 21 L4 17 Z M20 9 L20 17 L12 21 L12 13 Z"/></svg>
+            TMS
+          </div>
+          <div class="tabs"><div class="tab on">Data</div><div class="tab">Automations</div><div class="tab">Interfaces</div><div class="tab">Forms</div></div>
+        </div>
+        <div class="at-subheader">
+          <div class="crumb">Shipment <span class="chev">›</span> 배차 스케줄링 <span class="chev">›</span> 수령 시간 / 배송슬롯</div>
+        </div>
+
+        <div class="at-grid" id="grid2" style="grid-template-columns: 34px 110px 130px 220px 130px 130px 130px 150px 200px;">
+          <div class="hcell checkhead"><input type="checkbox" disabled></div>
+          <div class="hcell">📅 출하확정일</div>
+          <div class="hcell">≡ 배송요청</div>
+          <div class="hcell">≡ project</div>
+          <div class="hcell">≡ 배송파트너</div>
+          <div class="hcell col-slot">● 배송슬롯</div>
+          <div class="hcell">● 배송 방식</div>
+          <div class="hcell col-time">● 수령 시간</div>
+          <div class="hcell col-hope">● 고객 희망 수령 시간</div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010149</a></div>
+          <div>PNA32243·한국도로공사</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill blue">오전</span></div>
+          <div>택(수도권)</div>
+          <div class="cell-time"><span class="pill gray">무관</span></div>
+          <div class="cell-hope"><span style="font-family:var(--mono);font-size:11.5px">10~18:00</span></div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010185</a></div>
+          <div>PNA32521·트리밈비드</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill blue">오전</span></div>
+          <div>택(수도권)</div>
+          <div class="cell-time"><span class="pill gray">무관</span></div>
+          <div class="cell-hope" style="color:var(--muted)">—</div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010198</a></div>
+          <div>PNA32572·현대자동차</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill blue">오전</span></div>
+          <div>택(수도권)</div>
+          <div class="cell-time"><span class="pill gray">무관</span></div>
+          <div class="cell-hope" style="color:var(--muted)">—</div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010100</a></div>
+          <div>PNA32119·한화에어로스페이스</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill blue">오전</span></div>
+          <div>택(수도권)</div>
+          <div class="cell-time"><span class="pill gray">무관</span></div>
+          <div class="cell-hope" style="color:var(--muted)">—</div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010136</a></div>
+          <div>PNA32448·퍼블피그(레드햇)</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill orange">오후</span></div>
+          <div>택(수도권)</div>
+          <div class="cell-time"><span class="pill orange">오후 1 (2시~4시)</span></div>
+          <div class="cell-hope"><span style="font-family:var(--mono);font-size:11.5px">14:00–17:00</span></div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010216</a></div>
+          <div>PNA32556·KBS</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill orange">오후</span></div>
+          <div>택(수도권)</div>
+          <div class="cell-time"><span class="pill orange">오후</span></div>
+          <div class="cell-hope"><span style="font-family:var(--mono);font-size:11.5px">4.11(금) 12–14시 사이</span></div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010080</a></div>
+          <div>PNA32309·네이버</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill gray">무관</span></div>
+          <div>택배(일반)</div>
+          <div class="cell-time"><span class="pill gray">무관</span></div>
+          <div class="cell-hope"><span style="font-family:var(--mono);font-size:11.5px">15:00</span></div>
+
+          <div class="check"><input type="checkbox"></div>
+          <div>2025.4.11</div>
+          <div><a class="link">TO00010129</a></div>
+          <div>PNA32120·(주)디에이치갈</div>
+          <div style="color:var(--muted)">—</div>
+          <div class="cell-slot"><span class="pill gray">무관</span></div>
+          <div>택배(일반)</div>
+          <div class="cell-time"><span class="pill gray">무관</span></div>
+          <div class="cell-hope"><span style="font-family:var(--mono);font-size:11.5px">09:00–13:00 / 14:00–17:00</span></div>
+        </div>
+        <div class="at-footer"><span>8 records</span><span>정렬: 배송슬롯 asc</span></div>
+      </div>
+
+      <div class="callout ok">
+        <div class="icon">DONE</div>
+        <div>위처럼 <strong>배송슬롯</strong>이 모든 행에 지정되면 이 섹션 작업은 완료입니다. <strong>무관</strong>은 최종 확정 전 가급적 오전/오후 중 하나로 좁혀두세요.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section class="chapter" id="glossary">
+    <header>
+      <span class="cid">A</span>
+      <h2>필드 사전</h2>
+      <span class="path">참고</span>
+    </header>
+    <div class="block">
+      <div class="mapping">
+        <div class="row header"><div class="from">필드</div><div class="eq">—</div><div class="to">설명</div></div>
+        <div class="row"><div class="from">SC id</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">배차 스케줄 고유 ID (SC0000…)</div></div>
+        <div class="row"><div class="from">배송요청</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">Transport Order 번호 (TO0000…)</div></div>
+        <div class="row"><div class="from">임가공 장소</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">임가공이 수행되는 장소</div></div>
+        <div class="row"><div class="from">출하장소</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">실제 출하가 시작되는 장소 (임가공 장소와 일치 필요)</div></div>
+        <div class="row"><div class="from">배송슬롯</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">오전 / 오후 중 하나</div></div>
+        <div class="row"><div class="from">수령 시간</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">오전 / 오후 / 오후 1 (2시~4시) / 무관</div></div>
+        <div class="row"><div class="from">고객 희망 수령 시간</div><div class="eq">—</div><div class="to" style="color:var(--ink-2)">고객이 기입한 구체 시간대</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECKLIST -->
+  <section class="chapter" id="checklist">
+    <header>
+      <span class="cid">B</span>
+      <h2>매일 체크리스트</h2>
+      <span class="path">출하확정일 기준</span>
+    </header>
+    <div class="block">
+      <div class="rules">
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">배차 스케줄링 Section으로 이동</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">Shipment 테이블에서 금일 출하 그룹 열기</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body"><strong>임가공 장소 ↔ 출하장소</strong> 값 일치 확인</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">변형 표기 발견 시 <strong>표준 명칭</strong>으로 통일 + 매핑표 갱신</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body"><strong>수령 시간</strong> / <strong>희망 시간</strong> 기준 <strong>배송슬롯</strong> 지정</div></div>
+        <div class="rule"><div class="n"><input type="checkbox"></div><div class="body">무관 건은 가능한 한 오전/오후로 좁히기</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="doc-end">
+    <div>TMS 인수인계서 · 내부 참고용 · Airtable Base <code style="font-family:var(--mono)">app4x70a8mOrIKsMf</code></div>
+    <div>v0.2 · 2026.04.20</div>
+  </footer>
+
+</main>
+
+</div>
+
+<!-- Tweaks -->
+<div id="tweaks">
+  <h5><span>Tweaks</span><button class="x" id="tw-close">×</button></h5>
+  <div class="row"><label>밀도</label>
+    <select id="tw-density"><option value="normal">보통</option><option value="compact">컴팩트</option></select>
+  </div>
+  <div class="row"><label>포인트 컬러</label>
+    <select id="tw-accent"><option value="indigo">인디고</option><option value="slate">슬레이트</option><option value="teal">틸</option><option value="warm">웜</option></select>
+  </div>
+  <div class="row"><label>행 얼룩무늬</label><input type="checkbox" id="tw-zebra"></div>
+</div>
+
+<script>
+// ===== Data for grid 1 (Shipment rows) =====
+const SHIPMENT_ROWS = [
+  { sc:'SC00016548', day:'4/11 (금)', date:'2025.4.11', to:'TO00010149', proj:'PNA32243·한국도로공사', loc:'',                 stt:'', imga:'에이원지식산업센터', chul:'에이윈지식산업센터', slot:'오전',  meth:'택(수도권)',  time:'무관', hope:'10~18:00' },
+  { sc:'SC00016692', day:'4/11 (금)', date:'2025.4.11', to:'TO00010185', proj:'PNA32521·트리밈비드',     loc:'',                 stt:'', imga:'에이윈지식산업센터', chul:'에이윈지식산업센터', slot:'오전',  meth:'택(수도권)',  time:'무관', hope:'' },
+  { sc:'SC00016693', day:'4/11 (금)', date:'2025.4.11', to:'TO00010198', proj:'PNA32572·현대자동차',     loc:'',                 stt:'', imga:'다영기획',         chul:'다영기획',         slot:'오전',  meth:'택(수도권)',  time:'무관', hope:'' },
+  { sc:'SC00016521', day:'4/11 (금)', date:'2025.4.11', to:'TO00010136', proj:'PNA32448·퍼블피그(레드햇)', loc:'',              stt:'', imga:'에이원지식산업센터', chul:'에이윈지식산업센터', slot:'오후',  meth:'택(수도권)',  time:'오후 1 (2시~4시)', hope:'14:00–17:00' },
+  { sc:'SC00016679', day:'4/11 (금)', date:'2025.4.11', to:'TO00010216', proj:'PNA32556·KBS',            loc:'',                 stt:'', imga:'에이윈지식산업센터', chul:'에이윈지식산업센터', slot:'오후',  meth:'택(수도권)',  time:'오후', hope:'4.11(금) 12–14시' },
+  { sc:'SC00016694', day:'4/11 (금)', date:'2025.4.11', to:'TO00010100', proj:'PNA32119·한화에어로스페이스', loc:'',            stt:'', imga:'에이원지식산업센터', chul:'에이윈지식산업센터', slot:'오전',  meth:'택(수도권)',  time:'무관', hope:'' },
+  { sc:'SC00016423', day:'4/11 (금)', date:'2025.4.11', to:'TO00010080', proj:'PNA32309·네이버',          loc:'',                 stt:'', imga:'에이원지식산업센터', chul:'에이윈지식산업센터', slot:'무관',  meth:'택배(일반)',  time:'무관', hope:'15:00' },
+  { sc:'SC00016614', day:'4/11 (금)', date:'2025.4.11', to:'TO00010129', proj:'PNA32120·(주)디에이치갈', loc:'',                 stt:'', imga:'에이원지식산업센터', chul:'에이윈지식산업센터', slot:'무관',  meth:'택배(일반)',  time:'무관', hope:'09:00–13:00 / 14:00–17:00' },
+];
+
+const STD_MAP = {
+  '에이원지식산업센터': '에이윈지식산업센터',
+};
+
+function pillFor(v){
+  if(!v) return '<span style="color:var(--muted)">—</span>';
+  if(v==='오전') return '<span class="pill blue">오전</span>';
+  if(v==='오후') return '<span class="pill orange">오후</span>';
+  if(v==='무관') return '<span class="pill gray">무관</span>';
+  if(/오후 1/.test(v)) return '<span class="pill orange">'+v+'</span>';
+  return '<span class="pill gray">'+v+'</span>';
+}
+
+function renderGrid1(mode){
+  const grid = document.getElementById('grid1');
+  // Remove existing data rows (keep header + groups)
+  [...grid.querySelectorAll('.data-row')].forEach(el => el.remove());
+
+  const frag = document.createDocumentFragment();
+  let n = 106;
+  SHIPMENT_ROWS.forEach(r => {
+    const imga = mode==='after' ? (STD_MAP[r.imga]||r.imga) : r.imga;
+    const chul = r.chul;
+    const mismatch = (mode==='before') && (imga !== chul);
+
+    const cells = [
+      {c:'check data-row', h:`<input type="checkbox">`},
+      {c:'data-row rownum', h:String(n)},
+      {c:'data-row', h:r.day},
+      {c:'data-row', h:r.date},
+      {c:'data-row', h:`<a class="link">${r.to}</a>`},
+      {c:'data-row', h:r.proj},
+      {c:'data-row', h:r.loc||'<span style="color:var(--muted)">—</span>'},
+      {c:'data-row', h:r.stt||'<span style="color:var(--muted)">—</span>'},
+      {c:'data-row col-imga'+(mismatch?' hi':''), h:imga},
+      {c:'data-row col-chul'+(mismatch?' hi':''), h:chul},
+      {c:'data-row col-slot', h:pillFor(r.slot)},
+      {c:'data-row', h:r.meth},
+      {c:'data-row col-time', h:pillFor(r.time)+(r.hope?` <span style="color:var(--muted);margin-left:6px;font-family:var(--mono);font-size:11px">${r.hope}</span>`:'')},
+    ];
+    cells.forEach(c => {
+      const d = document.createElement('div');
+      d.className = c.c;
+      d.innerHTML = c.h;
+      frag.appendChild(d);
+    });
+    n++;
+  });
+  grid.appendChild(frag);
+}
+renderGrid1('before');
+
+document.getElementById('btn-before').addEventListener('click', e => {
+  document.getElementById('btn-before').classList.add('on');
+  document.getElementById('btn-after').classList.remove('on');
+  renderGrid1('before');
+});
+document.getElementById('btn-after').addEventListener('click', e => {
+  document.getElementById('btn-after').classList.add('on');
+  document.getElementById('btn-before').classList.remove('on');
+  renderGrid1('after');
+});
+let col1on = false;
+document.getElementById('btn-highlight').addEventListener('click', e => {
+  col1on = !col1on;
+  document.querySelectorAll('#grid1 .col-imga, #grid1 .col-chul').forEach(el => el.classList.toggle('hi-col', col1on));
+  e.currentTarget.classList.toggle('on', col1on);
+});
+
+// ===== Grid 2 column highlights =====
+function setHi(which){
+  document.querySelectorAll('.btn[data-hi]').forEach(b => b.classList.toggle('on', b.dataset.hi===which));
+  document.querySelectorAll('#grid2 .col-slot, #grid2 .cell-slot').forEach(el => el.classList.toggle('hi-col', which==='slot'));
+  document.querySelectorAll('#grid2 .col-time, #grid2 .cell-time').forEach(el => el.classList.toggle('hi-col', which==='time'));
+  document.querySelectorAll('#grid2 .col-hope, #grid2 .cell-hope').forEach(el => el.classList.toggle('hi-col', which==='hope'));
+}
+setHi('slot');
+document.querySelectorAll('.btn[data-hi]').forEach(b => b.addEventListener('click', () => setHi(b.dataset.hi)));
+
+// ===== Active section on scroll =====
+const links = document.querySelectorAll('aside.doc a[data-sec]');
+const secs = [...links].map(l => document.querySelector(l.getAttribute('href')));
+function onScroll(){
+  const y = window.scrollY + 120;
+  let idx = 0;
+  secs.forEach((s,i)=>{ if(s && s.offsetTop <= y) idx = i; });
+  links.forEach((l,i)=> l.classList.toggle('active', i===idx));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+links.forEach(l => l.addEventListener('click', e => {
+  e.preventDefault();
+  const t = document.querySelector(l.getAttribute('href'));
+  if(t) window.scrollTo({top:t.offsetTop-20, behavior:'smooth'});
+}));
+
+// ===== Tweaks =====
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "density": "normal",
+  "accent": "indigo",
+  "zebra": false
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  indigo: { accent:'oklch(55% 0.12 265)', soft:'oklch(96% 0.02 265)', line:'oklch(88% 0.04 265)' },
+  slate:  { accent:'oklch(48% 0.03 250)', soft:'oklch(96% 0.01 250)', line:'oklch(88% 0.02 250)' },
+  teal:   { accent:'oklch(55% 0.09 190)', soft:'oklch(96% 0.02 190)', line:'oklch(88% 0.04 190)' },
+  warm:   { accent:'oklch(52% 0.08 50)',  soft:'oklch(96% 0.02 50)',  line:'oklch(88% 0.04 50)'  }
+};
+
+function applyTweaks(t){
+  document.body.dataset.density = t.density;
+  const a = ACCENTS[t.accent] || ACCENTS.indigo;
+  document.documentElement.style.setProperty('--accent', a.accent);
+  document.documentElement.style.setProperty('--accent-soft', a.soft);
+  document.documentElement.style.setProperty('--accent-line', a.line);
+  const st = document.getElementById('zebra-style');
+  if(t.zebra){
+    if(!st){
+      const s = document.createElement('style');
+      s.id = 'zebra-style';
+      s.textContent = '.at-grid .data-row:nth-child(26n+1),.at-grid .data-row:nth-child(26n+2),.at-grid .data-row:nth-child(26n+3),.at-grid .data-row:nth-child(26n+4),.at-grid .data-row:nth-child(26n+5),.at-grid .data-row:nth-child(26n+6),.at-grid .data-row:nth-child(26n+7),.at-grid .data-row:nth-child(26n+8),.at-grid .data-row:nth-child(26n+9),.at-grid .data-row:nth-child(26n+10),.at-grid .data-row:nth-child(26n+11),.at-grid .data-row:nth-child(26n+12),.at-grid .data-row:nth-child(26n+13){background:#fafafa}';
+      document.head.appendChild(s);
+    }
+  } else if(st) st.remove();
+}
+applyTweaks(TWEAKS);
+
+const panel = document.getElementById('tweaks');
+const dSel = document.getElementById('tw-density');
+const aSel = document.getElementById('tw-accent');
+const zChk = document.getElementById('tw-zebra');
+dSel.value = TWEAKS.density; aSel.value = TWEAKS.accent; zChk.checked = !!TWEAKS.zebra;
+
+function push(edits){
+  Object.assign(TWEAKS, edits);
+  applyTweaks(TWEAKS);
+  try { window.parent.postMessage({type:'__edit_mode_set_keys', edits}, '*'); } catch(e){}
+}
+dSel.addEventListener('change', e => push({density: e.target.value}));
+aSel.addEventListener('change', e => push({accent: e.target.value}));
+zChk.addEventListener('change', e => push({zebra: e.target.checked}));
+document.getElementById('tw-close').addEventListener('click', () => panel.classList.remove('on'));
+
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode') panel.classList.add('on');
+  if (d.type === '__deactivate_edit_mode') panel.classList.remove('on');
+});
+try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
+</script>
+
+</body>
+</html>

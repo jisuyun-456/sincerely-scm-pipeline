@@ -1,0 +1,1534 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>출하 인수인계서 · 문서형</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  :root{
+    --bg:#ffffff;
+    --surface:#ffffff;
+    --surface-2:#fbfbfa;
+    --surface-3:#f4f4f2;
+    --ink:#1a1a1a;
+    --ink-2:#3a3a38;
+    --muted:#75756f;
+    --muted-2:#a8a8a2;
+    --line:#ebebe6;
+    --line-2:#f2f2ee;
+    --accent:#3b3b6e;
+    --accent-soft:#f2f2fb;
+    --highlight:#fff7c2;
+    --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+    --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:3px}
+
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;
+  }
+  .topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+  .topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+  .topbar .sep{color:var(--muted-2)}
+  .topbar .doc-name{color:var(--muted);font-size:13px}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+  .topbar .right a{color:var(--muted);text-decoration:none}
+  .topbar .right a:hover{color:var(--ink)}
+  .topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+
+  .layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+
+  aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+  aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+  aside.side h4:first-child{margin-top:0}
+  aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+  aside.side li a{
+    display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);
+    border-left:1px solid transparent;transition:color .12s,border-color .12s,background .12s;
+    line-height:1.45;
+  }
+  aside.side li a:hover{color:var(--ink);text-decoration:none}
+  aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+  aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+  aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+  aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+
+  article{min-width:0;max-width:720px;margin:0 auto}
+  article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+  article h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;color:var(--ink);}
+  article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+  article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+  article .byline .k{color:var(--muted-2);margin-right:4px}
+
+  article h2{
+    font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;
+    margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;
+    display:flex;align-items:baseline;gap:12px;position:relative;
+  }
+  article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+  article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+
+  article h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px;}
+  article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+
+  article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+  article p strong{color:var(--ink);font-weight:600}
+  article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+
+  article code, code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+
+  article ul, article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+  article ul li, article ol li{margin:6px 0;line-height:1.75}
+  article ul li::marker{color:var(--muted-2)}
+  article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+  .pullquote{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;max-width:640px}
+  .pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+  .pullquote cite::before{content:"— "}
+
+  .note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+  .note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+  .note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+  .note .body strong{color:var(--ink)}
+  .note.warn .tag{color:#8a3a00}
+  .note.danger .tag{color:#8c1919}
+
+  /* Slack-style notification card */
+  .card{max-width:480px;margin:24px 0;border:1px solid var(--line);border-left:3px solid #4a154b;background:#fafaf7;padding:14px 16px;font-size:14px}
+  .card .card-h{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+  .card .badge{font-weight:600;color:var(--ink);font-size:13px}
+  .card .muted{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .card .card-b .kv{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:3px 0;font-size:13.5px;line-height:1.6}
+  .card .card-b .kv span:first-child{color:var(--ink-3);font-size:12.5px}
+  .card .card-b .kv span:last-child{color:var(--ink)}
+  .card .card-msg{margin:10px 0 0;padding-top:10px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--ink-2);font-style:italic}
+
+  dl.def{margin:0 0 24px;max-width:680px}
+  dl.def > div{display:grid;grid-template-columns:180px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+  dl.def > div:first-child{border-top:1px solid var(--ink)}
+  dl.def > div:last-child{border-bottom:1px solid var(--line)}
+  dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+  dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+
+  /* Fig — Airtable-style screenshot reference */
+  figure.fig{margin:28px 0;max-width:640px}
+  figure.fig .thumb{border:1px solid var(--line);border-radius:4px;background:var(--surface-2);padding:14px;position:relative;overflow:hidden}
+  figure.fig .thumb::before{content:"FIG";position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:var(--muted-2)}
+  figure.fig .thumb .mini{display:flex;align-items:center;gap:6px;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-2);font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  figure.fig .thumb .mini .dots{display:flex;gap:3px}
+  figure.fig .thumb .mini .dots span{width:6px;height:6px;border-radius:50%;background:#d4d4cf}
+  figure.fig .thumb .mini .tabs{display:flex;gap:8px;margin-left:auto}
+  figure.fig .thumb .mini .tabs span{font-size:10px;color:var(--muted-2)}
+  figure.fig .thumb .mini .tabs span.on{color:var(--ink)}
+  figure.fig .thumb .ascii{font-family:var(--mono);font-size:11px;color:var(--ink-2);white-space:pre-wrap;line-height:1.55}
+  figure.fig figcaption{font-size:12px;color:var(--muted);margin-top:8px;font-family:var(--mono);display:flex;gap:10px;align-items:center}
+  figure.fig figcaption .n{color:var(--ink);font-weight:500}
+
+  /* Three-column field-flow (1번 → 2번 → 3번) */
+  .flow3{margin:24px 0 8px;max-width:640px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:stretch}
+  .flow3 .col{border:1px solid var(--line);border-radius:4px;background:var(--surface-2);padding:10px 12px;position:relative}
+  .flow3 .col .label{font-family:var(--mono);font-size:9.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+  .flow3 .col .label .num{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#c93838;color:#fff;font-size:9px;font-family:var(--mono);font-weight:600}
+  .flow3 .col .field{font-family:var(--mono);font-size:11px;color:var(--ink);font-weight:500;margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed var(--line)}
+  .flow3 .col .rows{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);line-height:1.55;white-space:pre-line;min-height:140px}
+  .flow3 .col.computed{background:var(--accent-soft);border-color:#d8d8ee}
+  .flow3 .col.input{background:#fff;border-color:#d4d4cf}
+  .flow3 .col.input textarea{width:100%;border:0;background:transparent;font-family:var(--mono);font-size:10.5px;color:var(--ink);line-height:1.55;resize:vertical;min-height:140px;padding:0;outline:none}
+  .flow3 .col.input textarea:focus{outline:none}
+  .flow3 .col.input{box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .15s}
+  .flow3 .col.input:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+  .flow3 .col .label .num{cursor:default}
+  .flow3-cap{font-family:var(--mono);font-size:11px;color:var(--muted);margin:6px 0 24px;text-align:center;letter-spacing:0.04em}
+
+  /* Interactive PDF button grid (replaces ASCII art in Fig 2) */
+  .pdfgrid{margin:8px 0;display:grid;grid-template-columns:1fr 28px 1fr;gap:0;font-family:var(--mono);font-size:11px;background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  .pdfgrid .gh{padding:8px 14px;background:var(--surface-3);font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);border-bottom:1px solid var(--line);font-weight:500}
+  .pdfgrid .gh.col-arrow{background:var(--surface-3);border-bottom:1px solid var(--line)}
+  .pdfgrid .row-btn{padding:6px 14px;border-bottom:1px solid var(--line-2);display:flex;align-items:center}
+  .pdfgrid .row-arrow{padding:6px 0;border-bottom:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;color:var(--muted-2);font-size:11px}
+  .pdfgrid .row-pdf{padding:6px 14px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;color:var(--muted-2);min-height:30px}
+  .pdfgrid .row-btn:last-of-type,.pdfgrid .row-arrow:last-of-type,.pdfgrid .row-pdf:last-of-type{border-bottom:0}
+  .pdfgrid button.pyt{font-family:var(--mono);font-size:10.5px;background:#fff;color:var(--ink);border:1px solid var(--line);padding:3px 12px;border-radius:3px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:6px}
+  .pdfgrid button.pyt:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .pdfgrid button.pyt.done{background:#d4f1d4;color:#1a5d1a;border-color:#a8d4a8;cursor:default}
+  .pdfgrid button.pyt.done:hover{background:#d4f1d4;color:#1a5d1a}
+  .pdfgrid button.pyt:disabled{cursor:default;opacity:.7}
+  .pdfgrid .pdf-chip{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-2)}
+  .pdfgrid .pdf-chip .ico{display:inline-grid;place-items:center;width:18px;height:18px;background:#fde2e2;border:1px solid #f0b8b8;border-radius:2px;font-size:8px;color:#9a2424;font-weight:600}
+  .pdfgrid .empty-dash{color:var(--muted-2);font-size:11px}
+
+  /* Inline mail-send button in chrome figures (PNA & 재고) */
+  .mailbtn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;background:#fff;color:var(--ink);border:1px solid var(--line);padding:4px 12px;border-radius:3px;cursor:pointer;transition:all .12s;margin:8px 0}
+  .mailbtn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .mailbtn.done{background:#d4f1d4;color:#1a5d1a;border-color:#a8d4a8;cursor:default}
+  .mailbtn.done:hover{background:#d4f1d4;color:#1a5d1a}
+  .mailcaption{font-family:var(--mono);font-size:11px;color:var(--muted);margin:6px 0 16px;letter-spacing:0.04em}
+
+  /* "UI에서 보기" link chip — same pattern as 자재관리 (문서형) */
+  figure.fig figcaption .open-ui{
+    margin-left:auto;display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--sans);font-size:12px;font-weight:500;
+    color:var(--accent);text-decoration:none;
+    padding:3px 10px;border-radius:3px;border:1px solid var(--accent);
+    background:var(--accent-soft);transition:all .12s;
+  }
+  figure.fig figcaption .open-ui:hover{background:var(--accent);color:#fff;text-decoration:none}
+  figure.fig figcaption .open-ui .arr{font-family:var(--mono)}
+
+  .view-ui{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:500;
+    color:var(--accent);text-decoration:none;
+    padding:2px 9px;border-radius:3px;border:1px solid var(--accent);
+    background:var(--accent-soft);transition:all .12s;
+    margin-left:6px;vertical-align:1px;white-space:nowrap;
+  }
+  .view-ui:hover{background:var(--accent);color:#fff;text-decoration:none}
+  .view-ui .arr{font-family:var(--mono);font-size:11px}
+
+  .tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:640px;font-size:13.5px}
+  .tbl .r{display:grid;padding:10px 0;border-bottom:1px solid var(--line)}
+  .tbl .r:last-child{border-bottom:0}
+  .tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500}
+  .tbl.c3 .r{grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .tbl.c4 .r{grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+  .tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+  .tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+
+  /* Placeholder section */
+  .stub{border:1px dashed var(--line);border-radius:4px;padding:16px 18px;background:var(--surface-2);margin:18px 0 8px;max-width:640px;font-size:13.5px;color:var(--muted);font-family:var(--mono);display:flex;justify-content:space-between;align-items:center;gap:14px}
+  .stub .tag{font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted-2)}
+
+  aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+  aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+  aside.toc ul{list-style:none;padding:0;margin:0}
+  aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+  aside.toc li a:hover{color:var(--ink);text-decoration:none}
+  aside.toc li a.active{color:var(--ink)}
+  aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+
+  .dropcap::first-letter{font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;float:left;padding:6px 10px 0 0;color:var(--ink);}
+
+  footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  @media print{
+    .topbar,aside.side,aside.toc,#tweaks{display:none}
+    .layout{display:block;padding:0}
+    article{max-width:100%}
+    article h2{break-after:avoid}
+    figure.fig,.flow3{break-inside:avoid}
+  }
+  @media (max-width:1040px){
+    .layout{grid-template-columns:220px minmax(0,1fr);}
+    aside.toc{display:none}
+  }
+  @media (max-width:720px){
+    .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+    aside.side{position:static;height:auto}
+    .topbar{padding:12px 20px}
+    article h1{font-size:34px}
+    article h2{font-size:24px;margin-top:48px}
+    .topbar .doc-name{display:none}
+    .flow3{grid-template-columns:1fr}
+  }
+
+  #tweaks{position:fixed;right:20px;bottom:20px;z-index:60;background:#fff;border:1px solid var(--line);border-radius:6px;padding:14px;width:220px;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.06);display:none}
+  #tweaks.on{display:block}
+  #tweaks h5{margin:0 0 10px;font-family:var(--mono);font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+  #tweaks .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  #tweaks select{padding:3px 6px;font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:4px;background:#fff}
+  #tweaks .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark"><div class="dot">SC</div> 신시어리웨일즈</div>
+  <span class="sep">/</span>
+  <span class="doc-name">출하 인수인계서 · 관리자용</span>
+  <div class="right">
+    <a href="자재관리 가이드라인 (문서형).html">← 자재관리 가이드라인</a>
+    <a href="TMS 인수인계서.html">TMS 배차 ↗</a>
+    <span class="ver">v0.1 · 26.04.28</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch0">I · 서문</a></li>
+      <li><a href="#ch1">II · 출하 업무 개요</a></li>
+      <li><a href="#ch1b">III · 배송 요청 연결</a></li>
+      <li><a href="#ch2">IV · 출하확인서 작성법</a></li>
+      <li><a href="#ch3">V · 협력사 출하요청 (PNA)</a></li>
+      <li><a href="#ch4">VI · 협력사 출하요청 (재고)</a></li>
+      <li><a href="#ch5">VII · 배차 스케줄링</a></li>
+      <li><a href="#ch6">VIII · 배송 파트너 관리</a></li>
+      <li><a href="#ch7">IX · 출하 후 정산·확인</a></li>
+      <li><a href="#ch7b">X · 물류신청 처리 (내부·외부)</a></li>
+      <li><a href="#ch7c">XI · 고고엑스 배차 방법</a></li>
+      <li><a href="#ch7d">XII · 외주 임가공 이동 준비</a></li>
+      <li><a href="#ch8">XIII · 주의 케이스</a></li>
+      <li><a href="#ch9">XIV · 계정·자격 정보</a></li>
+      <li><a href="#ch10">XV · 체크리스트 · 용어집</a></li>
+    </ul>
+    <div class="cross">
+      <a href="자재관리 가이드라인 (문서형).html">자재관리 가이드라인 <span class="arr">→</span></a>
+      <a href="TMS 인수인계서.html">TMS 배차 스케줄링 <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <article>
+
+    <div class="eyebrow">Handover document · Outbound shipping</div>
+    <h1>출하 인수인계서</h1>
+    <p class="lede">신시어리웨일즈 물류사업본부의 출하 업무를 처음 맡는 관리자분을 위한 서술형 인수인계 문서입니다.</p>
+
+    <div class="byline">
+      <span><span class="k">기준일</span>2026.04.28</span>
+      <span><span class="k">근무지</span>에이원지식산업센터</span>
+      <span><span class="k">대상</span>신규·기존 관리자</span>
+      <span><span class="k">시스템</span>TMS (Airtable Base)</span>
+    </div>
+
+    <!-- Chapter 0 -->
+    <h2 id="ch0"><span class="nm">I</span>서문</h2>
+    <p>
+      이 문서는 신시어리웨일즈 <strong>출하 관리자 교육용 가이드라인</strong>입니다.
+      2026년 4월 28일 기준으로 작성되었으며, TMS(Airtable 기반)에서 이루어지는 출하 업무를 다룹니다.
+      자재관리·임가공이 끝난 굿즈를 고객사·파트너사로 내보내는 과정 전체를 순서대로 정리했습니다.
+    </p>
+    <p>
+      출하 업무는 <em>출하확인서 작성 · 배차 스케줄링 · 배송 파트너 인계 · 정산</em>의 흐름으로 이어집니다.
+      이 문서는 그 흐름을 따라 구성되어 있으며, 마지막에 주의가 필요한 케이스와 매일 확인해야 할 체크리스트를 두었습니다.
+    </p>
+
+    <div class="pullquote">
+      "출하"는 단순한 발송이 아니라, 임가공된 굿즈를 정확한 수량으로 정확한 곳에 보내고 그 사실을 시스템에 기록하는 일입니다.
+      <cite>물류사업본부 실무 인수인계 노트</cite>
+    </div>
+
+    <!-- Chapter 1 — overview stub -->
+    <h2 id="ch1"><span class="nm">II</span>출하 업무 개요</h2>
+    <p>
+      출하 업무는 모두 <strong>TMS</strong>(Airtable 베이스)에서 이루어집니다.
+      TMS 베이스 안의 주요 테이블은 다음과 같습니다.
+    </p>
+    <dl class="def">
+      <div><dt>배송요청</dt><dd>고객사·내부 팀에서 들어오는 배송 요청 원장.</dd></div>
+      <div><dt>Shipment</dt><dd>실제 출하 단위 레코드. 출하확인서 작성·배차·정산이 이 테이블 기준으로 진행됩니다.</dd></div>
+      <div><dt>배송파트너</dt><dd>퀵·택배·화물 등 외부 파트너사 정보.</dd></div>
+      <div><dt>Location</dt><dd>출발지·도착지 좌표 마스터.</dd></div>
+    </dl>
+    <div class="stub"><span>본 챕터 상세 내용은 추가 인수인계 시 채울 예정입니다.</span><span class="tag">TBD</span></div>
+
+    <!-- Chapter 1B — 배송 요청 연결 -->
+    <h2 id="ch1b"><span class="nm">III</span>배송 요청 연결</h2>
+    <p>
+      배송 요청 테이블에 들어온 TO(배송요청)가 <strong>Shipment 테이블에 자동 연결</strong>되어야 출하 작업이 시작됩니다.
+      대부분의 건은 <strong>Zapier 자동화</strong>를 통해 연결되지만, 간혹 자동화가 실패해 <em>수동 연결</em>이 필요한 경우가 있습니다.
+    </p>
+
+    <h3 id="ch1b-1">① 미연결 건 찾기 <a class="view-ui" href="출하 인수인계서.html#tab=intro&from=ch1b-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>배송요청 테이블 → Shipment 연결 view</strong>에서 <code class="inl">Shipment</code> 컬럼이 비어 있는 행을 찾습니다.
+      해당 행의 <code class="inl">logistics_PK</code>(TO 번호)를 복사합니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / 배송요청 / Shipment 연결</span>
+          <div class="tabs"><span>Filtered by 출고 요청일, 배송 요청사항(CX팀 작성)</span><span class="on">Sorted by 1 field</span></div>
+        </div>
+        <div class="ascii">
+logistics_PK   project                          Shipment      출고 요청
+TO00010054     PNA32230-한국수력원자력          SC00016378    2025.4.2
+TO00010069     PNA32030-(주)에스씨케이컴퍼니    SC00016411    2025.4.2
+TO00010077     PNA32407-반도카메라              SC00016422    2025.4.2
+TO00010235     PNA30655-강릉아산병원            SC00016710    2025.4.2
+TO00010252     PNA31610-동아일보                ░░░░░░░░░░    2025.4.2  ← 미연결
+TO00009871     PNA31808-DGB금융지주             SC00016178    2025.4.3
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 4</span><span>Shipment 연결 view — 비어 있는 칸이 수동 연결 대상</span><a class="open-ui" href="출하 인수인계서.html#tab=intro&from=ch1b-1">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h3 id="ch1b-2">② Shipment 테이블에 수동 입력 <a class="view-ui" href="출하 인수인계서.html#tab=intro&from=ch1b-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>Shipment 테이블 → 배송요청 연결 view</strong>로 이동해 새 행을 만들고 두 필드를 입력합니다.
+    </p>
+
+    <ol class="steps">
+      <li><span class="sn">1</span><div><strong>배송요청</strong> 칸에 복사한 <code class="inl">TO00010252</code>를 붙여넣기.</div></li>
+      <li><span class="sn">2</span><div><strong>출하확정일</strong>에 <em>출고요청일과 동일한 날짜</em>(예: 2025-04-02)를 입력. <code class="inl">출고 요정일 Rollup (from 배송정보)</code> 필드값과 일치시킵니다.</div></li>
+    </ol>
+
+    <div class="note">
+      <div class="tag">검증</div>
+      <div class="body">
+        입력 후 Shipment 테이블 상단으로 돌아가면 신규 SC가 추가되어 있고, 출하장소·임가공 장소가 자동 채워진 것을 확인할 수 있습니다. 이후 배차 스케줄링 단계로 넘어갑니다.
+      </div>
+    </div>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 배송요청 연결</span>
+          <div class="tabs"><span>Sorted by 1 field</span><span class="on">Color</span></div>
+        </div>
+        <div class="ascii">
+SC id        출하일(요일)   배송요청      출하확정일                 출고 요정일 Rollup
+SC00016730   출고일 확인     TO00010252    2025-04-02T00:00:00.000Z   2025-04-02
+             ↑                ↑ 1번         ↑ 2번
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 5</span><span>Shipment 테이블 → 배송요청 연결 view — TO 붙여넣기 + 출하확정일 입력</span><a class="open-ui" href="출하 인수인계서.html#tab=intro&from=ch1b-2">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <div class="note warn">
+      <div class="tag">자동화가 안 된 이유</div>
+      <div class="body">
+        대개 배송요청 항목의 필수 필드(출하장소, 출고요청일 등)가 비어 있거나 형식이 어긋나 Zapier가 트리거를 받지 못한 경우입니다.
+        수동 연결 후에는 CX팀에 원본 누락 필드 정정을 요청하세요.
+      </div>
+    </div>
+
+    <!-- Chapter 2 — 출하확인서 작성법 (메인) -->
+    <h2 id="ch2"><span class="nm">IV</span>출하확인서 작성법</h2>
+    <p>
+      출하확인서는 <strong>Shipment 테이블</strong>의 <em>"출하확인서 작업"</em> view에서 작성합니다.
+      TMS 좌측 사이드바의 <code class="inl">관리</code> 그룹 안에 view가 들어 있으며,
+      이 view에 노출된 레코드들이 <strong>금일 출하확인서 작업 대상</strong>입니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment</span>
+          <div class="tabs"><span>배송요청</span><span class="on">Shipment</span><span>배송파트너</span><span>Location</span></div>
+        </div>
+        <div class="ascii">
+≡  ▦ 출하확인서 작업 ▾
+
+  ★ My favorites
+      ▦ CBM 테스트
+  ▾ 경우님
+  ▾ 관리
+      ▦ 검색
+      ▦ 출하 준비
+      ▦ SSOT_원장추출_raw
+    ▦ 출하확인서 작업          ← 여기
+      ▦ 창고 가동률
+      ▦ 택배 배송 리스트 파일 확인
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 1</span><span>TMS · Shipment 테이블의 "출하확인서 작업" view</span><a class="open-ui" href="출하 인수인계서.html#tab=confirm&from=ch2">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h3 id="ch2-1">출하확인서가 만들어지는 원리 <a class="view-ui" href="출하 인수인계서.html#tab=confirm&from=ch2-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      출하확인서는 <strong>make · pyt 스크립트 · github</strong>로 출력합니다.
+      출력 전에는 반드시 <strong>품목 · 수량 · 외박스 수량</strong>을 레코드에 기재해 두어야 합니다.
+      세 항목 모두 동일한 패턴을 따릅니다 — <em>자동 채워진 1번 필드의 값을 2번 직접입력 필드에 덮어 쓰면, 3번 최종 필드에 반영됩니다.</em>
+    </p>
+
+    <div class="note">
+      <div class="tag">필드 패턴</div>
+      <div class="body">
+        모든 항목이 <strong>1 · 2 · 3 세 칸 구조</strong>로 되어 있습니다.
+        <strong>1번</strong>은 자동 집계값(읽기 전용에 가까움), <strong>2번</strong>이 관리자가 직접 손대는 입력 칸,
+        <strong>3번</strong>은 1·2번을 합쳐 출하확인서에 실제로 박히는 최종 값입니다.
+        2번이 비어 있으면 1번 값이 그대로 3번에 반영됩니다.
+      </div>
+    </div>
+
+    <!-- 출하 품목 -->
+    <h3 id="ch2-2">① 출하 품목 <a class="view-ui" href="출하 인수인계서.html#tab=confirm&from=ch2-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>출하 품목</strong> 항목은 임가공된 굿즈의 품명을 기재하는 칸입니다.
+      1번 자동 집계된 품목 리스트를 확인한 뒤, 수정이 필요한 항목이 있다면 2번 직접입력 칸에 그대로 옮겨 쓰며 손봅니다.
+    </p>
+
+    <div class="flow3">
+      <div class="col">
+        <div class="label"><span>출하 품목</span><span class="num">1</span></div>
+        <div class="field">자동 집계 (lookup)</div>
+        <div class="rows">Advent굿즈박스 키트 100
+메시지캐리어파우치 200
+Simple알라이드지퍼백(M)키트 200
+로고스트랩파우치(키트) 100
+Quality알리포박스 키트 100
+레디고헌치박스 200 메시지캐리어파우치 200 슈가케인텀블러 200
+RE:CUP(리컵)_8oz 300</div>
+      </div>
+      <div class="col input">
+        <div class="label"><span>출하 품목 직접입력</span><span class="num">2</span></div>
+        <div class="field">관리자 입력 · 편집해보세요</div>
+        <textarea data-flow-input="item" rows="7">Advent굿즈박스 키트 100
+Simple알라이드지퍼백(M)키트 200
+로고스트랩파우치(키트) 100
+Quality알리포박스 키트 100
+RE:CUP(리컵)_8oz 300</textarea>
+      </div>
+      <div class="col computed">
+        <div class="label"><span>최종 출하 품목</span><span class="num">3</span></div>
+        <div class="field">자동 반영 (formula)</div>
+        <div class="rows" data-flow-output="item"></div>
+      </div>
+    </div>
+    <div class="flow3-cap">2번 칸을 편집하면 3번에 즉시 반영됩니다</div>
+
+    <ol>
+      <li><strong>1번 출하 품목</strong> 필드값을 확인합니다.</li>
+      <li><strong>2번 출하 품목 직접입력</strong> 필드에 같은 내용을 옮겨 쓰며 필요시 수정합니다.</li>
+      <li>그러면 <strong>3번 최종 출하 품목</strong>에 자동으로 반영됩니다.</li>
+    </ol>
+
+    <!-- 출고 품목 및 수량 -->
+    <h3 id="ch2-3">② 출고 품목 및 수량 <a class="view-ui" href="출하 인수인계서.html#tab=confirm&from=ch2-3">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>출고 품목 및 수량</strong>은 키트 단위가 아니라 <em>실제로 박스에 들어가는 파츠별 수량</em>까지 풀어 적는 칸입니다.
+      샘플 · 잔여분 · 띠지 · 데모 등 임가공 후에만 알 수 있는 항목이 추가되기 때문에, 1번 값을 그대로 두면 부족합니다.
+      반드시 2번 직접입력 칸에서 보정해주세요.
+    </p>
+
+    <div class="flow3">
+      <div class="col">
+        <div class="label"><span>출고 품목 및 수량</span><span class="num">1</span></div>
+        <div class="field">자동 집계 (lookup)</div>
+        <div class="rows">인스타피규어(키링) 150+6
+페이퍼링캘린더 +스탠다드박…
+"Solid커스텀G형박스(S사…
+오디너리후드집업(F/W) 50…
+포시즌블랭킷(무릎담요) 10…
+Passion더스트백(반투명L)…
+어태치보조배터리 200+2
+슈가케인펜 300+1 슈가케…
+스테인리스빨대 175+4
+A35하드캐리어파우치(실버…</div>
+      </div>
+      <div class="col input">
+        <div class="label"><span>(직접입력)</span><span class="num">2</span></div>
+        <div class="field">관리자 입력 · 편집해보세요</div>
+        <textarea data-flow-input="qty" rows="10">인스타피규어(키링) 150+6
+페이퍼링캘린더 +스탠다드박스100+3 페이퍼링캘린더+opp 100+8
+G형 키트 105+3 어썸그립 15+1 띠지105+14
+오디너리후드집업(F/W) 50+1 (M)5개 (L)11개 (XL)15개 (2XL)15개 (3XL)5개
+포시즌블랭킷(무릎담요) 100+2
+Passion더스트백(반투명L)키트 100 잔여분(데코무선가슬기1)
+어태치보조배터리 200+2
+슈가케인펜 300+1 슈가케인텀블러(빨대포함) 150+2
+스테인리스빨대 175
+메시지캐리어파우치 1개 비치타월 1개</textarea>
+      </div>
+      <div class="col computed">
+        <div class="label"><span>최종 출고 품목 및 수량</span><span class="num">3</span></div>
+        <div class="field">자동 반영 (formula)</div>
+        <div class="rows" data-flow-output="qty"></div>
+      </div>
+    </div>
+    <div class="flow3-cap">2번 칸을 편집하면 3번에 즉시 반영됩니다</div>
+
+    <ol>
+      <li><strong>1번 출고 품목 및 수량</strong> 필드값 내용을 확인하고,</li>
+      <li><strong>2번 출고 품목 및 수량 (직접입력)</strong> 필드값에 내용을 덮어 씁니다.</li>
+      <li><strong>3번 최종 출고 품목 및 수량</strong> 필드값에 반영됩니다.</li>
+    </ol>
+
+    <!-- 외박스 수량 -->
+    <h3 id="ch2-4">③ 외박스 수량 <a class="view-ui" href="출하 인수인계서.html#tab=confirm&from=ch2-4">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>외박스 수량</strong>은 박스 사이즈별 개수를 적는 칸입니다.
+      극소 · 소 · 중 · 중대 · 대 사이즈 중 사용한 박스만 골라 <code class="inl">중1 / 총1박스</code> 형식으로 기재합니다.
+    </p>
+
+    <div class="flow3">
+      <div class="col">
+        <div class="label"><span>외박스 수량</span><span class="num">1</span></div>
+        <div class="field">자동 집계 (Summary)</div>
+        <div class="rows">중1 / 총1박스
+중4,중대2 / 총6박스
+극소1,소1,중1,중대5 / 총8박스
+중대3,대2 / 총5박스
+대2 / 총2박스
+중대1,대4 / 총5박스
+중대2 / 총2박스
+중대1,대3 / 총4박스
+중1 / 총1박스
+극소1 / 총1박스, 극소1 / 총1박스</div>
+      </div>
+      <div class="col input">
+        <div class="label"><span>(직접입력)</span><span class="num">2</span></div>
+        <div class="field">관리자 입력 · 편집해보세요</div>
+        <textarea data-flow-input="box" rows="10">중1 / 총1박스
+중4,중대2 / 총6박스
+극소1,소1,중1,중대5 / 총8박스
+중대3,대2 / 총5박스
+대2 / 총2박스
+중대1,대4 / 총5박스
+중대2 / 총2박스
+중대1,대3 / 총4박스
+중1 / 총1박스
+2박스</textarea>
+      </div>
+      <div class="col computed">
+        <div class="label"><span>최종 외박스 수량 값</span><span class="num">3</span></div>
+        <div class="field">자동 반영 (formula)</div>
+        <div class="rows" data-flow-output="box"></div>
+      </div>
+    </div>
+    <div class="flow3-cap">2번 칸을 편집하면 3번에 즉시 반영됩니다</div>
+
+    <ol>
+      <li><strong>1번 외박스 수량</strong> 필드값 내용을 확인하고,</li>
+      <li><strong>2번 외박스 수량 (직접입력)</strong> 필드값에 내용을 덮어 씁니다.</li>
+      <li><strong>3번 최종 외박스 수량 값</strong>에 반영됩니다.</li>
+    </ol>
+
+    <!-- 출고 케이스 -->
+    <h3 id="ch2-5">출고 종류별 작성 기준 <a class="view-ui" href="출하 인수인계서.html#tab=confirm&from=ch2-5">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      모든 출고가 같은 방식으로 작성되지 않습니다. 어떤 출고는 임가공팀이 기재해둔 정보가 있고, 어떤 출고는 관리자가 직접 확인해야 합니다.
+    </p>
+
+    <div class="tbl c2">
+      <div class="r h"><div>출고 종류</div><div>작성 방법</div></div>
+      <div class="r"><div class="mono">PNA 프로젝트 출고<br/>샘플 출고</div><div>임가공 팀에서 내용을 <strong>기재해두기 때문에 정보가 있습니다.</strong> 1번 값을 확인 후 2번에 옮겨 쓰면 됩니다.</div></div>
+      <div class="r"><div class="mono">재고 출고<br/>기타 출고</div><div>내용이 작성되지 않은 경우가 있어, <strong>직접 품목 · 수량 · 외박스 수량을 확인 후 작성</strong>해야 합니다.</div></div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">실무 예시</div>
+      <div class="body">
+        예를 들어 <code class="inl">PT0889 모바일오피스파우치_블랙</code> 재고 출고 건의 경우,
+        1번 출하 품목/출고 품목 및 수량/외박스 수량이 모두 비어 있을 수 있습니다.
+        이때는 직접 품목을 확인해 2번 직접입력 칸에
+        <code class="inl">PT0889-모바일오피스파우치_블랙 + 505개</code>,
+        출고 품목 및 수량에 <code class="inl">PT0889-모바일오피스파우치_블랙 + 510개</code>,
+        외박스 수량에 <code class="inl">20박스</code> 형태로 기재합니다.
+      </div>
+    </div>
+
+    <h3 id="ch2-6">④ 출고확인서 출력 <a class="view-ui" href="출하 인수인계서.html#tab=confirm&from=ch2-6">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      세 항목 작성이 모두 끝나면, view 우측 끝의 <strong>출고확인서_python_버튼</strong>을 누릅니다.
+      버튼을 누르면 옆 <code class="inl">출고확인서_python</code> 어태치먼트 필드에 PDF가 생성되며,
+      이 파일이 곧 출력해서 박스에 동봉할 출고확인서입니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 출하확인서 작업</span>
+          <div class="tabs"><span>↑ Sorted by 1 field</span><span>· Color</span><span>≡</span><span class="on">Share and sync</span></div>
+        </div>
+        <div class="pdfgrid" id="pdfgrid">
+          <div class="gh">출고확인서_python_버튼</div>
+          <div class="gh col-arrow"></div>
+          <div class="gh">출고확인서_python</div>
+          <!-- 11 rows generated by JS -->
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 2</span><span>출고확인서_python_버튼 — 클릭하면 옆 칸에 PDF가 생성됩니다</span><a class="open-ui" href="출하 인수인계서.html#tab=confirm&from=ch2-6">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <div class="pullquote">
+      출고확인서_python_버튼 눌러서 출고확인서를 출력하면 끝!
+      <cite>현장 메모</cite>
+    </div>
+
+    <!-- 이후 챕터들은 자리만 잡기 -->
+
+    <!-- Chapter 3 — 협력사 출하요청 (PNA) -->
+    <h2 id="ch3"><span class="nm">V</span>협력사 출하요청 (PNA)</h2>
+    <p>
+      협력사 출하요청은 협력사로 "우리가 보낼 자재가 있다"고 알리는 사전 메일 발송 작업입니다.
+      출하 전날 협력사가 입고 준비를 할 수 있도록, 품목·수량·외박스 정보를 정리해서 전달합니다. 요청은 두 가지 종류로 나뉩니다.
+    </p>
+
+    <dl class="def">
+      <div><dt>임가공 협력사</dt><dd><strong>다영기획 · PNA건</strong>. 임가공을 다영기획으로 보내는 케이스. 본 챕터(IV)에서 다룹니다.</dd></div>
+      <div><dt>보관 협력사</dt><dd><strong>베스트원 · MM 재고 이동신청건</strong>. 베스트원 재고를 출하하는 케이스. 다음 챕터(V)에서 다룹니다.</dd></div>
+    </dl>
+
+    <h3 id="ch3-1">view 위치 <a class="view-ui" href="출하 인수인계서.html#tab=partner&from=ch3-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      Shipment 테이블의 사이드바에서 <code class="inl">협력사 출하 요청 메일 발송</code> 섹션 → <strong>(임가공) 출하요청 메일 발송_to임가공협력사</strong> view를 엽니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment</span>
+          <div class="tabs"><span>배차관리</span><span>배송파트너</span><span>Location</span><span class="on">출하장소</span></div>
+        </div>
+        <div class="ascii">
+▾ 계획 및 관리
+    ▦ 출하 준비
+    ▦ 출하확인서 작업 (출고 분리)
+    ▦ 배차 스케줄링
+    ▦ 슬라리_알림톡_출하안내
+    ▦ 택배 배송 리스트 파일 확인
+    ▦ CBM
+    ▦ 고객사수령 리스트
+▾ 협력사 출하 요청 메일 발송
+  ▦ (임가공) 출하요청 메일 발송       ← 여기
+  ▦ 베스트원 (재고) 출하요청 메일 발송
+▾ 배송 상황
+    ▦ 배송 현황
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 3</span><span>Shipment 테이블 · 알림 섹션의 임가공 협력사 view</span><a class="open-ui" href="출하 인수인계서.html#tab=partner&from=ch3-1">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h3 id="ch3-2">메일 발송 절차 <a class="view-ui" href="출하 인수인계서.html#tab=partner&from=ch3-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>view에는 <strong>1번 출하일</strong> · <strong>2번 외박스 포장 물품 및 수량</strong> · <strong>3번 출하 품목기입(협력사 이메일 발송용)</strong> · <strong>4번 협력사 출하요청 버튼</strong> 네 칸이 한 줄로 배치되어 있습니다.</p>
+
+    <ol>
+      <li><strong>1번 출하일</strong>을 확인합니다. (출하 전날 알림 메일을 협력사에 발송하기 위함)</li>
+      <li><strong>2번 외박스 포장 물품 및 수량</strong>을 확인합니다. 출하 수량으로 임가공팀에서 미리 기재한 값입니다.</li>
+      <li>물품·수량 확인 후 <strong>3번 출하 품목기입(협력사 이메일 발송용)</strong> 필드값에 내용을 덮어 씁니다.</li>
+      <li>3번 작성을 완료하면 <strong>4번 협력사 출하요청 버튼</strong>을 눌러 메일을 발송합니다.</li>
+    </ol>
+
+    <button class="mailbtn" data-mail="pna">▷ 4번 협력사 출하요청 버튼 (PNA · 임가공)</button>
+    <div class="mailcaption">클릭해보세요 — 메일 발송 시뮬레이션</div>
+
+    <div class="note">
+      <div class="tag">발송 후 확인</div>
+      <div class="body">
+        메일 발송이 완료되면 두 곳에서 결과를 확인합니다.
+        <strong>(왼쪽) 메일</strong>은 <code class="inl">[신시어리:출하요청]PNA…</code> 제목으로 협력사 메일함에 도착합니다.
+        <strong>(오른쪽) softr 페이지</strong>의 <em>신시어리 패키징 출고</em> 리스트에 동일 건이 노출되며,
+        협력사 담당자가 <code class="inl">출하처리</code> 버튼을 눌러 확인 후 출하해줍니다.
+      </div>
+    </div>
+
+    <!-- Chapter 4 — 협력사 출하요청 (재고) -->
+    <h2 id="ch4"><span class="nm">VI</span>협력사 출하요청 (재고)</h2>
+    <p>
+      베스트원 재고에서 출하해야 하는 건은 절차가 조금 다릅니다.
+      배차 스케줄링 단계에서 <strong>여러 Shipment를 하나로 합쳐주는 작업</strong>이 먼저 들어가고, 그다음 메일을 발송합니다.
+    </p>
+
+    <h3 id="ch4-1">배차 스케줄링 — Shipment 합치기 <a class="view-ui" href="출하 인수인계서.html#tab=partner&from=ch4-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      Shipment 테이블 → <code class="inl">배차 스케줄링</code> view에서 시작합니다.
+      재고 출고 건은 <strong>임가공 장소 or 출고 보관 장소</strong> 필드값이 <em>베스트원</em>으로 지정되어 있고, 배송요청 칸에 <code class="inl">MM00021163</code> 같은 MM 번호가 들어 있습니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 배차 스케줄링</span>
+          <div class="tabs"><span>Sorted by 3 fields</span><span class="on">Color</span></div>
+        </div>
+        <div class="ascii">
+출하확정일   SC_id      출하일(요일)  배송요청        임가공/보관 장소
+2023.6.20    SC001772    6/20 (화)    MM00021163      베스트원
+             SC001771    6/20 (화)    MM00021071      베스트원
+             SC001773    6/20 (화)    MM00021072      베스트원
+             SC001777    6/20 (화)    MM00021064      베스트원
+             SC001778    6/20 (화)    MM00021065      베스트원
+             SC001779    6/20 (화)    MM00021069      베스트원
+             SC001780    6/20 (화)    MM00021068      베스트원
+             SC001781    6/20 (화)                    베스트원
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 4</span><span>배차 스케줄링 view — 동일 출하확정일·동일 베스트원 출고 건들</span><a class="open-ui" href="출하 인수인계서.html#tab=partner&from=ch4-1">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h4>왜 합치는가</h4>
+    <p>
+      합쳐주는 이유는 <strong>배차 1 : Shipment N</strong> 구조이기 때문입니다.
+      위 view를 보면 동일 베스트원 건은 <strong>수령인(주소) · 수령인 · 입하담당자</strong>가 모두 동일합니다 — 에이원센터로 들어오고, 받는 사람도 같습니다.
+      그래서 같은 차로 한 번에 가져오면 됩니다.
+    </p>
+
+    <ol>
+      <li>같은 출하확정일·같은 베스트원 출고 건의 <strong>MM 재고 신청을 하나로 묶어줍니다.</strong></li>
+      <li><strong>출하장소</strong>를 <em>베스트원</em>으로 변경합니다. (반드시 — 파트너 라운지인 베스트원 softr에 노출되는 필터 조건이 "출하장소=베스트원"이기 때문)</li>
+      <li>배송파트너 뒤에 있는 <strong>배송 방식</strong> 필드값을 맞춰서 바꿔줍니다 — <code class="inl">퀵(수도권) → 퀵</code>, <code class="inl">택배 → 택배</code>.</li>
+      <li><strong>배송슬롯</strong>을 설정합니다. (기본 디폴트는 오전)</li>
+    </ol>
+
+    <h3 id="ch4-2">메일 발송 <a class="view-ui" href="출하 인수인계서.html#tab=partner&from=ch4-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      합치기·필드 정리가 끝나면 메일을 발송합니다.
+      Shipment 테이블 → <code class="inl">협력사 출하 요청 메일 발송</code> 섹션 → <strong>베스트원 (재고) 출하요청 메일 발송_to보관협력사</strong> view를 엽니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 베스트원 (재고) 출하요청 메일 발송</span>
+          <div class="tabs"><span>Grouped by 2 fields</span><span class="on">Color</span></div>
+        </div>
+        <div class="ascii">
+출하확정일                                            협력사 출하요청
+2023.6.19   배송파트너: 베스트원(택)  Count 4         이메일 발송
+  SC001725  MM00021058                               ★
+  SC001726  MM00021063 MM00021090                    ★
+  SC001731  MM00021066                               ★
+  SC001742  MM00021092                               ★
+2023.6.20   배송파트너: 베스트원(택)  Count 1
+  SC001727  MM00021070 MM00021071 MM00021069 …       ★
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 5</span><span>베스트원 (재고) 출하요청 메일 발송 view</span><a class="open-ui" href="출하 인수인계서.html#tab=partner&from=ch4-2">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <ol>
+      <li><strong>1번 재고 출하 품목</strong> 필드값 내용을 <strong>2번 출하 품목기입(협력사 이메일 발송용)</strong> 필드값에 입력합니다.</li>
+      <li>입력 후 <strong>3번 협력사 출하요청 이메일 발송(재고요청건)</strong> 버튼을 클릭하면 메일이 발송됩니다.</li>
+    </ol>
+
+    <button class="mailbtn" data-mail="stock">▷ 3번 협력사 출하요청 이메일 발송 (재고요청건)</button>
+    <div class="mailcaption">클릭해보세요 — 메일 발송 시뮬레이션</div>
+
+    <div class="note">
+      <div class="tag">발송 후 확인</div>
+      <div class="body">
+        메일 발송 이후 두 곳에서 결과를 확인합니다.
+        <strong>(왼쪽) 메일</strong>은 <code class="inl">[신시어리:출하요청]SC001727</code> 제목으로 도착하며 — 품목/수량, 출고 보관일, 배송파트너, 발신인·수령인 정보가 정리되어 있습니다.
+        <strong>(오른쪽) softr</strong>의 <em>신시어리 출하 스케줄</em> 페이지에서 동일 SC 코드를 검색해 협력사가 <code class="inl">출하 처리</code> 버튼을 눌러 확인 후 출하합니다.
+      </div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">PNA vs 재고 차이 요약</div>
+      <div class="body">
+        <strong>PNA건</strong>은 view에서 <em>곧장 메일 발송</em>까지 가능하지만,
+        <strong>재고건</strong>은 배차 스케줄링 view에서 <em>Shipment 합치기 + 출하장소 변경 + 배송방식·슬롯 설정</em>이 먼저 끝나야 메일을 보낼 수 있습니다.
+      </div>
+    </div>
+
+    <h2 id="ch5"><span class="nm">VII</span>배차 스케줄링</h2>
+    <p>
+      배차 스케줄링은 Shipment 테이블의 <code class="inl">스케줄링</code> 섹션 → <strong>배차 스케줄링</strong> view에서 진행합니다.
+      <em>출하장소 정렬 · 배송슬롯 설정 · 기사님 배정</em> 세 단계로 이루어집니다.
+    </p>
+
+    <h3 id="ch5-1">① 임가공 장소 = 출하장소 일치시키기 <a class="view-ui" href="출하 인수인계서.html#tab=dispatch&from=ch5-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>임가공 장소</strong> 필드값과 <strong>출하장소</strong> 필드값을 동일하게 맞춰줍니다.
+      예: 에이원지식산업센터 = 에이원지식산업센터, 다영기획 = 다영기획, 베스트원 = 베스트원.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 배차 스케줄링</span>
+          <div class="tabs"><span>Grouped by 2 fields</span><span class="on">Sorted by 4 fields</span></div>
+        </div>
+        <div class="ascii">
+SC_id      출하일  출하확정일  배송요청     project              임가공 장소        출하장소
+2025.4.11 (Empty) Count 8
+SC00016548 4/11   2025.4.11   TO00010149  PNA32243-한국도로공사 에이원지식산업센터 에이원지식산업센터
+SC00016692 4/11   2025.4.11   TO00010185  PNA32521-휘리쥠바드   에이원지식산업센터 에이원지식산업센터
+SC00016693 4/11   2025.4.11   TO00010198  PNA32572-현대자동차   다영기획            다영기획
+SC00016521 4/11   2025.4.11   TO00010136  PNA32448-피플피그(레드햇) 에이원지식산업센터 에이원지식산업센터
+SC00016679 4/11   2025.4.11   TO00010216  PNA32556-KBS         에이원지식산업센터 에이원지식산업센터
+SC00016514 4/11   2025.4.11   TO00010129  PNA32120-(주)디에이지팝 에이원지식산업센터 에이원지식산업센터
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 6</span><span>임가공 장소 = 출하장소 일치 완료된 상태</span><a class="open-ui" href="출하 인수인계서.html#tab=dispatch&from=ch5-1">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h3 id="ch5-2">② 배송슬롯 설정 <a class="view-ui" href="출하 인수인계서.html#tab=dispatch&from=ch5-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>수령시간</strong>과 <strong>고객 희망 수령 시간</strong> 필드를 보고, <strong>배송슬롯</strong>을 <code class="inl">오전</code> 또는 <code class="inl">오후 1 (오후 2시-4시)</code>로 지정합니다.
+    </p>
+
+    <div class="tbl c2">
+      <div class="r h"><div>수령시간</div><div>배송슬롯</div></div>
+      <div class="r"><div class="mono">오전</div><div>오전</div></div>
+      <div class="r"><div class="mono">오후</div><div>오후 (오후 1 = 14:00-16:00 등 세부 슬롯)</div></div>
+      <div class="r"><div class="mono">무관</div><div>오전 또는 오후 (배차 여건에 맞춰 선택)</div></div>
+    </div>
+
+    <h3 id="ch5-3">③ 배차 특이사항 (퀵, 수도권) <a class="view-ui" href="출하 인수인계서.html#tab=dispatch&from=ch5-3">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      출하장소가 <em>에이원</em>이고 배송 방식이 <em>퀵(수도권)</em>인 건은 사내 기사님 3명에게 배정합니다.
+      신시어리는 총 3명의 기사님으로 운영 중이며, 배송 슬롯은 오전·오후 두 타임으로 나뉘고 슬롯 당 최대 3개의 배송지를 지정할 수 있습니다.
+    </p>
+
+    <dl class="def">
+      <div><dt>이장훈 기사님</dt><dd>오전 슬롯만 배송 (최대 3곳) · 서울 위주</dd></div>
+      <div><dt>조희선 기사님</dt><dd>오전 / 오후 배송 · 서울, 수도권 다 가능</dd></div>
+      <div><dt>박종성 기사님</dt><dd>오전 / 오후 / 야간 / 주말 배송 · 전국 다 가능</dd></div>
+    </dl>
+
+    <div class="note">
+      <div class="tag">예시 — 퀵 11건 배분</div>
+      <div class="body">
+        하루 퀵 건이 11건이면 다음과 같이 분배할 수 있습니다.
+        <strong>이장훈 3건 · 조희선 6건 · 박종성 2건.</strong>
+        오전 슬롯이 가득 찬 경우 조희선·박종성 기사님이 오후 건을 흡수합니다.
+      </div>
+    </div>
+
+    <h3 id="ch5-4">④ 종합 배차 <a class="view-ui" href="출하 인수인계서.html#tab=dispatch&from=ch5-4">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      마지막으로 <strong>출하장소 · 배송파트너(기사님 별 슬롯 수 체크) · 배송 방식(고객배차/퀵/택배) · 수령 시간</strong>을 종합적으로 확인하여 배차를 확정합니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 배차 스케줄링</span>
+          <div class="tabs"><span>Grouped by 출하장소</span><span class="on">Color</span></div>
+        </div>
+        <div class="ascii">
+출하장소        SC_id      출하일  배송파트너        배송슬롯  배송 방식  수령 시간
+▾ 다영기획 (1)
+  SC00016678   4/4    다영기획(목)        오전     다영기획   무관
+▾ 신시어리(이장훈) (6)
+  SC00016578   4/4    신시어리(이장훈)    오전     퀵(수도권) 무관
+  SC00016567   4/4    신시어리(이장훈)    오전     퀵(수도권) 09:00-17:00
+  ...
+▾ 신시어리(조희선) (2)
+  SC00016516   4/4    신시어리(조희선)    오전     퀵(수도권) 오전
+▾ 신시어리(박종성) (3)
+  SC00016580   4/4    신시어리(박종성)    오전     퀵(수도권) 무관
+  ...
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 7</span><span>출하장소·배송파트너 그룹별 배차 확정 화면</span><a class="open-ui" href="출하 인수인계서.html#tab=dispatch&from=ch5-4">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <div class="note warn">
+      <div class="tag">우선순위</div>
+      <div class="body">
+        고객 희망 수령 시간이 명시된 건 → 슬롯이 좁은 기사님(이장훈)부터 채우지 말고,
+        <strong>전국·야간 가능한 박종성 기사님</strong>은 가급적 마지막에 배정해 변동에 대응할 여력을 남겨두세요.
+      </div>
+    </div>
+
+    <h2 id="ch6"><span class="nm">VIII</span>배송 파트너 관리</h2>
+    <div class="stub"><span>배송파트너 테이블 운영 기준 — 추가 인수인계 시 채울 예정입니다.</span><span class="tag">TBD</span></div>
+
+    <h2 id="ch7"><span class="nm">IX</span>출하 후 정산·확인</h2>
+    <p>
+      출하가 완료된 이후의 후속 처리를 다루는 챕터입니다.
+      <strong>고객 직접 수령·고객 직접 퀵배차</strong> 건은 출하 당일 미수령 시 알림을 보내야 하며, 이외 택배 배송 리스트·정산 항목은 별도 인수인계 시 채울 예정입니다.
+    </p>
+
+    <h3 id="ch7-1">고객직접수령 · 고객직접퀵배차 미수령 알림 발송 <a class="view-ui" href="출하 인수인계서.html#tab=logreq&from=ch7-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      <strong>고객 직접 퀵 배차</strong> 또는 <strong>고객 직접 수령</strong> 건이 출하 당일에 수령되지 않았을 때 알림을 보내는 절차입니다.
+      Shipment 테이블의 <em>고객미수령 리스트</em> view에서 진행합니다.
+    </p>
+
+    <dl class="def">
+      <div><dt>Table</dt><dd>Shipment</dd></div>
+      <div><dt>View</dt><dd>고객미수령 리스트 <span class="muted">(좌측 사이드바 <code class="inl">계획 및 관리</code> 그룹)</span></dd></div>
+      <div><dt>대상 건</dt><dd>배송방식 = 고객직접수령 / 고객직접퀵배차 + 출하확정일 도과</dd></div>
+    </dl>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 고객미수령 리스트</span>
+          <div class="tabs"><span>Filtered by 출하확정일, 배송 방식</span><span class="on">Grouped by 3 fields</span></div>
+        </div>
+        <div class="ascii">
+SC_id        발신인_CX  출하확정일  출하일(요일)  발송상태_TMS  배송파트너  배송방식
+▾ 출하일자 2023년 6월 21일 (Count 1)
+  ▾ 배차담당: 고객
+    ▾ 배송파트너: 고객
+      SC001584   송지영   2023.6.21   6/21 (수)    출하 대기   고객       고객직접수령
+▾ 출하일자 2023년 6월 22일 (Count 1)
+  ▾ 배차담당: 고객
+    ...
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 8</span><span>고객미수령 리스트 view — 출하일자 / 배차담당 / 배송파트너로 3중 그룹</span><a class="open-ui" href="출하 인수인계서.html#tab=logreq&from=ch7-1">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h4 id="ch7-1-1">알림 발송 절차</h4>
+    <ol class="steps">
+      <li><span class="sn">1</span><div>해당 행의 <strong>미수령알림버튼</strong> 필드 셀을 클릭 → <code class="inl">Run script</code>를 누른다.</div></li>
+      <li><span class="sn">2</span><div>오른쪽 사이드 패널에 <em>미수령알림버튼_Webhook</em> 익스텐션이 열린다. <strong>"You have selected [object Object]"</strong> 문구가 표시될 때까지 <u>창을 닫지 말고 홀딩</u>한다.</div></li>
+      <li><span class="sn">3</span><div>해당 문구가 뜨면 Zapier 웹훅 호출이 완료된 것이다. 패널을 닫아도 된다.</div></li>
+    </ol>
+
+    <div class="note warn">
+      <div class="tag">중요</div>
+      <div class="body">
+        Run script 실행 후 <strong>"You have selected [object Object]"</strong> 문구가 뜨기 전에 패널/탭을 닫으면 알림이 발송되지 않습니다. 콘솔 로그(<code class="inl">attempt: "0196f0c0-..." status: "success"</code>) 다음 줄에 표시되는 문구를 반드시 확인하세요.
+      </div>
+    </div>
+
+    <h4 id="ch7-1-2">알림이 도착하는 곳</h4>
+    <p>
+      Slack 워크스페이스의 <strong>#3_4_물류_출고</strong> 채널로 <em>미수령알림</em> 봇이 다음 카드를 게시합니다.
+      <strong>CX 담당자</strong>가 카드를 확인하고 고객에게 별도 안내합니다.
+    </p>
+
+    <div class="card">
+      <div class="card-h"><span class="badge">📦 미수령알림</span><span class="muted">#3_4_물류_출고 · 오후 4:26</span></div>
+      <div class="card-b">
+        <div class="kv"><span>프로젝트명</span><span>PNA18774-서브유</span></div>
+        <div class="kv"><span>출하장소</span><span>에이원지식산업센터(출하)</span></div>
+        <div class="kv"><span>출하일자</span><span>6/12 (월)</span></div>
+        <div class="kv"><span>배송방식</span><span>고객직접퀵배차</span></div>
+        <div class="kv"><span>담당자</span><span>@송지영</span></div>
+        <div class="kv"><span>대시보드</span><span><a href="#">미수령링크</a></span></div>
+        <p class="card-msg">고객 직접 퀵 배차 및 수령 하지 않으셨습니다, 확인 부탁 드립니다.</p>
+      </div>
+    </div>
+
+    <div class="stub"><span>나머지 정산 항목(택배 배송 리스트 파일 확인 등) — 추가 인수인계 시 채울 예정입니다.</span><span class="tag">TBD</span></div>
+
+    <!-- Chapter 7B — 물류신청 처리 -->
+    <h2 id="ch7b"><span class="nm">X</span>물류신청 처리 (내부·외부)</h2>
+    <p>
+      물류신청은 슬랙 <strong>#3_3_물류_신청관리</strong> 채널로 알림이 들어오면서 시작되어, TMS 배차 스케줄링을 거쳐 <em>고고엑스(퀵)</em> 또는 <em>로젠택배</em>로 출하하는 흐름까지 이어집니다.
+      신청은 <strong>출하장소 기준</strong>으로 내부와 외부로 나뉩니다.
+    </p>
+
+    <h3 id="ch7b-1">내부 vs 외부 구분</h3>
+    <div class="tbl c2">
+      <div class="r h"><div>구분</div><div>정의</div></div>
+      <div class="r"><div><strong>내부 출하</strong></div><div>출하장소가 <em>에이원지식산업센터</em></div></div>
+      <div class="r"><div><strong>외부 출하</strong></div><div>출하장소가 <em>베스트원</em> 또는 기타 외부 보관처</div></div>
+    </div>
+
+    <p>물류신청 종류는 다음과 같이 나뉩니다.</p>
+
+    <dl class="def">
+      <div><dt>내부 ① 재고 출하</dt><dd>에이원에 보관되어 있는 재고를 제작협력사로 보내는 건 — <strong>자재지원님이 준비 및 이동</strong></dd></div>
+      <div><dt>내부 ② 외주 임가공 프로젝트 품목·재고 이동</dt><dd>다영기획 등으로 보내는 건 — <strong>정관님이 준비 및 이동</strong></dd></div>
+      <div><dt>내부 ③ 기타 물류신청</dt><dd>이슈 회수, CX·MD팀 요청사항 등 쇼룸으로 보내거나 노벨로 보내는 Everything — <strong>물류신청 담당자분이 직접 확인</strong> 필요</dd></div>
+      <div><dt>외부 ① 재고 출하</dt><dd>베스트원에 보관되어 있는 재고를 제작협력사 / 에이원 / 다영기획으로 보내는 건</dd></div>
+    </dl>
+
+    <div class="note">
+      <div class="tag">핵심</div>
+      <div class="body">
+        <strong>"어떤 물건이 어디에 보관되어 있고 어디로 보내면 되는지"</strong>를 먼저 머릿속에 그린 다음 작업을 시작하세요. 출하장소·보관 장소·임가공 장소가 모두 다를 수 있습니다.
+      </div>
+    </div>
+
+    <h4 id="ch7b-trigger">진입 — 슬랙 알림 확인</h4>
+    <p>
+      <strong>#3_3_물류_신청관리</strong> 채널에 Zapier 봇이 다음과 같은 카드를 게시합니다. 이 알림을 시작점으로 작업을 진행합니다.
+    </p>
+
+    <div class="card">
+      <div class="card-h"><span class="badge">📦 물류신청</span><span class="muted">#3_3_물류_신청관리 · 오후 10:11</span></div>
+      <div class="card-b">
+        <div class="kv"><span>무브먼트ID</span><span>MM00021215</span></div>
+        <div class="kv"><span>출고 요청일</span><span>2023-06-20</span></div>
+        <div class="kv"><span>품목</span><span>PT2243-레더라벨캠핑체어(세트_본품및파우치)_블랙</span></div>
+        <div class="kv"><span>수량</span><span>51</span></div>
+        <div class="kv"><span>담당자</span><span>@윤지수 @남인호 / 신청자: @김민지</span></div>
+      </div>
+    </div>
+
+    <h3 id="ch7b-2">내부 처리 — 11단계 <a class="view-ui" href="출하 인수인계서.html#tab=logreq&from=ch7b-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      Shipment 테이블 → <strong>1번 배차 스케줄링 view</strong>에서 진행합니다.
+      view 컬럼은 <span class="muted">3번 임가공 장소</span> · <span class="muted">4번 출하장소</span> · <span class="muted">5번 품목</span> · <span class="muted">6번 수령시간</span> · <span class="muted">7번 배송슬롯</span> · <span class="muted">8번 배송방식</span> · <span class="muted">9번 배송파트너</span> 순으로 보입니다.
+    </p>
+
+    <ol class="steps">
+      <li><span class="sn">1</span><div>슬랙 채널 알림 확인</div></li>
+      <li><span class="sn">2</span><div>TMS 베이스의 <strong>Shipment 테이블 → 1번 배차 스케줄링 view</strong>에서 배차 진행</div></li>
+      <li><span class="sn">3</span><div><strong>2번 MM(무브먼트)번호</strong> 확인 <span class="muted">예: MM00021215</span></div></li>
+      <li><span class="sn">4</span><div><strong>3번 임가공 장소</strong> 또는 출고 보관 장소 확인 (에이원지식산업센터로 되어 있으니 출하장소도 에이원지식산업센터)</div></li>
+      <li><span class="sn">5</span><div><strong>4번 출하장소</strong>를 3번 임가공 장소 또는 출고 보관장소와 맞게 <em>에이원지식산업센터(출하)</em>로 지정</div></li>
+      <li><span class="sn">6</span><div><strong>5번 품목</strong> 확인</div></li>
+      <li><span class="sn">7</span><div><strong>6번 수령 시간</strong> 확인 — 비어 있는 경우 오전에 출하 가능하면 오전, 오후에 출하 가능하면 오후로 염두</div></li>
+      <li><span class="sn">8</span><div><strong>7번 배송슬롯</strong>을 오전 or 오후 중 출하 가능 시간에 맞춰 설정</div></li>
+      <li><span class="sn">9</span><div><strong>8번 배송 방식</strong> (퀵 or 택배) 확인</div></li>
+      <li><span class="sn">10</span><div>8번 배송방식 확인 후 <strong>9번 배송파트너</strong>를 지정 — 일반적으로 퀵 = <em>고고엑스</em>, 택배 = <em>로젠택배</em></div></li>
+      <li><span class="sn">11</span><div>이후 고고엑스·로젠택배를 통하여 출하하면 됨</div></li>
+    </ol>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 1번 배차 스케줄링</span>
+          <div class="tabs"><span>Filtered by 출하확정일</span><span class="on">Grouped by 2 fields</span></div>
+        </div>
+        <div class="ascii">
+SC_id      출하일(요일)  출하확정일   2번MM        3번임가공장소  4번출하장소           9번배차담당  8번배송방식  7번배송슬롯  6번수령시간
+▾ 고고엑스 (2)
+  SC001767  6/20 (화)    2023.6.20   MM00021215  에이원지식산업…  에이원지식산업센터  고고엑스    퀵          오전        무관
+  SC001750  6/20         (이쇼핑몰_…)
+▾ 다영기획 (목) (1)
+  ...
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 9</span><span>내부 처리 — 1번 배차 스케줄링 view 컬럼 매핑 (2~9번)</span><a class="open-ui" href="출하 인수인계서.html#tab=logreq&from=ch7b-2">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h3 id="ch7b-3">외부 처리 <a class="view-ui" href="출하 인수인계서.html#tab=logreq&from=ch7b-3">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      외부 처리도 슬랙 <strong>#3_3_물류_신청관리</strong> 채널의 알림 확인부터 시작합니다.
+      이후 절차는 <a href="#ch4">VI · 협력사 출하요청 (재고)</a> 챕터를 그대로 따라가면 됩니다.
+    </p>
+
+    <ol class="steps">
+      <li><span class="sn">1</span><div>#3_3_물류_신청관리 채널 알림 확인 — 무브먼트ID·품목·수량·담당자</div></li>
+      <li><span class="sn">2</span><div>Shipment 테이블 → 1번 배차 스케줄링 view에서 임가공 장소 / 출하장소를 <strong>베스트원</strong>으로 지정</div></li>
+      <li><span class="sn">3</span><div>동일 출하일·동일 베스트원 건 묶기 (여러 MM이 한 SC로 합쳐지는 경우 다수)</div></li>
+      <li><span class="sn">4</span><div><a href="#ch4">VI · 협력사 출하요청 (재고)</a> 슬라이드 프로세스를 확인하여 진행</div></li>
+    </ol>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 1번 배차 스케줄링</span>
+          <div class="tabs"><span>Filtered by 출하확정일</span><span class="on">Grouped by 2 fields</span></div>
+        </div>
+        <div class="ascii">
+SC_id      출하일  출하확정일   임가공 장소·출고보관 장소                              출하장소     배차담당     배송방식  배송슬롯
+▾ 베스트원 (2)
+  SC001727  6/20    2023.6.20   MM00021216 / MM00021071 / MM00021049 / MM00021060…  베스트원   베스트원(목)  퀵        오전
+  SC001769  6/20    2023.6.20   MM00021216 / MM00021217                              베스트원   베스트원(목)  퀵        오전
+▾ 신시어리 (1)
+  SC001752  6/20    2023.6.20   ...                                                  에이원지식산업…  신시어리(이장훈)  퀵
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 10</span><span>외부 처리 — 베스트원 그룹으로 여러 MM 묶기</span><a class="open-ui" href="출하 인수인계서.html#tab=logreq&from=ch7b-3">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <div class="note warn">
+      <div class="tag">팁</div>
+      <div class="body">
+        외부 출하의 핵심은 <strong>"여러 MM 알림이 들어와도 베스트원 단위로 묶어서 한 번에 출하요청 메일로 보내는 것"</strong>입니다. 알림 1건 = 출하 1건이 아니므로 배차 스케줄링 단계에서 동일 출하일의 베스트원 건들을 한 번에 모아서 처리하세요.
+      </div>
+    </div>
+
+    <!-- Chapter 7C — 고고엑스 배차 방법 -->
+    <h2 id="ch7c"><span class="nm">XI</span>고고엑스 배차 방법</h2>
+    <p>
+      배송 파트너가 <strong>고고엑스</strong>로 지정된 건은 고고엑스 웹페이지에서 직접 배차합니다.
+      TMS에서 SC 단위로 정리한 정보를 그대로 옮겨 입력하는 작업입니다.
+    </p>
+
+    <h3 id="ch7c-1">대상 건 식별 <a class="view-ui" href="출하 인수인계서.html#tab=gogox&from=ch7c-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      Shipment 테이블의 <strong>출하 준비</strong> view에서 <em>배송파트너 = 신시어리 (고고엑스)</em>로 그룹된 건이 대상입니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>airtable.com / TMS / Shipment / 출하 준비</span>
+          <div class="tabs"><span>Filtered by 출하확정일, 배송요청</span><span class="on">Grouped by 2 fields</span></div>
+        </div>
+        <div class="ascii">
+SC_id        출하일(요일)  출하확정일   project
+▾ 배송파트너 : 신시어리 (고고엑스) (2)
+  SC00017023  4/15 (화)    2025.4.15   PNA32807-프레인글로벌
+  SC00017028  4/15 (화)    2025.4.15   PNA32336-프럼퍼니
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 11</span><span>출하 준비 view — 배송파트너 = 신시어리 (고고엑스)로 묶인 건</span><a class="open-ui" href="출하 인수인계서.html#tab=gogox&from=ch7c-1">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h3 id="ch7c-2">배차 7단계 <a class="view-ui" href="출하 인수인계서.html#tab=gogox&from=ch7c-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      고고엑스 웹사이트(<a href="https://www.gogox.com" target="_blank" rel="noopener">www.gogox.com</a>) 로그인 후 신청 화면에서 다음 순서로 진행합니다.
+    </p>
+
+    <ol class="steps">
+      <li><span class="sn">1</span><div><strong>차량 종류 선택</strong> — 일반 / 다마스 / 라보 등 SC 품목 부피에 맞는 차량 선택</div></li>
+      <li><span class="sn">2</span><div><strong>배송메모란에 SC code 입력</strong> — 추가 운임 및 메모 박스의 <em>배송메모</em> 필드에 <code class="inl">SC00017023</code>처럼 입력 <span class="muted">(정산 매칭용 — 반드시 입력)</span></div></li>
+      <li><span class="sn">3</span><div><strong>출발지 정보 입력</strong> — 출하장소 주소·연락처·층 정보</div></li>
+      <li><span class="sn">4</span><div><strong>도착지 정보 입력</strong> — TMS 배송정보의 수령지 주소·연락처. 예: <em>"서울특별시 중구 필동로 37 (충무로17가) HSBC빌딩 14층 화물엘리베이터 앞"</em></div></li>
+      <li><span class="sn">5</span><div><strong>물품란 클릭</strong> → 상품 선택 패널에서 <em>자세히 보기</em> 클릭</div></li>
+      <li><span class="sn">6</span><div><strong>물품 특이사항 입력</strong> — 박스 크기(소/중/대), 수량, 메모 입력. 메모는 기사님께 요청드릴 사항을 적어둠.</div></li>
+      <li><span class="sn">7</span><div><strong>일반 운임 확인</strong> → <strong>계산&저장</strong> 버튼 클릭 → <strong>고고엑스 배차 완료</strong></div></li>
+    </ol>
+
+    <h3 id="ch7c-3">물품 특이사항 메모 예시</h3>
+    <p>물품 메모는 기사님이 현장에서 바로 보는 정보입니다. 다음과 같이 명확하게 작성해주세요.</p>
+
+    <div class="card">
+      <div class="card-h"><span class="badge">📝 메모 예시</span><span class="muted">물품 → 메모 필드</span></div>
+      <div class="card-b">
+        <div class="kv"><span>기본 문구</span><span>"신시어리 물건 배송이라고 말씀 부탁드립니다."</span></div>
+        <div class="kv"><span>상하차 요청</span><span>"상하차 해주세요"</span></div>
+        <div class="kv"><span>지게차 작업</span><span>"상하차지 지게차 작업 해드립니다"</span></div>
+        <div class="kv"><span>고객 부재</span><span>"고객 부재중으로 문 앞에 둬주세요"</span></div>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">필수 체크</div>
+      <div class="body">
+        <strong>배송메모란의 SC code 입력은 절대 누락하지 마세요.</strong> 고고엑스 정산 시 SC와 매칭하는 키값으로 쓰입니다. SC가 누락되면 어느 출하 건에 대한 청구인지 확인이 어려워집니다.
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="tag">차량 종류 가이드</div>
+      <div class="body">
+        소박스 1~2개 = <strong>다마스</strong> · 중박스 다수 또는 1m 이상 = <strong>라보</strong> · 1톤 이상 부피 = <strong>1톤 트럭</strong>. 부피 가늠이 어려울 땐 한 단계 큰 차량을 선택하는 게 안전합니다.
+      </div>
+    </div>
+
+    <h2 id="ch7d"><span class="nm">XII</span>외주 임가공 이동 준비</h2>
+    <p>
+      외주 임가공으로 자재를 보내기 전, <strong>Barcode 베이스</strong>에서 스케줄을 확인하고 <strong>SERPA 베이스</strong>에서 재고이동 데이터를 정리한 뒤 운송오더를 신청하는 사전 작업입니다.
+      이 단계를 마쳐야 TMS에 SC가 자동 생성되고 출하 작업이 이어집니다.
+    </p>
+
+    <div class="note">
+      <div class="tag">의존 관계</div>
+      <div class="body">
+        <strong>Barcode 스케줄 → SERPA 데이터 정리 → 운송오더 신청 → TMS SC 생성</strong> 순서로 흘러가며, 운송오더 신청이 끝나야 TMS 출하준비 view에 SC가 떨어집니다.
+      </div>
+    </div>
+
+    <h3 id="ch7d-1">① 스케줄 확인 (Barcode) <a class="view-ui" href="출하 인수인계서.html#tab=outsource&from=ch7d-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <dl class="def">
+      <div><dt>Base</dt><dd>Barcode</dd></div>
+      <div><dt>Table</dt><dd>피킹리스트</dd></div>
+      <div><dt>View</dt><dd>외주임가공이동스케줄 <span class="muted">(좌측 사이드바 / 피킹리스트 그룹)</span></dd></div>
+    </dl>
+    <p>이 view에서 임가공 일자·임가공 장소·TO 번호·이동 상태 등 일정을 먼저 확인합니다.</p>
+
+    <h3 id="ch7d-2">② SERPA 재고이동 데이터 정리 <a class="view-ui" href="출하 인수인계서.html#tab=outsource&from=ch7d-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <dl class="def">
+      <div><dt>Base</dt><dd>SERPA_v3.0</dd></div>
+      <div><dt>Table</dt><dd>movement</dd></div>
+      <div><dt>View</dt><dd>외주임가공 재고이동 데이터정리_프로덕션</dd></div>
+    </dl>
+    <p>이동목적(<em>생산산출 · 조립투입 · 재고이동</em>) 별로 일치시키며 다음을 수행합니다.</p>
+
+    <h4>2-1. 생산산출 ↔ 조립투입 수량 일치</h4>
+    <ol class="steps">
+      <li><span class="sn">1</span><div><strong>생산산출(입고)</strong>에 입고수량이 채워져 있는지 확인 — 실제 물건 입하가 완료된 것. 생산산출은 <em>생산품 재고만</em> 나타냅니다(재고품 자재 ✖).</div></li>
+      <li><span class="sn">2</span><div><strong>조립투입</strong>은 생산품+재고 자재가 임가공에 투입되는 자재. <strong>생산산출 입고수량 = 조립투입 출고수량</strong>으로 일치시킵니다.</div></li>
+      <li><span class="sn">3</span><div>불량이 있으면 <em>입하 수량</em>이 아닌 <strong>입고 수량</strong>으로 입력. 예: 입하 2030 / 입고 201이면 201을 입력 (불량 2개 제외해 최종 201개 입고).</div></li>
+      <li><span class="sn">4</span><div>재고자재 수량은 <strong>자재지원님이 미리 입력</strong>해주시므로 생산품 자재만 맞추면 됩니다.</div></li>
+    </ol>
+
+    <h3 id="ch7d-3">③ 운송오더 신청 <a class="view-ui" href="출하 인수인계서.html#tab=outsource&from=ch7d-3">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <dl class="def">
+      <div><dt>경로</dt><dd>SERPA → 이동신청 → 외주임가공 운송오더 신청 탭</dd></div>
+    </dl>
+
+    <ol class="steps">
+      <li><span class="sn">1</span><div><strong>+ 버튼</strong>을 눌러 운송오더 작성. 신청자·출하 요청일·출하장소·입하장소·배송 방식·결제방식 입력 후 <em>운송오더 생성하기</em> 클릭.</div></li>
+      <li><span class="sn">2</span><div><strong>출고내역 · 입고내역</strong> 탭에서 생산품 자재 + 재고품 자재 품목 수량에 맞춰 + 버튼으로 이동 레코드 생성. 이동목적 = <code class="inl">재고이동</code>.</div></li>
+      <li><span class="sn">3</span><div><strong>project 필드</strong> — 생산산출 데이터는 project를 넣고, 재고자재 데이터는 project를 넣지 않습니다.</div></li>
+      <li><span class="sn">4</span><div><strong>출고자재 수량 = 입고자재 수량</strong>을 다 맞춰야 다음 단계로 넘어갑니다.</div></li>
+      <li><span class="sn">5</span><div><strong>출하장소 · 입하장소</strong> 입력 — 예: 출고자재/출하장소 = 에이원지식산업센터, 입고자재/입하장소 = 다영기획.</div></li>
+      <li><span class="sn">6</span><div><strong>order · 이동수량</strong> — <em>조립투입</em> order 데이터와 조립투입 출고수량을 넣어줍니다.</div></li>
+      <li><span class="sn">7</span><div><strong>이동 관련 전달사항 to 내부구성원 / to 외부파트너</strong> 란에 <code class="inl">PNA29543-써모피셔사이언티픽_외주임가공</code>처럼 일관되게 작성 후 운송오더 신청.</div></li>
+    </ol>
+
+    <h4>예외 케이스</h4>
+    <dl class="def">
+      <div><dt>재고자재 · Order 데이터 없음</dt><dd>샘플용 1개씩 빼는 건은 order 데이터가 없으므로 운송오더에도 해당 자재 1개씩은 order를 안 넣어도 됩니다.</dd></div>
+      <div><dt>출하장소 = 베스트원 + 자재투입현황 = 이동요청</dt><dd>에이원이 아닌 베스트원에서 임가공 협력사로 투입하는 건. <strong>따로 이동신청 운송오더를 만들어 베스트원 → 임가공 협력사 재고 출고 요청</strong>을 드립니다.</dd></div>
+      <div><dt>자재투입현황 = 직입하예정</dt><dd>자재가 다른 부자재 협력사에서 임가공 협력사로 바로 투입되는 경우 — 운송오더를 생성하지 않아도 됩니다.</dd></div>
+    </dl>
+
+    <div class="note warn">
+      <div class="tag">project 필드 규칙</div>
+      <div class="body">
+        생산품 자재 = project <strong>연결 ○</strong> · 재고자재 = project <strong>연결 ✖</strong>. 이게 뒤집히면 이후 정산·재고 추적이 꼬입니다.
+      </div>
+    </div>
+
+    <h3 id="ch7d-4">④ SC 통합 확인 (TMS) <a class="view-ui" href="출하 인수인계서.html#tab=outsource&from=ch7d-4">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>운송오더 신청이 완료되면 TMS에서 자동으로 SC 통합이 이루어집니다.</p>
+
+    <ol class="steps">
+      <li><span class="sn">1</span><div>TMS → 배송요청 테이블 → <strong>외주 임가공 연결 view</strong>로 들어가서 이동 관련 전달사항으로 그룹된 행들 확인.</div></li>
+      <li><span class="sn">2</span><div>SC 코드 번호들이 1:1로 다 생성되어서 <strong>하나의 SC 코드로 통일</strong>되어 있는지 검증 (예: 16건이 모두 SC00015334로).</div></li>
+      <li><span class="sn">3</span><div>Shipment 테이블 → <strong>출하준비</strong> view에서 같은 SC 아래 이동물품(MM) 번호들이 <em>배송유형</em> 필드에 일괄 표시되면 완료.</div></li>
+    </ol>
+
+    <div class="note">
+      <div class="tag">완료 신호</div>
+      <div class="body">
+        출하준비 view에서 새 SC(예: SC00015334)의 이동물품들이 한 줄로 정렬되어 보이면 이후는 일반 출하 프로세스(IV 출하확인서 작성법)로 이어집니다.
+      </div>
+    </div>
+
+    <h2 id="ch8"><span class="nm">XIII</span>주의 케이스</h2>
+    <div class="stub"><span>재고 출고 · 분할 출고 · 반품 케이스 등 — 사례 모이는 대로 추가합니다.</span><span class="tag">TBD</span></div>
+
+    <h2 id="ch9"><span class="nm">XIV</span>계정·자격 정보</h2>
+    <p>업무용 계정 정보입니다. <strong>외부 공유는 엄격히 금지</strong>되며, 퇴사·변경 시 담당 관리자에게 갱신을 요청해주세요.</p>
+    <dl class="def">
+      <div><dt>Airtable</dt><dd>TMS 베이스 접근 계정 (담당자 부여)</dd></div>
+      <div><dt>Github</dt><dd>출고확인서 출력 스크립트 저장소</dd></div>
+      <div><dt>Make</dt><dd>버튼 클릭 → pyt 실행 자동화 워크플로</dd></div>
+    </dl>
+
+    <h2 id="ch10"><span class="nm">XV</span>체크리스트 · 용어집</h2>
+
+    <h3 id="ch10-1">출하확인서 작성 체크리스트 <a class="view-ui" href="출하 인수인계서.html#tab=ref&from=ch10-1">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <ol>
+      <li>Shipment 테이블 → <code class="inl">출하확인서 작업</code> view 열기</li>
+      <li>레코드별로 <strong>출하 품목</strong> 1번 → 2번 덮어쓰기 → 3번 확인</li>
+      <li><strong>출고 품목 및 수량</strong> 1번 → 2번 덮어쓰기 → 3번 확인 (잔여분·샘플 포함 여부 체크)</li>
+      <li><strong>외박스 수량</strong> 1번 → 2번 덮어쓰기 → 3번 확인</li>
+      <li>재고·기타 출고 건은 직접 현장 확인 후 작성</li>
+      <li><strong>출고확인서_python_버튼</strong> 클릭 → PDF 생성 확인</li>
+      <li>PDF 출력 → 박스 동봉</li>
+    </ol>
+
+    <h3 id="ch10-2">협력사 출하요청 체크리스트 (PNA) <a class="view-ui" href="출하 인수인계서.html#tab=ref&from=ch10-2">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <ol>
+      <li>(임가공) 출하요청 메일 발송 view 열기</li>
+      <li>1번 출하일 확인 → 2번 외박스 포장 물품 및 수량 확인</li>
+      <li>3번 출하 품목기입 필드에 내용 덮어쓰기</li>
+      <li>4번 협력사 출하요청 버튼 클릭 → 메일 발송</li>
+      <li>메일함 + softr <em>신시어리 패키징 출고</em>에서 발송 결과 확인</li>
+    </ol>
+
+    <h3 id="ch10-3">협력사 출하요청 체크리스트 (재고) <a class="view-ui" href="출하 인수인계서.html#tab=ref&from=ch10-3">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <ol>
+      <li>배차 스케줄링 view에서 동일 출하일·동일 베스트원 건 묶기</li>
+      <li>출하장소 → <strong>베스트원</strong> 변경 (반드시)</li>
+      <li>배송 방식 (퀵/택배) + 배송 슬롯 (기본 오전) 설정</li>
+      <li>베스트원 (재고) 출하요청 메일 발송 view에서 1번 → 2번 입력</li>
+      <li>3번 협력사 출하요청 이메일 발송(재고요청건) 버튼 클릭</li>
+      <li>메일함 + softr <em>신시어리 출하 스케줄</em>에서 발송 결과 확인</li>
+    </ol>
+
+    <h3 id="ch10-4">용어집</h3>
+    <dl class="def">
+      <div><dt>TMS</dt><dd>Transport Management System. Airtable 기반 출하·배차 관리 시스템.</dd></div>
+      <div><dt>Shipment</dt><dd>TMS 내 출하 단위 테이블.</dd></div>
+      <div><dt>출하확인서</dt><dd>출하 시 박스에 동봉되는 품목·수량 명세서.</dd></div>
+      <div><dt>1번 / 2번 / 3번 필드</dt><dd>1번=자동 집계, 2번=직접입력, 3번=최종(formula 반영).</dd></div>
+      <div><dt>PNA*****</dt><dd>고객사 발주 단위 프로젝트 번호. 임가공 협력사(다영기획)로 보냄.</dd></div>
+      <div><dt>MM*****</dt><dd>재고 이동신청 번호. 보관 협력사(베스트원)로 요청.</dd></div>
+      <div><dt>SC******</dt><dd>Shipment ID. 출하 단위 레코드 식별자.</dd></div>
+      <div><dt>PT****</dt><dd>파츠 번호.</dd></div>
+      <div><dt>임가공 협력사</dt><dd>다영기획 — PNA건 임가공 외주 업체.</dd></div>
+      <div><dt>보관 협력사</dt><dd>베스트원 — 재고 보관 창고.</dd></div>
+      <div><dt>배차 1:Shipment N</dt><dd>배차 한 건에 여러 Shipment가 묶이는 구조. 동일 수령인일 때 재고건을 합쳐 보냄.</dd></div>
+      <div><dt>softr</dt><dd>협력사 라운지 페이지. 메일과 함께 출하 정보 노출되는 외부 화면.</dd></div>
+      <div><dt>외박스</dt><dd>출하 시 사용하는 외부 포장 박스. 극소·소·중·중대·대 사이즈로 구분.</dd></div>
+      <div><dt>pyt 스크립트</dt><dd>github에 저장된 출고확인서 생성용 Python 스크립트.</dd></div>
+    </dl>
+
+    <div class="pullquote" style="margin-top:48px">
+      1·2·3 필드 흐름만 익히면 출하확인서는 단순 작업입니다. 어려운 건 "재고·기타 출고에서 직접 현장 확인"하는 부분이에요.
+      <cite>출하 인수인계 맺음말 — 초안</cite>
+    </div>
+
+    <footer class="end">
+      <span>신시어리웨일즈 · 물류사업본부 · 내부 문서</span>
+      <span>v0.1 · 26.04.28</span>
+    </footer>
+
+  </article>
+
+  <aside class="toc">
+    <h5>On this page</h5>
+    <ul id="toc-list">
+      <li><a href="#ch0">서문</a></li>
+      <li><a href="#ch1">출하 업무 개요</a></li>
+      <li><a href="#ch1b">배송 요청 연결</a></li>
+      <li class="sub"><a href="#ch1b-1">미연결 건 찾기</a></li>
+      <li class="sub"><a href="#ch1b-2">수동 입력</a></li>
+      <li><a href="#ch2">출하확인서 작성법</a></li>
+      <li class="sub"><a href="#ch2-1">작성 원리</a></li>
+      <li class="sub"><a href="#ch2-2">① 출하 품목</a></li>
+      <li class="sub"><a href="#ch2-3">② 출고 품목·수량</a></li>
+      <li class="sub"><a href="#ch2-4">③ 외박스 수량</a></li>
+      <li class="sub"><a href="#ch2-5">출고 종류별 기준</a></li>
+      <li class="sub"><a href="#ch2-6">④ PDF 출력</a></li>
+      <li><a href="#ch3">협력사 출하요청 (PNA)</a></li>
+      <li class="sub"><a href="#ch3-1">view 위치</a></li>
+      <li class="sub"><a href="#ch3-2">메일 발송 절차</a></li>
+      <li><a href="#ch4">협력사 출하요청 (재고)</a></li>
+      <li class="sub"><a href="#ch4-1">Shipment 합치기</a></li>
+      <li class="sub"><a href="#ch4-2">메일 발송</a></li>
+      <li><a href="#ch5">배차 스케줄링</a></li>
+      <li><a href="#ch6">배송 파트너</a></li>
+      <li><a href="#ch7">출하 후 정산</a></li>
+      <li><a href="#ch7b">물류신청 처리</a></li>
+      <li class="sub"><a href="#ch7b-1">내부 vs 외부 구분</a></li>
+      <li class="sub"><a href="#ch7b-2">내부 처리</a></li>
+      <li class="sub"><a href="#ch7b-3">외부 처리</a></li>
+      <li><a href="#ch7c">고고엑스 배차</a></li>
+      <li><a href="#ch7d">외주 임가공 이동 준비</a></li>
+      <li class="sub"><a href="#ch7d-1">스케줄 확인</a></li>
+      <li class="sub"><a href="#ch7d-2">SERPA 데이터 정리</a></li>
+      <li class="sub"><a href="#ch7d-3">운송오더 신청</a></li>
+      <li class="sub"><a href="#ch7d-4">SC 통합 확인</a></li>
+      <li><a href="#ch8">주의 케이스</a></li>
+      <li><a href="#ch9">계정 정보</a></li>
+      <li><a href="#ch10">체크리스트·용어</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<div id="tweaks">
+  <h5><span>Tweaks</span><button class="x" id="tw-close">×</button></h5>
+  <div class="row"><label>본문 크기</label>
+    <select id="tw-fs"><option value="15">15px</option><option value="16" selected>16px (기본)</option><option value="17">17px</option><option value="18">18px</option></select>
+  </div>
+  <div class="row"><label>본문 서체</label>
+    <select id="tw-font"><option value="sans">Sans (Pretendard)</option><option value="serif">Serif (Newsreader)</option></select>
+  </div>
+  <div class="row"><label>포인트 컬러</label>
+    <select id="tw-accent"><option value="navy">딥 네이비</option><option value="black">블랙</option><option value="brown">딥 브라운</option><option value="olive">올리브</option></select>
+  </div>
+</div>
+
+<script>
+const allAnchors = document.querySelectorAll('#nav a[href^="#"], #toc-list a[href^="#"]');
+const sectionIds = [...new Set([...allAnchors].map(a => a.getAttribute('href').slice(1)))];
+const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+function onScroll(){
+  const y = window.scrollY + 120;
+  let activeId = sections[0]?.id;
+  for (const s of sections) if (s.offsetTop <= y) activeId = s.id;
+  allAnchors.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + activeId);
+  });
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+// ===== 1·2·3 Field Flow widgets — edit textarea(2), mirror to output(3) =====
+document.querySelectorAll('textarea[data-flow-input]').forEach(ta => {
+  const key = ta.dataset.flowInput;
+  const out = document.querySelector(`[data-flow-output="${key}"]`);
+  function sync(){ if (out) out.textContent = ta.value || ' '; }
+  ta.addEventListener('input', sync);
+  sync();
+});
+
+// ===== Fig 2 PDF button grid — generate rows + click handler =====
+const pdfgrid = document.getElementById('pdfgrid');
+if (pdfgrid){
+  for (let i=0;i<11;i++){
+    const btnCell = document.createElement('div');
+    btnCell.className = 'row-btn';
+    btnCell.innerHTML = `<button class="pyt" data-pdf="${i}">▷ Button</button>`;
+    pdfgrid.appendChild(btnCell);
+    const arrowCell = document.createElement('div');
+    arrowCell.className = 'row-arrow';
+    arrowCell.textContent = '→';
+    pdfgrid.appendChild(arrowCell);
+    const pdfCell = document.createElement('div');
+    pdfCell.className = 'row-pdf';
+    pdfCell.dataset.pdfOut = i;
+    pdfCell.innerHTML = '<span class="empty-dash">— 비어있음</span>';
+    pdfgrid.appendChild(pdfCell);
+  }
+  pdfgrid.querySelectorAll('button.pyt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = btn.dataset.pdf;
+      const out = pdfgrid.querySelector(`[data-pdf-out="${idx}"]`);
+      btn.disabled = true;
+      btn.innerHTML = '⋯ 생성중';
+      setTimeout(() => {
+        btn.classList.add('done');
+        btn.innerHTML = '✓ 완료';
+        const sc = String(15334 + parseInt(idx)).padStart(8,'0');
+        out.innerHTML = `<span class="pdf-chip"><span class="ico">PDF</span>SC${sc}.pdf</span>`;
+      }, 600);
+    });
+  });
+}
+
+// ===== Mail send buttons (PNA · 재고) =====
+document.querySelectorAll('button.mailbtn[data-mail]').forEach(btn => {
+  const orig = btn.innerHTML;
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('done')) return;
+    btn.disabled = true;
+    btn.innerHTML = '⋯ 발송중';
+    setTimeout(() => {
+      btn.classList.add('done');
+      btn.innerHTML = '✓ 메일 발송 완료';
+      btn.disabled = false;
+    }, 700);
+  });
+});
+
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "fontSize": "16",
+  "bodyFont": "sans",
+  "accent": "navy"
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  navy:  {a:'#3b3b6e', soft:'#f2f2fb'},
+  black: {a:'#1a1a1a', soft:'#f4f4f2'},
+  brown: {a:'#5a3a26', soft:'#f7f2ec'},
+  olive: {a:'#4a4d2f', soft:'#f4f5ec'}
+};
+
+function apply(t){
+  document.documentElement.style.setProperty('--accent', (ACCENTS[t.accent]||ACCENTS.navy).a);
+  document.documentElement.style.setProperty('--accent-soft', (ACCENTS[t.accent]||ACCENTS.navy).soft);
+  document.body.style.fontSize = t.fontSize + 'px';
+  document.body.style.fontFamily = t.bodyFont === 'serif' ? 'var(--serif)' : 'var(--sans)';
+}
+apply(TWEAKS);
+
+const fs = document.getElementById('tw-fs');
+const ff = document.getElementById('tw-font');
+const ac = document.getElementById('tw-accent');
+fs.value = TWEAKS.fontSize; ff.value = TWEAKS.bodyFont; ac.value = TWEAKS.accent;
+
+function push(edits){
+  Object.assign(TWEAKS, edits); apply(TWEAKS);
+  try { window.parent.postMessage({type:'__edit_mode_set_keys', edits}, '*'); } catch(e){}
+}
+fs.addEventListener('change', e => push({fontSize: e.target.value}));
+ff.addEventListener('change', e => push({bodyFont: e.target.value}));
+ac.addEventListener('change', e => push({accent: e.target.value}));
+
+const panel = document.getElementById('tweaks');
+document.getElementById('tw-close').addEventListener('click', () => panel.classList.remove('on'));
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode') panel.classList.add('on');
+  if (d.type === '__deactivate_edit_mode') panel.classList.remove('on');
+});
+try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>자재관리 가이드라인 · 문서형</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  :root{
+    --bg:#ffffff;
+    --surface:#ffffff;
+    --surface-2:#fbfbfa;
+    --surface-3:#f4f4f2;
+    --ink:#1a1a1a;
+    --ink-2:#3a3a38;
+    --muted:#75756f;
+    --muted-2:#a8a8a2;
+    --line:#ebebe6;
+    --line-2:#f2f2ee;
+    --accent:#3b3b6e;
+    --accent-soft:#f2f2fb;
+    --highlight:#fff7c2;
+    --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+    --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:3px}
+
+  /* ===== Top bar ===== */
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);
+    border-bottom:1px solid var(--line);
+    padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;
+  }
+  .topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+  .topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+  .topbar .sep{color:var(--muted-2)}
+  .topbar .doc-name{color:var(--muted);font-size:13px}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+  .topbar .right a{color:var(--muted);text-decoration:none}
+  .topbar .right a:hover{color:var(--ink)}
+  .topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+
+  /* ===== Layout ===== */
+  .layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+
+  /* Sidebar */
+  aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+  aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+  aside.side h4:first-child{margin-top:0}
+  aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+  aside.side li a{
+    display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);
+    border-left:1px solid transparent;transition:color .12s,border-color .12s,background .12s;
+    line-height:1.45;
+  }
+  aside.side li a:hover{color:var(--ink);text-decoration:none}
+  aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+  aside.side .sub{padding-left:20px;font-size:12.5px;color:var(--muted-2)}
+  aside.side .sub a{padding:3px 12px;font-size:12.5px}
+
+  aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+  aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+  aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+
+  /* Article */
+  article{min-width:0;max-width:720px;margin:0 auto}
+  article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+  article h1{
+    font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;
+    margin:0 0 14px;color:var(--ink);
+  }
+  article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+  article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+  article .byline .k{color:var(--muted-2);margin-right:4px}
+
+  article h2{
+    font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;
+    margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;
+    display:flex;align-items:baseline;gap:12px;
+  }
+  article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+  article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+  article h2{position:relative}
+  article h3{
+    font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;
+    margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px;
+  }
+  article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+
+  article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+  article p strong{color:var(--ink);font-weight:600}
+  article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+
+  article code, code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+
+  article ul, article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+  article ul li, article ol li{margin:6px 0;line-height:1.75}
+  article ul li::marker{color:var(--muted-2)}
+  article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+  /* Pullquote */
+  .pullquote{
+    font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);
+    border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;
+    max-width:640px;
+  }
+  .pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+  .pullquote cite::before{content:"— "}
+
+  /* Note / callout — minimal */
+  .note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+  .note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+  .note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+  .note .body strong{color:var(--ink)}
+  .note.warn .tag{color:#8a3a00}
+  .note.danger .tag{color:#8c1919}
+
+  /* Definition list */
+  dl.def{margin:0 0 24px;max-width:680px}
+  dl.def > div{display:grid;grid-template-columns:180px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+  dl.def > div:first-child{border-top:1px solid var(--ink)}
+  dl.def > div:last-child{border-bottom:1px solid var(--line)}
+  dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+  dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+
+  /* Fig (thumbnail UI reference) */
+  figure.fig{margin:28px 0;max-width:640px}
+  figure.fig .thumb{border:1px solid var(--line);border-radius:4px;background:var(--surface-2);padding:14px;position:relative;overflow:hidden}
+  figure.fig .thumb::before{content:"FIG";position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:var(--muted-2)}
+  figure.fig .thumb .mini{display:flex;align-items:center;gap:6px;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-2);font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  figure.fig .thumb .mini .dots{display:flex;gap:3px}
+  figure.fig .thumb .mini .dots span{width:6px;height:6px;border-radius:50%;background:#d4d4cf}
+  figure.fig .thumb .mini .tabs{display:flex;gap:8px;margin-left:auto}
+  figure.fig .thumb .mini .tabs span{font-size:10px;color:var(--muted-2)}
+  figure.fig .thumb .mini .tabs span.on{color:var(--ink)}
+  figure.fig .thumb .ascii{font-family:var(--mono);font-size:11px;color:var(--ink-2);white-space:pre-wrap;line-height:1.55}
+  figure.fig figcaption{font-size:12px;color:var(--muted);margin-top:8px;font-family:var(--mono);display:flex;gap:10px;align-items:center}
+  figure.fig figcaption .n{color:var(--ink);font-weight:500}
+  figure.fig figcaption .open-ui{
+    margin-left:auto;display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--sans);font-size:12px;font-weight:500;
+    color:var(--accent);text-decoration:none;
+    padding:4px 10px;border:1px solid var(--accent);border-radius:4px;
+    background:var(--accent-soft);transition:all .12s;
+  }
+  figure.fig figcaption .open-ui:hover{background:var(--accent);color:#fff;text-decoration:none}
+  figure.fig figcaption .open-ui .arr{font-family:var(--mono)}
+
+  /* Inline "view UI" link chip */
+  .view-ui{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:500;
+    color:var(--accent);text-decoration:none;
+    padding:2px 10px;border:1px solid var(--accent);border-radius:4px;
+    background:var(--accent-soft);transition:all .12s;
+    margin-left:6px;vertical-align:1px;white-space:nowrap;
+  }
+  .view-ui:hover{background:var(--accent);color:#fff;text-decoration:none}
+  .view-ui .arr{font-family:var(--mono);font-size:11px}
+
+  /* Mini table */
+  .tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:640px;font-size:13.5px}
+  .tbl .r{display:grid;padding:10px 0;border-bottom:1px solid var(--line)}
+  .tbl .r:last-child{border-bottom:0}
+  .tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500}
+  .tbl.c3 .r{grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .tbl.c4 .r{grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+  .tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+  .tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+
+  /* Right-side TOC */
+  aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+  aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+  aside.toc ul{list-style:none;padding:0;margin:0}
+  aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+  aside.toc li a:hover{color:var(--ink);text-decoration:none}
+  aside.toc li a.active{color:var(--ink)}
+  aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+
+  /* Drop cap on intro para */
+  .dropcap::first-letter{
+    font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;
+    float:left;padding:6px 10px 0 0;color:var(--ink);
+  }
+
+  /* Footer */
+  footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  /* Print styles */
+  @media print{
+    .topbar,aside.side,aside.toc,.tweaks-panel{display:none}
+    .layout{display:block;padding:0}
+    article{max-width:100%}
+    article h2{break-after:avoid}
+    figure.fig{break-inside:avoid}
+  }
+
+  /* Responsive */
+  @media (max-width:1040px){
+    .layout{grid-template-columns:220px minmax(0,1fr);}
+    aside.toc{display:none}
+  }
+  @media (max-width:720px){
+    .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+    aside.side{position:static;height:auto;border-right:0}
+    .topbar{padding:12px 20px}
+    article h1{font-size:34px}
+    article h2{font-size:24px;margin-top:48px}
+    .topbar .doc-name{display:none}
+  }
+
+  /* Tweaks */
+  #tweaks{position:fixed;right:20px;bottom:20px;z-index:60;background:#fff;border:1px solid var(--line);border-radius:6px;padding:14px;width:220px;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.06);display:none}
+  #tweaks.on{display:block}
+  #tweaks h5{margin:0 0 10px;font-family:var(--mono);font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+  #tweaks .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  #tweaks select{padding:3px 6px;font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:4px;background:#fff}
+  #tweaks .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark"><div class="dot">SC</div> 신시어리웨일즈</div>
+  <span class="sep">/</span>
+  <span class="doc-name">자재관리 가이드라인 · 관리자용</span>
+  <div class="right">
+    <a href="TMS 인수인계서.html">TMS 인수인계서 →</a>
+    <a href="자재관리 가이드라인.html" style="padding:4px 10px;border:1px solid var(--line);border-radius:4px;font-family:var(--sans);font-size:12px">UI 버전 열기 ↗</a>
+    <span class="ver">v0.1 · 26.03.13</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT NAV -->
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch0">I · 서문</a></li>
+      <li><a href="#ch1">II · 기업과 시설</a></li>
+      <li><a href="#ch2">III · 업무의 세 단계</a></li>
+      <li><a href="#ch3">IV · 재고 관리 (WMS)</a></li>
+      <li><a href="#ch4">V · 피킹</a></li>
+      <li><a href="#ch5">VI · 투입</a></li>
+      <li><a href="#ch6">VII · 주의가 필요한 케이스</a></li>
+      <li><a href="#ch7">VIII · 계정·자격 정보</a></li>
+      <li><a href="#ch8">IX · 체크리스트 · 용어집</a></li>
+    </ul>
+
+    <div class="cross">
+      <a href="TMS 인수인계서.html">TMS 배차 스케줄링 <span class="arr">→</span></a>
+      <a href="자재관리 가이드라인.html">인터랙티브 버전 <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <!-- ARTICLE -->
+  <article>
+
+    <div class="eyebrow">Handover document · Material management</div>
+    <h1>자재관리 가이드라인</h1>
+    <p class="lede">신시어리웨일즈 물류사업본부의 자재관리 업무를 처음 맡는 관리자분을 위한 서술형 인수인계 문서입니다.</p>
+
+    <div class="byline">
+      <span><span class="k">기준일</span>2026.03.13</span>
+      <span><span class="k">근무지</span>에이원지식산업센터</span>
+      <span><span class="k">대상</span>신규·기존 관리자</span>
+      <span><span class="k">문의</span>물류부문 담당자</span>
+    </div>
+
+    <!-- Chapter 0 -->
+    <h2 id="ch0"><span class="nm">I</span>서문</h2>
+    <p class="dropcap">
+      이 문서는 신시어리웨일즈 <strong>자재관리 관리자 교육용 가이드라인</strong>입니다.
+      2026년 3월 13일 기준으로 작성되었으며, 실제 업무 내용은 이 문서와 일부 다를 수 있습니다.
+      읽으시는 중에 이해되지 않는 내용은 물류부문 담당 관리자에게 문의하시기 바랍니다.
+    </p>
+    <p>
+      자재관리 업무는 <em>재고 관리 · 피킹 · 투입</em>이라는 세 단계의 반복으로 이루어집니다.
+      이 문서는 세 단계의 흐름을 따라 순서대로 구성되어 있으며, 마지막에는 주의가 필요한 예외 케이스와 매일 확인해야 할 체크리스트를 두었습니다.
+    </p>
+
+    <div class="pullquote">
+      재고를 최신으로 유지하고, 필요한 시점에 필요한 좌표로 옮기는 것 — 그 반복이 이 일의 본질입니다.
+      <cite>물류사업본부 실무 인수인계 노트</cite>
+    </div>
+
+    <!-- Chapter 1 -->
+    <h2 id="ch1"><span class="nm">II</span>기업과 시설</h2>
+
+    <h3 id="ch1-1">회사 소개</h3>
+    <p>
+      신시어리는 투자회사 <strong>크레비스파트너스</strong>의 디지털 커머스 부문 사업으로, 기업과 개인을 대상으로 브랜드 굿즈를 제작합니다.
+      회사는 <strong>유통사업본부</strong>와 <strong>물류사업본부</strong>로 나뉩니다.
+      현재 근무 위치인 <strong>서울숲 에이원센터</strong>는 물류사업본부에 속하며,
+      물류사업본부는 다시 <strong>물류 파트</strong>와 <strong>패키징 파트</strong>로 구분됩니다.
+      관리자님께서는 <em>물류 파트의 자재관리 부문</em>을 담당하시게 됩니다.
+    </p>
+
+    <h3 id="ch1-2">근무 조건</h3>
+    <p>
+      입사 시 초기 1개월은 수습기간으로 근무하며, 이후 2년 이내의 계약직으로 전환됩니다.
+      2년차 이후 본인의 희망에 따라 정규직 전환이 가능합니다.
+    </p>
+
+    <h3 id="ch1-3">세 개의 시설</h3>
+    <p>자재관리 업무에서 반복적으로 등장하는 시설 세 곳이 있습니다. 이름을 정확히 구분해두면 프로젝트별 이동 흐름을 파악하기 쉽습니다.</p>
+
+    <dl class="def">
+      <div><dt>에이원</dt><dd>에이원지식산업센터. <strong>현재 근무지</strong>이자 임가공·투입 작업이 실제로 이루어지는 곳입니다.</dd></div>
+      <div><dt>베스트원</dt><dd>신시어리의 <strong>재고 보관 창고</strong>. 에이원에 없는 파츠는 이쪽에 이동을 요청하여 가져옵니다.</dd></div>
+      <div><dt>다영기획</dt><dd>임가공 <strong>외주 업체</strong>. 일부 프로젝트는 이 업체에서 임가공을 진행합니다.</dd></div>
+    </dl>
+
+    <!-- Chapter 2 -->
+    <h2 id="ch2"><span class="nm">III</span>업무의 세 단계</h2>
+    <p>
+      자재관리 업무는 서로 연결된 세 단계로 이루어집니다. 한 프로젝트가 들어오면 아래 순서대로 흐릅니다.
+    </p>
+    <ol>
+      <li><strong>재고 관리 (WMS)</strong> — 파츠의 수량·좌표·메모를 최신으로 유지합니다.</li>
+      <li><strong>피킹 (Picking)</strong> — 이동스케줄에 맞춰 필요한 파츠를 골라내고 라벨을 출력합니다.</li>
+      <li><strong>투입</strong> — 지정된 좌표에 샘플과 자재를 투입해 패키징 파트가 임가공을 시작할 수 있게 준비합니다.</li>
+    </ol>
+    <p>
+      이어지는 장에서는 각 단계를 자세히 다룹니다. 각 단계가 어떤 화면에서 어떤 필드를 기준으로 진행되는지, 자주 놓치기 쉬운 포인트는 무엇인지를 함께 정리했습니다.
+    </p>
+
+    <!-- Chapter 3 -->
+    <h2 id="ch3"><span class="nm">IV</span>재고 관리 (WMS)</h2>
+    <p>
+      재고 관리는 크롬으로 접속하는 <strong>자재관리 WMS</strong>의 <em>재고 정보</em> 탭에서 이루어집니다.
+      검색창에 파츠번호를 입력하면 해당 파츠의 상세 정보와 위치별 재고를 확인할 수 있습니다.
+    </p>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>wms.sincerely.co.kr / inventory</span>
+          <div class="tabs"><span class="on">재고 정보</span><span>이동스케줄</span><span>자재 체크</span><span>라벨 출력</span></div>
+        </div>
+        <div class="ascii">
+PT4762                            [활성]
+────────────────────────────────────────
+묶음단위    100개/1묶음
+개당무게    2.4 g
+바스켓당수량 500
+졸업 Status —
+
+위치별 재고
+  에이원   A1AC1   368   3묶음   26.03.12
+  에이원   A3DD2   120   1묶음   26.03.10 · 추가 보관
+  베스트원 B-07-03 2,400 24묶음  26.03.05
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 1</span><span>WMS 재고 정보 — 파츠 상세와 위치별 재고</span><a class="open-ui" href="자재관리 가이드라인.html#wms-inventory">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h3 id="ch3-1">주요 필드 <a class="view-ui" href="자재관리 가이드라인.html#wms-inventory">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>파츠 상세에는 여러 필드가 있지만, 자재관리 관리자가 반복적으로 살펴보는 필드는 다음과 같습니다.</p>
+    <dl class="def">
+      <div><dt>묶음단위</dt><dd>보관 중인 파츠의 묶음단위. 예: <code class="inl">100</code>이면 100개가 1묶음입니다.</dd></div>
+      <div><dt>개당무게</dt><dd>파츠 1개당 무게. 공정 차이로 변동이 생기면 <strong>적절히 수정</strong>해주세요.</dd></div>
+      <div><dt>바스켓당수량</dt><dd>파란색 바스켓의 최대 용량. 재고 정리 시 기준이 됩니다.</dd></div>
+      <div><dt>재고관련메모</dt><dd>재고의 특이사항. <strong>지정 좌표 외 장소에 보관</strong>하는 경우 위치와 수량을 반드시 기록합니다.</dd></div>
+      <div><dt>졸업 Status</dt><dd>관리가 종료된 재고에는 <code class="inl">졸업</code>이 표기되어 있습니다.</dd></div>
+    </dl>
+
+    <h3 id="ch3-2">좌표 기준</h3>
+    <p>
+      관리자님은 기본적으로 <strong>에이원지식산업센터의 좌표와 수량</strong>을 기준으로 업무를 진행합니다.
+      좌표 변경이 필요하다면 해당 좌표 셀을 클릭해 직접 수정할 수 있습니다.
+    </p>
+
+    <!-- Chapter 4 -->
+    <h2 id="ch4"><span class="nm">V</span>피킹</h2>
+    <p>
+      피킹은 그날 임가공에 쓸 파츠를 골라내 투입 준비를 끝내는 작업입니다.
+      WMS의 <em>이동스케줄</em> 탭에서 시작해서 <em>자재 체크</em> 탭을 거쳐, <em>피킹 라벨 출력</em>에서 마무리됩니다.
+    </p>
+
+    <h3 id="ch4-1">이동스케줄 확인 <a class="view-ui" href="자재관리 가이드라인.html#wms-schedule">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      출근 후 첫 작업은 이동스케줄 탭에서 우측 상단의 녹색 <code class="inl">Today</code> 버튼을 눌러 날짜를 금일로 맞추는 것입니다.
+      그날 피킹해서 패키징 파트에 전달해야 할 프로젝트가 여기에 뜹니다.
+    </p>
+
+    <div class="note warn">
+      <div class="tag">주의</div>
+      <div class="body">금일로 날짜를 변경하지 않으면 <strong>이전 스케줄까지 모두 노출</strong>되어 보기 불편합니다. 매일 첫 작업으로 <code class="inl">Today</code>를 눌러두세요.</div>
+    </div>
+
+    <figure class="fig">
+      <div class="thumb">
+        <div class="mini">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span>wms.sincerely.co.kr / schedule</span>
+          <div class="tabs"><span>재고 정보</span><span class="on">이동스케줄</span><span>자재 체크</span><span>라벨 출력</span></div>
+        </div>
+        <div class="ascii">
+Today  |  2026.03.19 (금)
+
+이동요청일  임가공 장소  임가공 필요  project           진행현황       피킹현황
+3/19(금)   에이원       필요         PNA50827 LG전자   —             자재입고완료   A2BB2
+3/19(금)   다영기획     필요없음     PNA38930 현대자동차 1. 입고완료    자재입고대기   A1AC1
+3/19(금)   에이원       필요         PNA49211 LG이노텍  5. 임가공완료  자재투입없음   A2CC3
+        </div>
+      </div>
+      <figcaption><span class="n">Fig 2</span><span>이동스케줄 — 하루 단위 피킹 대상 프로젝트</span><a class="open-ui" href="자재관리 가이드라인.html#wms-schedule">UI에서 보기 <span class="arr">↗</span></a></figcaption>
+    </figure>
+
+    <h4>필드 읽는 법</h4>
+    <p>
+      이 테이블에서 특히 자주 보는 필드는 다음과 같습니다.
+      <strong>이동 요청일</strong>은 패키징이 임가공을 진행하는 날짜,
+      <strong>임가공 장소</strong>는 에이원 또는 다영기획,
+      <strong>project</strong>는 <em>프로젝트번호 + 기업명</em>, 예: <code class="inl">PNA50827 LG전자</code>입니다.
+      <strong>자재피킹현황</strong>에는 <code class="inl">자재입고대기</code>, <code class="inl">자재입고완료</code>, <code class="inl">자재투입없음</code> 세 가지 상태가 들어갑니다.
+      <strong>입고좌표</strong>는 투입해야 할 좌표(예: <code class="inl">A2BB2</code>)입니다.
+    </p>
+
+    <h3 id="ch4-2">자재 체크 <a class="view-ui" href="자재관리 가이드라인.html#wms-check">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      자재 체크 탭에서는 프로젝트별로 투입해야 하는 파츠를 하나씩 확인합니다.
+      예를 들어 <em>PNA38930 현대자동차</em> 프로젝트는 투입할 파츠가 3종입니다. 각 파츠에 대해 다음을 확인합니다.
+    </p>
+
+    <dl class="def">
+      <div><dt>출고자재좌표</dt><dd>파츠가 실제로 위치한 박스의 좌표.</dd></div>
+      <div><dt>계획수량</dt><dd>초기에 주문으로 들어온 자재 수량.</dd></div>
+      <div><dt>발주수량</dt><dd>패키징 파트에서 발주 요청한 수량.</dd></div>
+      <div><dt>출고수량</dt><dd>관리자님이 실제로 투입한 수량. <strong>발주수량과 일치</strong>하게 작성해야 합니다.</dd></div>
+      <div><dt>자재투입현황</dt><dd>해당 파츠의 상태. 아래 네 가지 중 하나가 들어갑니다.</dd></div>
+    </dl>
+
+    <h4>자재투입현황 — 네 가지 상태</h4>
+    <p>각 상태는 단순한 라벨이 아니라 후속 행동이 다른 업무 플래그입니다.</p>
+
+    <div class="tbl c2">
+      <div class="r h"><div>상태</div><div>의미</div></div>
+      <div class="r"><div class="mono">자재투입대기</div><div>에이원에 <strong>보유 중</strong>. 좌표에 투입하면 됩니다.</div></div>
+      <div class="r"><div class="mono">자재투입완료</div><div>이미 좌표에 <strong>투입 완료</strong>.</div></div>
+      <div class="r"><div class="mono">이동요청</div><div>에이원에 없음 → <strong>베스트원 이동 요청</strong>.</div></div>
+      <div class="r"><div class="mono">구매요청</div><div>에이원·베스트원 모두 없음 → <strong>신규 구매 요청</strong>.</div></div>
+    </div>
+
+    <div class="note">
+      <div class="tag">규칙</div>
+      <div class="body">
+        이동요청 또는 구매요청을 진행할 때는 <code class="inl">보충요청수량</code>에 수량을 입력하고,
+        이동스케줄 탭의 <code class="inl">자재메모</code>란에 <strong>"파츠번호 + 입고전"</strong> 형식으로 기록합니다.
+        예: <code class="inl">PT5988 입고전</code>. 여러 건이면 슬래시로 구분합니다.
+      </div>
+    </div>
+
+    <h3 id="ch4-3">피킹 라벨 출력 <a class="view-ui" href="자재관리 가이드라인.html#wms-label">UI에서 보기 <span class="arr">↗</span></a></h3>
+    <p>
+      프로젝트의 모든 파츠 투입이 끝나면 라벨을 출력합니다.
+      🔍로 프로젝트명을 검색한 뒤 <code class="inl">투입자재라벨출력</code> 버튼을 누르고,
+      인쇄 대화상자에서 대상을 <code class="inl">Xprinter XP D4602B</code>로 지정해 인쇄합니다.
+      출력된 라벨은 파츠가 담긴 <strong>회색 박스</strong>에 꽂거나 붙여서 피킹존에 보관합니다.
+    </p>
+
+    <!-- Chapter 5 -->
+    <h2 id="ch5"><span class="nm">VI</span>투입</h2>
+    <p>
+      피킹된 프로젝트는 <strong>지정된 좌표</strong>에 투입해야 합니다.
+      좌표에 투입이 완료되면 패키징 파트가 임가공 날짜에 해당 좌표에서 직접 가져갑니다.
+      임가공 전날까지 사전 샘플을 제작·촬영해야 하므로, <em>임가공 하루 전에는</em> 모든 투입이 끝나 있어야 합니다.
+    </p>
+
+    <div class="note warn">
+      <div class="tag">시한</div>
+      <div class="body">임가공 날짜가 <strong>15일</strong>이면, 자재 투입은 <strong>14일까지</strong> 완료되어야 합니다.</div>
+    </div>
+
+    <h3 id="ch5-1">샘플투입과 자재투입</h3>
+    <p>투입은 두 가지 종류로 나뉩니다.</p>
+    <ul>
+      <li><strong>샘플투입</strong> — 샘플 촬영을 위해 파츠별로 <em>1개씩</em> 투입합니다. 좌표에 있는 <strong>하얀색 샘플 바스켓</strong>에 넣습니다.</li>
+      <li><strong>자재투입</strong> — 샘플을 제외한 나머지 파츠를 좌표의 파란색 자재 바스켓에 투입합니다.</li>
+    </ul>
+    <p>투입 시에는 <strong>샘플 바스켓이 가장 위로 가도록</strong> 위치를 조정해주세요. 그래야 촬영 담당자가 빠르게 꺼낼 수 있습니다.</p>
+
+    <div class="note">
+      <div class="tag">예외</div>
+      <div class="body">투입할 자재의 양이 많아 입고 좌표에 들어가지 않는 경우, 임가공 투입 하루 전에 <strong>임가공존</strong>에 투입해도 무방합니다.</div>
+    </div>
+
+    <!-- Chapter 6 -->
+    <h2 id="ch6"><span class="nm">VII</span>주의가 필요한 케이스</h2>
+    <p>
+      이 장은 "기본 절차대로만 하면 틀리는" 예외 사례를 모은 부분입니다.
+      모두 한 번쯤 실수가 나온 적이 있는 항목이므로 작업 전 한 번 훑어보시면 좋습니다.
+    </p>
+
+    <h3 id="ch6-1">Movement (MM)가 여러 개인 파츠</h3>
+    <p>
+      동일한 파츠이지만 <code class="inl">movement (MM)</code>가 여러 개인 경우가 있습니다.
+      이런 파츠는 <strong>MM 개수만큼 샘플을 투입</strong>해야 합니다.
+      예: <code class="inl">PT1147</code>은 MM이 2개 → 샘플 2개 투입, <code class="inl">PT1560</code>도 동일합니다.
+    </p>
+
+    <h3 id="ch6-2">단위 수량 필드가 있는 파츠</h3>
+    <p>
+      일부 파츠는 샘플투입이 1개가 아닌 여러 개입니다.
+      <code class="inl">단위 수량 필드</code>에 적힌 숫자를 그대로 투입하면 됩니다.
+      예: <code class="inl">PT1619</code>는 단위 수량이 <strong>2</strong>이므로 샘플을 2개 투입합니다.
+      단위 수량이 공백이면 기본값 1개입니다.
+    </p>
+
+    <h3 id="ch6-3">세트로 임가공되는 파츠</h3>
+    <p>
+      일부 파츠는 다른 파츠와 <em>세트</em>로 임가공되기 때문에, 두 파츠의 출고수량을 반드시 맞춰야 합니다.
+      발주요청수량 중 <strong>높은 쪽</strong>에 맞춰 같은 수량으로 투입합니다.
+    </p>
+
+    <div class="tbl c2">
+      <div class="r h"><div>세트</div><div>기준</div></div>
+      <div class="r"><div class="mono">PT2330 &amp; PT2331</div><div>두 파츠 중 높은 발주수량으로 통일</div></div>
+      <div class="r"><div class="mono">PT3343 &amp; PT3344</div><div>두 파츠 중 높은 발주수량으로 통일</div></div>
+    </div>
+
+    <p style="font-size:13px;color:var(--muted)">(작성일 <code class="inl">26.03.13</code> 기준. 신규 세트가 지정되면 이 표에 추가해주세요.)</p>
+
+    <h3 id="ch6-4">PT2300 — 사이즈별 분리 보관</h3>
+    <p>
+      <code class="inl">PT2300</code>은 <strong>여러 사이즈를 한 좌표에 보관</strong>하기 때문에 일반적인 방법으로는 재고 개수를 파악하기 어렵습니다.
+      WMS에서 <code class="inl">PT2300</code>을 검색해 <strong>재고관련메모</strong>를 열면 사이즈별 개수를 확인할 수 있습니다.
+      재고 수량에 변동이 생길 때마다 <em>날짜와 수량을 모두 갱신</em>해야 합니다.
+    </p>
+
+    <p>
+      PT2300의 투입 수량은 WMS가 아닌 <strong>Dropbox 링크</strong>를 통해 확인합니다.
+      링크에서 <code class="inl">견적서</code> 파일을 열면, PDF의 <em>제품 견적</em> 섹션에서 사이즈별 투입 수량을 찾을 수 있습니다.
+    </p>
+
+    <div class="note danger">
+      <div class="tag">잊지 마세요</div>
+      <div class="body">PT2300 재고메모를 갱신하지 않으면 <strong>다른 프로젝트의 투입 계획에 영향</strong>이 갑니다. 변동이 있을 때마다 반드시 메모를 업데이트하세요.</div>
+    </div>
+
+    <!-- Chapter 7 -->
+    <h2 id="ch7"><span class="nm">VIII</span>계정·자격 정보</h2>
+    <p>업무용 계정과 네트워크 정보입니다. <strong>외부 공유는 엄격히 금지</strong>되며, 퇴사·변경 시 담당 관리자에게 갱신을 요청해주세요.</p>
+
+    <dl class="def">
+      <div><dt>노트북 비밀번호</dt><dd class="mono">1231</dd></div>
+      <div><dt>Wi-Fi</dt><dd class="mono">Crevisse · crvs025692431</dd></div>
+      <div><dt>Gmail</dt><dd class="mono">sincerely.inventory@gmail.com · sin12345!!!</dd></div>
+      <div><dt>Slack</dt><dd>비즈니스 업무 메신저. 직원들과의 소통 채널.</dd></div>
+    </dl>
+
+    <!-- Chapter 8 -->
+    <h2 id="ch8"><span class="nm">IX</span>체크리스트 · 용어집</h2>
+
+    <h3 id="ch8-1">매일 업무 체크리스트</h3>
+    <p>출근 직후부터 임가공 전일까지 순서대로 확인하면 됩니다.</p>
+    <ol>
+      <li>이동스케줄 탭에서 <code class="inl">Today</code> 클릭 → 금일 프로젝트 확인</li>
+      <li>각 프로젝트의 자재 체크 탭 열어 파츠별 상태 점검</li>
+      <li>에이원 재고 있는 파츠 → <code class="inl">자재투입완료</code>로 처리하고 좌표 투입</li>
+      <li>에이원에 없는 파츠 → 이동요청 또는 구매요청 + 보충요청수량 + 자재메모에 "입고전"</li>
+      <li>세트 파츠는 동일 수량으로 투입 짝 맞추기</li>
+      <li>PT2300은 Dropbox 견적서에서 사이즈별 수량 확인, 재고메모 갱신</li>
+      <li>샘플 바스켓이 가장 위에 오도록 배치</li>
+      <li>프로젝트 전체 투입 완료 → 피킹 라벨 출력 → 회색 박스에 부착 → 피킹존 보관</li>
+      <li>임가공 하루 전까지 모든 투입 마감 확인</li>
+    </ol>
+
+    <h3 id="ch8-2">용어집</h3>
+    <dl class="def">
+      <div><dt>에이원</dt><dd>에이원지식산업센터 · 현재 근무지 · 임가공/투입 장소</dd></div>
+      <div><dt>베스트원</dt><dd>신시어리 재고 보관 창고</dd></div>
+      <div><dt>다영기획</dt><dd>임가공 외주 업체</dd></div>
+      <div><dt>임가공</dt><dd>자재를 조립·가공하여 굿즈를 완성하는 공정</dd></div>
+      <div><dt>피킹</dt><dd>프로젝트에 필요한 파츠를 좌표에서 골라내는 작업</dd></div>
+      <div><dt>투입</dt><dd>피킹된 파츠를 지정 좌표에 넣는 작업</dd></div>
+      <div><dt>PT****</dt><dd>파츠 번호 · 투입 자재 단위 (예: PT4762)</dd></div>
+      <div><dt>PNA*****</dt><dd>프로젝트 번호 · 고객사 발주 단위 (예: PNA38930)</dd></div>
+      <div><dt>좌표</dt><dd>에이원 창고 내 파츠 보관 위치 (예: A1AC1)</dd></div>
+      <div><dt>바스켓</dt><dd>파란색 = 자재 보관 · 하얀색 = 샘플 전용</dd></div>
+      <div><dt>MM (Movement)</dt><dd>투입 단위 식별자. 여러 개일 때 수만큼 샘플 투입</dd></div>
+    </dl>
+
+    <div class="pullquote" style="margin-top:48px">
+      프로세스는 단순합니다. 매일 같은 순서를 지키고, 예외가 생기면 문서에 기록하세요.
+      <cite>자재관리 인수인계 맺음말</cite>
+    </div>
+
+    <footer class="end">
+      <span>신시어리웨일즈 · 물류사업본부 · 내부 문서</span>
+      <span>v0.1 · 26.03.13</span>
+    </footer>
+
+  </article>
+
+  <!-- RIGHT TOC -->
+  <aside class="toc">
+    <h5>On this page</h5>
+    <ul id="toc-list">
+      <li><a href="#ch0">서문</a></li>
+      <li><a href="#ch1">기업과 시설</a></li>
+      <li class="sub"><a href="#ch1-1">회사 소개</a></li>
+      <li class="sub"><a href="#ch1-2">근무 조건</a></li>
+      <li class="sub"><a href="#ch1-3">세 개의 시설</a></li>
+      <li><a href="#ch2">업무의 세 단계</a></li>
+      <li><a href="#ch3">재고 관리 (WMS)</a></li>
+      <li class="sub"><a href="#ch3-1">주요 필드</a></li>
+      <li class="sub"><a href="#ch3-2">좌표 기준</a></li>
+      <li><a href="#ch4">피킹</a></li>
+      <li class="sub"><a href="#ch4-1">이동스케줄</a></li>
+      <li class="sub"><a href="#ch4-2">자재 체크</a></li>
+      <li class="sub"><a href="#ch4-3">라벨 출력</a></li>
+      <li><a href="#ch5">투입</a></li>
+      <li><a href="#ch6">주의 케이스</a></li>
+      <li class="sub"><a href="#ch6-1">MM 여러 개</a></li>
+      <li class="sub"><a href="#ch6-2">단위 수량</a></li>
+      <li class="sub"><a href="#ch6-3">세트 파츠</a></li>
+      <li class="sub"><a href="#ch6-4">PT2300</a></li>
+      <li><a href="#ch7">계정 정보</a></li>
+      <li><a href="#ch8">체크리스트·용어</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<!-- Tweaks -->
+<div id="tweaks">
+  <h5><span>Tweaks</span><button class="x" id="tw-close">×</button></h5>
+  <div class="row"><label>본문 크기</label>
+    <select id="tw-fs"><option value="15">15px</option><option value="16" selected>16px (기본)</option><option value="17">17px</option><option value="18">18px</option></select>
+  </div>
+  <div class="row"><label>본문 서체</label>
+    <select id="tw-font"><option value="sans">Sans (Pretendard)</option><option value="serif">Serif (Newsreader)</option></select>
+  </div>
+  <div class="row"><label>포인트 컬러</label>
+    <select id="tw-accent"><option value="navy">딥 네이비</option><option value="black">블랙</option><option value="brown">딥 브라운</option><option value="olive">올리브</option></select>
+  </div>
+</div>
+
+<script>
+// ===== Active section tracking for left + right nav =====
+const allAnchors = document.querySelectorAll('#nav a[href^="#"], #toc-list a[href^="#"]');
+const sectionIds = [...new Set([...allAnchors].map(a => a.getAttribute('href').slice(1)))];
+const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+function onScroll(){
+  const y = window.scrollY + 120;
+  let activeId = sections[0]?.id;
+  for (const s of sections) if (s.offsetTop <= y) activeId = s.id;
+  allAnchors.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + activeId);
+  });
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+// ===== Tweaks =====
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "fontSize": "16",
+  "bodyFont": "sans",
+  "accent": "navy"
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  navy:  {a:'#3b3b6e', soft:'#f2f2fb'},
+  black: {a:'#1a1a1a', soft:'#f4f4f2'},
+  brown: {a:'#5a3a26', soft:'#f7f2ec'},
+  olive: {a:'#4a4d2f', soft:'#f4f5ec'}
+};
+
+function apply(t){
+  document.documentElement.style.setProperty('--accent', (ACCENTS[t.accent]||ACCENTS.navy).a);
+  document.documentElement.style.setProperty('--accent-soft', (ACCENTS[t.accent]||ACCENTS.navy).soft);
+  document.body.style.fontSize = t.fontSize + 'px';
+  document.body.style.fontFamily = t.bodyFont === 'serif' ? 'var(--serif)' : 'var(--sans)';
+}
+apply(TWEAKS);
+
+const fs = document.getElementById('tw-fs');
+const ff = document.getElementById('tw-font');
+const ac = document.getElementById('tw-accent');
+fs.value = TWEAKS.fontSize; ff.value = TWEAKS.bodyFont; ac.value = TWEAKS.accent;
+
+function push(edits){
+  Object.assign(TWEAKS, edits); apply(TWEAKS);
+  try { window.parent.postMessage({type:'__edit_mode_set_keys', edits}, '*'); } catch(e){}
+}
+fs.addEventListener('change', e => push({fontSize: e.target.value}));
+ff.addEventListener('change', e => push({bodyFont: e.target.value}));
+ac.addEventListener('change', e => push({accent: e.target.value}));
+
+const panel = document.getElementById('tweaks');
+document.getElementById('tw-close').addEventListener('click', () => panel.classList.remove('on'));
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode') panel.classList.add('on');
+  if (d.type === '__deactivate_edit_mode') panel.classList.remove('on');
+});
+try { window.parent.postMessage({type:'__edit_mode_available'}, '*'); } catch(e){}
+</script>
+
+</body>
+</html>
