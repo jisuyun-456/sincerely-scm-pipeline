@@ -1,8 +1,20 @@
-name: Barcode PDF 생성
+name: Barcode PDF 생성 (백업 — Railway 서버로 대체됨)
 
 on:
-  repository_dispatch:
-    types: [generate-barcode-pdf]
+  # Railway 서버로 대체됨 — 긴급 시 수동 실행용 백업
+  # repository_dispatch(types: [generate-barcode-pdf])는 Railway로 이전
+  workflow_dispatch:
+    inputs:
+      pdf_type:
+        description: "PDF 종류 (출고확인서 / 피킹리스트 / 라벨지)"
+        required: true
+        default: "출고확인서"
+      record_id:
+        description: "출고확인서 Record ID"
+        required: false
+      bc_id:
+        description: "바코드 Record ID (라벨지 전용)"
+        required: false
 
 jobs:
   generate:
@@ -26,9 +38,9 @@ jobs:
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_barcode_PAT }}
           PDF_OUTPUT_DIR: /tmp
         run: |
-          PDF_TYPE="${{ github.event.client_payload.pdf_type }}"
-          RECORD_ID="${{ github.event.client_payload.record_id }}"
-          BC_ID="${{ github.event.client_payload.bc_id }}"
+          PDF_TYPE="${{ github.event.inputs.pdf_type }}"
+          RECORD_ID="${{ github.event.inputs.record_id }}"
+          BC_ID="${{ github.event.inputs.bc_id }}"
           echo "PDF_TYPE=$PDF_TYPE  RECORD_ID=$RECORD_ID  BC_ID=$BC_ID"
           case "$PDF_TYPE" in
             "출고확인서")

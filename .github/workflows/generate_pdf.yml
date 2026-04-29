@@ -1,8 +1,13 @@
 name: Generate Outgoing Confirmation PDF
 
 on:
-  repository_dispatch:
-    types: [generate-pdf]
+  # Railway 서버로 대체됨 — 긴급 시 수동 실행용 백업
+  # repository_dispatch(types: [generate-pdf])는 Railway로 이전
+  workflow_dispatch:
+    inputs:
+      record_id:
+        description: "출고확인서 Record ID"
+        required: true
 
 jobs:
   generate:
@@ -39,4 +44,4 @@ jobs:
           AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
           PDF_OUTPUT_DIR: /tmp
         run: |
-          python pdf/출고확인서_tms.py --record-id "${{ github.event.client_payload.record_id }}"
+          python pdf/출고확인서_tms.py --record-id "${{ github.event.inputs.record_id }}"
