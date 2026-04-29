@@ -3,12 +3,13 @@ WMS_InventoryTransaction backfill — batches 59-119 (610 records)
 Airtable REST API, rate-limited to 5 req/sec
 """
 import json
+import os
 import time
 import sys
 import urllib.request
 import urllib.error
 
-PAT = "***REDACTED_PAT***"
+PAT = os.environ["AIRTABLE_PAT"]
 BASE_ID = "appLui4ZR5HWcQRri"
 TABLE_ID = "tblmNiQDYzcq1A6vp"
 URL = f"https://api.airtable.com/v0/{BASE_ID}/{TABLE_ID}"

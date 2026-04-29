@@ -2,12 +2,12 @@
 WMS_GoodsReceipt + WMS_StockBatch backfill
 Source: txn_batches.json의 501 입하(무PO) 109건 → movement 레코드 조회 → GR+Batch 생성
 """
-import json, sys, time, urllib.request, urllib.error
+import json, os, sys, time, urllib.request, urllib.error
 from datetime import datetime
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-PAT = "***REDACTED_PAT***"
+PAT = os.environ["AIRTABLE_PAT"]
 BASE = "appLui4ZR5HWcQRri"
 MOVEMENT_TBL = "tblwq7Kj5Y9nVjlOw"
 GR_TBL = "tblFFrpYeHt58T59u"

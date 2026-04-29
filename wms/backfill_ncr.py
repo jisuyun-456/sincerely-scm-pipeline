@@ -9,7 +9,7 @@ WMS_NCR 테이블에 NCR 레코드를 생성한다.
 Usage:
   python wms/backfill_ncr.py
 
-Env: AIRTABLE_PAT (없으면 스크립트 내 하드코딩 PAT 사용)
+Env: AIRTABLE_PAT (required)
 """
 
 import sys, os, re, time
@@ -19,10 +19,7 @@ import requests
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Config ────────────────────────────────────────────────────────────────────
-PAT     = os.environ.get(
-    "AIRTABLE_PAT",
-    "***REDACTED_PAT***",
-)
+PAT     = os.environ["AIRTABLE_PAT"]
 BASE_ID  = "appLui4ZR5HWcQRri"
 HEADERS  = {"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"}
 API_BASE = "https://api.airtable.com/v0"

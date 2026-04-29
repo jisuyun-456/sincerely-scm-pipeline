@@ -14,8 +14,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 import requests
 
 # ── 인증 / 기본 설정 ─────────────────────────────────────────────────────
-PAT     = os.environ.get("AIRTABLE_WMS_PAT") or \
-          "***REDACTED_PAT***"
+PAT     = os.environ["AIRTABLE_WMS_PAT"]
 BASE_ID = "appLui4ZR5HWcQRri"
 HDRS    = {"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"}
 

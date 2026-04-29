@@ -14,7 +14,7 @@ Usage:
   python backfill_wave_pickingtask.py --dry-run   # inspect field values only
   python backfill_wave_pickingtask.py              # live run
 
-Env: AIRTABLE_PAT or hard-coded PAT below.
+Env: AIRTABLE_PAT (required)
 """
 
 import sys, os, re, time, argparse
@@ -25,8 +25,7 @@ import requests
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Config ───────────────────────────────────────────────────────────────────
-PAT      = os.environ.get("AIRTABLE_PAT",
-           "***REDACTED_PAT***")
+PAT      = os.environ["AIRTABLE_PAT"]
 BASE_ID  = "appLui4ZR5HWcQRri"
 HEADERS  = {"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"}
 API_BASE = "https://api.airtable.com/v0"
