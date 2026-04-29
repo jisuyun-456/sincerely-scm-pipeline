@@ -188,7 +188,18 @@ def build_material_map():
     return pt_map
 
 
-# ── Step 2: fetch logistics_release 출하완료 ──────────────────────────────────
+# ── Step 2: fetch existing Wave refs (idempotency) ───────────────────────────
+def fetch_existing_wave_refs() -> set:
+    """이미 생성된 Wave의 Order_Ref(LR record_id) 집합을 반환."""
+    recs = paginate(TBL_WAVE, {
+        "returnFieldsByFieldId": "true",
+        "fields[]": [F_WAV_REF],
+        "pageSize": 100,
+    })
+    return {r["fields"].get(F_WAV_REF, "") for r in recs if r["fields"].get(F_WAV_REF)}
+
+
+# ── Step 3: fetch logistics_release 출하완료 ──────────────────────────────────
 def fetch_lr_records():
     print("Fetching logistics_release (발송 상태 = 출하 완료)...")
     recs = paginate(TBL_LR, {
@@ -251,6 +262,11 @@ def live_run(lr_records, pt_map):
     print("LIVE RUN: Creating Wave + PickingTask records")
     print("=" * 60)
 
+    # ── 멱등성 체크: 이미 처리된 LR record_id 스킵 ────────────────────────────
+    print("Checking existing Wave records (idempotency)...")
+    existing_refs = fetch_existing_wave_refs()
+    print(f"  이미 처리된 Wave: {len(existing_refs)}건 (스킵)")
+
     # Track date-based sequence counters
     wave_seq  = defaultdict(int)   # date_str → next sequence num
     task_seq  = defaultdict(int)
@@ -261,8 +277,12 @@ def live_run(lr_records, pt_map):
     total_tasks       = 0
     matched_pt_items  = 0
     total_pt_items    = 0
+    skipped_count     = 0
 
     for r in lr_records:
+        if r["id"] in existing_refs:
+            skipped_count += 1
+            continue  # 이미 Wave 생성됨 → 스킵
         f       = r["fields"]
         rec_id  = r["id"]
         raw_date = f.get(F_LR_DATE, "")
@@ -319,11 +339,17 @@ def live_run(lr_records, pt_map):
             task_specs.append((wave_idx, task_fields))
             total_tasks += 1
 
-    print(f"\n  Wave rows prepared  : {len(wave_rows)}")
+    print(f"\n  스킵 (이미 처리됨) : {skipped_count}건")
+    print(f"  Wave rows prepared  : {len(wave_rows)}")
     print(f"  PickingTask rows    : {total_tasks}")
     if total_pt_items > 0:
         rate = matched_pt_items / total_pt_items * 100
         print(f"  PT match rate       : {matched_pt_items}/{total_pt_items} = {rate:.1f}%")
+
+    # ── 생성할 Wave가 없으면 조기 종료 ────────────────────────────────────────
+    if not wave_rows:
+        print("\n  신규 생성할 Wave 없음 (모두 이미 처리됨). 종료.")
+        return 0, 0, len(lr_records), 0.0
 
     # ── Batch create Waves ─────────────────────────────────────────────────
     print("\nCreating WMS_Wave records...")
@@ -331,7 +357,9 @@ def live_run(lr_records, pt_map):
     print(f"  Created {len(wave_ids)} Wave records")
 
     if len(wave_ids) != len(wave_rows):
-        print("  WARNING: wave_ids count mismatch — some waves may have failed")
+        print(f"  !! Wave 배치 일부 실패: 요청 {len(wave_rows)}건 중 {len(wave_ids)}건만 생성됨")
+        print("  PickingTask 생성 중단 (데이터 정합성 보호)")
+        raise SystemExit(1)
 
     # ── Build PickingTask rows with wave links ─────────────────────────────
     task_rows = []
