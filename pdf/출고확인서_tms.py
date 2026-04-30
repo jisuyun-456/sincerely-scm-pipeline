@@ -387,16 +387,14 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     else:
         to_str = get_lookup_first(f, "배송요청_lookup")
 
-    # 품목 — 재고 출하 품목 필드 우선 (실제 데이터)
-    stock_raw = get_field(f, "재고 출하 품목")
-    if stock_raw.strip():
+    # 품목 — 재고 출하 품목 필드 우선 (PT코드-품목 || 수량 형식일 때만)
+    stock_raw   = get_field(f, "재고 출하 품목")
+    stock_lines = [l.strip() for l in str(stock_raw).split("\n") if l.strip()]
+    if stock_lines and any(STOCK_ITEM_RE.match(l) for l in stock_lines):
         items = parse_stock_items(stock_raw)
     else:
         actual_raw = _get_lines(f, "최종 출고 품목 및 수량")
         order_raw  = _get_lines(f, "최종 출하 품목")
-        print(f"[DEBUG] 최종 출고 품목 및 수량 type={type(f.get('최종 출고 품목 및 수량')).__name__!r} val={f.get('최종 출고 품목 및 수량')!r}")
-        print(f"[DEBUG] 최종 출하 품목 type={type(f.get('최종 출하 품목')).__name__!r} val={f.get('최종 출하 품목')!r}")
-        print(f"[DEBUG] 출고 품목 및 수량 직접입력 val={f.get('출고 품목 및 수량 (직접입력)')!r}")
         items      = parse_items(actual_raw, order_raw)
 
     # 수신처 정보 — 리스트 래핑 필드 처리
