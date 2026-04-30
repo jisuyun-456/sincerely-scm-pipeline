@@ -204,7 +204,8 @@ def _fetch_project_names(project_ids: list[str]) -> dict[str, str]:
     results: dict[str, str] = {}
     for i in range(0, len(project_ids), 10):
         batch = project_ids[i:i + 10]
-        formula = f"OR({','.join(f'RECORD_ID()=\"{pid}\"' for pid in batch)})"
+        parts   = [f'RECORD_ID()="{pid}"' for pid in batch]
+        formula = f"OR({','.join(parts)})"
         try:
             recs = airtable_get(PROJECT_TBL, {
                 "fields[]":        ["Name"],
