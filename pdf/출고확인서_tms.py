@@ -179,6 +179,15 @@ def get_field(f: dict, key: str, default: str = "") -> str:
     return str(val) if val else default
 
 
+def _get_lines(f: dict, key: str) -> str:
+    val = f.get(key)
+    if not val:
+        return ""
+    if isinstance(val, list):
+        return "\n".join(str(v) for v in val if v is not None)
+    return str(val)
+
+
 def get_lookup_first(f: dict, key: str) -> str:
     val = f.get(key)
     if not val:
@@ -383,8 +392,8 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     if stock_raw.strip():
         items = parse_stock_items(stock_raw)
     else:
-        actual_raw = f.get("최종 출고 품목 및 수량") or ""
-        order_raw  = get_field(f, "최종 출하 품목")
+        actual_raw = _get_lines(f, "최종 출고 품목 및 수량")
+        order_raw  = _get_lines(f, "최종 출하 품목")
         items      = parse_items(actual_raw, order_raw)
 
     # 수신처 정보 — 리스트 래핑 필드 처리
