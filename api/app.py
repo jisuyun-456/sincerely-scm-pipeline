@@ -33,6 +33,10 @@ class BarcodeRequest(BaseModel):
 class TMSRequest(BaseModel):
     record_id: str
 
+class WMSRequest(BaseModel):
+    record_id: str
+    pdf_type:  str = "all"   # "all" | "carton_label" | "packing_list" | "shipping_mark"
+
 
 # ── 내부 헬퍼 ────────────────────────────────────────────────────────────────
 
@@ -122,6 +126,43 @@ def generate_tms_pdf(
     cmd = [sys.executable, "pdf/출고확인서_tms.py", "--record-id", payload.record_id]
     background_tasks.add_task(_run_bg, cmd)
     return {"status": "accepted"}
+
+
+@app.post("/generate-wms-pdf")
+def generate_wms_pdf(
+    payload: WMSRequest,
+    background_tasks: BackgroundTasks,
+    x_webhook_secret: str = Header(default=""),
+):
+    """WMS 출고서류 3종: carton_label / packing_list / shipping_mark / all"""
+    _check_secret(x_webhook_secret)
+    logger.info(f"[WMS] request: record_id={payload.record_id!r} pdf_type={payload.pdf_type!r}")
+    if not payload.record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    background_tasks.add_task(_run_wms_all, payload.record_id, payload.pdf_type)
+    return {"status": "accepted"}
+
+
+def _run_wms_all(record_id: str, pdf_type: str):
+    py = sys.executable
+    carton_fld  = os.getenv("CARTON_LABEL_FIELD_ID", "")
+    packing_fld = os.getenv("PACKING_LIST_FIELD_ID", "")
+    shipping_fld = os.getenv("SHIPPING_MARK_FIELD_ID", "")
+
+    tasks = {
+        "carton_label":  [py, "scripts/outer_box_label.py",
+                          "--lr-id", record_id, "--style", "global",
+                          "--upload-field", carton_fld],
+        "packing_list":  [py, "scripts/packing_list.py",
+                          "--lr-id", record_id,
+                          "--upload-field", packing_fld],
+        "shipping_mark": [py, "scripts/shipping_mark.py",
+                          "--lr-id", record_id,
+                          "--upload-field", shipping_fld],
+    }
+    to_run = list(tasks.values()) if pdf_type == "all" else [tasks[pdf_type]]
+    for cmd in to_run:
+        _run_bg(cmd)
 
 
 @app.get("/health")
