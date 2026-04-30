@@ -394,6 +394,9 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     else:
         actual_raw = _get_lines(f, "최종 출고 품목 및 수량")
         order_raw  = _get_lines(f, "최종 출하 품목")
+        print(f"[DEBUG] 최종 출고 품목 및 수량 type={type(f.get('최종 출고 품목 및 수량')).__name__!r} val={f.get('최종 출고 품목 및 수량')!r}")
+        print(f"[DEBUG] 최종 출하 품목 type={type(f.get('최종 출하 품목')).__name__!r} val={f.get('최종 출하 품목')!r}")
+        print(f"[DEBUG] 출고 품목 및 수량 직접입력 val={f.get('출고 품목 및 수량 (직접입력)')!r}")
         items      = parse_items(actual_raw, order_raw)
 
     # 수신처 정보 — 리스트 래핑 필드 처리
