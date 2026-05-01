@@ -65,6 +65,14 @@
       "file": "2026-W11_review.json"
     },
     {
+      "key": "2026-04_monthly",
+      "label": "2026년 04월 (지난달)",
+      "mode": "monthly",
+      "mode_label": "월간 실적",
+      "generated_at": "2026-05-01T04:24:35",
+      "file": "2026-04_monthly.json"
+    },
+    {
       "key": "2026-03_monthly",
       "label": "2026년 03월 (지난달)",
       "mode": "monthly",
