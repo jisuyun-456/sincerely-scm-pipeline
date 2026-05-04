@@ -335,12 +335,8 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
     rows = [header]
     # 합포장 라벨 집합 (is_mixed=True인 라벨 → 박스 컬럼에 "(합)" 태그)
     mixed_labels = {lable for lable, _, is_mixed, _ in box_rows if is_mixed}
-    # 총 박스 수: 고유 라벨 단위 합산 (합포장 중복 방지)
-    if box_rows:
-        total_box_cnt = sum(bc for _, _, _, bc in box_rows)
-    else:
-        unique_labels = {lbl for g in doc["grouped_items"] for lbl in g["_labels"]}
-        total_box_cnt = len(unique_labels) if unique_labels else sum(g["_boxes"] for g in doc["grouped_items"])
+    # 총 박스 수: IL 재고자재_출고박스수량 기반 (합포장 dedup 적용)
+    total_box_cnt = doc.get("il_total_boxes") or sum(bc for _, _, _, bc in box_rows)
     total_qty = 0
     for idx, g in enumerate(doc["grouped_items"], 1):
         pt      = g.get("파츠코드", "")
@@ -625,9 +621,6 @@ def main():
         bc_recs_for_doc = [bc_map[bid] for bid in bc_ids if bid in bc_map]
         il_to_labels, box_rows = build_box_rows(bc_recs_for_doc, il_map)
 
-        # BC 테이블 라벨별 박스수 룩업 (per-row 박스수·합계·박스별구성 소스 통일)
-        label_to_box_cnt = {lable: cnt for lable, _, _, cnt in box_rows}
-
         items = [il_map[rid] for rid in il_ids if rid in il_map]
         # 라벨 번호 오름차순 → 같은 박스 PT 그룹핑, 동일 라벨 내에선 PT코드 순
         def item_sort_key(item):
@@ -651,15 +644,26 @@ def main():
                     "_labels": [],
                 }
             g = pt_agg[key]
-            g["_qty"] += int(item.get("출고수량") or 0)
+            g["_qty"]   += int(item.get("출고수량") or 0)
+            g["_boxes"] += int(item.get("재고자재_출고박스수량") or 0)
             il_id = item.get("_record_id", "")
             for lbl in il_to_labels.get(il_id, []):
                 if lbl not in g["_labels"]:
                     g["_labels"].append(lbl)
 
-        # BC 기준 박스수로 통일 (IL 필드 대신 사용해 테이블·박스별구성·합계 일치)
-        for g in pt_agg.values():
-            g["_boxes"] = sum(label_to_box_cnt.get(lbl, 0) for lbl in g["_labels"])
+        # IL 기반 라벨별 dedup 총합 (합포장 중복 방지: 같은 라벨 첫 등장 값만 카운트)
+        label_box_il: dict[str, int] = {}
+        for item in items:
+            il_id   = item.get("_record_id", "")
+            box_val = int(item.get("재고자재_출고박스수량") or 0)
+            if box_val <= 0:
+                continue
+            for lbl in il_to_labels.get(il_id, []):
+                if lbl not in label_box_il:
+                    label_box_il[lbl] = box_val
+        il_total = sum(label_box_il.values())
+        if il_total == 0:
+            il_total = sum(bc for _, _, _, bc in box_rows)
 
         grouped_items = sorted(
             pt_agg.values(),
@@ -674,6 +678,7 @@ def main():
             "grouped_items":  grouped_items,
             "il_to_labels":   il_to_labels,
             "box_rows":       box_rows,
+            "il_total_boxes": il_total,
         })
 
     if args.dry_run:
