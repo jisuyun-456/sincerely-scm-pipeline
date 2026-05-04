@@ -114,7 +114,7 @@ def airtable_get(table_id: str, params: dict) -> list:
     return records
 
 
-_BOX_ROW = re.compile(r"^(\d+)(\+\S+)?\s*\*\s*(\d+)\s+(.+?)\s*$")
+_BOX_ROW = re.compile(r"^(\d+)(\+\S+)?\s*\*\s*(\d+)\s*(.+?)\s*$")
 
 
 def _clean_item_name(s: str) -> str:
