@@ -236,123 +236,82 @@ def draw_shipping_mark(c: rl_canvas.Canvas, x: float, y: float,
                        box: dict, to_num: str, date_str: str,
                        company: str, consignee_name: str, consignee_addr: str,
                        font: str, font_bold: str):
-    W, H = MARK_W, MARK_H
-    PAD  = 5 * mm
+    """HTML 기반 Shipping Mark (150×100mm) — SINCERELY 헤더 / CONSIGNEE·REF·CARTON 행 / 푸터"""
+    W, H  = MARK_W, MARK_H
+    PAD   = 5 * mm
+    NAVY  = colors.HexColor("#0b2747")
+    INK   = colors.HexColor("#0f0f10")
+    INK2  = colors.HexColor("#3a3a3d")
+    MUTED = colors.HexColor("#7c7c82")
+    LINE2 = colors.HexColor("#eef0f4")
 
-    # 외곽 테두리 (2중 선)
-    c.setStrokeColor(DARK)
-    c.setLineWidth(2.0)
-    c.rect(x, y, W, H)
-    c.setLineWidth(0.5)
-    c.setStrokeColor(colors.HexColor("#6699BB"))
-    c.rect(x + 2*mm, y + 2*mm, W - 4*mm, H - 4*mm)
-
-    cy = y + H   # 현재 그리기 위치 (위에서 아래)
-
-    # ── 1. 발송인 (SHIPPER) 블록 (15mm) ─────────────────────────────────────
-    BLK1_H = 15 * mm
-    c.setFillColor(DARK)
-    c.rect(x, cy - BLK1_H, W, BLK1_H, fill=1, stroke=0)
+    # ── 헤더 (navy, 15mm) ────────────────────────────────────────────────
+    HDR_H = 15 * mm
+    HDR_Y = y + H - HDR_H
+    c.setFillColor(NAVY)
+    c.rect(x, HDR_Y, W, HDR_H, fill=1, stroke=0)
     c.setFillColor(colors.white)
-    c.setFont(font_bold, 13)
-    c.drawCentredString(x + W/2, cy - 7*mm, "SINCERELY")
-    c.setFont(font, 7)
-    c.drawCentredString(x + W/2, cy - 12*mm, "신시어리 ·  Seoul, Korea")
-    cy -= BLK1_H
-
-    # 구분선
-    c.setStrokeColor(DARK)
-    c.setLineWidth(1.0)
-    c.line(x, cy, x + W, cy)
-
-    # ── 2. 수취인 (CONSIGNEE) 블록 (25mm) ───────────────────────────────────
-    BLK2_H = 25 * mm
-    c.setFillColor(LIGHT)
-    c.rect(x, cy - BLK2_H, W, BLK2_H, fill=1, stroke=0)
-    c.setFillColor(MID)
-    c.setFont(font_bold, 7)
-    c.drawString(x + PAD, cy - 5*mm, "CONSIGNEE / 수취인")
-    consignee_label = company.split("-", 1)[-1] if "-" in company else company
-    c.setFillColor(colors.HexColor("#111111"))
-    c.setFont(font_bold, 11)
-    if consignee_label:
-        c.drawString(x + PAD, cy - 11*mm, consignee_label[:28])
-    c.setFont(font, 8)
-    addr = consignee_addr or ""
-    # 공백 기준 줄바꿈 (150mm 너비에 맞게 40자씩)
-    words = addr.split()
-    addr_lines, cur = [], ""
-    for w in words:
-        if cur and len(cur) + len(w) + 1 > 38:
-            addr_lines.append(cur); cur = w
-        else:
-            cur = (cur + " " + w).strip() if cur else w
-    if cur:
-        addr_lines.append(cur)
-    for i, line in enumerate(addr_lines[:2]):
-        c.drawString(x + PAD, cy - (16 + i*4.5)*mm, line)
-    if consignee_name:
-        c.setFont(font, 7.5)
-        c.setFillColor(colors.HexColor("#444444"))
-        c.drawString(x + PAD, cy - 23*mm, f"담당: {consignee_name}")
-    cy -= BLK2_H
-
-    # 구분선
-    c.setStrokeColor(LGRAY)
-    c.setLineWidth(0.8)
-    c.line(x + PAD, cy, x + W - PAD, cy)
-    cy -= 2*mm
-
-    # ── 3. 주문 참조 블록 (14mm) ─────────────────────────────────────────────
-    BLK3_H = 14 * mm
-    c.setFillColor(colors.HexColor("#F8FBFF"))
-    c.rect(x, cy - BLK3_H, W, BLK3_H, fill=1, stroke=0)
-    c.setFillColor(MID)
-    c.setFont(font_bold, 7)
-    c.drawString(x + PAD, cy - 5*mm, "SHIPPING REF. / 출고번호")
-    c.setFillColor(colors.HexColor("#111111"))
-    c.setFont(font_bold, 11)
-    c.drawString(x + PAD, cy - 11*mm, to_num)
-    cy -= BLK3_H
-
-    # 구분선
-    c.setStrokeColor(LGRAY)
-    c.setLineWidth(0.8)
-    c.line(x + PAD, cy, x + W - PAD, cy)
-    cy -= 2*mm
-
-    # ── 4. 박스 번호 블록 (18mm) ─────────────────────────────────────────────
-    BLK4_H = 18 * mm
-    c.setFillColor(LIGHT)
-    c.rect(x, cy - BLK4_H, W, BLK4_H, fill=1, stroke=0)
-    c.setFillColor(MID)
-    c.setFont(font_bold, 7)
-    c.drawString(x + PAD, cy - 5*mm, "CARTON No. / 박스 번호")
-    c.setFillColor(DARK)
     c.setFont(font_bold, 18)
-    box_label = f"C/No.  {box['box_num']} / {box['total_boxes']}"
-    c.drawCentredString(x + W/2, cy - 14*mm, box_label)
-    cy -= BLK4_H
+    c.drawCentredString(x + W / 2, HDR_Y + 7 * mm, "SINCERELY")
+    c.setFont(font, 7)
+    c.setFillColor(colors.HexColor("#9cc0e8"))
+    c.drawCentredString(x + W / 2, HDR_Y + 3 * mm, "신시어리  ·  Seoul, Korea")
 
-    # 구분선
-    c.setStrokeColor(LGRAY)
-    c.setLineWidth(0.8)
-    c.line(x + PAD, cy, x + W - PAD, cy)
-    cy -= 2*mm
+    # ── 푸터 (12mm, 상단 구분선) ─────────────────────────────────────────
+    FTR_H = 12 * mm
+    c.setStrokeColor(LINE2); c.setLineWidth(1.1)
+    c.line(x, y + FTR_H, x + W, y + FTR_H)
+    c.setFont(font, 8); c.setFillColor(INK2)
+    c.drawCentredString(x + W / 2, y + 8.5 * mm, f"SIZE  {box['size']}형")
+    c.setFont(font_bold, 8.5); c.setFillColor(NAVY)
+    c.drawCentredString(x + W / 2, y + 5.5 * mm, "MADE IN KOREA")
+    c.setFont(font, 6); c.setFillColor(MUTED)
+    c.drawCentredString(x + W / 2, y + 2.5 * mm, f"SHIP DATE  {date_str}")
 
-    # ── 5. 규격 + 원산지 (나머지 ~22mm) ─────────────────────────────────────
-    remaining = cy - (y + 4*mm)
-    c.setFillColor(colors.white)
-    c.rect(x, y + 4*mm, W, remaining, fill=1, stroke=0)
-    c.setFillColor(colors.HexColor("#555555"))
-    c.setFont(font_bold, 9)
-    c.drawCentredString(x + W/2, cy - 6*mm, f"SIZE: {box['size']}형")
-    c.setFillColor(DARK)
-    c.setFont(font_bold, 10)
-    c.drawCentredString(x + W/2, cy - 12*mm, "MADE IN KOREA")
-    c.setFont(font, 7.5)
-    c.setFillColor(colors.HexColor("#888888"))
-    c.drawCentredString(x + W/2, y + 7*mm, f"SHIP DATE: {date_str}")
+    # ── 본문 헬퍼 ─────────────────────────────────────────────────────────
+    def hsep(ypos: float):
+        c.setStrokeColor(LINE2); c.setLineWidth(0.7)
+        c.line(x, ypos, x + W, ypos)
+
+    def row_label(label_en: str, label_ko: str, ypos: float):
+        c.setFont(font_bold, 6.5); c.setFillColor(NAVY)
+        c.drawString(x + PAD, ypos, label_en)
+        en_w = c.stringWidth(label_en, font_bold, 6.5)
+        c.setFont(font, 6.5); c.setFillColor(MUTED)
+        c.drawString(x + PAD + en_w + 2, ypos, "  " + label_ko)
+
+    # ── 행 1: CONSIGNEE / 수취인 ─────────────────────────────────────────
+    R1_TOP = HDR_Y - 2.6 * mm
+    row_label("CONSIGNEE", "/ 수취인", R1_TOP)
+    consignee_label = company.split("-", 1)[-1] if "-" in company else company
+    c.setFont(font_bold, 14); c.setFillColor(INK)
+    c.drawString(x + PAD, R1_TOP - 7 * mm, (consignee_label or "—")[:22])
+    R1_BOT = R1_TOP - 15 * mm
+    hsep(R1_BOT)
+
+    # ── 행 2: SHIPPING REF. / 출고번호 ──────────────────────────────────
+    R2_TOP = R1_BOT - 2.6 * mm
+    row_label("SHIPPING REF.", "/ 출고번호", R2_TOP)
+    c.setFont(font_bold, 13); c.setFillColor(INK)
+    c.drawString(x + PAD, R2_TOP - 7 * mm, to_num)
+    R2_BOT = R2_TOP - 13 * mm
+    hsep(R2_BOT)
+
+    # ── 행 3: CARTON No. / 박스 번호 ────────────────────────────────────
+    R3_TOP = R2_BOT - 2.8 * mm
+    c.setFont(font_bold, 6.5); c.setFillColor(NAVY)
+    c.drawString(x + PAD, R3_TOP, "CARTON No.")
+    c.setFont(font, 6.5); c.setFillColor(MUTED)
+    c.drawString(x + PAD, R3_TOP - 4 * mm, "/ 박스 번호")
+    LBL_W = 28 * mm
+    cx    = x + LBL_W + (W - LBL_W) / 2
+    c.setFont(font_bold, 30); c.setFillColor(INK)
+    c.drawCentredString(cx, R3_TOP - 12 * mm,
+                        f"{box['box_num']}  /  {box['total_boxes']}")
+
+    # ── 외곽선 ──────────────────────────────────────────────────────────
+    c.setStrokeColor(colors.HexColor("#333333")); c.setLineWidth(1.0)
+    c.rect(x, y, W, H, stroke=1, fill=0)
 
 
 # ────────────────────────────────────────────────────────────────────────────

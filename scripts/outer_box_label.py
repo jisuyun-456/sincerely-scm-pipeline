@@ -389,100 +389,116 @@ def draw_label(c: rl_canvas.Canvas, x: float, y: float,
 def draw_label_global(c: rl_canvas.Canvas, x: float, y: float,
                       box: dict, to_num: str, date_str: str, company: str,
                       font: str, font_bold: str):
-    """
-    글로벌 표준 Carton Label
-    변경사항: TO=프로젝트명(출고), PO=project Name,
-              헤더 SINCERELY만, 잔여분=PACKING DETAIL만, 바코드 제거, 주요 필드 폰트 확대
-    """
-    W, H   = LABEL_W, LABEL_H
-    PAD    = 5 * mm
-    DARK   = colors.HexColor("#1A3A5C")
-    LIGHT  = colors.HexColor("#E8F0F7")
-    LGRAY  = colors.HexColor("#CCCCCC")
-    ACCENT = colors.HexColor("#1E6091")
+    """HTML 기반 Carton Label (150×100mm) — CARTON LABEL 헤더 / TO·PO·BOX meta / 품목+수량 / 푸터"""
+    W, H  = LABEL_W, LABEL_H
+    PAD   = 5.5 * mm
+    NAVY  = colors.HexColor("#0b2747")
+    INK   = colors.HexColor("#0f0f10")
+    INK2  = colors.HexColor("#3a3a3d")
+    MUTED = colors.HexColor("#7c7c82")
+    MUTED2 = colors.HexColor("#9aa0a8")
+    LINE  = colors.HexColor("#d8d9dd")
 
-    # 테두리
-    c.setStrokeColor(colors.HexColor("#333333"))
-    c.setLineWidth(1.0)
-    c.rect(x, y, W, H)
-
-    # ── Zone A: 헤더 (9mm) ──────────────────────────────────────────────────
-    HDR_H = 9 * mm
+    # ── 헤더 (navy, 10.5mm) ────────────────────────────────────────────────
+    HDR_H = 10.5 * mm
     HDR_Y = y + H - HDR_H
-    c.setFillColor(DARK)
+    c.setFillColor(NAVY)
     c.rect(x, HDR_Y, W, HDR_H, fill=1, stroke=0)
     c.setFillColor(colors.white)
-    c.setFont(font_bold, 10)
-    c.drawString(x + PAD, HDR_Y + 3 * mm, "■  CARTON LABEL")
-    c.setFont(font, 8.5)
-    # 변경 3: "SCM" 제거
-    c.drawRightString(x + W - PAD, HDR_Y + 3 * mm, "SINCERELY")
+    c.setFont(font_bold, 8.5)
+    c.drawString(x + PAD, HDR_Y + 3.5 * mm, "■  CARTON LABEL")
+    c.setFont(font_bold, 9.1)
+    c.drawRightString(x + W - PAD, HDR_Y + 3.5 * mm, "SINCERELY")
 
-    # ── Zone B: 정보 스트립 (20mm) — TO/PO 세로 정렬 ──────────────────────
-    INFO_H = 20 * mm
-    INFO_Y = HDR_Y - INFO_H
-    c.setFillColor(LIGHT)
-    c.rect(x, INFO_Y, W, INFO_H, fill=1, stroke=0)
+    # ── Meta 섹션 (22mm, 하단 구분선 + 수직 구분선) ──────────────────────
+    META_H = 22 * mm
+    META_Y = HDR_Y - META_H
+    DIV_X  = x + W - 28 * mm
 
-    c.setFillColor(ACCENT)
-    c.setFont(font_bold, 11)
-    c.drawString(x + PAD, INFO_Y + 15 * mm, f"TO:  {to_num}")
-    po_text = company[:30] if company else "—"
-    c.drawString(x + PAD, INFO_Y + 9 * mm, f"PO:  {po_text}")
+    c.setStrokeColor(LINE); c.setLineWidth(0.85)
+    c.line(x, META_Y, x + W, META_Y)       # 하단선
+    c.line(DIV_X, META_Y, DIV_X, HDR_Y)    # 수직 구분선
 
-    c.setFont(font_bold, 10)
-    c.setFillColor(colors.HexColor("#333333"))
-    c.drawString(x + PAD, INFO_Y + 3 * mm,
-                 f"BOX:  {box['box_num']} / {box['total_boxes']}")
-    c.setFont(font, 9)
-    c.setFillColor(colors.HexColor("#555555"))
-    c.drawRightString(x + W - PAD, INFO_Y + 3 * mm, f"SIZE: {box['size']}형")
+    for i, (k, v) in enumerate([
+        ("TO",  to_num),
+        ("PO",  (company or "")[:28]),
+        ("BOX", f"{box['box_num']} / {box['total_boxes']}"),
+    ]):
+        ry = HDR_Y - (5 * mm + i * 6.5 * mm)
+        c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+        c.drawString(x + PAD, ry, k)
+        c.setFont(font_bold, 9.1); c.setFillColor(INK)
+        c.drawString(x + PAD + 14 * mm, ry, v)
 
-    # 구분선
-    SEP_Y = INFO_Y - 1.5 * mm
-    c.setStrokeColor(LGRAY)
-    c.setLineWidth(0.5)
-    c.line(x, SEP_Y, x + W, SEP_Y)
+    c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+    c.drawRightString(x + W - PAD, HDR_Y - 5 * mm, "SIZE")
+    c.setFont(font_bold, 15.3); c.setFillColor(INK)
+    c.drawRightString(x + W - PAD, HDR_Y - 14 * mm, box["size"])
 
-    # ── Zone C: 콘텐츠 영역 (수직 중앙 배치) ────────────────────────────────
-    SECT_Y = SEP_Y - 12 * mm
-    c.setFillColor(colors.HexColor("#888888"))
-    c.setFont(font, 9)
-    c.drawString(x + PAD, SECT_Y, "CONTENTS")
+    # ── Body (Contents + Qty 수직 중앙) ──────────────────────────────────
+    FTR_H  = 8.5 * mm
+    BODY_H = META_Y - (y + FTR_H)     # ~59mm
+    CNT_Y  = META_Y - BODY_H * 0.32   # Contents 섹션 상단
 
-    ITEM_Y = SECT_Y - 7 * mm
-    c.setFillColor(colors.black)
-    c.setFont(font_bold, 22)
-    c.drawString(x + PAD, ITEM_Y, box["item"][:26])
+    # Contents
+    c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+    c.drawString(x + PAD, CNT_Y + 3 * mm, "CONTENTS")
+    c.setFont(font_bold, 25.5); c.setFillColor(INK)
+    c.drawString(x + PAD, CNT_Y - 2.5 * mm, box["item"][:18])
 
-    # 변경 4: 잔여분 박스는 QTY 줄 생략, PACKING DETAIL만 표시
-    remainders = box.get("remainder_items", [])
-    if remainders:
-        REM_HDR_Y = ITEM_Y - 9 * mm
-        c.setFillColor(colors.HexColor("#888888"))
-        c.setFont(font, 8)
-        c.drawString(x + PAD, REM_HDR_Y, "PACKING DETAIL (REMAINDER):")
-        for i, rem in enumerate(remainders):
-            iy = REM_HDR_Y - (i + 1) * 7 * mm
-            c.setFillColor(colors.HexColor("#222222"))
-            c.setFont(font, 11)
-            c.drawString(x + PAD + 3 * mm, iy,
-                         f"◦  {rem['name']}    ×  {rem['qty']} EA")
-    else:
-        QTY_Y = ITEM_Y - 15 * mm
-        c.setFont(font, 20)
-        c.setFillColor(colors.HexColor("#333333"))
-        qty_display = _format_qty(box["qty"])
-        c.drawString(x + PAD, QTY_Y, f"QTY   {qty_display} EA")
+    # Qty
+    QTY_Y = CNT_Y - 17 * mm
+    c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+    c.drawString(x + PAD, QTY_Y + 3 * mm, "QTY")
 
-    # ── Zone E: 푸터 (바코드 제거 — 변경 5) ───────────────────────────────────
-    c.setStrokeColor(LGRAY)
-    c.setLineWidth(0.3)
-    c.line(x + PAD, y + 10 * mm, x + W - PAD, y + 10 * mm)
-    c.setFillColor(colors.HexColor("#AAAAAA"))
-    c.setFont(font, 7.5)
-    c.drawString(x + PAD, y + 4 * mm,
-                 f"SHIP DATE: {date_str}   |   ORIGIN: KOR   |   SINCERELY Co.")
+    m_qty = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
+    main  = m_qty.group(1) if m_qty else box["qty"]
+    extra = m_qty.group(2) if m_qty else None
+
+    c.setFont(font_bold, 31.2); c.setFillColor(INK)
+    c.drawString(x + PAD, QTY_Y - 2 * mm, main)
+    cur_x = x + PAD + c.stringWidth(main, font_bold, 31.2)
+
+    if extra:
+        c.setFont(font_bold, 9); c.setFillColor(MUTED2)
+        c.drawString(cur_x + 1 * mm, QTY_Y + 2 * mm, "+")
+        cur_x += 1 * mm + c.stringWidth("+", font_bold, 9)
+        c.setFont(font_bold, 22.7); c.setFillColor(INK2)
+        c.drawString(cur_x + 1 * mm, QTY_Y - 1 * mm, extra)
+        cur_x += 1 * mm + c.stringWidth(extra, font_bold, 22.7)
+
+    c.setFont(font_bold, 17); c.setFillColor(INK2)
+    c.drawString(cur_x + 2 * mm, QTY_Y - 1 * mm, "EA")
+
+    # ── 푸터 (연회색 배경, 상단 구분선) ──────────────────────────────────
+    c.setFillColor(colors.HexColor("#fafbfd"))
+    c.rect(x, y, W, FTR_H, fill=1, stroke=0)
+    c.setStrokeColor(LINE); c.setLineWidth(0.85)
+    c.line(x, y + FTR_H, x + W, y + FTR_H)
+
+    c.setFont(font_bold, 6.8); c.setFillColor(MUTED)
+    c.drawString(x + PAD, y + 4.5 * mm, "SHIP")
+    ship_kw = c.stringWidth("SHIP  ", font_bold, 6.8)
+    c.setFont(font_bold, 7.9); c.setFillColor(INK2)
+    c.drawString(x + PAD + ship_kw, y + 4.5 * mm, date_str)
+
+    div1_x = x + PAD + ship_kw + c.stringWidth(date_str, font_bold, 7.9) + 4 * mm
+    c.setStrokeColor(LINE); c.setLineWidth(0.85)
+    c.line(div1_x, y + 1.5 * mm, div1_x, y + 6 * mm)
+
+    c.setFont(font_bold, 6.8); c.setFillColor(MUTED)
+    c.drawString(div1_x + 3 * mm, y + 4.5 * mm, "ORIGIN")
+    orig_kw = c.stringWidth("ORIGIN  ", font_bold, 6.8)
+    c.setFont(font_bold, 7.9); c.setFillColor(INK2)
+    c.drawString(div1_x + 3 * mm + orig_kw, y + 4.5 * mm, "KOR")
+
+    c.setFont(font_bold, 7.9); c.setFillColor(NAVY)
+    c.drawRightString(x + W - PAD, y + 4.5 * mm, "SINCERELY Co.")
+
+    # ── 외곽선 ────────────────────────────────────────────────────────────
+    c.setStrokeColor(colors.HexColor("#333333"))
+    c.setLineWidth(1.0)
+    c.rect(x, y, W, H, stroke=1, fill=0)
 
 
 # ────────────────────────────────────────────────────────────────────────────
