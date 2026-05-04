@@ -27,3 +27,4 @@ wms/material_records.json
 
 # Superpowers plugin (local root only, not project code)
 /superpowers/
+scripts/backfill/__pycache__/
