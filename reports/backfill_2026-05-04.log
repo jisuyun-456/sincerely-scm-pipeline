@@ -1,0 +1,12 @@
+
+[2026-05-04] 2026-04-27~2026-05-03 DRY
+  배차 일지: {'created': 10, 'skipped': 0}
+  OTIF: {'created': 0, 'message': '대상 없음'}
+  배송이벤트: {'created': 0, 'message': '대상 없음'}
+  택배추적로그: {'created': 0, 'message': '대상 없음'}
+
+[2026-05-04] 2026-04-27~2026-05-03 RUN
+  배차 일지: {'created': 10, 'skipped': 0}
+  OTIF: {'created': 0, 'message': '대상 없음'}
+  배송이벤트: {'created': 0, 'message': '대상 없음'}
+  택배추적로그: {'created': 0, 'message': '대상 없음'}
