@@ -436,40 +436,42 @@ def draw_label_global(c: rl_canvas.Canvas, x: float, y: float,
     c.setFont(font_bold, 15.3); c.setFillColor(INK)
     c.drawRightString(x + W - PAD, HDR_Y - 14 * mm, f"{box['size']}형")
 
-    # ── Body (Contents + Qty 수직 중앙) ──────────────────────────────────
-    FTR_H  = 8.5 * mm
-    BODY_H = META_Y - (y + FTR_H)     # ~59mm
-    CNT_Y  = META_Y - BODY_H * 0.32   # Contents 섹션 상단
+    # ── Body (Contents + Qty) ────────────────────────────────────────────
+    FTR_H       = 8.5 * mm
+    # label baseline을 값 cap-height 상단보다 충분히 높게 배치해 겹침 방지
+    CONT_LBL_Y  = META_Y - 11 * mm   # "CONTENTS" 레이블
+    CONT_TXT_Y  = META_Y - 22 * mm   # 품목명 (25.5pt cap ≈ 6.3mm → 상단 META_Y-15.7mm)
+    QTY_LBL_Y   = META_Y - 29 * mm   # "QTY" 레이블
+    QTY_TXT_Y   = META_Y - 41 * mm   # 수량 (31.2pt cap ≈ 7.9mm → 상단 META_Y-33.1mm)
 
     # Contents
     c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
-    c.drawString(x + PAD, CNT_Y + 3 * mm, "CONTENTS")
+    c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
     c.setFont(font_bold, 25.5); c.setFillColor(INK)
-    c.drawString(x + PAD, CNT_Y - 2.5 * mm, box["item"][:18])
+    c.drawString(x + PAD, CONT_TXT_Y, box["item"][:18])
 
     # Qty
-    QTY_Y = CNT_Y - 17 * mm
     c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
-    c.drawString(x + PAD, QTY_Y + 3 * mm, "QTY")
+    c.drawString(x + PAD, QTY_LBL_Y, "QTY")
 
     m_qty = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
     main  = m_qty.group(1) if m_qty else box["qty"]
     extra = m_qty.group(2) if m_qty else None
 
     c.setFont(font_bold, 31.2); c.setFillColor(INK)
-    c.drawString(x + PAD, QTY_Y - 2 * mm, main)
+    c.drawString(x + PAD, QTY_TXT_Y, main)
     cur_x = x + PAD + c.stringWidth(main, font_bold, 31.2)
 
     if extra:
         c.setFont(font_bold, 9); c.setFillColor(MUTED2)
-        c.drawString(cur_x + 1 * mm, QTY_Y + 2 * mm, "+")
+        c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 4 * mm, "+")
         cur_x += 1 * mm + c.stringWidth("+", font_bold, 9)
         c.setFont(font_bold, 22.7); c.setFillColor(INK2)
-        c.drawString(cur_x + 1 * mm, QTY_Y - 1 * mm, extra)
+        c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 1 * mm, extra)
         cur_x += 1 * mm + c.stringWidth(extra, font_bold, 22.7)
 
     c.setFont(font_bold, 17); c.setFillColor(INK2)
-    c.drawString(cur_x + 2 * mm, QTY_Y - 1 * mm, "EA")
+    c.drawString(cur_x + 2 * mm, QTY_TXT_Y + 1 * mm, "EA")
 
     # ── 푸터 (연회색 배경, 상단 구분선) ──────────────────────────────────
     c.setFillColor(colors.HexColor("#fafbfd"))
