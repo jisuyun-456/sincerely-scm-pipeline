@@ -82,6 +82,23 @@ def upload_pdf(record_id: str, field_id: str, filename: str, pdf_bytes: bytes) -
     return False
 
 
+PROJ_TBL = "tblcw5sagkDlgAtJN"
+
+def _fetch_project_short_name(link_ids: list) -> str:
+    """project 링크 → 프로젝트명 (Short ver.) 조회 (예: 'PNA51446-디포그')"""
+    if not link_ids:
+        return ""
+    try:
+        r = requests.get(
+            f"https://api.airtable.com/v0/{BASE_ID}/{PROJ_TBL}/{link_ids[0]}",
+            headers=HEADERS, timeout=20,
+        )
+        r.raise_for_status()
+        return r.json().get("fields", {}).get("프로젝트명 (Short ver.)", "") or ""
+    except Exception:
+        return ""
+
+
 def _parse_label_field(raw: str) -> tuple[str, str]:
     """
     "PT4592-배경지 || PNA51446_라이트 샤오미펜"
@@ -109,32 +126,32 @@ def fetch_record(record_id: str) -> dict:
     if isinstance(label_raw, list):
         label_raw = label_raw[0] if label_raw else ""
     label_raw = str(label_raw).strip()
-    pna, proj_name = _parse_label_field(label_raw)
+    # 품목명: " || PNA..." 이전 PT 부분만 표시
+    item_display = label_raw.split(" || ")[0].strip() if " || " in label_raw else label_raw
 
-    proj_code = f.get("프로젝트코드", [])
-    if isinstance(proj_code, list) and proj_code and proj_code[0]:
-        pna = proj_code[0]
-
-    mm_id = str(f.get("movement_id", "") or "—")
-
-    pack_raw = f.get("입고물품_단위", [])
-    if isinstance(pack_raw, list):
-        pack_unit = next((str(v) for v in pack_raw if v not in (None, "")), "—")
+    # 헤더 프로젝트명: project_name 룩업 → 없으면 project 링크로 Short ver. 직접 조회
+    proj_name_raw = f.get("project_name", [])
+    if isinstance(proj_name_raw, list) and proj_name_raw and proj_name_raw[0]:
+        header_proj = str(proj_name_raw[0])
     else:
-        pack_unit = str(pack_raw) if pack_raw else "—"
+        short = _fetch_project_short_name(f.get("project", []))
+        if short:
+            header_proj = short
+        else:
+            proj_code = f.get("프로젝트코드", [])
+            header_proj = proj_code[0] if isinstance(proj_code, list) and proj_code else "—"
 
-    qty     = f.get("입고수량") or f.get("입하수량") or 0
-    box_qty = f.get("입고박스수량", "") or "—"
+    mm_id     = str(f.get("movement_id", "") or "—")
+    pack_unit = str(f.get("입고박스수량", "") or "—")
+    qty       = f.get("입고수량") or f.get("입하수량") or 0
 
     return {
-        "rec_id":    record_id,
-        "pna":       pna or "—",
-        "proj_name": proj_name,
-        "mm_id":     mm_id,
-        "item_raw":  label_raw,
-        "pack_unit": pack_unit,
-        "qty":       qty,
-        "box_qty":   str(box_qty),
+        "rec_id":       record_id,
+        "header_proj":  header_proj,
+        "mm_id":        mm_id,
+        "item_display": item_display,
+        "pack_unit":    pack_unit,
+        "qty":          qty,
     }
 
 
@@ -176,8 +193,14 @@ def _draw_header(c, font, font_bold, project: str):
     c.rect(0, PRJ_Y, W, PRJ_H, fill=1, stroke=0)
     c.setStrokeColor(LINE); c.setLineWidth(0.6)
     c.line(0, PRJ_Y, W, PRJ_Y)
-    c.setFont(font_bold, 7); c.setFillColor(NAVY)
-    c.drawString(PAD, PRJ_Y + 2.5 * mm, (project or "—")[:32])
+    # 프로젝트명 2줄 지원
+    FS_P = 7; ASCENT_P = FS_P * 0.72 * (25.4 / 72) * mm; LH_P = FS_P * 1.35 * (25.4 / 72) * mm
+    proj_lines = _split_name(project or "—", font_bold, FS_P, W - PAD * 2)[:2]
+    total_h = len(proj_lines) * LH_P
+    y0 = PRJ_Y + (PRJ_H + total_h) / 2 - ASCENT_P
+    c.setFont(font_bold, FS_P); c.setFillColor(NAVY)
+    for idx, ln in enumerate(proj_lines):
+        c.drawString(PAD, y0 - idx * LH_P, ln)
 
     return PRJ_Y
 
@@ -194,13 +217,12 @@ def draw_label_page(c, font, font_bold, data: dict):
     ASCENT = FS * 0.72 * (25.4 / 72) * mm
     TEXT_MAX_W = W - PAD * 2
 
-    header_proj = f"{data['pna']}-{data['proj_name']}" if data["proj_name"] else data["pna"]
-    PROJ_Y = _draw_header(c, font, font_bold, header_proj)
+    PROJ_Y = _draw_header(c, font, font_bold, data["header_proj"])
     cur_y  = PROJ_Y - 0.5 * mm
 
     rows = [
         ("MM번호",   data["mm_id"]),
-        ("품목명",   data["item_raw"] or "—"),
+        ("품목명",   data["item_display"] or "—"),
         ("패킹단위", data["pack_unit"]),
         ("입고수량", str(int(data["qty"])) if data["qty"] else "—"),
     ]
@@ -254,13 +276,13 @@ def main():
 
     print(f"▶ 조회: {args.record_id}")
     rec = fetch_record(args.record_id)
-    print(f"  {rec['pna']}-{rec['proj_name']}  MM: {rec['mm_id']}  수량: {rec['qty']}")
+    print(f"  {rec['header_proj']}  MM: {rec['mm_id']}  수량: {rec['qty']}")
 
     buf = BytesIO()
     generate_pdf(rec, buf)
     pdf_bytes = buf.getvalue()
 
-    fname = f"입고라벨_{rec['pna'] or args.record_id}.pdf"
+    fname = f"입고라벨_{rec['header_proj']}_{rec['mm_id']}.pdf"
     upload_pdf(rec["rec_id"], args.upload_field, fname, pdf_bytes)
     print("✅ 완료")
 
