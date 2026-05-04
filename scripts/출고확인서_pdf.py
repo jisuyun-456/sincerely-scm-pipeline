@@ -620,6 +620,7 @@ def main():
 
         bc_recs_for_doc = [bc_map[bid] for bid in bc_ids if bid in bc_map]
         il_to_labels, box_rows = build_box_rows(bc_recs_for_doc, il_map)
+        label_to_box_cnt = {lable: cnt for lable, _, _, cnt in box_rows}
 
         items = [il_map[rid] for rid in il_ids if rid in il_map]
         # 라벨 번호 오름차순 → 같은 박스 PT 그룹핑, 동일 라벨 내에선 PT코드 순
@@ -644,26 +645,15 @@ def main():
                     "_labels": [],
                 }
             g = pt_agg[key]
-            g["_qty"]   += int(item.get("출고수량") or 0)
-            g["_boxes"] += int(item.get("재고자재_출고박스수량") or 0)
+            g["_qty"] += int(item.get("출고수량") or 0)
             il_id = item.get("_record_id", "")
             for lbl in il_to_labels.get(il_id, []):
                 if lbl not in g["_labels"]:
                     g["_labels"].append(lbl)
 
-        # IL 기반 라벨별 dedup 총합 (합포장 중복 방지: 같은 라벨 첫 등장 값만 카운트)
-        label_box_il: dict[str, int] = {}
-        for item in items:
-            il_id   = item.get("_record_id", "")
-            box_val = int(item.get("재고자재_출고박스수량") or 0)
-            if box_val <= 0:
-                continue
-            for lbl in il_to_labels.get(il_id, []):
-                if lbl not in label_box_il:
-                    label_box_il[lbl] = box_val
-        il_total = sum(label_box_il.values())
-        if il_total == 0:
-            il_total = sum(bc for _, _, _, bc in box_rows)
+        # BC 라벨 박스수량 기반: 라벨별 박스수 합산 (합포장 중복 없음)
+        for g in pt_agg.values():
+            g["_boxes"] = sum(label_to_box_cnt.get(lbl, 0) for lbl in g["_labels"])
 
         grouped_items = sorted(
             pt_agg.values(),
@@ -672,13 +662,12 @@ def main():
         )
 
         docs.append({
-            "id":             rec["id"],
-            "fields":         f,
-            "items":          items,
-            "grouped_items":  grouped_items,
-            "il_to_labels":   il_to_labels,
-            "box_rows":       box_rows,
-            "il_total_boxes": il_total,
+            "id":            rec["id"],
+            "fields":        f,
+            "items":         items,
+            "grouped_items": grouped_items,
+            "il_to_labels":  il_to_labels,
+            "box_rows":      box_rows,
         })
 
     if args.dry_run:
