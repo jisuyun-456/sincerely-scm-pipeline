@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>신시어리 인수인계 문서</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #f5f4f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .container {
+    max-width: 560px;
+    width: 100%;
+  }
+  .header {
+    margin-bottom: 32px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 13px;
+    color: #888;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e8e5de;
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: box-shadow 0.15s;
+  }
+  .card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .card a {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .icon-shipping { background: #fff0eb; }
+  .icon-tms      { background: #ebf0ff; }
+  .icon-material { background: #ebfff0; }
+  .card-text h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 3px;
+  }
+  .card-text p {
+    font-size: 12px;
+    color: #999;
+  }
+  .arrow {
+    margin-left: auto;
+    color: #ccc;
+    font-size: 18px;
+  }
+  .footer {
+    margin-top: 24px;
+    font-size: 12px;
+    color: #bbb;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>신시어리 인수인계 문서</h1>
+    <p>Sincerely SCM 운영 인수인계 자료</p>
+  </div>
+
+  <div class="card">
+    <a href="출하 인수인계서.html">
+      <div class="icon icon-shipping">📦</div>
+      <div class="card-text">
+        <h2>출하 인수인계서</h2>
+        <p>출하 프로세스 · 체크리스트 · 담당 업무</p>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="출하 인수인계서 (문서형).html">
+      <div class="icon icon-shipping">📄</div>
+      <div class="card-text">
+        <h2>출하 인수인계서 (문서형)</h2>
+        <p>출하 인수인계서 인쇄용 문서 버전</p>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="TMS 인수인계서.html">
+      <div class="icon icon-tms">🚛</div>
+      <div class="card-text">
+        <h2>TMS 인수인계서</h2>
+        <p>배송 관리 시스템 · 택배사 운영 절차</p>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="자재관리 가이드라인.html">
+      <div class="icon icon-material">🗂️</div>
+      <div class="card-text">
+        <h2>자재관리 가이드라인</h2>
+        <p>자재 입출고 · 재고 관리 기준</p>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="자재관리 가이드라인 (문서형).html">
+      <div class="icon icon-material">📋</div>
+      <div class="card-text">
+        <h2>자재관리 가이드라인 (문서형)</h2>
+        <p>자재관리 가이드라인 인쇄용 문서 버전</p>
+      </div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+
+  <div class="footer">신시어리웨일즈 SCM팀</div>
+</div>
+</body>
+</html>

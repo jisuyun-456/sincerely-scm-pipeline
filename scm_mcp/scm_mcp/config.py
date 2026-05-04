@@ -9,9 +9,10 @@ WMS_MATERIAL_BASE = "appLui4ZR5HWcQRri"
 TMS_BASE = "app4x70a8mOrIKsMf"
 
 TABLES: dict[str, tuple[str, str]] = {
-    "movement":         (WMS_MATERIAL_BASE, "tblwq7Kj5Y9nVjlOw"),
-    "material":         (WMS_MATERIAL_BASE, "tblaRpZstW10EwDlo"),
-    "sync_parts":       (WMS_MATERIAL_BASE, "tblzJh0V4hdo4Xbvx"),
+    "movement":           (WMS_MATERIAL_BASE, "tblwq7Kj5Y9nVjlOw"),
+    "material":           (WMS_MATERIAL_BASE, "tblaRpZstW10EwDlo"),
+    "sync_parts":         (WMS_MATERIAL_BASE, "tblzJh0V4hdo4Xbvx"),
+    "logistics_release":  (WMS_MATERIAL_BASE, "tbler5LBLxh8lcEPv"),
     "picking_list":     (WMS_BARCODE_BASE,  "tblnxU0PlegXT7bYj"),
     "barcode":          (WMS_BARCODE_BASE,  "tbl0K3QP5PCd06Cxv"),
     "outbound_confirm": (WMS_BARCODE_BASE,  "tblMQG1PYioIUWdbe"),
