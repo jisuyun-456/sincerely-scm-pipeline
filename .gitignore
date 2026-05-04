@@ -3,8 +3,10 @@ __pycache__/
 *.pyc
 .DS_Store
 
-# Local Claude Code settings
-.claude/
+# Local Claude Code settings (agents/는 팀 공유 자산이라 추적)
+.claude/*
+!.claude/agents
+!.claude/agents/**
 
 # Local tool settings
 .playwright-mcp/
