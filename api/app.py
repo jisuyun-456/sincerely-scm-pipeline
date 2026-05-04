@@ -187,6 +187,37 @@ def generate_pkg_label(
     return {"status": "accepted"}
 
 
+@app.get("/trigger-wms-pdf")
+def trigger_wms_pdf_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+    pdf_type: str = "all",
+):
+    """WMS 출고서류 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    background_tasks.add_task(_run_wms_all, record_id, pdf_type)
+    return {"status": "accepted"}
+
+
+@app.get("/trigger-pkg-label")
+def trigger_pkg_label_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+):
+    """pkg_schedule 투입자재 라벨 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "scripts/pkg_schedule_label.py",
+           "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
