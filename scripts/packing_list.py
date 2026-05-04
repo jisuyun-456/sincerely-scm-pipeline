@@ -64,6 +64,20 @@ def register_fonts():
         return "Helvetica", "Helvetica-Bold"
 
 
+def clear_attachment_field(record_id: str, field_id: str) -> None:
+    try:
+        r = requests.patch(
+            f"https://api.airtable.com/v0/{BASE_ID}/{TBL_LR}/{record_id}",
+            headers={"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"},
+            json={"fields": {field_id: []}},
+            timeout=30,
+        )
+        r.raise_for_status()
+        print("  🗑️ 기존 첨부 초기화")
+    except Exception as e:
+        print(f"  ⚠️ 기존 첨부 삭제 실패 (무시): {e}")
+
+
 def upload_via_content_api(record_id: str, field_id: str,
                            filename: str, pdf_bytes: bytes) -> bool:
     import base64
@@ -114,7 +128,8 @@ def airtable_get(table_id: str, params: dict) -> list:
     return records
 
 
-_BOX_ROW = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
+_BOX_ROW        = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
+_BOX_ROW_INLINE = re.compile(r"^(.+?)\s+(\d+(?:[+][^\s*]+)?)\s*\*\s*(\d+)\s+([대중소]형?)\s*$")
 
 
 def _clean_item_name(s: str) -> str:
@@ -149,12 +164,12 @@ def parse_packing_detail(text: str) -> list[dict]:
     current_item = None
     box_num = 0
     for line in (text or "").strip().splitlines():
-        line = re.sub(r'\s+', ' ', line).strip()   # 탭·다중공백 → 단일 공백
+        line = re.sub(r'\s+', ' ', line).strip().rstrip('`').strip()
         if not line:
             continue
         m = _BOX_ROW.match(line)
         if m and current_item:
-            extra   = re.sub(r'\s*\+\s*', '+', m.group(2) or "")  # + 주변 공백 제거
+            extra   = re.sub(r'\s*\+\s*', '+', m.group(2) or "")
             qty_str = m.group(1) + extra
             for _ in range(int(m.group(3))):
                 box_num += 1
@@ -166,7 +181,21 @@ def parse_packing_detail(text: str) -> list[dict]:
                     "remainder_items": _parse_remainder(qty_str),
                 })
         else:
-            current_item = line
+            mi = _BOX_ROW_INLINE.match(line)
+            if mi:
+                current_item = mi.group(1).strip()
+                qty_str = mi.group(2)
+                for _ in range(int(mi.group(3))):
+                    box_num += 1
+                    boxes.append({
+                        "box_num":        box_num,
+                        "size":           mi.group(4).strip(),
+                        "item":           _clean_item_name(current_item),
+                        "qty":            qty_str,
+                        "remainder_items": _parse_remainder(qty_str),
+                    })
+            else:
+                current_item = line
     return boxes
 
 
@@ -509,6 +538,7 @@ def main():
     upload_field = getattr(args, "upload_field", None)
     if upload_field and len(records) == 1:
         print(f"\n▶ {filename} 업로드 중…")
+        clear_attachment_field(records[0]["rec_id"], upload_field)
         upload_via_content_api(records[0]["rec_id"], upload_field, filename, pdf_bytes)
     else:
         from pathlib import Path
