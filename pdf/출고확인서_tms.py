@@ -80,7 +80,7 @@ _SCHEMA_CACHE: dict = {}
 _ATTACH_FIELD_ID: str | None = None
 _LOC_TABLE_ID: str | None = None
 
-ITEM_RE      = re.compile(r"^(?P<name>.+?[^\d\s])\s*(?P<qty>\d+)(?:\+(?P<extra>\d+))?개?\s*$")
+ITEM_RE      = re.compile(r"^(?P<name>.+?)\s*\((?P<qty>\d+)\)(?:\+(?P<extra>\d+))?\s*$")
 STOCK_ITEM_RE = re.compile(r"^(?P<pt>PT\S+?)-(?P<name>.+?)\s*\|\|\s*\S+\s+(?P<qty>\d+)개\s*$")
 
 
