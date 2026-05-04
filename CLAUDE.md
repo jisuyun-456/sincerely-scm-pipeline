@@ -4,8 +4,14 @@
 
 ## 이 프로젝트 열면 자동 실행
 1. `git log --oneline -10` 실행 → 최근 작업 히스토리 확인
-2. "현재 상태 요약 + 다음 추천 태스크 1개" 보고
-세션 종료 시: git commit 필수.
+2. **`obsidian-routing` 스킬 자동 호출** → `ClaudeVault/_AutoResearch/SCM/wiki/log.md` 마지막 항목 읽기 → 이전 세션 컨텍스트 복원 (SessionStart 훅이 최근 3개 미리 표시함, 자세한 내용 필요 시 직접 Read)
+3. "현재 상태 요약 + 다음 추천 태스크 1개" 보고
+
+## 세션/Task 종료 시 (누락 금지)
+1. **Obsidian log.md 저장** — `obsidian-routing` 스킬 호출 → `ClaudeVault/_AutoResearch/SCM/wiki/log.md`에 `## [YYYY-MM-DD] {타입} | {제목}` 추가 (결정·완료·이슈·다음 할 일)
+2. **outputs/ 산출물** — 분석 결과·리포트는 `_AutoResearch/SCM/outputs/`에 저장 + `index.md` 링크 갱신
+3. **git commit 필수**
+4. Stop 훅이 자동으로 git status / 미커밋 경고 표시
 
 ## 데이터 정합성 원칙 (Immutable Ledger)
 - Airtable: 운영 입력 레이어 — API로만 읽기/쓰기, 직접 UI 수정 금지
