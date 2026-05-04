@@ -97,7 +97,7 @@ def _parse_items(raw) -> list[str]:
         raw = ", ".join(str(x) for x in raw)
     result = []
     for part in str(raw).rstrip(";").split(","):
-        name = part.split(" || ")[0].strip()
+        name = part.split(" || ")[0].strip().lstrip(";").strip()
         if name:
             result.append(name)
     return result
@@ -163,37 +163,63 @@ def _draw_header(c, font, font_bold, project: str):
     return PROJ_Y   # 아이템 시작 Y
 
 
+def _split_name(name: str, font: str, font_size: float, max_w: float) -> list[str]:
+    """max_w 너비를 초과하지 않도록 문자 단위로 줄 분리"""
+    lines, cur = [], ""
+    for ch in name:
+        if pdfmetrics.stringWidth(cur + ch, font, font_size) <= max_w:
+            cur += ch
+        else:
+            lines.append(cur)
+            cur = ch
+    if cur:
+        lines.append(cur)
+    return lines or [""]
+
+
 def draw_label_page(c, font, font_bold, project: str, pairs: list[tuple]):
     """80×55mm 1장 그리기. pairs = [(name, qty), ...]"""
-    W, H = LABEL_W, LABEL_H
-    PAD  = 3.5 * mm
-    INK  = colors.HexColor("#0f0f10")
-    INK2 = colors.HexColor("#3a3a3d")
-    LINE = colors.HexColor("#d8d9dd")
-    QTY_W = 16 * mm
+    W, H   = LABEL_W, LABEL_H
+    PAD    = 3.5 * mm
+    INK    = colors.HexColor("#0f0f10")
+    INK2   = colors.HexColor("#3a3a3d")
+    LINE   = colors.HexColor("#d8d9dd")
+    QTY_W  = 16 * mm
+    FS     = 7.5                       # pt — 고정 폰트 크기
+    LINE_H = FS * 1.35 * (25.4 / 72) * mm   # ≈ 3.6mm / 줄
+    V_PAD  = 1.5 * mm                 # 행 상하 여백
+    ASCENT = FS * 0.72 * (25.4 / 72) * mm   # baseline 위 높이 ≈ 1.9mm
+    TEXT_W = W - QTY_W - PAD - 1.5 * mm    # 품목명 가용 너비
 
     PROJ_Y = _draw_header(c, font, font_bold, project)
-
-    BODY_H  = PROJ_Y - 1 * mm
-    n       = max(1, len(pairs))
-    MIN_ROW = 3.0 * mm
-    ROW_H   = max(MIN_ROW, BODY_H / n)
-    FS      = max(5.0, min(6.5, ROW_H / mm * 1.35))
+    cur_y  = PROJ_Y - 0.5 * mm        # 첫 행 상단 — 프로젝트 바 바로 아래
 
     for i, (name, qty) in enumerate(pairs):
-        ry = PROJ_Y - 0.5 * mm - ROW_H * (i + 1)
+        lines = _split_name(name, font, FS, TEXT_W)
+        row_h = max(3.0 * mm, len(lines) * LINE_H + V_PAD * 2)
+
+        ry = cur_y - row_h
         bg = colors.white if i % 2 == 0 else colors.HexColor("#f6f8fb")
         c.setFillColor(bg)
-        c.rect(0, ry, W, ROW_H, fill=1, stroke=0)
+        c.rect(0, ry, W, row_h, fill=1, stroke=0)
         c.setStrokeColor(LINE); c.setLineWidth(0.4)
         c.line(0, ry, W, ry)
-        c.line(W - QTY_W, ry, W - QTY_W, ry + ROW_H)
+        c.line(W - QTY_W, ry, W - QTY_W, ry + row_h)
 
-        text_y = ry + ROW_H * 0.25
-        c.setFont(font, FS); c.setFillColor(INK)
-        c.drawString(PAD, text_y, name[:28])
-        c.setFont(font_bold, FS); c.setFillColor(INK2)
-        c.drawCentredString(W - QTY_W / 2, text_y, str(qty))
+        # 품목명: 행 상단에서 V_PAD 아래부터 아래로 출력
+        text_y0 = ry + row_h - V_PAD - ASCENT
+        for j, ln in enumerate(lines):
+            c.setFont(font, FS)
+            c.setFillColor(INK)
+            c.drawString(PAD, text_y0 - j * LINE_H, ln)
+
+        # 수량: 행 수직 중앙
+        qty_y = ry + row_h / 2 - ASCENT / 2
+        c.setFont(font_bold, FS)
+        c.setFillColor(INK2)
+        c.drawCentredString(W - QTY_W / 2, qty_y, str(qty))
+
+        cur_y = ry
 
     c.setStrokeColor(colors.HexColor("#333333")); c.setLineWidth(1.0)
     c.rect(0, 0, W, H, stroke=1, fill=0)
