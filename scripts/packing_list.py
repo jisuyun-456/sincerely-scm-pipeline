@@ -248,7 +248,7 @@ def fetch_record(lr_id=None, to_num=None, date_str=None) -> list:
             "to_num":         f.get("프로젝트명 (출고)", ""),
             "date":           (f.get("출고 요청일") or "")[:10],
             "company":        company,
-            "box_sum":        f.get("외박스 수량", ""),
+            "box_sum":        str(f.get("외박스 수량") or ""),
             "consignee_name": f.get("수령인(성함)", ""),
             "consignee_addr": f.get("수령인(주소)", ""),
             "consignee_tel":  f.get("수령인(연락처)", ""),

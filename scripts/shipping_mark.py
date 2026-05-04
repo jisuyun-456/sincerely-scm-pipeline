@@ -284,9 +284,16 @@ def draw_shipping_mark(c: rl_canvas.Canvas, x: float, y: float,
     R1_TOP = HDR_Y - 2.6 * mm
     row_label("CONSIGNEE", "/ 수취인", R1_TOP)
     consignee_label = company.split("-", 1)[-1] if "-" in company else company
-    c.setFont(font_bold, 14); c.setFillColor(INK)
-    c.drawString(x + PAD, R1_TOP - 7 * mm, (consignee_label or "—")[:22])
-    R1_BOT = R1_TOP - 15 * mm
+    c.setFont(font_bold, 13); c.setFillColor(INK)
+    c.drawString(x + PAD, R1_TOP - 7 * mm, (consignee_label or "—")[:24])
+    if consignee_name:
+        c.setFont(font_bold, 8.5); c.setFillColor(INK2)
+        c.drawString(x + PAD, R1_TOP - 12.5 * mm, f"담당  {consignee_name}")
+    if consignee_addr:
+        c.setFont(font, 7.5); c.setFillColor(MUTED)
+        c.drawString(x + PAD, R1_TOP - 17.5 * mm, consignee_addr[:38])
+    R1_H   = 22 * mm if (consignee_name or consignee_addr) else 15 * mm
+    R1_BOT = R1_TOP - R1_H
     hsep(R1_BOT)
 
     # ── 행 2: SHIPPING REF. / 출고번호 ──────────────────────────────────
@@ -303,10 +310,11 @@ def draw_shipping_mark(c: rl_canvas.Canvas, x: float, y: float,
     c.drawString(x + PAD, R3_TOP, "CARTON No.")
     c.setFont(font, 6.5); c.setFillColor(MUTED)
     c.drawString(x + PAD, R3_TOP - 4 * mm, "/ 박스 번호")
-    LBL_W = 28 * mm
-    cx    = x + LBL_W + (W - LBL_W) / 2
-    c.setFont(font_bold, 30); c.setFillColor(INK)
-    c.drawCentredString(cx, R3_TOP - 12 * mm,
+    # C/No. prefix + big number
+    c.setFont(font_bold, 9); c.setFillColor(MUTED)
+    c.drawString(x + PAD, R3_TOP - 9 * mm, "C/No.")
+    c.setFont(font_bold, 28); c.setFillColor(INK)
+    c.drawCentredString(x + W / 2 + 6 * mm, R3_TOP - 18 * mm,
                         f"{box['box_num']}  /  {box['total_boxes']}")
 
     # ── 외곽선 ──────────────────────────────────────────────────────────

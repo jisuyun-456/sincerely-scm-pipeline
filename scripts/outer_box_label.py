@@ -268,8 +268,9 @@ def fetch_lr_records(lr_id=None, to_num=None, date_str=None) -> list:
             b["total_boxes"] = total
 
         # PO 표시: PNA short ver 우선 (PNA51357-산업연구원), 없으면 기업명 fallback
-        pna_short = f.get(F_PNA_SHORT, "")
-        company   = pna_short or f.get(F_COMPANY) or f.get(F_COMPANY2, "")
+        _pna = f.get(F_PNA_SHORT, "")
+        pna_short = (_pna[0] if isinstance(_pna, list) else _pna) or ""
+        company = str(pna_short or f.get(F_COMPANY) or f.get(F_COMPANY2) or "")
 
         result.append({
             "rec_id":  r["id"],

@@ -5,6 +5,8 @@ GitHub Actions (generate-barcode-pdf, generate-pdf) 대체
 엔드포인트:
   POST /generate-barcode-pdf  → Barcode 베이스 (출고확인서/피킹리스트/라벨지)
   POST /generate-tms-pdf      → TMS 베이스 (출고확인서_tms)
+  POST /generate-wms-pdf      → WMS 출고서류 3종 (carton_label/packing_list/shipping_mark)
+  POST /generate-pkg-label    → pkg_schedule 투입자재 피킹 라벨
   GET  /health                → 헬스체크
 """
 
@@ -36,6 +38,9 @@ class TMSRequest(BaseModel):
 class WMSRequest(BaseModel):
     record_id: str
     pdf_type:  str = "all"   # "all" | "carton_label" | "packing_list" | "shipping_mark"
+
+class PkgLabelRequest(BaseModel):
+    record_id: str
 
 
 # ── 내부 헬퍼 ────────────────────────────────────────────────────────────────
@@ -163,6 +168,23 @@ def _run_wms_all(record_id: str, pdf_type: str):
     to_run = list(tasks.values()) if pdf_type == "all" else [tasks[pdf_type]]
     for cmd in to_run:
         _run_bg(cmd)
+
+
+@app.post("/generate-pkg-label")
+def generate_pkg_label(
+    payload: PkgLabelRequest,
+    background_tasks: BackgroundTasks,
+    x_webhook_secret: str = Header(default=""),
+):
+    """pkg_schedule 투입자재 피킹 라벨 (80×55mm)"""
+    _check_secret(x_webhook_secret)
+    logger.info(f"[PKG] request: record_id={payload.record_id!r}")
+    if not payload.record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "scripts/pkg_schedule_label.py",
+           "--record-id", payload.record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
 
 
 @app.get("/health")
