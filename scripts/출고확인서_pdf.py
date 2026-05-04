@@ -290,10 +290,32 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
     c.drawString(lx, y - 14*mm, f"임가공 예정일: {move_date or '미정'}")
     c.drawString(lx, y - 19*mm, f"출력일: {today_str}")
 
+    # ── 총 박스 수량 강조 블록 ────────────────────────────────────────────
     rx = MARGIN + INNER_W / 2
-    c.drawString(rx, y - 8*mm,  f"총 박스 수량: {total_box}")
+    BOX_ACCENT = colors.HexColor("#d97706")   # 앰버
+    box_label_str = "총 박스 수량"
+    box_val_str   = str(total_box)
+    # 배경 강조 박스
+    accent_x  = rx - 2*mm
+    accent_y  = y - 4*mm
+    accent_h  = 13*mm
+    accent_w  = INNER_W / 2 - 3*mm
+    c.setFillColor(colors.HexColor("#fff8ec"))
+    c.roundRect(accent_x, accent_y - accent_h, accent_w, accent_h, 2, fill=1, stroke=0)
+    c.setStrokeColor(BOX_ACCENT); c.setLineWidth(1.0)
+    c.roundRect(accent_x, accent_y - accent_h, accent_w, accent_h, 2, fill=0, stroke=1)
+    # 라벨
+    c.setFillColor(colors.HexColor("#92400e"))
+    c.setFont(font_bold, 7.5)
+    c.drawString(accent_x + 3*mm, accent_y - 4.5*mm, box_label_str)
+    # 값 (크고 굵게)
+    c.setFillColor(BOX_ACCENT)
+    c.setFont(font_bold, 15)
+    c.drawString(accent_x + 3*mm, accent_y - 11.5*mm, box_val_str)
     if sample_box:
-        c.drawString(rx, y - 14*mm, f"샘플 박스: {sample_box}박스")
+        c.setFillColor(colors.HexColor("#444444"))
+        c.setFont(font, 8)
+        c.drawRightString(accent_x + accent_w - 2*mm, accent_y - 11.5*mm, f"샘플 {sample_box}박스")
     y -= info_h + 4*mm
 
     # ══════════════════════════════════════════════════════════════════════
