@@ -252,6 +252,66 @@ def trigger_inbound_label_get(
     return {"status": "accepted"}
 
 
+@app.get("/trigger-tms-pdf")
+def trigger_tms_pdf_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+):
+    """TMS 출고확인서 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "pdf/출고확인서_tms.py", "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
+@app.get("/trigger-barcode-출고확인서")
+def trigger_barcode_outgoing_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+):
+    """Barcode 출고확인서 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "scripts/출고확인서_pdf.py", "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
+@app.get("/trigger-barcode-피킹리스트")
+def trigger_barcode_picking_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+):
+    """Barcode 피킹리스트 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "scripts/picking_list_pdf.py", "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
+@app.get("/trigger-barcode-라벨지")
+def trigger_barcode_label_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+):
+    """Barcode 라벨지 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "scripts/barcode_label.py", "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
