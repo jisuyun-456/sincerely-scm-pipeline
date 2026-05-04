@@ -13,8 +13,11 @@ GitHub Actions (generate-barcode-pdf, generate-pdf) 대체
 import logging, os, subprocess, sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, Header, HTTPException
 from pydantic import BaseModel
+
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
