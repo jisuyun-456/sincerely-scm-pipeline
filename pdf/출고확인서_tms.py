@@ -81,7 +81,7 @@ _ATTACH_FIELD_ID: str | None = None
 _LOC_TABLE_ID: str | None = None
 
 ITEM_RE      = re.compile(r"^(?P<name>.+?)\s*\((?P<qty>\d+)\)(?:\+(?P<extra>\d+))?\s*$")
-ITEM_RE2     = re.compile(r"^(?P<name>.+?)\s+(?P<qty>\d+)(?:\+(?P<extra>\d+))?\s*$")
+ITEM_RE2     = re.compile(r"^(?P<name>.+?)\s+(?P<qty>\d+)개?(?:\+(?P<extra>\d+))?\s*$")
 STOCK_ITEM_RE = re.compile(r"^(?P<pt>PT\S+?)-(?P<name>.+?)\s*\|\|\s*\S+\s+(?P<qty>\d+)개\s*$")
 
 

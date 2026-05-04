@@ -603,6 +603,9 @@ def main():
         bc_recs_for_doc = [bc_map[bid] for bid in bc_ids if bid in bc_map]
         il_to_labels, box_rows = build_box_rows(bc_recs_for_doc, il_map)
 
+        # BC 테이블 라벨별 박스수 룩업 (per-row 박스수·합계·박스별구성 소스 통일)
+        label_to_box_cnt = {lable: cnt for lable, _, _, cnt in box_rows}
+
         items = [il_map[rid] for rid in il_ids if rid in il_map]
         # 라벨 번호 오름차순 → 같은 박스 PT 그룹핑, 동일 라벨 내에선 PT코드 순
         def item_sort_key(item):
@@ -626,13 +629,15 @@ def main():
                     "_labels": [],
                 }
             g = pt_agg[key]
-            g["_qty"]   += int(item.get("출고수량")                   or 0)
-            g["_boxes"] += (int(item.get("최종출고수량(확인서노출됨)") or 0) or
-                            int(item.get("라벨 박스수량") or 0))
+            g["_qty"] += int(item.get("출고수량") or 0)
             il_id = item.get("_record_id", "")
             for lbl in il_to_labels.get(il_id, []):
                 if lbl not in g["_labels"]:
                     g["_labels"].append(lbl)
+
+        # BC 기준 박스수로 통일 (IL 필드 대신 사용해 테이블·박스별구성·합계 일치)
+        for g in pt_agg.values():
+            g["_boxes"] = sum(label_to_box_cnt.get(lbl, 0) for lbl in g["_labels"])
 
         grouped_items = sorted(
             pt_agg.values(),
