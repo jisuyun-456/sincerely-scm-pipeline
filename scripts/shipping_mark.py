@@ -286,12 +286,12 @@ def draw_shipping_mark(c: rl_canvas.Canvas, x: float, y: float,
     consignee_label = company.split("-", 1)[-1] if "-" in company else company
     c.setFont(font_bold, 13); c.setFillColor(INK)
     c.drawString(x + PAD, R1_TOP - 7 * mm, (consignee_label or "—")[:24])
-    if consignee_name:
-        c.setFont(font_bold, 8.5); c.setFillColor(INK2)
-        c.drawString(x + PAD, R1_TOP - 12.5 * mm, f"담당  {consignee_name}")
     if consignee_addr:
         c.setFont(font, 7.5); c.setFillColor(MUTED)
-        c.drawString(x + PAD, R1_TOP - 17.5 * mm, consignee_addr[:38])
+        c.drawString(x + PAD, R1_TOP - 13 * mm, consignee_addr[:38])
+    if consignee_name:
+        c.setFont(font_bold, 8.5); c.setFillColor(INK2)
+        c.drawString(x + PAD, R1_TOP - 19 * mm, f"담당  {consignee_name}")
     R1_H   = 22 * mm if (consignee_name or consignee_addr) else 15 * mm
     R1_BOT = R1_TOP - R1_H
     hsep(R1_BOT)
@@ -307,15 +307,12 @@ def draw_shipping_mark(c: rl_canvas.Canvas, x: float, y: float,
     # ── 행 3: CARTON No. / 박스 번호 ────────────────────────────────────
     R3_TOP = R2_BOT - 2.8 * mm
     c.setFont(font_bold, 6.5); c.setFillColor(NAVY)
-    c.drawString(x + PAD, R3_TOP, "CARTON No.")
+    c.drawString(x + PAD, R3_TOP, "CARTON NO.")
     c.setFont(font, 6.5); c.setFillColor(MUTED)
     c.drawString(x + PAD, R3_TOP - 4 * mm, "/ 박스 번호")
-    # C/No. prefix + big number
-    c.setFont(font_bold, 9); c.setFillColor(MUTED)
-    c.drawString(x + PAD, R3_TOP - 9 * mm, "C/No.")
-    c.setFont(font_bold, 28); c.setFillColor(INK)
-    c.drawCentredString(x + W / 2 + 6 * mm, R3_TOP - 18 * mm,
-                        f"{box['box_num']}  /  {box['total_boxes']}")
+    c.setFont(font_bold, 32); c.setFillColor(INK)
+    c.drawString(x + PAD, R3_TOP - 17 * mm,
+                 f"C/No. {box['box_num']} / {box['total_boxes']}")
 
     # ── 외곽선 ──────────────────────────────────────────────────────────
     c.setStrokeColor(colors.HexColor("#333333")); c.setLineWidth(1.0)

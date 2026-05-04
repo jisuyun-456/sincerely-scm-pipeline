@@ -78,9 +78,10 @@ def _run_bg(cmd: list[str]):
         env={**os.environ, "PDF_OUTPUT_DIR": "/tmp"},
     )
     if result.returncode != 0:
-        logger.error(f"[BG] FAILED rc={result.returncode}: {result.stderr[-800:]}")
+        logger.error(f"[BG] FAILED rc={result.returncode}: {result.stderr[-1200:]}")
     else:
-        logger.info(f"[BG] OK: {result.stdout[-400:]}")
+        out = (result.stdout + result.stderr)[-2000:]
+        logger.info(f"[BG] OK: {out}")
 
 
 # ── 엔드포인트 ───────────────────────────────────────────────────────────────

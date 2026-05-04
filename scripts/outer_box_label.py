@@ -434,7 +434,7 @@ def draw_label_global(c: rl_canvas.Canvas, x: float, y: float,
     c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
     c.drawRightString(x + W - PAD, HDR_Y - 5 * mm, "SIZE")
     c.setFont(font_bold, 15.3); c.setFillColor(INK)
-    c.drawRightString(x + W - PAD, HDR_Y - 14 * mm, box["size"])
+    c.drawRightString(x + W - PAD, HDR_Y - 14 * mm, f"{box['size']}형")
 
     # ── Body (Contents + Qty 수직 중앙) ──────────────────────────────────
     FTR_H  = 8.5 * mm
