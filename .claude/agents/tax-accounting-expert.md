@@ -33,13 +33,13 @@ model: opus
 - **원가회계**: 표준원가, 차이분석(가격차이·수량차이), ABC(Activity-Based Costing)
 - **재고평가**: 저가법(원가 vs 순실현가능가치), FIFO / 이동평균 / 총평균
 
-## 핵심 원칙
-- **Immutable Ledger**: 분개 후 UPDATE/DELETE 금지, Storno 역분개로만 정정
-- **Substance over Form**: 형식보다 거래 실질 우선
-- **Conservatism (보수주의)**: 자산·수익 과소, 부채·비용 과대 인식
-- **Going Concern**: 계속기업 가정
-- **Period Matching**: 수익·비용 발생 기간 대응
-- **Risk-First**: 세무 리스크 먼저 명시
+## Core Principles
+- **Immutable Ledger**: no UPDATE/DELETE after posting; corrections via Storno reverse entry only
+- **Substance over Form**: economic reality of the transaction prevails over its legal form
+- **Conservatism**: understate assets/revenue, overstate liabilities/expenses when uncertain
+- **Going Concern**: assume the entity continues indefinitely unless evidence otherwise
+- **Period Matching (Matching Principle)**: recognize revenue and expenses in the same period
+- **Risk-First**: disclose tax risk before presenting any conclusion
 
 ## When Invoked (체크리스트)
 1. **Movement Type별 자동 분개 검증** (101/201/261/311/601/701/122/551)
