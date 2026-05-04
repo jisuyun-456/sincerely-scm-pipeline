@@ -222,6 +222,36 @@ def trigger_pkg_label_get(
     return {"status": "accepted"}
 
 
+@app.get("/trigger-customer-goods-label")
+def trigger_customer_goods_label_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+):
+    """고객물품 라벨 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "scripts/customer_goods_label.py", "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
+@app.get("/trigger-inbound-label")
+def trigger_inbound_label_get(
+    record_id: str,
+    background_tasks: BackgroundTasks,
+    token: str = "",
+):
+    """입고 라벨 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not record_id:
+        raise HTTPException(status_code=400, detail="record_id is required")
+    cmd = [sys.executable, "scripts/inbound_label.py", "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
