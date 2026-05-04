@@ -114,7 +114,7 @@ def airtable_get(table_id: str, params: dict) -> list:
     return records
 
 
-_BOX_ROW = re.compile(r"^(\d+)(\+\S+)?\s*\*\s*(\d+)\s*(.+?)\s*$")
+_BOX_ROW = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
 
 
 def _clean_item_name(s: str) -> str:
@@ -149,12 +149,13 @@ def parse_packing_detail(text: str) -> list[dict]:
     current_item = None
     box_num = 0
     for line in (text or "").strip().splitlines():
-        line = line.strip()
+        line = re.sub(r'\s+', ' ', line).strip()   # 탭·다중공백 → 단일 공백
         if not line:
             continue
         m = _BOX_ROW.match(line)
         if m and current_item:
-            qty_str = m.group(1) + (m.group(2) or "")
+            extra   = re.sub(r'\s*\+\s*', '+', m.group(2) or "")  # + 주변 공백 제거
+            qty_str = m.group(1) + extra
             for _ in range(int(m.group(3))):
                 box_num += 1
                 boxes.append({
