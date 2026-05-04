@@ -346,7 +346,7 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
         lbl_str = format_labels_for_cell(g["_labels"]) if g["_labels"] else "-"
         box_str = f"{int(boxes)}박스" if boxes else "-"
         if boxes and any(lbl in mixed_labels for lbl in g["_labels"]):
-            box_str += " (합)"
+            box_str += " 혼적"
 
         rows.append([str(idx), pt, name,
                      f"{int(qty):,}" if qty else "-",
@@ -413,8 +413,9 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
         omit_count   = len(box_rows) - MAX_BOX_ROWS if len(box_rows) > MAX_BOX_ROWS else 0
 
         for lable_str, pt_labels, is_mixed, box_cnt in display_rows:
-            # 줄 수 계산 (너비 80단위 기준)
-            lines   = split_to_lines(pt_labels, max_w=80)
+            # 줄 수 계산 (너비 80단위 기준); 합포장이면 각 품목에 [혼적] 태그
+            display_labels = [f"{lbl}  [혼적]" for lbl in pt_labels] if is_mixed else pt_labels
+            lines   = split_to_lines(display_labels, max_w=80)
             row_h   = max(LINE_H + 2*mm, len(lines) * LINE_H + 2*mm)
 
             # 공간 체크
