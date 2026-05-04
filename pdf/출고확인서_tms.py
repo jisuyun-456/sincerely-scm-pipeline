@@ -81,6 +81,7 @@ _ATTACH_FIELD_ID: str | None = None
 _LOC_TABLE_ID: str | None = None
 
 ITEM_RE      = re.compile(r"^(?P<name>.+?)\s*\((?P<qty>\d+)\)(?:\+(?P<extra>\d+))?\s*$")
+ITEM_RE2     = re.compile(r"^(?P<name>.+?)\s+(?P<qty>\d+)(?:\+(?P<extra>\d+))?\s*$")
 STOCK_ITEM_RE = re.compile(r"^(?P<pt>PT\S+?)-(?P<name>.+?)\s*\|\|\s*\S+\s+(?P<qty>\d+)개\s*$")
 
 
@@ -283,20 +284,20 @@ def parse_items(actual_raw: str, order_raw: str) -> list[dict]:
     actual_lines = [x.strip() for x in str(actual_raw or "").split("\n") if x.strip()]
 
     # note 행 제외한 실제 품목만 ordered 매핑에 사용 (note 행이 인덱스 어긋남 방지)
-    real_lines = [l for l in actual_lines if ITEM_RE.match(l) and not NOTE_LINE_RE.match(l)]
+    real_lines = [l for l in actual_lines if (ITEM_RE.match(l) or ITEM_RE2.match(l)) and not NOTE_LINE_RE.match(l)]
     order_list = split_order_items(order_raw or "", real_lines)
 
     rows = []
     order_idx = 0
     item_no   = 1
     for actual_str in actual_lines:
-        m = ITEM_RE.match(actual_str)
+        m = ITEM_RE.match(actual_str) or ITEM_RE2.match(actual_str)
         if m and not NOTE_LINE_RE.match(actual_str):
             name        = m.group("name").strip()
             shipped_qty = m.group("qty")
             extra       = m.group("extra") or ""
             order_str   = order_list[order_idx] if order_idx < len(order_list) else ""
-            om          = ITEM_RE.match(order_str)
+            om          = ITEM_RE.match(order_str) or ITEM_RE2.match(order_str)
             ordered_qty = om.group("qty") if om else shipped_qty
             order_idx  += 1
             rows.append({
