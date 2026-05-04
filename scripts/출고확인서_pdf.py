@@ -261,7 +261,6 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
     page_info = [page_num, total_pages]  # mutable ref for new_page_if_needed
 
     c.setPageSize(A4)
-    c.saveState()
     y = A4_H - MARGIN
 
     # ── 헤더 배너 ─────────────────────────────────────────────────────────
@@ -478,7 +477,6 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
     c.drawRightString(MARGIN + INNER_W - 2*mm, sign_y + 26*mm, "발행: 신시어리 웨일즈 물류팀")
     c.drawRightString(MARGIN + INNER_W - 2*mm, sign_y + 20*mm, f"출력: {today_str}")
 
-    c.restoreState()
     return page_info[0]
 
 
