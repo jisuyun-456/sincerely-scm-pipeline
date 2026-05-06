@@ -122,58 +122,16 @@ def _parse_qtys(raw) -> list[str]:
     return result
 
 
-def _fetch_task_pairs(task_ids: list) -> list:
-    """pkg_task 레코드를 직접 조회해 (item_name, qty_str) 리스트 반환.
-    Airtable multipleLookupValues 중복제거 버그 우회 — 동일 PT가 여러 개여도 모두 표시."""
-    pairs = []
-    for rec_id in task_ids:
-        url = (f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}"
-               f"?returnFieldsByFieldId=true")
-        try:
-            r = requests.get(url, headers=HEADERS, timeout=60)
-            r.raise_for_status()
-        except Exception:
-            continue
-        f = r.json().get("fields", {})
-        print(f"  [DEBUG] pkg_task {rec_id} keys: {list(f.keys())}")
-        print(f"  [DEBUG] F_PT_ITEM({F_PT_ITEM}): {f.get(F_PT_ITEM)!r}")
-        print(f"  [DEBUG] F_PT_QTY({F_PT_QTY}): {f.get(F_PT_QTY)!r}")
-
-        item_raw = f.get(F_PT_ITEM, "")
-        if isinstance(item_raw, list):
-            parsed = _parse_items(", ".join(str(x) for x in item_raw))
-        else:
-            parsed = _parse_items(str(item_raw))
-        item = parsed[0] if parsed else ""
-
-        qty_raw = f.get(F_PT_QTY, "")
-        if isinstance(qty_raw, list):
-            qty = str(int(float(qty_raw[0]))) if qty_raw and qty_raw[0] is not None else ""
-        else:
-            qty = str(int(float(qty_raw))) if qty_raw not in ("", None) else ""
-
-        if item:
-            pairs.append((item, qty))
-    return pairs
-
-
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG}/{record_id}"
-    r = requests.get(url, headers=HEADERS, timeout=60)
+    r = requests.get(url, headers=HEADERS, timeout=30)
     r.raise_for_status()
     f = r.json().get("fields", {})
 
     proj_raw = f.get(F_PROJECT, "")
     project  = (proj_raw[0] if isinstance(proj_raw, list) else proj_raw) or ""
-
-    task_ids = f.get(F_PKG_TASK_LINK, [])
-    if task_ids:
-        task_pairs = _fetch_task_pairs(task_ids)
-        items = [p[0] for p in task_pairs]
-        qtys  = [p[1] for p in task_pairs]
-    else:
-        items = _parse_items(f.get(F_ITEMS, ""))
-        qtys  = _parse_qtys(f.get(F_QTYS, ""))
+    items    = _parse_items(f.get(F_ITEMS, ""))
+    qtys     = _parse_qtys(f.get(F_QTYS, ""))
 
     return {"rec_id": record_id, "project": str(project), "items": items, "qtys": qtys}
 
