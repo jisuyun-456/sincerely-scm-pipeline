@@ -162,9 +162,9 @@ def _draw_header(c, font, font_bold, project: str):
     FS_P     = 13
     ASCENT_P = FS_P * 0.72 * (25.4 / 72) * mm
     LH_P     = FS_P * 1.35 * (25.4 / 72) * mm
-    proj_lines = _split_name(project or "—", font_bold, FS_P, W - PAD * 2)[:2]
-    total_h  = len(proj_lines) * LH_P
-    y0 = PROJ_Y + (PROJ_H + total_h) / 2 - ASCENT_P
+    proj_lines    = _split_name(project or "—", font_bold, FS_P, W - PAD * 2)[:2]
+    text_block_h  = ASCENT_P + (len(proj_lines) - 1) * LH_P
+    y0 = PROJ_Y + (PROJ_H + text_block_h) / 2 - ASCENT_P
     c.setFont(font_bold, FS_P); c.setFillColor(NAVY)
     for idx, ln in enumerate(proj_lines):
         c.drawString(PAD, y0 - idx * LH_P, ln)
