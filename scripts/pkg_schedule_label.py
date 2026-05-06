@@ -159,7 +159,7 @@ def _draw_header(c, font, font_bold, project: str):
     c.line(0, PROJ_Y, W, PROJ_Y)
 
     # 프로젝트명: 9pt bold, 2줄 지원, 수직 중앙 정렬
-    FS_P     = 9
+    FS_P     = 13
     ASCENT_P = FS_P * 0.72 * (25.4 / 72) * mm
     LH_P     = FS_P * 1.35 * (25.4 / 72) * mm
     proj_lines = _split_name(project or "—", font_bold, FS_P, W - PAD * 2)[:2]
