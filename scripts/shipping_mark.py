@@ -128,7 +128,7 @@ def airtable_get(table_id: str, params: dict) -> list:
     return records
 
 
-_BOX_ROW        = re.compile(r"^(\d+)(\+\S+)?\s*\*\s*(\d+)\s+(.+?)\s*$")
+_BOX_ROW        = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
 _BOX_ROW_INLINE = re.compile(r"^(.+?)\s+(\d+(?:[+][^\s*]+)?)\s*\*\s*(\d+)\s+([대중소]형?)\s*$")
 
 
@@ -156,12 +156,13 @@ def parse_packing_detail(text: str) -> list[dict]:
     current_item = None
     box_num = 0
     for line in (text or "").strip().splitlines():
-        line = line.strip().rstrip('`').strip()
+        line = re.sub(r'\s+', ' ', line).strip().rstrip('`').strip()
         if not line:
             continue
         m = _BOX_ROW.match(line)
         if m and current_item:
-            qty_str = m.group(1) + (m.group(2) or "")
+            extra   = re.sub(r'\s*\+\s*', '+', m.group(2) or "")
+            qty_str = m.group(1) + extra
             for _ in range(int(m.group(3))):
                 box_num += 1
                 boxes.append({
@@ -239,6 +240,11 @@ def fetch_records(lr_id=None, to_num=None, date_str=None) -> list:
         if not boxes:
             continue
         total = len(boxes)
+        box_sum = f.get("외박스 수량")
+        if box_sum is not None and int(box_sum) != total:
+            print(f"  ⚠️ [수량 불일치] {f.get('프로젝트명 (출고)', '')} — "
+                  f"외박스 수량 필드={int(box_sum)}  포장내역 파싱={total}  "
+                  f"→ 포장내역 기준으로 생성")
         for b in boxes:
             b["total_boxes"] = total
 

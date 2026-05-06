@@ -158,16 +158,20 @@ def _run_wms_all(record_id: str, pdf_type: str):
     packing_fld = os.getenv("PACKING_LIST_FIELD_ID", "")
     shipping_fld = os.getenv("SHIPPING_MARK_FIELD_ID", "")
 
+    combined_fld = os.getenv("COMBINED_LABEL_FIELD_ID", "")
     tasks = {
-        "carton_label":  [py, "scripts/outer_box_label.py",
-                          "--lr-id", record_id, "--style", "global",
-                          "--upload-field", carton_fld],
-        "packing_list":  [py, "scripts/packing_list.py",
-                          "--lr-id", record_id,
-                          "--upload-field", packing_fld],
-        "shipping_mark": [py, "scripts/shipping_mark.py",
-                          "--lr-id", record_id,
-                          "--upload-field", shipping_fld],
+        "carton_label":   [py, "scripts/outer_box_label.py",
+                           "--lr-id", record_id, "--style", "global",
+                           "--upload-field", carton_fld],
+        "packing_list":   [py, "scripts/packing_list.py",
+                           "--lr-id", record_id,
+                           "--upload-field", packing_fld],
+        "shipping_mark":  [py, "scripts/shipping_mark.py",
+                           "--lr-id", record_id,
+                           "--upload-field", shipping_fld],
+        "combined_label": [py, "scripts/combined_outbound_label.py",
+                           "--lr-id", record_id,
+                           "--upload-field", combined_fld],
     }
     to_run = list(tasks.values()) if pdf_type == "all" else [tasks[pdf_type]]
     for cmd in to_run:
@@ -308,6 +312,26 @@ def trigger_barcode_label_get(
     if not record_id:
         raise HTTPException(status_code=400, detail="record_id is required")
     cmd = [sys.executable, "scripts/barcode_label.py", "--record-id", record_id]
+    background_tasks.add_task(_run_bg, cmd)
+    return {"status": "accepted"}
+
+
+@app.get("/trigger-pkg-return-sheet")
+def trigger_pkg_return_sheet_get(
+    background_tasks: BackgroundTasks,
+    record_id: str = "",
+    date: str = "",
+    token: str = "",
+):
+    """임가공 리턴 자재 구분표 GET 트리거 — Interface 'Open URL' 버튼용"""
+    _check_secret(token)
+    if not (record_id or date):
+        raise HTTPException(status_code=400, detail="record_id or date required")
+    cmd = [sys.executable, "scripts/pkg_return_sheet.py"]
+    if record_id:
+        cmd += ["--record-id", record_id]
+    else:
+        cmd += ["--date", date]
     background_tasks.add_task(_run_bg, cmd)
     return {"status": "accepted"}
 

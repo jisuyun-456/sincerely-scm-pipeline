@@ -266,6 +266,10 @@ def fetch_record(lr_id=None, to_num=None, date_str=None) -> list:
         if not boxes:
             continue
         total = len(boxes)
+        box_sum_raw = f.get("외박스 수량")
+        if box_sum_raw is not None and int(box_sum_raw) != total:
+            print(f"  ⚠️ [수량 불일치] {f.get('프로젝트명 (출고)', '')} — "
+                  f"외박스 수량 필드={int(box_sum_raw)}  포장내역 파싱={total}")
         for b in boxes:
             b["total_boxes"] = total
 

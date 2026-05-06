@@ -140,7 +140,7 @@ def upload_via_content_api(record_id: str, field_id: str,
 # ────────────────────────────────────────────────────────────────────────────
 # 파싱
 # ────────────────────────────────────────────────────────────────────────────
-_BOX_ROW        = re.compile(r"^(\d+)(\+\S+)?\s*\*\s*(\d+)\s+(.+?)\s*$")
+_BOX_ROW        = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
 _BOX_ROW_INLINE = re.compile(r"^(.+?)\s+(\d+(?:[+][^\s*]+)?)\s*\*\s*(\d+)\s+([대중소]형?)\s*$")
 
 
@@ -185,12 +185,13 @@ def parse_packing_detail(text: str) -> list[dict]:
     current_item = None
     box_num = 0
     for line in (text or "").strip().splitlines():
-        line = line.strip().rstrip('`').strip()
+        line = re.sub(r'\s+', ' ', line).strip().rstrip('`').strip()
         if not line:
             continue
         m = _BOX_ROW.match(line)
         if m and current_item:
-            qty_str = m.group(1) + (m.group(2) or "")
+            extra   = re.sub(r'\s*\+\s*', '+', m.group(2) or "")
+            qty_str = m.group(1) + extra
             for _ in range(int(m.group(3))):
                 box_num += 1
                 boxes.append({
@@ -289,6 +290,11 @@ def fetch_lr_records(lr_id=None, to_num=None, date_str=None) -> list:
             print(f"  ⚠  {f.get(F_TO_NUM, r['id'])} — 포장 내역 파싱 결과 없음, 건너뜀")
             continue
         total = len(boxes)
+        box_sum = f.get(F_BOX_SUM)
+        if box_sum is not None and int(box_sum) != total:
+            print(f"  ⚠️ [수량 불일치] {f.get(F_TO_NUM, '')} — "
+                  f"외박스 수량 필드={int(box_sum)}  포장내역 파싱={total}  "
+                  f"→ 포장내역 기준으로 생성")
         for b in boxes:
             b["total_boxes"] = total
 
@@ -497,6 +503,17 @@ def draw_label_global(c: rl_canvas.Canvas, x: float, y: float,
 
     c.setFont(font_bold, 17); c.setFillColor(INK2)
     c.drawString(cur_x + 2 * mm, QTY_TXT_Y + 1 * mm, "EA")
+
+    # ── 잔여분 (remainder items, 작은 회색 텍스트) ────────────────────────
+    remainders = box.get("remainder_items", [])
+    if remainders:
+        REM_Y = QTY_TXT_Y - 8 * mm
+        rem_text = "+  " + "   ".join(
+            f"{r['name']} {r['qty']}" if r['qty'] else r['name']
+            for r in remainders
+        )
+        c.setFont(font, 7.4); c.setFillColor(MUTED)
+        c.drawString(x + PAD, REM_Y, rem_text[:60])
 
     # ── 푸터 (연회색 배경, 상단 구분선) ──────────────────────────────────
     c.setFillColor(colors.HexColor("#fafbfd"))
