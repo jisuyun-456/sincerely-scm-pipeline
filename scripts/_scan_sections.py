@@ -1,4 +1,4 @@
-"""Scan logistics_release for section-style packing texts."""
+﻿"""Scan logistics_release for section-style packing texts."""
 import os, re, sys, time, requests
 from dotenv import load_dotenv
 
@@ -43,7 +43,7 @@ def fetch_all():
         }
         if offset:
             p["offset"] = offset
-        r = requests.get(url, headers=HEADERS, params=p, timeout=30)
+        r = requests.get(url, headers=HEADERS, params=p, timeout=60)
         r.raise_for_status()
         d = r.json()
         records.extend(d.get("records", []))

@@ -1,4 +1,4 @@
-"""
+﻿"""
 barcode_label.py
 ────────────────────────────────────────────────────────────────────────────
 Barcode 베이스 → 다영기획 이동 바코드 라벨 PDF 생성기
@@ -75,7 +75,7 @@ def airtable_get(table_id: str, params: dict) -> list:
         p = dict(params)
         if offset:
             p["offset"] = offset
-        r = requests.get(url, headers=HEADERS, params=p, timeout=30)
+        r = requests.get(url, headers=HEADERS, params=p, timeout=60)
         r.raise_for_status()
         data = r.json()
         records.extend(data.get("records", []))
@@ -90,7 +90,7 @@ def fetch_dc_record(record_id: str) -> dict | None:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_DC}"
     r = requests.get(url, headers=HEADERS,
                      params={"filterByFormula": f'RECORD_ID()="{record_id}"', "pageSize": 1},
-                     timeout=30)
+                     timeout=60)
     r.raise_for_status()
     recs = r.json().get("records", [])
     return recs[0] if recs else None

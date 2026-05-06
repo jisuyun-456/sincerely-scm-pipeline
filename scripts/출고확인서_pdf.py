@@ -1,4 +1,4 @@
-"""
+﻿"""
 출고확인서_pdf.py
 ────────────────────────────────────────────────────────────────────────────
 Barcode 베이스 → 출고확인서 PDF 생성기
@@ -112,7 +112,7 @@ def airtable_get(table_id: str, params: dict) -> list:
         p = dict(params)
         if offset:
             p["offset"] = offset
-        r = _SESSION.get(url, params=p, timeout=30)
+        r = _SESSION.get(url, params=p, timeout=60)
         r.raise_for_status()
         data = r.json()
         records.extend(data.get("records", []))

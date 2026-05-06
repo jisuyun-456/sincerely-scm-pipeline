@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 TMS 백필 DRY-RUN — 잔여 건수 카운트 (READ-ONLY, WRITE 절대 없음)
 
@@ -40,7 +40,7 @@ def count_records(url: str, params: dict, scan_pattern_field: str = None, patter
     p = dict(params)
     p.setdefault("pageSize", 100)
     while True:
-        r = requests.get(url, headers=HDRS, params=p, timeout=30)
+        r = requests.get(url, headers=HDRS, params=p, timeout=60)
         r.raise_for_status()
         data = r.json()
         recs = data.get("records", [])

@@ -1,4 +1,4 @@
-"""
+﻿"""
 lr_data_quality_check.py
 ────────────────────────────────────────────────────────────────────────────
 logistics_release 외박스 포장 내역 → PDF 생성 가능 여부 점검
@@ -126,7 +126,7 @@ def airtable_get(table_id: str, params: dict) -> list:
         p = dict(params)
         if offset:
             p["offset"] = offset
-        r = requests.get(url, headers=HEADERS, params=p, timeout=30)
+        r = requests.get(url, headers=HEADERS, params=p, timeout=60)
         r.raise_for_status()
         data = r.json()
         records.extend(data.get("records", []))

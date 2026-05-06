@@ -1,4 +1,4 @@
-"""
+﻿"""
 outer_box_label.py
 ────────────────────────────────────────────────────────────────────────────
 logistics_release 테이블 → 외박스 품목 라벨 PDF 생성기
@@ -81,7 +81,7 @@ def airtable_get(table_id: str, params: dict) -> list:
         p = dict(params)
         if offset:
             p["offset"] = offset
-        r = requests.get(url, headers=HEADERS, params=p, timeout=30)
+        r = requests.get(url, headers=HEADERS, params=p, timeout=60)
         r.raise_for_status()
         data = r.json()
         records.extend(data.get("records", []))
@@ -98,7 +98,7 @@ def clear_attachment_field(record_id: str, field_id: str) -> None:
             f"https://api.airtable.com/v0/{BASE_ID}/{TBL_LR}/{record_id}",
             headers={"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"},
             json={"fields": {field_id: []}},
-            timeout=30,
+            timeout=60,
         )
         r.raise_for_status()
         print("  🗑️ 기존 첨부 초기화")

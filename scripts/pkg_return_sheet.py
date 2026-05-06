@@ -1,4 +1,4 @@
-"""
+﻿"""
 pkg_return_sheet.py
 ────────────────────────────────────────────────────────────────────────────
 pkg_schedule → 임가공 리턴 자재 구분표 PDF (A4)
@@ -185,7 +185,7 @@ def _record_to_dict(rec_id: str, f: dict) -> dict:
 
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG}/{record_id}"
-    r = requests.get(url, headers=HEADERS, timeout=30)
+    r = requests.get(url, headers=HEADERS, timeout=60)
     r.raise_for_status()
     data = r.json()
     return _record_to_dict(record_id, data.get("fields", {}))
@@ -199,7 +199,7 @@ def fetch_records_by_date(date_str: str) -> list[dict]:
         params: dict = {"filterByFormula": formula, "pageSize": 100}
         if offset:
             params["offset"] = offset
-        r = requests.get(url, headers=HEADERS, params=params, timeout=30)
+        r = requests.get(url, headers=HEADERS, params=params, timeout=60)
         r.raise_for_status()
         data = r.json()
         for rec in data.get("records", []):

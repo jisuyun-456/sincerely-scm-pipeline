@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Shipment 구간유형 자동 분류 백필
 - 대상: 구간유형 BLANK + 출하확정일 최근 30일
@@ -123,7 +123,7 @@ def fetch_targets(days: int = 30) -> list[dict]:
         "pageSize": 100,
     }
     while True:
-        r = requests.get(SHIP_URL, headers=HDRS_R, params=params, timeout=30)
+        r = requests.get(SHIP_URL, headers=HDRS_R, params=params, timeout=60)
         r.raise_for_status()
         data = r.json()
         out.extend(data.get("records", []))
@@ -140,7 +140,7 @@ def patch_batch(records: list[dict]) -> int:
     for i in range(0, len(records), 10):
         chunk = records[i:i + 10]
         body = {"records": chunk, "typecast": False, "returnFieldsByFieldId": True}
-        r = requests.patch(SHIP_URL, headers=HDRS_W, json=body, timeout=30)
+        r = requests.patch(SHIP_URL, headers=HDRS_W, json=body, timeout=60)
         if r.status_code != 200:
             print(f"  PATCH FAIL {r.status_code}: {r.text[:200]}")
             continue

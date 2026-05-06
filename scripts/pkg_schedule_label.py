@@ -1,4 +1,4 @@
-"""
+﻿"""
 pkg_schedule_label.py
 ────────────────────────────────────────────────────────────────────────────
 pkg_schedule 테이블 → 투입자재 피킹 라벨 PDF (80×55mm)
@@ -130,11 +130,14 @@ def _fetch_task_pairs(task_ids: list) -> list:
         url = (f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}"
                f"?returnFieldsByFieldId=true")
         try:
-            r = requests.get(url, headers=HEADERS, timeout=30)
+            r = requests.get(url, headers=HEADERS, timeout=60)
             r.raise_for_status()
         except Exception:
             continue
         f = r.json().get("fields", {})
+        print(f"  [DEBUG] pkg_task {rec_id} keys: {list(f.keys())}")
+        print(f"  [DEBUG] F_PT_ITEM({F_PT_ITEM}): {f.get(F_PT_ITEM)!r}")
+        print(f"  [DEBUG] F_PT_QTY({F_PT_QTY}): {f.get(F_PT_QTY)!r}")
 
         item_raw = f.get(F_PT_ITEM, "")
         if isinstance(item_raw, list):
@@ -156,7 +159,7 @@ def _fetch_task_pairs(task_ids: list) -> list:
 
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG}/{record_id}"
-    r = requests.get(url, headers=HEADERS, timeout=30)
+    r = requests.get(url, headers=HEADERS, timeout=60)
     r.raise_for_status()
     f = r.json().get("fields", {})
 

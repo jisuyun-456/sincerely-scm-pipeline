@@ -1,4 +1,4 @@
-"""
+﻿"""
 customer_goods_label.py
 ────────────────────────────────────────────────────────────────────────────
 movement 테이블 → 고객물품 라벨 PDF (80×55mm)
@@ -134,7 +134,7 @@ def _fetch_qr_image(url: str):
 
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MOV}/{record_id}"
-    r = requests.get(url, headers=HEADERS, timeout=30)
+    r = requests.get(url, headers=HEADERS, timeout=60)
     r.raise_for_status()
     f = r.json().get("fields", {})
 
