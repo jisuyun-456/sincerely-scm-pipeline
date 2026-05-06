@@ -142,7 +142,7 @@ def upload_via_content_api(record_id: str, field_id: str,
 # ────────────────────────────────────────────────────────────────────────────
 _BOX_ROW         = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
 _BOX_ROW_INLINE  = re.compile(r"^(.+?)\s+(\d+(?:[+][^\s*]+)?)\s*\*\s*(\d+)\s+([대중소]형?)\s*$")
-_BOX_ROW_COMPACT = re.compile(r"^(.+?)(\d+)\s*\*\s*(\d+)\s+(\S+)\s*$")
+_BOX_ROW_COMPACT = re.compile(r"^(.+?)(\d+)\s*\*\s*(\d+)\s+(\S+(?:\s*\([^)]*\))?)\s*$")
 
 
 def _clean_item_name(s: str) -> str:
@@ -297,12 +297,20 @@ def fetch_lr_records(lr_id=None, to_num=None, date_str=None) -> list:
     for r in recs:
         f = r.get("fields", {})
         packing_text = f.get(F_PACKING, "")
-        if not packing_text:
-            print(f"  ⚠  {f.get(F_TO_NUM, r['id'])} — 외박스 포장 내역 없음, 건너뜀")
-            continue
+        to_num = f.get(F_TO_NUM, r["id"])
         boxes = parse_packing_detail(packing_text)
         if not boxes:
-            print(f"  ⚠  {f.get(F_TO_NUM, r['id'])} — 포장 내역 파싱 결과 없음, 건너뜀")
+            reason = "외박스 포장 내역 없음" if not packing_text else "포장 내역 파싱 실패"
+            print(f"  ⚠  {to_num} — {reason}, 에러 라벨 생성")
+            result.append({
+                "rec_id":   r["id"],
+                "to_num":   to_num,
+                "date":     (f.get(F_DATE) or "")[:10],
+                "is_error": True,
+                "error_text": packing_text or "(포장 내역 없음)",
+                "company":  f.get(F_COMPANY) or f.get(F_COMPANY2, ""),
+                "boxes":    [],
+            })
             continue
         total = len(boxes)
         box_sum = f.get(F_BOX_SUM)
@@ -563,6 +571,50 @@ def draw_label_global(c: rl_canvas.Canvas, x: float, y: float,
 
 
 # ────────────────────────────────────────────────────────────────────────────
+# 에러 라벨 (150×100mm, global 스타일 기준)
+# ────────────────────────────────────────────────────────────────────────────
+def _draw_error_label(c: rl_canvas.Canvas, x: float, y: float,
+                      lr: dict, font: str, font_bold: str):
+    W, H  = LABEL_W, LABEL_H
+    PAD   = 5.5 * mm
+    RED   = colors.HexColor("#C0392B")
+    INK   = colors.HexColor("#0f0f10")
+    MUTED = colors.HexColor("#7c7c82")
+    LGRAY = colors.HexColor("#F5F5F5")
+
+    # 헤더 (빨간 배경)
+    HDR_H = 13 * mm
+    c.setFillColor(RED)
+    c.rect(x, y + H - HDR_H, W, HDR_H, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    c.setFont(font_bold, 9); c.drawString(x + PAD, y + H - HDR_H + 5 * mm, "⚠  데이터 오류")
+    c.setFont(font_bold, 9); c.drawRightString(x + W - PAD, y + H - HDR_H + 5 * mm, lr.get("to_num", ""))
+
+    # 메시지
+    MSG_Y = y + H - HDR_H - 10 * mm
+    c.setFont(font_bold, 10); c.setFillColor(RED)
+    c.drawString(x + PAD, MSG_Y, "포장 내역 파싱 실패")
+    c.setFont(font, 8); c.setFillColor(INK)
+    c.drawString(x + PAD, MSG_Y - 7 * mm, "외박스 포장 내역을 확인하고")
+    c.drawString(x + PAD, MSG_Y - 13 * mm, "올바른 형식으로 재입력해 주세요.")
+
+    # 원문 (회색 박스, 처음 3줄만)
+    TXT_Y = MSG_Y - 22 * mm
+    c.setFillColor(LGRAY)
+    c.rect(x + PAD, TXT_Y - 14 * mm, W - 2 * PAD, 14 * mm, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#DDDDDD")); c.setLineWidth(0.5)
+    c.rect(x + PAD, TXT_Y - 14 * mm, W - 2 * PAD, 14 * mm, fill=0, stroke=1)
+    lines = (lr.get("error_text") or "").splitlines()[:3]
+    c.setFont(font, 7.5); c.setFillColor(INK)
+    for i, line in enumerate(lines):
+        c.drawString(x + PAD + 2 * mm, TXT_Y - (i + 1) * 4.5 * mm, line[:35])
+
+    # 외곽선
+    c.setStrokeColor(RED); c.setLineWidth(1.5)
+    c.rect(x, y, W, H, stroke=1, fill=0)
+
+
+# ────────────────────────────────────────────────────────────────────────────
 # PDF 생성
 # ────────────────────────────────────────────────────────────────────────────
 def generate_pdf(lr_records: list, output, style: str = "sincerely") -> int:
@@ -571,6 +623,11 @@ def generate_pdf(lr_records: list, output, style: str = "sincerely") -> int:
     draw_fn = draw_label_global if style == "global" else draw_label
     count = 0
     for lr in lr_records:
+        if lr.get("is_error"):
+            _draw_error_label(c, 0, 0, lr, font, font_bold)
+            c.showPage()
+            count += 1
+            continue
         for box in lr["boxes"]:
             draw_fn(c, 0, 0, box, lr["to_num"], lr["date"],
                     lr["company"], font, font_bold)

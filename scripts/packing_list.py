@@ -130,7 +130,7 @@ def airtable_get(table_id: str, params: dict) -> list:
 
 _BOX_ROW         = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
 _BOX_ROW_INLINE  = re.compile(r"^(.+?)\s+(\d+(?:[+][^\s*]+)?)\s*\*\s*(\d+)\s+([대중소]형?)\s*$")
-_BOX_ROW_COMPACT = re.compile(r"^(.+?)(\d+)\s*\*\s*(\d+)\s+(\S+)\s*$")
+_BOX_ROW_COMPACT = re.compile(r"^(.+?)(\d+)\s*\*\s*(\d+)\s+(\S+(?:\s*\([^)]*\))?)\s*$")
 
 
 def _clean_item_name(s: str) -> str:
@@ -246,6 +246,7 @@ def _fetch_project_name(project_id: str) -> str:
 
 FIELDS = [
     "프로젝트명 (출고)", "출고 요청일", "외박스 포장 내역", "외박스 수량",
+    "외박스 포장 물품 및 수량 (통합)",
     "진행현황 (from Packaging_Schedule)",
     "기업명(알림톡2)", "회사명", "project",
     "수령인(성함)", "수령인(주소)", "수령인(연락처)",
@@ -277,8 +278,22 @@ def fetch_record(lr_id=None, to_num=None, date_str=None) -> list:
     result = []
     for r in recs:
         f = r.get("fields", {})
-        boxes = parse_packing_detail(f.get("외박스 포장 내역", ""))
+        packing_text = f.get("외박스 포장 내역", "")
+        boxes = parse_packing_detail(packing_text)
         if not boxes:
+            to_num = f.get("프로젝트명 (출고)", r["id"])
+            print(f"  ⚠  {to_num} — 포장 내역 파싱 실패, 에러 PDF 생성")
+            result.append({
+                "rec_id":      r["id"],
+                "to_num":      to_num,
+                "date":        (f.get("출고 요청일") or "")[:10],
+                "is_error":    True,
+                "error_text":  packing_text or "(포장 내역 없음)",
+                "company":     f.get("기업명(알림톡2)") or f.get("회사명", ""),
+                "box_sum": "", "summary_lines": [], "boxes": [], "groups": [],
+                "consignee_name": "", "consignee_addr": "", "consignee_tel": "",
+                "shipper_name": "", "shipper_addr": "", "shipper_tel": "",
+            })
             continue
         total = len(boxes)
         box_sum_raw = f.get("외박스 수량")
@@ -293,12 +308,19 @@ def fetch_record(lr_id=None, to_num=None, date_str=None) -> list:
         proj_name = _fetch_project_name(proj_ids[0] if proj_ids else "")
         company = proj_name or f.get("기업명(알림톡2)") or f.get("회사명", "")
 
+        # 외박스 포장 물품 및 수량 (통합) — multipleLookupValues가 문자 단위로 쪼개져 오는 경우 대응
+        raw_summary = f.get("외박스 포장 물품 및 수량 (통합)") or []
+        if isinstance(raw_summary, list):
+            raw_summary = "".join(raw_summary)
+        summary_lines = [l.strip() for l in raw_summary.strip().splitlines() if l.strip()]
+
         result.append({
             "rec_id":         r["id"],
             "to_num":         f.get("프로젝트명 (출고)", ""),
             "date":           (f.get("출고 요청일") or "")[:10],
             "company":        company,
             "box_sum":        str(f.get("외박스 수량") or ""),
+            "summary_lines":  summary_lines,
             "consignee_name": f.get("수령인(성함)", ""),
             "consignee_addr": f.get("수령인(주소)", ""),
             "consignee_tel":  f.get("수령인(연락처)", ""),
@@ -312,10 +334,82 @@ def fetch_record(lr_id=None, to_num=None, date_str=None) -> list:
 
 
 # ────────────────────────────────────────────────────────────────────────────
+# 에러 페이지
+# ────────────────────────────────────────────────────────────────────────────
+def _draw_error_page(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str):
+    W, M = PW, MARGIN
+    RED  = colors.HexColor("#C0392B")
+    ORANGE = colors.HexColor("#E67E22")
+    INK  = colors.HexColor("#0f0f10")
+    MUTED = colors.HexColor("#7c7c82")
+    LGRAY = colors.HexColor("#F2F2F2")
+
+    HDR_H = 22 * mm
+    y = PH - M
+
+    # 헤더 바
+    c.setFillColor(RED)
+    c.rect(0, y - HDR_H, W, HDR_H, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    c.setFont(font_bold, 28)
+    c.drawString(M, y - 17 * mm, "⚠  데이터 오류")
+    c.setFont(font_bold, 10)
+    c.drawRightString(W - M, y - 11 * mm, rec.get("date", ""))
+    c.drawRightString(W - M, y - 18 * mm, rec.get("to_num", ""))
+    y -= HDR_H + 10 * mm
+
+    # 본문 메시지
+    c.setFont(font_bold, 13); c.setFillColor(RED)
+    c.drawString(M, y, "외박스 포장 내역 파싱 실패")
+    y -= 8 * mm
+    c.setFont(font, 10); c.setFillColor(INK)
+    c.drawString(M, y, "아래 포장 내역 내용을 확인하고 올바른 형식으로 재입력해 주세요.")
+    y -= 5 * mm
+    c.setFont(font, 9); c.setFillColor(MUTED)
+    c.drawString(M, y, "형식 예시:  품목명  수량 * 박스수  규격  (예: 15 * 6 중대)")
+    y -= 10 * mm
+
+    # 구분선
+    c.setStrokeColor(ORANGE); c.setLineWidth(1.5)
+    c.line(M, y, W - M, y)
+    y -= 7 * mm
+
+    # 현재 포장 내역 원문 표시
+    c.setFont(font_bold, 8.5); c.setFillColor(MUTED)
+    c.drawString(M, y, "현재 입력된 외박스 포장 내역:")
+    y -= 6 * mm
+
+    c.setFillColor(LGRAY)
+    txt_lines = (rec.get("error_text") or "").splitlines()
+    BOX_H = min(len(txt_lines) + 2, 22) * 5.5 * mm + 6 * mm
+    c.rect(M, y - BOX_H, W - 2 * M, BOX_H, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#DDDDDD")); c.setLineWidth(0.8)
+    c.rect(M, y - BOX_H, W - 2 * M, BOX_H, fill=0, stroke=1)
+
+    ty = y - 5 * mm
+    c.setFont(font, 9); c.setFillColor(INK)
+    for line in txt_lines[:20]:
+        c.drawString(M + 4 * mm, ty, line[:70])
+        ty -= 5.5 * mm
+    if len(txt_lines) > 20:
+        c.setFont(font, 8); c.setFillColor(MUTED)
+        c.drawString(M + 4 * mm, ty, f"... (+ {len(txt_lines) - 20}줄 생략)")
+
+    # 푸터
+    c.setFillColor(MUTED); c.setFont(font, 7.5)
+    c.drawCentredString(W / 2, M / 2,
+                        f"SINCERELY Co., Ltd.  ·  데이터 오류  ·  {rec.get('to_num', '')}")
+
+
+# ────────────────────────────────────────────────────────────────────────────
 # PDF 그리기
 # ────────────────────────────────────────────────────────────────────────────
 def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str):
     """HTML 디자인 기반 Packing List (A4) — 네이비 헤더 / 주소 카드 / 품목표 / 합계 바"""
+    if rec.get("is_error"):
+        _draw_error_page(c, rec, font, font_bold)
+        return
+
     W, M = PW, MARGIN
     y    = PH - M
 
@@ -441,6 +535,28 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
         hx += cw
     y -= HDR_H_TBL
 
+    # ── 요약 행 (외박스 포장 물품 및 수량 통합) ─────────────────────────────
+    tbl_start_y = y
+    SUMM_ACCENT = 3 * mm   # 좌측 강조 바 폭
+    for sl in rec.get("summary_lines", []):
+        c.setFillColor(TINT)
+        c.rect(M, y - ROW_H_TBL, TBL_W, ROW_H_TBL, fill=1, stroke=0)
+        # 좌측 네이비 액센트
+        c.setFillColor(NAVY)
+        c.rect(M, y - ROW_H_TBL, SUMM_ACCENT, ROW_H_TBL, fill=1, stroke=0)
+        c.setStrokeColor(LINE); c.setLineWidth(0.85)
+        c.line(M, y - ROW_H_TBL, M + TBL_W, y - ROW_H_TBL)
+        # 텍스트: BOX No. 열은 공란, DESCRIPTION 열에 요약 텍스트 (볼드)
+        c.setFont(font_bold, 9.1); c.setFillColor(NAVY)
+        pad = COL_W[0] + 5 * mm  # BOX No. 열 건너뜀
+        c.drawString(M + pad, y - ROW_H_TBL + 2.5 * mm, sl[:40])
+        y -= ROW_H_TBL
+
+    # 요약 행과 데이터 행 구분선
+    if rec.get("summary_lines"):
+        c.setStrokeColor(NAVY); c.setLineWidth(1.2)
+        c.line(M, y, M + TBL_W, y)
+
     # 데이터 행
     row_data = []
     for grp in rec["groups"]:
@@ -451,7 +567,6 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
         for rem in grp.get("remainder_items", []):
             row_data.append(("", f"  └ {rem['name'][:32]}", f"{rem['qty']} EA", "", ""))
 
-    tbl_start_y = y
     for ri, row in enumerate(row_data):
         bg = colors.white if ri % 2 == 0 else colors.HexColor("#fafbfd")
         c.setFillColor(bg)
