@@ -10,7 +10,7 @@ GitHub Actions (generate-barcode-pdf, generate-pdf) 대체
   GET  /health                → 헬스체크
 """
 
-import logging, os, subprocess, sys
+import logging, os, subprocess, sys, threading
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -175,8 +175,14 @@ def _run_wms_all(record_id: str, pdf_type: str):
     # "all" = packing_list + combined_label (외박스_라벨_PDF 필드, shipping_mark 통합)
     all_tasks = [tasks["packing_list"], tasks["combined_label"]]
     to_run = all_tasks if pdf_type == "all" else [tasks[pdf_type]]
-    for cmd in to_run:
-        _run_bg(cmd)
+    if len(to_run) == 1:
+        _run_bg(to_run[0])
+    else:
+        threads = [threading.Thread(target=_run_bg, args=(cmd,)) for cmd in to_run]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
 
 
 @app.post("/generate-pkg-label")
