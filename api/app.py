@@ -158,7 +158,6 @@ def _run_wms_all(record_id: str, pdf_type: str):
     packing_fld = os.getenv("PACKING_LIST_FIELD_ID", "")
     shipping_fld = os.getenv("SHIPPING_MARK_FIELD_ID", "")
 
-    combined_fld = os.getenv("COMBINED_LABEL_FIELD_ID", "")
     tasks = {
         "carton_label":   [py, "scripts/outer_box_label.py",
                            "--lr-id", record_id, "--style", "global",
@@ -171,9 +170,9 @@ def _run_wms_all(record_id: str, pdf_type: str):
                            "--upload-field", shipping_fld],
         "combined_label": [py, "scripts/combined_outbound_label.py",
                            "--lr-id", record_id,
-                           "--upload-field", combined_fld],
+                           "--upload-field", carton_fld],  # 외박스_라벨_PDF 필드에 업로드
     }
-    # "all" = packing_list + combined_label (shipping_mark 별도 생성 제거 — combined에 통합)
+    # "all" = packing_list + combined_label (외박스_라벨_PDF 필드, shipping_mark 통합)
     all_tasks = [tasks["packing_list"], tasks["combined_label"]]
     to_run = all_tasks if pdf_type == "all" else [tasks[pdf_type]]
     for cmd in to_run:
