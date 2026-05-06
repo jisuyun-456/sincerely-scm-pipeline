@@ -173,7 +173,9 @@ def _run_wms_all(record_id: str, pdf_type: str):
                            "--lr-id", record_id,
                            "--upload-field", combined_fld],
     }
-    to_run = list(tasks.values()) if pdf_type == "all" else [tasks[pdf_type]]
+    # "all" = packing_list + combined_label (shipping_mark 별도 생성 제거 — combined에 통합)
+    all_tasks = [tasks["packing_list"], tasks["combined_label"]]
+    to_run = all_tasks if pdf_type == "all" else [tasks[pdf_type]]
     for cmd in to_run:
         _run_bg(cmd)
 
