@@ -1,182 +1,154 @@
-# Sincerely SCM — Airtable → Supabase → NocoDB/Metabase 파이프라인
+# Sincerely SCM — Airtable WMS + TMS 운영 시스템
 
-## 개요
+신시어리 포장재 물류팀 SCM 시스템. Airtable을 운영 입력 레이어로, Fly.io Flask API + GitHub Actions로 PDF 자동 생성 및 주간 KPI 분석을 수행한다.
 
-Airtable Sync 베이스(`자재테스트_지수`)의 재고·이동·주문 데이터를 Supabase(PostgreSQL)에 적재하고,
-NocoDB로 테이블 탐색/편집, Metabase로 대시보드·KPI 시각화하는 SCM 데이터 파이프라인.
-
-## 워크플로우
+## 시스템 구성
 
 ```
-┌─ 데이터 소스 ─────────────────────────────────────────────────────┐
-│                                                                   │
-│  Airtable (WMS+TMS Base)                                          │
-│  ├── material_stock (재고 원장)                                     │
-│  ├── movement (이동 트랜잭션)                                       │
-│  ├── order (주문/발주)                                              │
-│  └── project (프로젝트 마스터)                                      │
-│                                                                   │
-└───────┬───────────────────────────────────────────────────────────┘
-        │
-        │  ① GitHub Actions (매일 09:00 KST)
-        │     snapshot.yml → pipeline.py
-        │     Extract → Transform → Load
-        │
-        ▼
-┌─ 불변 원장 (Supabase PostgreSQL) ─────────────────────────────────┐
-│                                                                   │
-│  스냅샷 테이블          │  Generated Columns     │  Analysis Views │
-│  ├── material_stock     │  calc_system_qty       │  v_latest_stock │
-│  ├── movement           │  system_qty_mismatch   │  v_stock_trend  │
-│  ├── orders             │                        │  v_stock_summary│
-│  ├── project            │                        │                 │
-│  └── snapshot_log       │                        │                 │
-│                                                                   │
-│  TO-BE: 6 Schema 51 Tables (shared/mm/wms/tms/pp/finance)        │
-│                                                                   │
-└───────┬──────────────────────────┬────────────────────────────────┘
-        │                          │
-        │  ② NocoDB 연결            │  ③ Metabase 연결
-        │     Supabase Direct       │     Supabase Direct
-        │                          │
-        ▼                          ▼
-┌─ 테이블 탐색/편집 ──┐    ┌─ 대시보드/KPI ──────────┐
-│                     │    │                         │
-│  NocoDB             │    │  Metabase               │
-│  (localhost:8080)   │    │  (localhost:3000)        │
-│                     │    │                         │
-│  • 테이블 CRUD      │    │  • 재고 현황 대시보드    │
-│  • 필터/정렬/뷰     │    │  • 이동유형별 추이 차트  │
-│  • Airtable 대체    │    │  • 전산재고 불일치 알림  │
-│                     │    │  • OTIF KPI 시각화      │
-└─────────────────────┘    └─────────────────────────┘
+┌─ 운영 입력 레이어 ────────────────────────────────────────────────┐
+│                                                                  │
+│  Airtable WMS Base (appLui4ZR5HWcQRri)                          │
+│  ├── movement (입출고 트랜잭션 — INSERT ONLY)                      │
+│  ├── material_stock (재고 원장)                                    │
+│  ├── order / order_item (발주·입고)                                │
+│  └── logistics_release (출고지시 + 출고서류 PDF 트리거)             │
+│                                                                  │
+│  Airtable TMS Base (app4x70a8mOrIKsMf)                          │
+│  ├── shipment (배차·배송)                                         │
+│  ├── delivery_event (배송 이벤트 로그)                             │
+│  └──배송SLA / 배차일지 / 클레임 / ...                              │
+│                                                                  │
+│  Airtable Barcode Base (app4LvuNIDiqTmhnv)                       │
+│  └── picking_docs / pkg_schedule / ... (라벨·피킹리스트)           │
+│                                                                  │
+└──────────────────────┬───────────────────────────────────────────┘
+                       │
+          Airtable Interface "Open URL" 버튼
+                       │
+                       ▼
+┌─ PDF 생성 서버 (Fly.io) ──────────────────────────────────────────┐
+│                                                                  │
+│  sincerely-pdf-delicate-glade-4880.fly.dev                       │
+│  api/app.py (Flask)                                              │
+│                                                                  │
+│  POST /generate-tms-pdf        출고확인서 (TMS)                   │
+│  POST /generate-wms-pdf        출고서류 3종 (WMS)                  │
+│  POST /generate-barcode-pdf    바코드 라벨                         │
+│  POST /generate-pkg-label      투입자재 라벨                       │
+│                                                                  │
+│  GET  /trigger-wms-pdf         WMS 출고서류 Interface 버튼용        │
+│  GET  /trigger-tms-pdf         TMS 출고확인서 Interface 버튼용      │
+│  GET  /trigger-pkg-label       투입자재 라벨 Interface 버튼용        │
+│  GET  /trigger-customer-goods-label  고객물품 라벨                  │
+│  GET  /trigger-inbound-label   입고 라벨                           │
+│  GET  /trigger-pkg-return-sheet  반품 구분표                       │
+│  GET  /trigger-barcode-출고확인서 / 피킹리스트 / 라벨지             │
+│  GET  /health                                                    │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ 주간 자동 분석 (GitHub Actions) ────────────────────────────────┐
+│                                                                  │
+│  weekly-full-pipeline.yml (매주 월 08:30 KST)                    │
+│  1. TMS 주간 백필 (약속납기일, 구간유형 등)                          │
+│  2. TMS AutoResearch → _AutoResearch/SCM/outputs/TMS-YYYY-Wxx   │
+│  3. WMS SAP 이동유형 백필                                          │
+│  4. WMS AutoResearch → _AutoResearch/SCM/outputs/WMS-YYYY-Wxx   │
+│  5. Git commit & push                                            │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-## 설정
-
-### 1. Supabase 스키마 생성
-Supabase SQL Editor에서 `sql/001_create_schema.sql` 실행
-
-### 2. GitHub Secrets 설정
-Repository → Settings → Secrets and variables → Actions → **New repository secret**:
-
-| Secret Name | 값 |
-|---|---|
-| `AIRTABLE_PAT` | `pat_xxxxx` (Airtable Personal Access Token) |
-| `SUPABASE_DB_URL` | `postgresql://postgres:비밀번호@db.xxx.supabase.co:5432/postgres` |
-
-### 3. GitHub Actions 파이프라인
-
-| Workflow | 스케줄 | 용도 |
-|---|---|---|
-| `snapshot.yml` | 매일 09:00 KST | Airtable → Supabase 스냅샷 |
-| `wms_weekly_report.yml` | 매주 월요일 | 주간 WMS 리포트 |
-| `wms_monthly_report.yml` | 매월 1일 | 월간 WMS 리포트 |
-| `generate_pdf.yml` | Make webhook | 출고확인서/거래명세서 PDF |
-| `deploy_pages.yml` | 수동/자동 | 대시보드 GitHub Pages 배포 |
-
-### 4. NocoDB + Metabase (Docker)
-```bash
-cd /c/Users/yjisu/Desktop/SCM_WORK
-docker compose up -d
-```
-
-| 서비스 | URL | 역할 |
-|---|---|---|
-| NocoDB | `http://localhost:8080` | 테이블 탐색/편집 (Airtable 대체) |
-| Metabase | `http://localhost:3000` | 대시보드/KPI 시각화 |
-
-Supabase 연결: 각 서비스에서 PostgreSQL Direct Connection 설정
-
-## 로컬 실행
-
-```bash
-cp .env.example .env  # 환경변수 설정
-pip install -r requirements.txt
-python pipeline.py --dry-run        # 테스트
-python pipeline.py                  # 전체 스냅샷
-python pipeline.py --table material # 특정 테이블만
-```
-
-## 파일 구조
+## 레포 구조
 
 ```
-sincerely-scm-pipeline/
+SCM_WORK/
+├── api/                        # Fly.io Flask PDF 생성 서버
+│   ├── app.py                  # 엔드포인트 정의
+│   └── requirements.txt
+├── scripts/                    # 운영 Python 스크립트
+│   ├── backfill/               # 일회성 백필 스크립트
+│   ├── combined_outbound_label.py   # 통합 라벨 V3140 (쉬핑마크+외박스)
+│   ├── outer_box_label.py      # 외박스 라벨
+│   ├── packing_list.py         # 패킹리스트
+│   ├── shipping_mark.py        # 쉬핑마크
+│   ├── customer_goods_label.py # 고객물품 라벨
+│   ├── inbound_label.py        # 입고 라벨
+│   ├── pkg_schedule_label.py   # 투입자재 라벨
+│   ├── pkg_return_sheet.py     # 반품 구분표
+│   ├── barcode_label.py        # 바코드 라벨 (피킹리스트)
+│   ├── 출고확인서_pdf.py        # 출고확인서
+│   ├── picking_list_pdf.py     # 피킹리스트 PDF
+│   ├── tms_weekly_runner.py    # TMS 주간 AutoResearch
+│   ├── wms_weekly_runner.py    # WMS 주간 AutoResearch
+│   ├── tms_weekly_backfill.py  # TMS 주간 백필
+│   ├── wms_sap_weekly.py       # WMS SAP 이동유형 주간 백필
+│   └── zone_classify.py        # 구간유형 분류
+├── scm_mcp/                    # Claude Code용 Airtable MCP 서버
+├── _AutoResearch/SCM/          # 주간 분석 자동 산출물 (GitHub Actions commit)
+│   ├── outputs/                # TMS-YYYY-Wxx.md, WMS-YYYY-Wxx.md
+│   └── wiki/                   # log.md, index.md
+├── sincerely-meeting-notes/    # 주간 운영 회의록 (GitHub Pages 배포)
+├── pages/                      # TMS 대시보드 정적 사이트
+├── history/                    # 주간 JSON 데이터 (Pages 참조)
+├── docs/                       # Airtable 스키마, 컨텍스트 문서
+├── pdf/                        # 비상용 PDF 생성 스크립트 (백업)
+├── _archive/                   # 완료된 레거시 (tms/, wms/ Phase0 백필)
 ├── .github/workflows/
-│   ├── snapshot.yml               # Airtable→Supabase 일일 스냅샷
-│   ├── wms_weekly_report.yml      # 주간 리포트
-│   ├── wms_monthly_report.yml     # 월간 리포트
-│   ├── generate_pdf.yml           # PDF 생성 (Make webhook)
-│   └── deploy_pages.yml           # GitHub Pages 배포
-├── snapshot/
-│   ├── pipeline.py                # 메인 ETL 파이프라인
-│   ├── config/
-│   │   └── field_mapping.py       # Airtable↔Supabase 필드 매핑
-│   └── sql/
-│       ├── 001_create_schema.sql  # Supabase DDL
-│       └── 002_analysis_queries.sql
-├── pages/
-│   ├── dashboard.html             # 출하 탭 대시보드 (Chart.js)
-│   └── generate_scm_report.py     # 리포트 생성
-├── pdf/
-│   └── generate_pdf.py            # reportlab PDF 렌더링
-├── tms/
-│   └── delivery_routing.py        # 배송 라우팅
-├── wms/
-│   └── sincerely_wms_weekly_report.py
-├── requirements.txt
-├── .env.example
-└── README.md
+│   ├── weekly-full-pipeline.yml     # TMS+WMS 주간 파이프라인
+│   ├── deploy_meeting_notes.yml     # 회의록 GitHub Pages 배포
+│   ├── generate_pdf.yml             # 출고확인서 비상 수동 실행
+│   └── generate-barcode-pdf.yml     # 바코드 PDF 비상 수동 실행
+├── Dockerfile                  # Fly.io 배포용
+├── fly.toml                    # Fly.io 설정
+└── requirements-autoresearch.txt
 ```
 
-## 핵심 기능
+## 배포
 
-### Generated Column — 자동 검증
-`material_stock` 테이블에 PostgreSQL Generated Column 2개가 자동 계산됨:
+### Fly.io (PDF 서버)
+```bash
+fly deploy
+```
 
-- **`calc_system_qty`**: 구성요소로부터 전산재고를 역산
-  `= 구매조달 + 생산산출 + 조립산출 + 이동입고 + 조정입고 − 생산투입 − 조립투입 − 이동출고 − 고객납품 − 조정출고`
+### GitHub Pages (회의록 + 대시보드)
+`sincerely-meeting-notes/` 또는 `pages/` 변경 → push → 자동 배포
 
-- **`system_qty_mismatch`**: Airtable 전산재고 vs 공식계산 차이
-  `= system_qty − calc_system_qty`
+## 환경 변수
 
-> `system_qty_mismatch != 0`인 레코드가 **Automation 계산 오류 대상**
+```bash
+cp .env.example .env
+```
 
-### Analysis Views
-- `v_latest_stock_mismatch`: 최신 스냅샷의 불일치 항목
-- `v_latest_stock_summary`: 위치별 재고 총괄
-- `v_stock_trend`: 파츠별 일간 재고 추이
+| 변수 | 용도 |
+|------|------|
+| `AIRTABLE_PAT` | TMS Airtable PAT |
+| `AIRTABLE_API_KEY_WMS` | WMS Airtable PAT |
+| `AIRTABLE_API_KEY` | Barcode Airtable PAT |
+| `WEBHOOK_SECRET` | Fly.io Interface 버튼 인증 토큰 |
 
-### NocoDB 활용
-- Airtable과 동일한 스프레드시트 UI로 Supabase 테이블 직접 탐색
-- 뷰·필터·정렬 생성으로 운영 데이터 즉시 확인
-- Airtable 의존도 점진적 제거
-
-### Metabase 활용
-- 재고 현황 대시보드 (위치별·품목별)
-- 이동유형별 트렌드 차트 (일별/주별/월별)
-- 전산재고 불일치 자동 알림 (SQL Alert)
-- OTIF KPI 시각화
-
-## 매핑 테이블 요약
-
-| Airtable 테이블 | Supabase 테이블 | 핵심 필드 수 | 용도 |
-|---|---|---|---|
-| material(parts-stock) | material_stock | 37개 | 재고 원장 |
-| movement | movement | 31개 | 이동 트랜잭션 |
-| order | orders | 36개 | 주문/발주 |
-| project | project | 11개 | 프로젝트 마스터 |
-
-## 전환 로드맵
+## Airtable Interface 버튼 URL 패턴
 
 ```
-현재: Airtable → GitHub Actions → Supabase (스냅샷)
-                                      ↓
-                              NocoDB (테이블 탐색)
-                              Metabase (대시보드)
-
-향후: Airtable → NestJS 백엔드 → Supabase 6스키마 51테이블
-                                      ↓
-                              NocoDB + Metabase
-                              더존 아마란스10 연계
+https://sincerely-pdf-delicate-glade-4880.fly.dev/{endpoint}?record_id={RECORD_ID()}&token={WEBHOOK_SECRET}
 ```
+
+예) 출고서류 3종:
+```
+"https://sincerely-pdf-delicate-glade-4880.fly.dev/trigger-wms-pdf?record_id=" & RECORD_ID() & "&token=SECRET"
+```
+
+## 데이터 정합성 원칙
+
+- **Immutable Ledger**: `movement` / `mat_document` INSERT ONLY, UPDATE/DELETE 금지
+- 정정 = Storno(역분개) 또는 보정 레코드
+- SAP 이동유형: 101입고 / 201출고 / 261생산출고 / 311이전 / 601납품 / 551폐기 / 122반품입고 / 701조정
+
+## GitHub Actions Secrets
+
+| Secret | 값 |
+|--------|---|
+| `AIRTABLE_PAT` | TMS 베이스 PAT |
+| `AIRTABLE_API_KEY_WMS` | WMS 베이스 PAT |
+| `AIRTABLE_API_KEY_TMS` | TMS 출고확인서 PAT |
+| `AIRTABLE_barcode_PAT` | Barcode 베이스 PAT |

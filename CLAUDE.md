@@ -33,6 +33,10 @@
 
 > Supabase / NocoDB / Metabase / Retool 미사용 확정 (메모리 `project_scm_redesign` 참조). 도입 제안 금지.
 
+## 언어 설정
+
+**Always respond in English**, regardless of the language the user writes in.
+
 ## 전문가 정체성
 > D1~D5 글로벌 정체성은 `~/.claude/CLAUDE.md` 참조. 본 프로젝트는 SCM 도메인 특화 에이전트로 위임.
 

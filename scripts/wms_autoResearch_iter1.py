@@ -40,8 +40,8 @@ F_MAT_AVAIL = "fldZ5qLZKp0yy28So"   # 가용재고수량
 # ── 출력 경로 ────────────────────────────────────────────────────────────
 TODAY       = date.today().strftime("%Y%m%d")
 TODAY_DASH  = date.today().strftime("%Y-%m-%d")
-OUT_DIR     = Path("c:/Users/yjisu/Desktop/SCM_WORK/_AutoResearch/WMS/outputs")
-LOG_PATH    = Path("c:/Users/yjisu/Desktop/SCM_WORK/_AutoResearch/WMS/wiki/log.md")
+OUT_DIR     = Path("c:/Users/yjisu/Desktop/SCM_WORK/_AutoResearch/SCM/outputs")
+LOG_PATH    = Path("c:/Users/yjisu/Desktop/SCM_WORK/_AutoResearch/SCM/wiki/log.md")
 REPORT_PATH = OUT_DIR / f"WMS-Iter1-{TODAY}.md"
 
 

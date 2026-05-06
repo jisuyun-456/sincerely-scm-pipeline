@@ -27,9 +27,9 @@ load_dotenv()
 
 # ── 경로 설정 ──────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).parent.parent
-OUTPUTS_DIR = ROOT / "_AutoResearch" / "WMS" / "outputs"
-LOG_PATH = ROOT / "_AutoResearch" / "WMS" / "wiki" / "log.md"
-INDEX_PATH = ROOT / "_AutoResearch" / "WMS" / "wiki" / "index.md"
+OUTPUTS_DIR = ROOT / "_AutoResearch" / "SCM" / "outputs"
+LOG_PATH = ROOT / "_AutoResearch" / "SCM" / "wiki" / "log.md"
+INDEX_PATH = ROOT / "_AutoResearch" / "SCM" / "wiki" / "index.md"
 OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Airtable 상수 ──────────────────────────────────────────────────────────────
