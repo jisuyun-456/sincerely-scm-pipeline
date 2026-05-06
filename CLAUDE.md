@@ -49,6 +49,7 @@
 | 운송장, 택배, 로젠, POD, 배차, 드라이버 | tms-shipment (SK-05) | sonnet |
 | OTIF, KPI, Dock-to-Stock 분석, 소화율, 약속납기, 차량이용률, AutoResearch | tms-otif-kpi (SK-06) | **opus** |
 | 반품, 역물류, RESTOCK, DISPOSE, NCR, 불량 | wms-return (SK-07) | sonnet |
+| 회의록, 미팅노트, 주간 운영 회의, 회의 분석 | meeting-analysis (SK-08) | sonnet |
 
 ### SCM 도메인 전문가 (전략·진단·설계)
 

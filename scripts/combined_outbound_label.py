@@ -54,10 +54,10 @@ _LM = (_PW - 2 * CELL_W) / 2          # 좌우 여백 ~6.27 mm
 _BM = (_PH - 2 * CELL_H) / 2          # 상하 여백 ~9.5 mm
 # 셀 좌하단 좌표 (ReportLab: y=0 이 하단)
 CELL_ORIGINS = [
-    (_LM,            _BM + CELL_H),    # 0: 상단-좌 (shipping mark, box n)
-    (_LM + CELL_W,   _BM + CELL_H),    # 1: 상단-우 (carton label,  box n)
-    (_LM,            _BM),             # 2: 하단-좌 (shipping mark, box n+1)
-    (_LM + CELL_W,   _BM),             # 3: 하단-우 (carton label,  box n+1)
+    (_LM,            _BM + CELL_H),    # 0: 상단-좌
+    (_LM + CELL_W,   _BM + CELL_H),    # 1: 상단-우
+    (_LM,            _BM),             # 2: 하단-좌
+    (_LM + CELL_W,   _BM),             # 3: 하단-우
 ]
 
 if platform.system() == "Windows":
@@ -534,104 +534,23 @@ def generate_combined_pdf(records: list, output) -> int:
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# V3140 세로형 쉬핑마크 (98.73 × 139 mm, portrait)
+# V3140 통합 라벨 (98.73 × 139 mm, portrait) — MECE: 한 장에 모든 정보
+#
+# 레이아웃 (위→아래):
+#   Header  13mm  SINCERELY(좌) | C/No. X/Y + SIZE(우)
+#   Meta    24mm  TO / PO / ORIGIN 3행
+#   ─────────────────────────────
+#   Consignee 22mm  수취인 회사명 + 주소 + 담당자
+#   ─────────────────────────────
+#   Contents  18mm  CONTENTS 레이블 + 품목명
+#   ─────────────────────────────
+#   QTY area  ~42mm  QTY + 수량 + 잔여분 (나머지 공간 활용)
+#   Footer    10mm  SHIP DATE | MADE IN KOREA | SINCERELY Co.
 # ────────────────────────────────────────────────────────────────────────────
-def draw_shipping_mark_v3140(c: rl_canvas.Canvas, x: float, y: float,
+def draw_unified_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
                               box: dict, to_num: str, date_str: str,
                               company: str, consignee_name: str, consignee_addr: str,
                               font: str, font_bold: str):
-    W, H  = CELL_W, CELL_H
-    PAD   = 5 * mm
-    NAVY  = colors.HexColor("#0b2747")
-    INK   = colors.HexColor("#0f0f10")
-    INK2  = colors.HexColor("#3a3a3d")
-    MUTED = colors.HexColor("#7c7c82")
-    LINE2 = colors.HexColor("#eef0f4")
-
-    # ── 헤더 (navy, 13mm) ───────────────────────────────────────────────────
-    HDR_H = 13 * mm
-    HDR_Y = y + H - HDR_H
-    c.setFillColor(NAVY)
-    c.rect(x, HDR_Y, W, HDR_H, fill=1, stroke=0)
-    c.setFillColor(colors.white)
-    c.setFont(font_bold, 16)
-    c.drawCentredString(x + W / 2, HDR_Y + 6 * mm, "SINCERELY")
-    c.setFont(font, 6.5)
-    c.setFillColor(colors.HexColor("#9cc0e8"))
-    c.drawCentredString(x + W / 2, HDR_Y + 2.5 * mm, "신시어리  ·  Seoul, Korea")
-
-    # ── 푸터 (13mm, 상단 구분선) ────────────────────────────────────────────
-    FTR_H = 13 * mm
-    c.setStrokeColor(LINE2); c.setLineWidth(1.0)
-    c.line(x, y + FTR_H, x + W, y + FTR_H)
-    c.setFont(font, 7); c.setFillColor(INK2)
-    c.drawCentredString(x + W / 2, y + 9 * mm, f"SIZE  {box['size']}형")
-    c.setFont(font_bold, 8); c.setFillColor(NAVY)
-    c.drawCentredString(x + W / 2, y + 5.5 * mm, "MADE IN KOREA")
-    c.setFont(font, 5.5); c.setFillColor(MUTED)
-    c.drawCentredString(x + W / 2, y + 2 * mm, f"SHIP DATE  {date_str}")
-
-    def hsep(ypos: float):
-        c.setStrokeColor(LINE2); c.setLineWidth(0.6)
-        c.line(x, ypos, x + W, ypos)
-
-    def row_label(label_en: str, label_ko: str, ypos: float):
-        c.setFont(font_bold, 6); c.setFillColor(NAVY)
-        c.drawString(x + PAD, ypos, label_en)
-        en_w = c.stringWidth(label_en, font_bold, 6)
-        c.setFont(font, 6); c.setFillColor(MUTED)
-        c.drawString(x + PAD + en_w + 1.5, ypos, "  " + label_ko)
-
-    # ── CONSIGNEE 행 ────────────────────────────────────────────────────────
-    R1_TOP = HDR_Y - 2.5 * mm
-    row_label("CONSIGNEE", "/ 수취인", R1_TOP)
-    consignee_label = company.split("-", 1)[-1] if "-" in company else company
-    c.setFont(font_bold, 12); c.setFillColor(INK)
-    c.drawString(x + PAD, R1_TOP - 7 * mm, (consignee_label or "—")[:20])
-    if consignee_addr:
-        c.setFont(font, 6.5); c.setFillColor(MUTED)
-        c.drawString(x + PAD, R1_TOP - 13 * mm, consignee_addr[:34])
-    if consignee_name:
-        c.setFont(font_bold, 7.5); c.setFillColor(INK2)
-        c.drawString(x + PAD, R1_TOP - 18 * mm, f"담당  {consignee_name}")
-    R1_H   = 21 * mm if (consignee_name or consignee_addr) else 13 * mm
-    R1_BOT = R1_TOP - R1_H
-    hsep(R1_BOT)
-
-    # ── SHIPPING REF 행 ────────────────────────────────────────────────────
-    R2_TOP = R1_BOT - 2.5 * mm
-    row_label("SHIPPING REF.", "/ 출고번호", R2_TOP)
-    c.setFont(font_bold, 12); c.setFillColor(INK)
-    c.drawString(x + PAD, R2_TOP - 7 * mm, to_num)
-    R2_BOT = R2_TOP - 13 * mm
-    hsep(R2_BOT)
-
-    # ── CARTON NO. 섹션 (나머지 공간) ─────────────────────────────────────
-    R3_TOP = R2_BOT - 2.5 * mm
-    c.setFont(font_bold, 6); c.setFillColor(NAVY)
-    c.drawString(x + PAD, R3_TOP, "CARTON NO.")
-    c.setFont(font, 6); c.setFillColor(MUTED)
-    c.drawString(x + PAD, R3_TOP - 3.5 * mm, "/ 박스 번호")
-
-    # C/No. 텍스트 — 길이에 따라 폰트 크기 자동 조절
-    cno_text = f"C/No. {box['box_num']} / {box['total_boxes']}"
-    fs = 26
-    while c.stringWidth(cno_text, font_bold, fs) > W - 2 * PAD and fs > 14:
-        fs -= 1
-    c.setFont(font_bold, fs); c.setFillColor(INK)
-    c.drawString(x + PAD, R3_TOP - 16 * mm, cno_text)
-
-    # ── 외곽선 ──────────────────────────────────────────────────────────────
-    c.setStrokeColor(colors.HexColor("#333333")); c.setLineWidth(0.8)
-    c.rect(x, y, W, H, stroke=1, fill=0)
-
-
-# ────────────────────────────────────────────────────────────────────────────
-# V3140 세로형 외박스 라벨 (98.73 × 139 mm, portrait)
-# ────────────────────────────────────────────────────────────────────────────
-def draw_carton_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
-                             box: dict, to_num: str, date_str: str, company: str,
-                             font: str, font_bold: str):
     W, H   = CELL_W, CELL_H
     PAD    = 5 * mm
     NAVY   = colors.HexColor("#0b2747")
@@ -641,114 +560,135 @@ def draw_carton_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
     MUTED2 = colors.HexColor("#9aa0a8")
     LINE   = colors.HexColor("#d8d9dd")
 
-    # ── 헤더 (navy, 10mm) ───────────────────────────────────────────────────
-    HDR_H = 10 * mm
+    def sep(ypos: float):
+        c.setStrokeColor(LINE); c.setLineWidth(0.65)
+        c.line(x, ypos, x + W, ypos)
+
+    # ── 헤더 (navy, 13mm): SINCERELY 좌 | C/No. + SIZE 우 ─────────────────
+    HDR_H = 13 * mm
     HDR_Y = y + H - HDR_H
     c.setFillColor(NAVY)
     c.rect(x, HDR_Y, W, HDR_H, fill=1, stroke=0)
     c.setFillColor(colors.white)
-    c.setFont(font_bold, 8); c.drawString(x + PAD, HDR_Y + 3 * mm, "■  CARTON LABEL")
-    c.setFont(font_bold, 8.5); c.drawRightString(x + W - PAD, HDR_Y + 3 * mm, "SINCERELY")
+    c.setFont(font_bold, 13)
+    c.drawString(x + PAD, HDR_Y + 7 * mm, "SINCERELY")
+    c.setFont(font, 5.5)
+    c.setFillColor(colors.HexColor("#9cc0e8"))
+    c.drawString(x + PAD, HDR_Y + 2.5 * mm, "신시어리  ·  Seoul, Korea")
 
-    # ── Meta 섹션 (26mm) ────────────────────────────────────────────────────
-    META_H = 26 * mm
+    # 우측: C/No. 크게, SIZE 작게
+    cno = f"C/No. {box['box_num']} / {box['total_boxes']}"
+    cno_fs = 14
+    while c.stringWidth(cno, font_bold, cno_fs) > W / 2 - PAD and cno_fs > 9:
+        cno_fs -= 1
+    c.setFont(font_bold, cno_fs); c.setFillColor(colors.white)
+    c.drawRightString(x + W - PAD, HDR_Y + 7 * mm, cno)
+    c.setFont(font, 6); c.setFillColor(colors.HexColor("#9cc0e8"))
+    c.drawRightString(x + W - PAD, HDR_Y + 2.5 * mm, f"SIZE  {box['size']}형")
+
+    # ── Meta (24mm): TO / PO / ORIGIN 3행 ─────────────────────────────────
+    META_H = 24 * mm
     META_Y = HDR_Y - META_H
-    DIV_X  = x + W - 26 * mm
-
-    c.setStrokeColor(LINE); c.setLineWidth(0.75)
-    c.line(x, META_Y, x + W, META_Y)
-    c.line(DIV_X, META_Y, DIV_X, HDR_Y)
+    sep(META_Y)
 
     for i, (k, v) in enumerate([
-        ("TO",  to_num),
-        ("PO",  (company or "")[:22]),
-        ("BOX", f"{box['box_num']} / {box['total_boxes']}"),
+        ("TO",     to_num),
+        ("PO",     (company or "")[:24]),
+        ("ORIGIN", "KOREA"),
     ]):
-        ry = HDR_Y - (4.5 * mm + i * 7 * mm)
-        c.setFont(font_bold, 7); c.setFillColor(MUTED)
+        ry = HDR_Y - (6 * mm + i * 7 * mm)
+        c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
         c.drawString(x + PAD, ry, k)
-        c.setFont(font_bold, 8.5); c.setFillColor(INK)
-        c.drawString(x + PAD + 12 * mm, ry, v)
+        c.setFont(font_bold, 8); c.setFillColor(INK)
+        c.drawString(x + PAD + 14 * mm, ry, v)
 
-    c.setFont(font_bold, 7); c.setFillColor(MUTED)
-    c.drawRightString(x + W - PAD, HDR_Y - 5 * mm, "SIZE")
-    c.setFont(font_bold, 14); c.setFillColor(INK)
-    c.drawRightString(x + W - PAD, HDR_Y - 13 * mm, f"{box['size']}형")
+    # ── Consignee (22mm): 수취인 회사명 + 주소 + 담당자 ────────────────────
+    CONS_H = 22 * mm
+    CONS_Y = META_Y - CONS_H
+    sep(CONS_Y)
 
-    # ── Body ────────────────────────────────────────────────────────────────
-    FTR_H      = 10 * mm
-    CONT_LBL_Y = META_Y - 10 * mm
-    CONT_TXT_Y = META_Y - 22 * mm
-    QTY_LBL_Y  = META_Y - 40 * mm
-    QTY_TXT_Y  = META_Y - 57 * mm
+    consignee_label = company.split("-", 1)[-1] if "-" in company else company
+    C_TOP = META_Y - 3 * mm
+    c.setFont(font_bold, 5.5); c.setFillColor(MUTED)
+    c.drawString(x + PAD, C_TOP, "CONSIGNEE  /  수취인")
+    c.setFont(font_bold, 12); c.setFillColor(INK)
+    c.drawString(x + PAD, C_TOP - 7.5 * mm, (consignee_label or "—")[:18])
+    if consignee_addr:
+        c.setFont(font, 6); c.setFillColor(MUTED)
+        c.drawString(x + PAD, C_TOP - 13.5 * mm, consignee_addr[:32])
+    if consignee_name:
+        c.setFont(font_bold, 7); c.setFillColor(INK2)
+        c.drawString(x + PAD, C_TOP - 18.5 * mm, f"담당  {consignee_name}")
 
-    # CONTENTS
-    c.setFont(font_bold, 7); c.setFillColor(MUTED)
-    c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
+    # ── Contents (18mm): 품목명 ─────────────────────────────────────────────
+    CONT_H = 18 * mm
+    CONT_Y = CONS_Y - CONT_H
+    sep(CONT_Y)
+
+    CONT_TOP = CONS_Y - 4 * mm
+    c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
+    c.drawString(x + PAD, CONT_TOP, "CONTENTS")
+
     item_text = box["item"]
-    # 폰트 크기 자동 축소 (최대 22pt)
-    item_fs = 22
-    while c.stringWidth(item_text, font_bold, item_fs) > W - 2 * PAD and item_fs > 12:
+    item_fs = 20
+    while c.stringWidth(item_text, font_bold, item_fs) > W - 2 * PAD and item_fs > 11:
         item_fs -= 1
     c.setFont(font_bold, item_fs); c.setFillColor(INK)
-    c.drawString(x + PAD, CONT_TXT_Y, item_text)
+    c.drawString(x + PAD, CONT_TOP - 10 * mm, item_text)
 
-    # QTY
-    c.setFont(font_bold, 7); c.setFillColor(MUTED)
+    # ── QTY + 잔여분 (나머지 공간 전부) ────────────────────────────────────
+    FTR_H     = 10 * mm
+    QTY_LBL_Y = CONT_Y - 8 * mm
+    QTY_NUM_Y = CONT_Y - 24 * mm   # 30pt 수량 baseline
+
+    c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
     c.drawString(x + PAD, QTY_LBL_Y, "QTY")
 
-    m_qty = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
+    m_qty    = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
     main_qty = m_qty.group(1) if m_qty else box["qty"]
     extra    = m_qty.group(2) if m_qty else None
 
     c.setFont(font_bold, 30); c.setFillColor(INK)
-    c.drawString(x + PAD, QTY_TXT_Y, main_qty)
+    c.drawString(x + PAD, QTY_NUM_Y, main_qty)
     cur_x = x + PAD + c.stringWidth(main_qty, font_bold, 30)
 
     if extra:
         c.setFont(font_bold, 9); c.setFillColor(MUTED2)
-        c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 4 * mm, "+")
+        c.drawString(cur_x + 1 * mm, QTY_NUM_Y + 4 * mm, "+")
         cur_x += 1 * mm + c.stringWidth("+", font_bold, 9)
         c.setFont(font_bold, 20); c.setFillColor(INK2)
-        c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 1 * mm, extra)
+        c.drawString(cur_x + 1 * mm, QTY_NUM_Y + 1 * mm, extra)
         cur_x += 1 * mm + c.stringWidth(extra, font_bold, 20)
 
     c.setFont(font_bold, 16); c.setFillColor(INK2)
-    c.drawString(cur_x + 2 * mm, QTY_TXT_Y + 1 * mm, "EA")
+    c.drawString(cur_x + 2 * mm, QTY_NUM_Y + 1 * mm, "EA")
 
-    # 잔여분
     remainders = box.get("remainder_items", [])
     if remainders:
-        REM_Y = QTY_TXT_Y - 10 * mm
+        REM_Y = QTY_NUM_Y - 10 * mm
         rem_text = "+  " + "   ".join(
             f"{r['name']} {r['qty']}" if r['qty'] else r['name']
             for r in remainders
         )
-        c.setFont(font, 7); c.setFillColor(MUTED)
+        c.setFont(font, 6.5); c.setFillColor(MUTED)
         c.drawString(x + PAD, REM_Y, rem_text[:55])
 
-    # ── 푸터 ────────────────────────────────────────────────────────────────
+    # ── 푸터 (10mm): SHIP DATE | MADE IN KOREA | SINCERELY Co. ────────────
     c.setFillColor(colors.HexColor("#fafbfd"))
     c.rect(x, y, W, FTR_H, fill=1, stroke=0)
-    c.setStrokeColor(LINE); c.setLineWidth(0.75)
-    c.line(x, y + FTR_H, x + W, y + FTR_H)
+    sep(y + FTR_H)
 
     c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
-    c.drawString(x + PAD, y + 4 * mm, "SHIP")
+    c.drawString(x + PAD, y + 3.5 * mm, "SHIP")
     skw = c.stringWidth("SHIP  ", font_bold, 6.5)
-    c.setFont(font_bold, 7.5); c.setFillColor(INK2)
-    c.drawString(x + PAD + skw, y + 4 * mm, date_str)
+    c.setFont(font_bold, 7); c.setFillColor(INK2)
+    c.drawString(x + PAD + skw, y + 3.5 * mm, date_str)
 
-    div1_x = x + PAD + skw + c.stringWidth(date_str, font_bold, 7.5) + 4 * mm
-    c.setStrokeColor(LINE); c.setLineWidth(0.75)
-    c.line(div1_x, y + 1.5 * mm, div1_x, y + 6 * mm)
-    c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
-    c.drawString(div1_x + 2.5 * mm, y + 4 * mm, "ORIGIN")
-    okw = c.stringWidth("ORIGIN  ", font_bold, 6.5)
-    c.setFont(font_bold, 7.5); c.setFillColor(INK2)
-    c.drawString(div1_x + 2.5 * mm + okw, y + 4 * mm, "KOR")
-    c.setFont(font_bold, 7.5); c.setFillColor(NAVY)
-    c.drawRightString(x + W - PAD, y + 4 * mm, "SINCERELY Co.")
+    c.setFont(font_bold, 7); c.setFillColor(NAVY)
+    c.drawCentredString(x + W / 2, y + 3.5 * mm, "MADE IN KOREA")
+
+    c.setFont(font_bold, 7); c.setFillColor(NAVY)
+    c.drawRightString(x + W - PAD, y + 3.5 * mm, "SINCERELY Co.")
 
     # ── 외곽선 ──────────────────────────────────────────────────────────────
     c.setStrokeColor(colors.HexColor("#333333")); c.setLineWidth(0.8)
@@ -756,7 +696,7 @@ def draw_carton_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# V3140 A4 4-up PDF 생성 (2카톤 × 2레이블 = 4셀/페이지)
+# V3140 A4 4-up PDF: 카톤 1개 = 통합 라벨 1장 → 4카톤/페이지
 # ────────────────────────────────────────────────────────────────────────────
 def generate_v3140_pdf(records: list, output) -> int:
     font, font_bold = register_fonts()
@@ -764,22 +704,15 @@ def generate_v3140_pdf(records: list, output) -> int:
     all_boxes = [(rec, box) for rec in records for box in rec["boxes"]]
     pages = 0
 
-    for i in range(0, len(all_boxes), 2):
-        pair = all_boxes[i:i + 2]       # 최대 2카톤/페이지
-
-        for slot, (rec, box) in enumerate(pair):
-            cx, cy = CELL_ORIGINS[slot * 2]      # shipping mark 셀
-            draw_shipping_mark_v3140(
+    for i in range(0, len(all_boxes), 4):
+        chunk = all_boxes[i:i + 4]
+        for slot, (rec, box) in enumerate(chunk):
+            cx, cy = CELL_ORIGINS[slot]
+            draw_unified_label_v3140(
                 c, cx, cy, box, rec["to_num"], rec["date"],
                 rec["company"], rec["consignee_name"], rec["consignee_addr"],
                 font, font_bold,
             )
-            cx, cy = CELL_ORIGINS[slot * 2 + 1]  # carton label 셀
-            draw_carton_label_v3140(
-                c, cx, cy, box, rec["to_num"], rec["date"],
-                rec["company"], font, font_bold,
-            )
-
         c.showPage()
         pages += 1
 
@@ -848,7 +781,7 @@ def main():
         n_boxes = len(r["boxes"])
         if args.paper == "v3140":
             import math
-            pages = math.ceil(n_boxes / 2)
+            pages = math.ceil(n_boxes / 4)
             print(f"  • {r['to_num']}  {r['date']}  {r['company']}  → {n_boxes}카톤 ({pages}장 A4)")
         else:
             print(f"  • {r['to_num']}  {r['date']}  {r['company']}  → {n_boxes}카톤 ({n_boxes*2}페이지)")
