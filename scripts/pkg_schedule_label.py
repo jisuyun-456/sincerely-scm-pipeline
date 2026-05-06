@@ -142,7 +142,7 @@ def _draw_header(c, font, font_bold, project: str):
 
     HDR_H  = 10 * mm
     HDR_Y  = H - HDR_H
-    PROJ_H = 8 * mm
+    PROJ_H = 12 * mm
     PROJ_Y = HDR_Y - PROJ_H
 
     c.setFillColor(NAVY)
@@ -157,8 +157,17 @@ def _draw_header(c, font, font_bold, project: str):
     c.rect(0, PROJ_Y, W, PROJ_H, fill=1, stroke=0)
     c.setStrokeColor(LINE); c.setLineWidth(0.6)
     c.line(0, PROJ_Y, W, PROJ_Y)
-    c.setFont(font_bold, 7); c.setFillColor(NAVY)
-    c.drawString(PAD, PROJ_Y + 2.5 * mm, (project or "—")[:32])
+
+    # 프로젝트명: 9pt bold, 2줄 지원, 수직 중앙 정렬
+    FS_P     = 9
+    ASCENT_P = FS_P * 0.72 * (25.4 / 72) * mm
+    LH_P     = FS_P * 1.35 * (25.4 / 72) * mm
+    proj_lines = _split_name(project or "—", font_bold, FS_P, W - PAD * 2)[:2]
+    total_h  = len(proj_lines) * LH_P
+    y0 = PROJ_Y + (PROJ_H + total_h) / 2 - ASCENT_P
+    c.setFont(font_bold, FS_P); c.setFillColor(NAVY)
+    for idx, ln in enumerate(proj_lines):
+        c.drawString(PAD, y0 - idx * LH_P, ln)
 
     return PROJ_Y   # 아이템 시작 Y
 
@@ -177,7 +186,8 @@ def _split_name(name: str, font: str, font_size: float, max_w: float) -> list[st
     return lines or [""]
 
 
-def draw_label_page(c, font, font_bold, project: str, pairs: list[tuple]):
+def draw_label_page(c, font, font_bold, project: str, pairs: list[tuple],
+                    font_size: float = 7.5):
     """80×55mm 1장 그리기. pairs = [(name, qty), ...]"""
     W, H   = LABEL_W, LABEL_H
     PAD    = 3.5 * mm
@@ -185,7 +195,7 @@ def draw_label_page(c, font, font_bold, project: str, pairs: list[tuple]):
     INK2   = colors.HexColor("#3a3a3d")
     LINE   = colors.HexColor("#d8d9dd")
     QTY_W  = 16 * mm
-    FS     = 7.5                       # pt — 고정 폰트 크기
+    FS     = font_size                 # pt — 기본 7.5, fit-page 모드에서 자동 축소
     LINE_H = FS * 1.35 * (25.4 / 72) * mm   # ≈ 3.6mm / 줄
     V_PAD  = 1.5 * mm                 # 행 상하 여백
     ASCENT = FS * 0.72 * (25.4 / 72) * mm   # baseline 위 높이 ≈ 1.9mm
@@ -225,7 +235,7 @@ def draw_label_page(c, font, font_bold, project: str, pairs: list[tuple]):
     c.rect(0, 0, W, H, stroke=1, fill=0)
 
 
-def generate_pdf(rec: dict, output) -> int:
+def generate_pdf(rec: dict, output, fit_page: bool = False) -> int:
     font, font_bold = register_fonts()
     c = rl_canvas.Canvas(output, pagesize=(LABEL_W, LABEL_H))
 
@@ -234,18 +244,50 @@ def generate_pdf(rec: dict, output) -> int:
     pairs = [(items[i], qtys[i] if i < len(qtys) else "") for i in range(len(items))]
     project = rec["project"]
 
-    # 한 페이지에 들어갈 최대 행 수 계산 (최소 row 3mm 기준)
-    BODY_H    = LABEL_H - 10 * mm - 8 * mm - 1 * mm   # ~36mm
-    MAX_ROWS  = max(1, int(BODY_H / (3.0 * mm)))       # ~12
-    pages     = [pairs[i:i + MAX_ROWS] for i in range(0, max(1, len(pairs)), MAX_ROWS)]
+    # 상수 (draw_label_page와 동기; PROJ_H=12mm 반영)
+    QTY_W  = 16 * mm
+    PAD    = 3.5 * mm
+    BODY_H = LABEL_H - 10 * mm - 12 * mm - 1 * mm  # ≈ 32mm
 
-    for pi, page_pairs in enumerate(pages):
-        if pi > 0:
-            c.showPage()
-        draw_label_page(c, font, font_bold, project, page_pairs)
+    def _row_h(name: str, fs: float) -> float:
+        lh = fs * 1.35 * (25.4 / 72) * mm
+        tw = LABEL_W - QTY_W - PAD - 1.5 * mm
+        return max(3.0 * mm, len(_split_name(name, font, fs, tw)) * lh + 1.5 * mm * 2)
+
+    if fit_page:
+        # Option 1: 폰트를 7.5→4.5pt까지 줄여 단일 페이지에 맞춤
+        fs_used = 4.5
+        for fs_10 in range(75, 44, -5):
+            fs = fs_10 / 10
+            if sum(_row_h(n, fs) for n, _ in pairs) <= BODY_H:
+                fs_used = fs
+                break
+        draw_label_page(c, font, font_bold, project, pairs, font_size=fs_used)
+        n_pages = 1
+    else:
+        # Option 2 (기본): 실제 행 높이 기반 멀티 페이지
+        page_list, cur_page, cur_h = [], [], 0.0
+        for pair in pairs:
+            rh = _row_h(pair[0], 7.5)
+            if cur_page and cur_h + rh > BODY_H:
+                page_list.append(cur_page)
+                cur_page, cur_h = [pair], rh
+            else:
+                cur_page.append(pair)
+                cur_h += rh
+        if cur_page:
+            page_list.append(cur_page)
+        if not page_list:
+            page_list = [[]]
+
+        for pi, page_pairs in enumerate(page_list):
+            if pi > 0:
+                c.showPage()
+            draw_label_page(c, font, font_bold, project, page_pairs)
+        n_pages = len(page_list)
 
     c.save()
-    return len(pages)
+    return n_pages
 
 
 # ── 메인 ─────────────────────────────────────────────────────────────────────
@@ -255,6 +297,8 @@ def main():
     parser.add_argument("--record-id",    required=True, help="pkg_schedule record ID")
     parser.add_argument("--upload-field", default=DEFAULT_UPLOAD_FLD,
                         help="업로드할 Airtable 필드 ID")
+    parser.add_argument("--fit-page", action="store_true",
+                        help="폰트 축소로 단일 페이지에 전체 항목 맞춤 (Option 1)")
     args = parser.parse_args()
 
     if not PAT:
@@ -267,7 +311,7 @@ def main():
     print(f"  품목 {len(rec['items'])}개")
 
     buf = BytesIO()
-    pages = generate_pdf(rec, buf)
+    pages = generate_pdf(rec, buf, fit_page=args.fit_page)
     pdf_bytes = buf.getvalue()
 
     fname = f"투입자재_{rec['project'] or args.record_id}.pdf"
