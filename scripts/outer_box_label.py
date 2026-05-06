@@ -313,12 +313,26 @@ def fetch_lr_records(lr_id=None, to_num=None, date_str=None) -> list:
             })
             continue
         total = len(boxes)
-        box_sum = f.get(F_BOX_SUM)
-        _m = re.match(r'\d+', str(box_sum or ""))
-        if _m and int(_m.group()) != total:
-            print(f"  ⚠️ [수량 불일치] {f.get(F_TO_NUM, '')} — "
-                  f"외박스 수량 필드={_m.group()}  포장내역 파싱={total}  "
-                  f"→ 포장내역 기준으로 생성")
+        box_sum_str = str(f.get(F_BOX_SUM) or "")
+        _tm = re.search(r'총(\d+)박스', box_sum_str) or re.match(r'(\d+)', box_sum_str)
+        if _tm and int(_tm.group(1)) != total:
+            field_total = int(_tm.group(1))
+            print(f"  ⚠  {to_num} — 수량 불일치: 필드={field_total} 파싱={total}, 에러 라벨 생성")
+            result.append({
+                "rec_id":      r["id"],
+                "to_num":      to_num,
+                "date":        (f.get(F_DATE) or "")[:10],
+                "is_error":    True,
+                "error_title": "외박스 수량 불일치",
+                "error_text":  (
+                    f"수량 필드: {box_sum_str}\n"
+                    f"파싱 결과: {total}박스\n\n"
+                    + packing_text[:120]
+                ),
+                "company":     f.get(F_COMPANY) or f.get(F_COMPANY2, ""),
+                "boxes":       [],
+            })
+            continue
         for b in boxes:
             b["total_boxes"] = total
 
@@ -593,7 +607,7 @@ def _draw_error_label(c: rl_canvas.Canvas, x: float, y: float,
     # 메시지
     MSG_Y = y + H - HDR_H - 10 * mm
     c.setFont(font_bold, 10); c.setFillColor(RED)
-    c.drawString(x + PAD, MSG_Y, "포장 내역 파싱 실패")
+    c.drawString(x + PAD, MSG_Y, lr.get("error_title", "포장 내역 파싱 실패"))
     c.setFont(font, 8); c.setFillColor(INK)
     c.drawString(x + PAD, MSG_Y - 7 * mm, "외박스 포장 내역을 확인하고")
     c.drawString(x + PAD, MSG_Y - 13 * mm, "올바른 형식으로 재입력해 주세요.")

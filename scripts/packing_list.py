@@ -297,10 +297,29 @@ def fetch_record(lr_id=None, to_num=None, date_str=None) -> list:
             continue
         total = len(boxes)
         box_sum_raw = f.get("외박스 수량")
-        _m = re.match(r'\d+', str(box_sum_raw or ""))
-        if _m and int(_m.group()) != total:
-            print(f"  ⚠️ [수량 불일치] {f.get('프로젝트명 (출고)', '')} — "
-                  f"외박스 수량 필드={_m.group()}  포장내역 파싱={total}")
+        box_sum_str = str(box_sum_raw or "")
+        _tm = re.search(r'총(\d+)박스', box_sum_str) or re.match(r'(\d+)', box_sum_str)
+        if _tm and int(_tm.group(1)) != total:
+            field_total = int(_tm.group(1))
+            to_num_err = f.get("프로젝트명 (출고)", r["id"])
+            print(f"  ⚠  {to_num_err} — 수량 불일치: 필드={field_total} 파싱={total}, 에러 PDF 생성")
+            result.append({
+                "rec_id":         r["id"],
+                "to_num":         to_num_err,
+                "date":           (f.get("출고 요청일") or "")[:10],
+                "is_error":       True,
+                "error_title":    "외박스 수량 불일치",
+                "error_text":     (
+                    f"외박스 수량 필드: {box_sum_str}\n"
+                    f"포장 내역 파싱: {total}박스\n\n"
+                    "--- 포장 내역 원문 ---\n" + packing_text
+                ),
+                "company":        f.get("기업명(알림톡2)") or f.get("회사명", ""),
+                "box_sum": "", "summary_lines": [], "boxes": [], "groups": [],
+                "consignee_name": "", "consignee_addr": "", "consignee_tel": "",
+                "shipper_name": "", "shipper_addr": "", "shipper_tel": "",
+            })
+            continue
         for b in boxes:
             b["total_boxes"] = total
 
@@ -360,7 +379,7 @@ def _draw_error_page(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str):
 
     # 본문 메시지
     c.setFont(font_bold, 13); c.setFillColor(RED)
-    c.drawString(M, y, "외박스 포장 내역 파싱 실패")
+    c.drawString(M, y, rec.get("error_title", "외박스 포장 내역 파싱 실패"))
     y -= 8 * mm
     c.setFont(font, 10); c.setFillColor(INK)
     c.drawString(M, y, "아래 포장 내역 내용을 확인하고 올바른 형식으로 재입력해 주세요.")
