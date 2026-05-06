@@ -146,8 +146,9 @@ def upload_via_content_api(record_id: str, field_id: str,
 # ────────────────────────────────────────────────────────────────────────────
 # 파싱 (packing_list.py와 동일 패턴 — 공백 허용)
 # ────────────────────────────────────────────────────────────────────────────
-_BOX_ROW        = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
-_BOX_ROW_INLINE = re.compile(r"^(.+?)\s+(\d+(?:[+][^\s*]+)?)\s*\*\s*(\d+)\s+([대중소]형?)\s*$")
+_BOX_ROW         = re.compile(r"^(\d+)(\s*\+\s*[^\s*]+(?:\([^)]*\))*)?\s*\*\s*(\d+)\s*(.+?)\s*$")
+_BOX_ROW_INLINE  = re.compile(r"^(.+?)\s+(\d+(?:[+][^\s*]+)?)\s*\*\s*(\d+)\s+([대중소]형?)\s*$")
+_BOX_ROW_COMPACT = re.compile(r"^(.+?)(\d+)\s*\*\s*(\d+)\s+(\S+)\s*$")
 
 
 def _clean_item_name(s: str) -> str:
@@ -205,7 +206,21 @@ def parse_packing_detail(text: str) -> list[dict]:
                         "remainder_items": _parse_remainder(qty_str),
                     })
             else:
-                current_item = line
+                mc = _BOX_ROW_COMPACT.match(line)
+                if mc:
+                    current_item = mc.group(1).strip()
+                    qty_str = mc.group(2)
+                    for _ in range(int(mc.group(3))):
+                        box_num += 1
+                        boxes.append({
+                            "box_num":         box_num,
+                            "size":            mc.group(4).strip(),
+                            "item":            current_item,
+                            "qty":             qty_str,
+                            "remainder_items": [],
+                        })
+                else:
+                    current_item = line
     return boxes
 
 
