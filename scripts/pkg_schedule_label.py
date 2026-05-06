@@ -127,7 +127,8 @@ def _fetch_task_pairs(task_ids: list) -> list:
     Airtable multipleLookupValues 중복제거 버그 우회 — 동일 PT가 여러 개여도 모두 표시."""
     pairs = []
     for rec_id in task_ids:
-        url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}"
+        url = (f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}"
+               f"?returnFieldsByFieldId=true")
         try:
             r = requests.get(url, headers=HEADERS, timeout=30)
             r.raise_for_status()
