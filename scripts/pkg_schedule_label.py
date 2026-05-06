@@ -294,8 +294,8 @@ def main():
     parser.add_argument("--record-id",    required=True, help="pkg_schedule record ID")
     parser.add_argument("--upload-field", default=DEFAULT_UPLOAD_FLD,
                         help="업로드할 Airtable 필드 ID")
-    parser.add_argument("--fit-page", action="store_true",
-                        help="폰트 축소로 단일 페이지에 전체 항목 맞춤 (Option 1)")
+    parser.add_argument("--multi-page", action="store_true",
+                        help="멀티 페이지 모드 (기본: 단일 페이지 맞춤)")
     args = parser.parse_args()
 
     if not PAT:
@@ -308,7 +308,7 @@ def main():
     print(f"  품목 {len(rec['items'])}개")
 
     buf = BytesIO()
-    pages = generate_pdf(rec, buf, fit_page=args.fit_page)
+    pages = generate_pdf(rec, buf, fit_page=not args.multi_page)
     pdf_bytes = buf.getvalue()
 
     fname = f"투입자재_{rec['project'] or args.record_id}.pdf"
