@@ -197,8 +197,7 @@ def _fetch_task_pairs(task_ids: list) -> list:
 
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG}/{record_id}"
-    r = SESSION.get(url, params=[("fields[]", F_PROJECT), ("fields[]", F_PKG_TASK_LINK),
-                                  ("fields[]", F_ITEMS),  ("fields[]", F_QTYS)], timeout=60)
+    r = SESSION.get(url, timeout=60)
     r.raise_for_status()
     f = r.json().get("fields", {})
 
