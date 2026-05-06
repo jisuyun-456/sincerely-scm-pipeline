@@ -137,39 +137,35 @@ def _draw_header(c, font, font_bold, project: str):
     W, H = LABEL_W, LABEL_H
     PAD  = 3.5 * mm
     NAVY = colors.HexColor("#0b2747")
-    TINT = colors.HexColor("#eef3fa")
-    LINE = colors.HexColor("#d8d9dd")
 
-    HDR_H  = 10 * mm
-    HDR_Y  = H - HDR_H
-    PROJ_H = 12 * mm
-    PROJ_Y = HDR_Y - PROJ_H
+    HDR_H = 14 * mm   # 13pt PNA 2줄 수용
+    HDR_Y = H - HDR_H
 
     c.setFillColor(NAVY)
     c.rect(0, HDR_Y, W, HDR_H, fill=1, stroke=0)
     c.setFillColor(colors.white)
-    c.setFont(font_bold, 7.5)
-    c.drawString(PAD, HDR_Y + 3.5 * mm, "■  PICKING SLIP")
-    c.setFont(font_bold, 8)
-    c.drawRightString(W - PAD, HDR_Y + 3.5 * mm, "SINCERELY")
 
-    c.setFillColor(TINT)
-    c.rect(0, PROJ_Y, W, PROJ_H, fill=1, stroke=0)
-    c.setStrokeColor(LINE); c.setLineWidth(0.6)
-    c.line(0, PROJ_Y, W, PROJ_Y)
+    # 우측: "PICKING SLIP" — 수직 중앙 정렬
+    FS_SLIP    = 7
+    ASC_SLIP   = FS_SLIP * 0.72 * (25.4 / 72) * mm
+    SLIP_W     = pdfmetrics.stringWidth("PICKING SLIP", font_bold, FS_SLIP)
+    slip_y     = HDR_Y + HDR_H / 2 - ASC_SLIP / 2
+    c.setFont(font_bold, FS_SLIP)
+    c.drawRightString(W - PAD, slip_y, "PICKING SLIP")
 
-    # 프로젝트명: 9pt bold, 2줄 지원, 수직 중앙 정렬
+    # 좌측: PNA 프로젝트명 — 13pt bold, 최대 2줄, 수직 중앙 정렬
     FS_P     = 13
     ASCENT_P = FS_P * 0.72 * (25.4 / 72) * mm
     LH_P     = FS_P * 1.35 * (25.4 / 72) * mm
-    proj_lines    = _split_name(project or "—", font_bold, FS_P, W - PAD * 2)[:2]
-    text_block_h  = ASCENT_P + (len(proj_lines) - 1) * LH_P
-    y0 = PROJ_Y + (PROJ_H + text_block_h) / 2 - ASCENT_P
-    c.setFont(font_bold, FS_P); c.setFillColor(NAVY)
+    pna_max_w    = W - PAD * 2 - SLIP_W - 2 * mm
+    proj_lines   = _split_name(project or "—", font_bold, FS_P, pna_max_w)[:2]
+    text_block_h = ASCENT_P + (len(proj_lines) - 1) * LH_P
+    y0 = HDR_Y + (HDR_H + text_block_h) / 2 - ASCENT_P
+    c.setFont(font_bold, FS_P)
     for idx, ln in enumerate(proj_lines):
         c.drawString(PAD, y0 - idx * LH_P, ln)
 
-    return PROJ_Y   # 아이템 시작 Y
+    return HDR_Y   # 아이템 시작 Y (틴트 바 제거)
 
 
 def _split_name(name: str, font: str, font_size: float, max_w: float) -> list[str]:
@@ -235,7 +231,7 @@ def draw_label_page(c, font, font_bold, project: str, pairs: list[tuple],
     c.rect(0, 0, W, H, stroke=1, fill=0)
 
 
-def generate_pdf(rec: dict, output, fit_page: bool = False) -> int:
+def generate_pdf(rec: dict, output, fit_page: bool = True) -> int:
     font, font_bold = register_fonts()
     c = rl_canvas.Canvas(output, pagesize=(LABEL_W, LABEL_H))
 
@@ -244,10 +240,10 @@ def generate_pdf(rec: dict, output, fit_page: bool = False) -> int:
     pairs = [(items[i], qtys[i] if i < len(qtys) else "") for i in range(len(items))]
     project = rec["project"]
 
-    # 상수 (draw_label_page와 동기; PROJ_H=12mm 반영)
+    # 상수 (draw_label_page와 동기; HDR_H=14mm, 틴트 바 제거)
     QTY_W  = 16 * mm
     PAD    = 3.5 * mm
-    BODY_H = LABEL_H - 10 * mm - 12 * mm - 1 * mm  # ≈ 32mm
+    BODY_H = LABEL_H - 14 * mm - 0.5 * mm  # ≈ 40.5mm
 
     def _row_h(name: str, fs: float) -> float:
         lh = fs * 1.35 * (25.4 / 72) * mm
