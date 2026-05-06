@@ -183,26 +183,26 @@ def _split_name(name: str, font: str, font_size: float, max_w: float) -> list[st
 
 
 def draw_label_page(c, font, font_bold, project: str, pairs: list[tuple],
-                    font_size: float = 7.5):
-    """80×55mm 1장 그리기. pairs = [(name, qty), ...]"""
+                    font_size: float = 7.5, v_pad: float = 1.5):
+    """80×55mm 1장 그리기. pairs = [(name, qty), ...], v_pad은 mm 단위"""
     W, H   = LABEL_W, LABEL_H
     PAD    = 3.5 * mm
     INK    = colors.HexColor("#0f0f10")
     INK2   = colors.HexColor("#3a3a3d")
     LINE   = colors.HexColor("#d8d9dd")
     QTY_W  = 16 * mm
-    FS     = font_size                 # pt — 기본 7.5, fit-page 모드에서 자동 축소
-    LINE_H = FS * 1.35 * (25.4 / 72) * mm   # ≈ 3.6mm / 줄
-    V_PAD  = 1.5 * mm                 # 행 상하 여백
-    ASCENT = FS * 0.72 * (25.4 / 72) * mm   # baseline 위 높이 ≈ 1.9mm
-    TEXT_W = W - QTY_W - PAD - 1.5 * mm    # 품목명 가용 너비
+    FS     = font_size
+    LINE_H = FS * 1.35 * (25.4 / 72) * mm
+    V_PAD  = v_pad * mm
+    ASCENT = FS * 0.72 * (25.4 / 72) * mm
+    TEXT_W = W - QTY_W - PAD - 1.5 * mm
 
     PROJ_Y = _draw_header(c, font, font_bold, project)
-    cur_y  = PROJ_Y - 0.5 * mm        # 첫 행 상단 — 프로젝트 바 바로 아래
+    cur_y  = PROJ_Y - 0.5 * mm
 
     for i, (name, qty) in enumerate(pairs):
         lines = _split_name(name, font, FS, TEXT_W)
-        row_h = max(3.0 * mm, len(lines) * LINE_H + V_PAD * 2)
+        row_h = len(lines) * LINE_H + V_PAD * 2
 
         ry = cur_y - row_h
         bg = colors.white if i % 2 == 0 else colors.HexColor("#f6f8fb")
@@ -245,26 +245,27 @@ def generate_pdf(rec: dict, output, fit_page: bool = True) -> int:
     PAD    = 3.5 * mm
     BODY_H = LABEL_H - 14 * mm - 0.5 * mm  # ≈ 40.5mm
 
-    def _row_h(name: str, fs: float) -> float:
+    def _row_h(name: str, fs: float, vp_mm: float) -> float:
         lh = fs * 1.35 * (25.4 / 72) * mm
         tw = LABEL_W - QTY_W - PAD - 1.5 * mm
-        return max(3.0 * mm, len(_split_name(name, font, fs, tw)) * lh + 1.5 * mm * 2)
+        return len(_split_name(name, font, fs, tw)) * lh + vp_mm * mm * 2
 
     if fit_page:
-        # Option 1: 폰트를 7.5→4.5pt까지 줄여 단일 페이지에 맞춤
+        # V_PAD=0으로 최대한 압축, 폰트 7.5→4.5pt 탐색
         fs_used = 4.5
         for fs_10 in range(75, 44, -5):
             fs = fs_10 / 10
-            if sum(_row_h(n, fs) for n, _ in pairs) <= BODY_H:
+            if sum(_row_h(n, fs, 0) for n, _ in pairs) <= BODY_H:
                 fs_used = fs
                 break
-        draw_label_page(c, font, font_bold, project, pairs, font_size=fs_used)
+        draw_label_page(c, font, font_bold, project, pairs,
+                        font_size=fs_used, v_pad=0)
         n_pages = 1
     else:
         # Option 2 (기본): 실제 행 높이 기반 멀티 페이지
         page_list, cur_page, cur_h = [], [], 0.0
         for pair in pairs:
-            rh = _row_h(pair[0], 7.5)
+            rh = _row_h(pair[0], 7.5, 1.5)
             if cur_page and cur_h + rh > BODY_H:
                 page_list.append(cur_page)
                 cur_page, cur_h = [pair], rh
