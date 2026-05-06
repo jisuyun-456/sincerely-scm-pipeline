@@ -29,6 +29,8 @@ PAT = (os.getenv("AIRTABLE_SERPA_PAT")
        or os.getenv("AIRTABLE_PAT")
        or os.getenv("AIRTABLE_API_KEY", ""))
 HEADERS   = {"Authorization": f"Bearer {PAT}"}
+SESSION   = requests.Session()
+SESSION.headers.update(HEADERS)
 
 LABEL_W = 80 * mm
 LABEL_H = 55 * mm
@@ -73,9 +75,9 @@ def upload_pdf(record_id: str, field_id: str, filename: str, pdf_bytes: bytes) -
     }
     for _ in range(2):
         try:
-            r = requests.post(
+            r = SESSION.post(
                 url,
-                headers={"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"},
+                headers={"Content-Type": "application/json"},
                 json=payload, timeout=60,
             )
             if r.status_code == 429:
@@ -133,9 +135,11 @@ def _fetch_task_pairs(task_ids: list) -> list:
     cond = ",".join(f"RECORD_ID()='{rid}'" for rid in task_ids)
     formula = f"OR({cond})" if len(task_ids) > 1 else f"RECORD_ID()='{task_ids[0]}'"
     try:
-        r = requests.get(
+        r = SESSION.get(
             f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}",
-            headers=HEADERS, params={"filterByFormula": formula}, timeout=60,
+            params=[("filterByFormula", formula),
+                    ("fields[]", F_PT_ITEM), ("fields[]", F_PT_QTY)],
+            timeout=60,
         )
         r.raise_for_status()
         task_map = {rec["id"]: rec["fields"] for rec in r.json().get("records", [])}
@@ -159,9 +163,10 @@ def _fetch_task_pairs(task_ids: list) -> list:
         mcond = ",".join(f"RECORD_ID()='{mid}'" for mid in all_mat_ids)
         mformula = f"OR({mcond})" if len(all_mat_ids) > 1 else f"RECORD_ID()='{all_mat_ids[0]}'"
         try:
-            mr = requests.get(
+            mr = SESSION.get(
                 f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MATERIAL}",
-                headers=HEADERS, params={"filterByFormula": mformula}, timeout=60,
+                params=[("filterByFormula", mformula), ("fields[]", "Name")],
+                timeout=60,
             )
             mr.raise_for_status()
             for rec in mr.json().get("records", []):
@@ -192,7 +197,8 @@ def _fetch_task_pairs(task_ids: list) -> list:
 
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG}/{record_id}"
-    r = requests.get(url, headers=HEADERS, timeout=60)
+    r = SESSION.get(url, params=[("fields[]", F_PROJECT), ("fields[]", F_PKG_TASK_LINK),
+                                  ("fields[]", F_ITEMS),  ("fields[]", F_QTYS)], timeout=60)
     r.raise_for_status()
     f = r.json().get("fields", {})
 
