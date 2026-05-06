@@ -39,8 +39,9 @@ F_QTYS          = "출고수량 (from movement)"
 DEFAULT_UPLOAD_FLD = "fldtcblsJJsQYFdWU"   # 투입자재_pdf
 
 TBL_PKG_TASK    = "tblZvnacaeyCd8q2u"
+TBL_MATERIAL    = "tblLlOjdPAqHnsWm8"   # material(parts-stock)
 F_PKG_TASK_LINK = "pkg_task"
-F_PT_ITEM       = "재고 투입자재 (from movement)"   # fldgcSfQQwxnrUbcL in pkg_task
+F_PT_ITEM       = "재고 투입자재 (from movement)"   # fldgcSfQQwxnrUbcL → returns material rec IDs
 F_PT_QTY        = "출고수량 (from movement)"        # fldtdgwbRwdtSlBcI in pkg_task
 
 if platform.system() == "Windows":
@@ -122,10 +123,26 @@ def _parse_qtys(raw) -> list[str]:
     return result
 
 
+def _fetch_material_name(mat_rec_id: str, cache: dict) -> str:
+    """material(parts-stock) 레코드 ID → Name 필드 (캐시 활용)."""
+    if mat_rec_id in cache:
+        return cache[mat_rec_id]
+    url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MATERIAL}/{mat_rec_id}"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=60)
+        r.raise_for_status()
+        name = r.json().get("fields", {}).get("Name", mat_rec_id)
+    except Exception:
+        name = mat_rec_id
+    cache[mat_rec_id] = name
+    return name
+
+
 def _fetch_task_pairs(task_ids: list) -> list:
     """pkg_task 레코드를 직접 조회해 (item_name, qty_str) 리스트 반환.
     pkg_schedule multipleLookupValues는 동일 값을 dedup하므로 직접 조회 필요."""
     pairs = []
+    mat_cache: dict = {}
     for rec_id in task_ids:
         url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}"
         try:
@@ -135,12 +152,14 @@ def _fetch_task_pairs(task_ids: list) -> list:
             continue
         f = r.json().get("fields", {})
 
-        item_raw = f.get(F_PT_ITEM, "")
-        if isinstance(item_raw, list):
-            parsed = _parse_items(", ".join(str(x) for x in item_raw))
+        # F_PT_ITEM returns material(parts-stock) record IDs — resolve to Name
+        mat_ids = f.get(F_PT_ITEM, [])
+        if isinstance(mat_ids, list) and mat_ids:
+            item = _fetch_material_name(mat_ids[0], mat_cache)
+        elif mat_ids:
+            item = _fetch_material_name(str(mat_ids), mat_cache)
         else:
-            parsed = _parse_items(str(item_raw))
-        item = parsed[0] if parsed else ""
+            item = ""
 
         qty_raw = f.get(F_PT_QTY, "")
         if isinstance(qty_raw, list):
