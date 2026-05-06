@@ -123,43 +123,61 @@ def _parse_qtys(raw) -> list[str]:
     return result
 
 
-def _fetch_material_name(mat_rec_id: str, cache: dict) -> str:
-    """material(parts-stock) 레코드 ID → Name 필드 (캐시 활용)."""
-    if mat_rec_id in cache:
-        return cache[mat_rec_id]
-    url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MATERIAL}/{mat_rec_id}"
-    try:
-        r = requests.get(url, headers=HEADERS, timeout=60)
-        r.raise_for_status()
-        name = r.json().get("fields", {}).get("Name", mat_rec_id)
-    except Exception:
-        name = mat_rec_id
-    cache[mat_rec_id] = name
-    return name
-
-
 def _fetch_task_pairs(task_ids: list) -> list:
-    """pkg_task 레코드를 직접 조회해 (item_name, qty_str) 리스트 반환.
-    pkg_schedule multipleLookupValues는 동일 값을 dedup하므로 직접 조회 필요."""
-    pairs = []
-    mat_cache: dict = {}
-    for rec_id in task_ids:
-        url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}"
-        try:
-            r = requests.get(url, headers=HEADERS, timeout=60)
-            r.raise_for_status()
-        except Exception:
-            continue
-        f = r.json().get("fields", {})
+    """pkg_task + material 배치 조회 → (item_name, qty_str) 리스트.
+    filterByFormula=OR(RECORD_ID()=...) 로 각 1회씩만 호출."""
+    if not task_ids:
+        return []
 
-        # F_PT_ITEM returns material(parts-stock) record IDs — resolve to Name
-        mat_ids = f.get(F_PT_ITEM, [])
-        if isinstance(mat_ids, list) and mat_ids:
-            item = _fetch_material_name(mat_ids[0], mat_cache)
-        elif mat_ids:
-            item = _fetch_material_name(str(mat_ids), mat_cache)
-        else:
-            item = ""
+    # ── Step 1: pkg_task 배치 조회 ──────────────────────────────
+    cond = ",".join(f"RECORD_ID()='{rid}'" for rid in task_ids)
+    formula = f"OR({cond})" if len(task_ids) > 1 else f"RECORD_ID()='{task_ids[0]}'"
+    try:
+        r = requests.get(
+            f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}",
+            headers=HEADERS, params={"filterByFormula": formula}, timeout=60,
+        )
+        r.raise_for_status()
+        task_map = {rec["id"]: rec["fields"] for rec in r.json().get("records", [])}
+    except Exception:
+        return []
+
+    # ── Step 2: 유니크 material ID 수집 ────────────────────────
+    all_mat_ids: list = []
+    seen: set = set()
+    for rid in task_ids:
+        mids = task_map.get(rid, {}).get(F_PT_ITEM, [])
+        if isinstance(mids, list) and mids:
+            mid = mids[0]
+            if mid not in seen:
+                all_mat_ids.append(mid)
+                seen.add(mid)
+
+    # ── Step 3: material 배치 조회 ─────────────────────────────
+    mat_names: dict = {}
+    if all_mat_ids:
+        mcond = ",".join(f"RECORD_ID()='{mid}'" for mid in all_mat_ids)
+        mformula = f"OR({mcond})" if len(all_mat_ids) > 1 else f"RECORD_ID()='{all_mat_ids[0]}'"
+        try:
+            mr = requests.get(
+                f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MATERIAL}",
+                headers=HEADERS, params={"filterByFormula": mformula}, timeout=60,
+            )
+            mr.raise_for_status()
+            for rec in mr.json().get("records", []):
+                mat_names[rec["id"]] = rec["fields"].get("Name", rec["id"])
+        except Exception:
+            pass
+
+    # ── Step 4: 원래 순서대로 pairs 빌드 ──────────────────────
+    pairs = []
+    for rec_id in task_ids:
+        f = task_map.get(rec_id)
+        if not f:
+            continue
+
+        mids = f.get(F_PT_ITEM, [])
+        item = mat_names.get(mids[0], mids[0]) if isinstance(mids, list) and mids else ""
 
         qty_raw = f.get(F_PT_QTY, "")
         if isinstance(qty_raw, list):
