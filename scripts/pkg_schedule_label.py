@@ -39,9 +39,9 @@ F_QTYS          = "출고수량 (from movement)"
 DEFAULT_UPLOAD_FLD = "fldtcblsJJsQYFdWU"   # 투입자재_pdf
 
 TBL_PKG_TASK    = "tblZvnacaeyCd8q2u"
-F_PKG_TASK_LINK = "pkg_task"             # multipleRecordLinks in pkg_schedule
-F_PT_ITEM       = "fldgCAADafVuiYPwm"    # 재고 투입자재품 in pkg_task
-F_PT_QTY        = "fldtdgwbRwdtSlBcI"   # 출고수량 (from movement) in pkg_task
+F_PKG_TASK_LINK = "pkg_task"
+F_PT_ITEM       = "재고 투입자재 (from movement)"   # fldgcSfQQwxnrUbcL in pkg_task
+F_PT_QTY        = "출고수량 (from movement)"        # fldtdgwbRwdtSlBcI in pkg_task
 
 if platform.system() == "Windows":
     FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
@@ -122,6 +122,37 @@ def _parse_qtys(raw) -> list[str]:
     return result
 
 
+def _fetch_task_pairs(task_ids: list) -> list:
+    """pkg_task 레코드를 직접 조회해 (item_name, qty_str) 리스트 반환.
+    pkg_schedule multipleLookupValues는 동일 값을 dedup하므로 직접 조회 필요."""
+    pairs = []
+    for rec_id in task_ids:
+        url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}"
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=60)
+            r.raise_for_status()
+        except Exception:
+            continue
+        f = r.json().get("fields", {})
+
+        item_raw = f.get(F_PT_ITEM, "")
+        if isinstance(item_raw, list):
+            parsed = _parse_items(", ".join(str(x) for x in item_raw))
+        else:
+            parsed = _parse_items(str(item_raw))
+        item = parsed[0] if parsed else ""
+
+        qty_raw = f.get(F_PT_QTY, "")
+        if isinstance(qty_raw, list):
+            qty = str(int(float(qty_raw[0]))) if qty_raw and qty_raw[0] is not None else ""
+        else:
+            qty = str(int(float(qty_raw))) if qty_raw not in ("", None) else ""
+
+        if item:
+            pairs.append((item, qty))
+    return pairs
+
+
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG}/{record_id}"
     r = requests.get(url, headers=HEADERS, timeout=60)
@@ -130,8 +161,15 @@ def fetch_record(record_id: str) -> dict:
 
     proj_raw = f.get(F_PROJECT, "")
     project  = (proj_raw[0] if isinstance(proj_raw, list) else proj_raw) or ""
-    items    = _parse_items(f.get(F_ITEMS, ""))
-    qtys     = _parse_qtys(f.get(F_QTYS, ""))
+
+    task_ids = f.get(F_PKG_TASK_LINK, [])
+    if task_ids:
+        pairs = _fetch_task_pairs(task_ids)
+        items = [p[0] for p in pairs]
+        qtys  = [p[1] for p in pairs]
+    else:
+        items = _parse_items(f.get(F_ITEMS, ""))
+        qtys  = _parse_qtys(f.get(F_QTYS, ""))
 
     return {"rec_id": record_id, "project": str(project), "items": items, "qtys": qtys}
 
