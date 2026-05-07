@@ -27,6 +27,9 @@ app = FastAPI()
 REPO_ROOT      = Path(__file__).parent.parent
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 
+# 256MB 환경에서 동시 Python 서브프로세스 과부하 방지 (최대 3개 동시 실행)
+_SUBPROCESS_SEM = threading.Semaphore(3)
+
 
 # ── 요청 모델 ────────────────────────────────────────────────────────────────
 
@@ -68,15 +71,17 @@ def _run(cmd: list[str]) -> dict:
 
 
 def _run_bg(cmd: list[str]):
-    logger.info(f"[BG] starting: {cmd}")
-    result = subprocess.run(
-        cmd,
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        timeout=300,
-        env={**os.environ, "PDF_OUTPUT_DIR": "/tmp"},
-    )
+    logger.info(f"[BG] queued: {cmd[-1]}")
+    with _SUBPROCESS_SEM:
+        logger.info(f"[BG] starting: {cmd}")
+        result = subprocess.run(
+            cmd,
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            env={**os.environ, "PDF_OUTPUT_DIR": "/tmp"},
+        )
     if result.returncode != 0:
         logger.error(f"[BG] FAILED rc={result.returncode}: {result.stderr[-1200:]}")
     else:
