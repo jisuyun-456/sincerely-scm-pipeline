@@ -9,7 +9,6 @@ pkg_schedule 테이블 → 투입자재 피킹 라벨 PDF (80×55mm)
 """
 
 import argparse, base64, os, platform, re, sys, time
-from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 
 import requests
@@ -41,11 +40,6 @@ F_ITEMS         = "재고 투입자재 (from pkg_task)"
 F_QTYS          = "출고수량 (from movement)"
 DEFAULT_UPLOAD_FLD = "fldtcblsJJsQYFdWU"   # 투입자재_pdf
 
-TBL_PKG_TASK    = "tblZvnacaeyCd8q2u"
-TBL_MATERIAL    = "tblLlOjdPAqHnsWm8"   # material(parts-stock)
-F_PKG_TASK_LINK = "pkg_task"
-F_PT_ITEM       = "재고 투입자재 (from movement)"   # fldgcSfQQwxnrUbcL → returns material rec IDs
-F_PT_QTY        = "출고수량 (from movement)"        # fldtdgwbRwdtSlBcI in pkg_task
 
 if platform.system() == "Windows":
     FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
@@ -113,9 +107,11 @@ def _parse_items(raw) -> list[str]:
 
 
 def _parse_qtys(raw) -> list[str]:
-    """'210; 201; 210;' → ['210', '201', '210']"""
+    """'210; 201; 210;' or [210, 201] → ['210', '201', '210']"""
     if not raw:
         return []
+    if isinstance(raw, list):
+        raw = "; ".join(str(int(float(x))) if x is not None else "" for x in raw)
     if isinstance(raw, (int, float)):
         return [str(int(raw))]
     result = []
@@ -125,79 +121,6 @@ def _parse_qtys(raw) -> list[str]:
             result.append(part)
     return result
 
-
-def _fetch_task_pairs(task_ids: list) -> list:
-    """pkg_task + material 개별 조회 (병렬) → (item_name, qty_str) 리스트.
-    filterByFormula는 전체 테이블 스캔(느림). 직접 /recordId 조회 + 병렬 실행."""
-    if not task_ids:
-        return []
-
-    # ── Step 1: pkg_task 병렬 조회 ──────────────────────────────
-    def _fetch_task(rec_id):
-        try:
-            r = SESSION.get(
-                f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}",
-                timeout=60,
-            )
-            r.raise_for_status()
-            return rec_id, r.json().get("fields", {})
-        except Exception:
-            return rec_id, None
-
-    task_map: dict = {}
-    with ThreadPoolExecutor(max_workers=min(10, len(task_ids))) as ex:
-        for rec_id, fields in ex.map(_fetch_task, task_ids):
-            if fields is not None:
-                task_map[rec_id] = fields
-
-    # ── Step 2: 유니크 material ID 수집 ────────────────────────
-    all_mat_ids: list = []
-    seen: set = set()
-    for rid in task_ids:
-        mids = task_map.get(rid, {}).get(F_PT_ITEM, [])
-        if isinstance(mids, list) and mids:
-            mid = mids[0]
-            if mid not in seen:
-                all_mat_ids.append(mid)
-                seen.add(mid)
-
-    # ── Step 3: material 병렬 조회 ─────────────────────────────
-    mat_names: dict = {}
-    if all_mat_ids:
-        def _fetch_material(mid):
-            try:
-                r = SESSION.get(
-                    f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MATERIAL}/{mid}",
-                    timeout=60,
-                )
-                r.raise_for_status()
-                return mid, r.json().get("fields", {}).get("Name", mid)
-            except Exception:
-                return mid, mid
-
-        with ThreadPoolExecutor(max_workers=min(10, len(all_mat_ids))) as ex:
-            for mid, name in ex.map(_fetch_material, all_mat_ids):
-                mat_names[mid] = name
-
-    # ── Step 4: 원래 순서대로 pairs 빌드 ──────────────────────
-    pairs = []
-    for rec_id in task_ids:
-        f = task_map.get(rec_id)
-        if not f:
-            continue
-
-        mids = f.get(F_PT_ITEM, [])
-        item = mat_names.get(mids[0], mids[0]) if isinstance(mids, list) and mids else ""
-
-        qty_raw = f.get(F_PT_QTY, "")
-        if isinstance(qty_raw, list):
-            qty = str(int(float(qty_raw[0]))) if qty_raw and qty_raw[0] is not None else ""
-        else:
-            qty = str(int(float(qty_raw))) if qty_raw not in ("", None) else ""
-
-        if item:
-            pairs.append((item, qty))
-    return pairs
 
 
 def fetch_record(record_id: str) -> dict:
@@ -209,14 +132,8 @@ def fetch_record(record_id: str) -> dict:
     proj_raw = f.get(F_PROJECT, "")
     project  = (proj_raw[0] if isinstance(proj_raw, list) else proj_raw) or ""
 
-    task_ids = f.get(F_PKG_TASK_LINK, [])
-    if task_ids:
-        pairs = _fetch_task_pairs(task_ids)
-        items = [p[0] for p in pairs]
-        qtys  = [p[1] for p in pairs]
-    else:
-        items = _parse_items(f.get(F_ITEMS, ""))
-        qtys  = _parse_qtys(f.get(F_QTYS, ""))
+    items = _parse_items(f.get(F_ITEMS, ""))
+    qtys  = _parse_qtys(f.get(F_QTYS, ""))
 
     return {"rec_id": record_id, "project": str(project), "items": items, "qtys": qtys}
 
