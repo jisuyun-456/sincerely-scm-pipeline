@@ -392,11 +392,14 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     stock_raw   = get_field(f, "재고 출하 품목")
     stock_lines = [l.strip() for l in str(stock_raw).split("\n") if l.strip()]
     if stock_lines and any(STOCK_ITEM_RE.match(l) for l in stock_lines):
-        items = parse_stock_items(stock_raw)
+        items     = parse_stock_items(stock_raw)
+        bad_lines = [l for l in stock_lines if not STOCK_ITEM_RE.match(l)]
     else:
         actual_raw = _get_lines(f, "최종 출고 품목 및 수량")
         order_raw  = _get_lines(f, "최종 출하 품목")
         items      = parse_items(actual_raw, order_raw)
+        act_lines  = [l.strip() for l in str(actual_raw or "").split("\n") if l.strip()]
+        bad_lines  = [l for l in act_lines if not ITEM_RE.match(l) and not ITEM_RE2.match(l)]
 
     # 수신처 정보 — 리스트 래핑 필드 처리
     customer = get_field(f, "회사명") or get_field(f, "입하장소")
@@ -410,9 +413,22 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     qr_atts = f.get("qr") or []
     qr_url  = qr_atts[0]["url"] if isinstance(qr_atts, list) and qr_atts else ""
 
+    sc_id = get_field(f, "SC id")
+    error_parts: list[tuple[str, str, str]] = []
+    if not box_qty:
+        error_parts.append(("A", "박스수량 미입력",
+            f"최종 외박스 수량 값 또는 Total_CBM 필드를 입력해주세요.\nSC id: {sc_id}"))
+    if not items:
+        error_parts.append(("B", "출고 품목 미입력",
+            f"최종 출고 품목 및 수량 또는 재고 출하 품목 필드를 입력해주세요.\nSC id: {sc_id}"))
+    elif bad_lines:
+        error_parts.append(("C", "품목 포맷 오류",
+            "아래 라인을 '품목명(설명) 수량+여분' 형식으로 수정해주세요:\n"
+            + "\n".join(f"  • {l}" for l in bad_lines)))
+
     return {
         "record_id":      rec["id"],
-        "sc_id":          get_field(f, "SC id"),
+        "sc_id":          sc_id,
         "to_no":          to_str,
         "location":       location_str,
         "ship_date":      parse_ship_date(get_field(f, "출하확정일")),
@@ -426,6 +442,12 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
         "box_qty":        box_qty,
         "items":          items,
         "qr_url":         qr_url,
+        "is_error":       bool(error_parts),
+        "error_title":    " / ".join(t for _, t, _ in error_parts) if error_parts else "",
+        "error_text":     "\n\n".join(
+            f"[카테고리 {cat}] {title}\n{detail}"
+            for cat, title, detail in error_parts
+        ) if error_parts else "",
     }
 
 
@@ -704,8 +726,79 @@ def _draw_notice(c: rl_canvas.Canvas, y: float, font: str) -> float:
     return y - h
 
 
+# ── 에러 페이지 ───────────────────────────────────────────────────────────────
+def _draw_error_page(c: rl_canvas.Canvas, doc: dict, font: str, font_bold: str) -> None:
+    RED    = colors.HexColor("#C0392B")
+    ORANGE = colors.HexColor("#E67E22")
+    INK    = colors.HexColor("#0f0f10")
+    MUTED  = colors.HexColor("#7c7c82")
+    LGRAY  = colors.HexColor("#F2F2F2")
+
+    HDR_H = 22 * mm
+    y = A4_H - MARGIN
+
+    c.setFillColor(RED)
+    c.rect(0, y - HDR_H, A4_W, HDR_H, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    c.setFont(font_bold, 28)
+    c.drawString(MARGIN, y - 17 * mm, "⚠  데이터 오류")
+    c.setFont(font_bold, 10)
+    c.drawRightString(A4_W - MARGIN, y - 11 * mm, doc.get("ship_date", ""))
+    c.drawRightString(A4_W - MARGIN, y - 18 * mm, doc.get("sc_id", ""))
+    y -= HDR_H + 10 * mm
+
+    c.setFont(font_bold, 13)
+    c.setFillColor(RED)
+    c.drawString(MARGIN, y, doc.get("error_title", "데이터 오류"))
+    y -= 8 * mm
+    c.setFont(font, 10)
+    c.setFillColor(INK)
+    c.drawString(MARGIN, y, "아래 내용을 확인하고 Airtable에서 수정한 뒤 PDF를 다시 생성해주세요.")
+    y -= 10 * mm
+
+    c.setStrokeColor(ORANGE)
+    c.setLineWidth(1.5)
+    c.line(MARGIN, y, A4_W - MARGIN, y)
+    y -= 7 * mm
+
+    c.setFont(font_bold, 8.5)
+    c.setFillColor(MUTED)
+    c.drawString(MARGIN, y, "오류 상세:")
+    y -= 6 * mm
+
+    txt_lines = (doc.get("error_text") or "").splitlines()
+    BOX_H = min(len(txt_lines) + 2, 22) * 5.5 * mm + 6 * mm
+    c.setFillColor(LGRAY)
+    c.rect(MARGIN, y - BOX_H, INNER_W, BOX_H, fill=1, stroke=0)
+    c.setStrokeColor(colors.HexColor("#DDDDDD"))
+    c.setLineWidth(0.8)
+    c.rect(MARGIN, y - BOX_H, INNER_W, BOX_H, fill=0, stroke=1)
+
+    ty = y - 5 * mm
+    c.setFont(font, 9)
+    c.setFillColor(INK)
+    for line in txt_lines[:20]:
+        c.drawString(MARGIN + 4 * mm, ty, line[:80])
+        ty -= 5.5 * mm
+    if len(txt_lines) > 20:
+        c.setFont(font, 8)
+        c.setFillColor(MUTED)
+        c.drawString(MARGIN + 4 * mm, ty, f"... (+ {len(txt_lines) - 20}줄 생략)")
+
+    c.setFillColor(MUTED)
+    c.setFont(font, 7.5)
+    c.drawCentredString(
+        A4_W / 2, MARGIN / 2,
+        f"SINCERELY Co., Ltd.  ·  데이터 오류  ·  {doc.get('sc_id', '')}",
+    )
+
+
 # ── 페이지 그리기 ─────────────────────────────────────────────────────────────
 def draw_confirmation(c: rl_canvas.Canvas, doc: dict, font: str, font_bold: str) -> None:
+    if doc.get("is_error"):
+        _draw_error_page(c, doc, font, font_bold)
+        return
+
     c.setPageSize(A4)
     c.saveState()
     y = A4_H - MARGIN
