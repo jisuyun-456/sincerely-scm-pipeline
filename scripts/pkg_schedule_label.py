@@ -93,14 +93,15 @@ def upload_pdf(record_id: str, field_id: str, filename: str, pdf_bytes: bytes) -
 # ── 데이터 파싱 ───────────────────────────────────────────────────────────────
 
 def _parse_items(raw) -> list[str]:
-    """'PT4731-사용설명서(전용)_화이트 || 다영기획, PT4730-...; ' → ['PT4731-사용설명서(전용)_화이트', ...]"""
+    """'PT4731-... || 공급사, PT4730-...;\nPT1136-칫솔 || 공급사;\n' → ['PT4731-...', 'PT4730-...', 'PT1136-칫솔']
+    pkg_task 간 구분자는 ';\\n', pkg_task 내 구분자는 ',' — 둘 다 처리."""
     if not raw:
         return []
     if isinstance(raw, list):
         raw = ", ".join(str(x) for x in raw)
     result = []
-    for part in str(raw).rstrip(";").split(","):
-        name = part.split(" || ")[0].strip().lstrip(";").strip()
+    for part in re.split(r"[,;]", str(raw)):
+        name = part.split(" || ")[0].strip()
         if name:
             result.append(name)
     return result
