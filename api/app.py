@@ -27,8 +27,8 @@ app = FastAPI()
 REPO_ROOT      = Path(__file__).parent.parent
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 
-# 256MB 환경에서 동시 Python 서브프로세스 과부하 방지 (최대 3개 동시 실행)
-_SUBPROCESS_SEM = threading.Semaphore(3)
+# 256MB 환경: uvicorn ~50MB + 스크립트 1개 ~80MB × 2 = ~210MB → 안전 상한 2
+_SUBPROCESS_SEM = threading.Semaphore(2)
 
 
 # ── 요청 모델 ────────────────────────────────────────────────────────────────
