@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Implementation Documentation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#e3e2e6",
+                      "tertiary-container": "#1c1d20",
+                      "on-error": "#ffffff",
+                      "secondary": "#5e5e63",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#626267",
+                      "on-error-container": "#93000a",
+                      "primary-fixed-dim": "#c8c6c8",
+                      "primary": "#030304",
+                      "tertiary": "#020304",
+                      "on-surface-variant": "#46464a",
+                      "surface-tint": "#5f5e60",
+                      "inverse-primary": "#c8c6c8",
+                      "tertiary-fixed-dim": "#c6c6ca",
+                      "outline-variant": "#c7c6ca",
+                      "on-surface": "#1c1b1b",
+                      "on-primary-container": "#868587",
+                      "surface-variant": "#e5e2e1",
+                      "surface-container-low": "#f7f3f2",
+                      "surface-container": "#f1edec",
+                      "primary-container": "#1d1d1f",
+                      "secondary-container": "#e0dfe4",
+                      "secondary-fixed": "#e3e2e7",
+                      "on-primary-fixed": "#1b1b1d",
+                      "on-primary-fixed-variant": "#474649",
+                      "surface-container-high": "#ebe7e7",
+                      "inverse-surface": "#313030",
+                      "on-tertiary-fixed-variant": "#45474a",
+                      "surface-dim": "#ddd9d9",
+                      "inverse-on-surface": "#f4f0ef",
+                      "error-container": "#ffdad6",
+                      "outline": "#77767b",
+                      "on-secondary-fixed": "#1a1b1f",
+                      "on-background": "#1c1b1b",
+                      "surface-container-highest": "#e5e2e1",
+                      "on-secondary-fixed-variant": "#46464b",
+                      "surface": "#fdf8f8",
+                      "background": "#fdf8f8",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#fdf8f8",
+                      "primary-fixed": "#e4e2e4",
+                      "on-tertiary-fixed": "#1a1c1f",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#848589",
+                      "secondary-fixed-dim": "#c7c6cb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap": "160px",
+                      "unit": "8px",
+                      "margin": "40px",
+                      "gutter": "32px",
+                      "stack-gap": "24px",
+                      "container-max": "1200px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "display-xl": ["Inter"],
+                      "display-2xl": ["Inter"],
+                      "body-md": ["Inter"],
+                      "mono": ["JetBrains Mono", "monospace"]
+              },
+              "fontSize": {
+                      "body-lg": ["19px", { "lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400" }],
+                      "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                      "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                      "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                      "display-xl": ["56px", { "lineHeight": "1.1", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+                      "display-2xl": ["80px", { "lineHeight": "1.05", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                      "body-md": ["17px", { "lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400" }]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-[#F5F5F7] text-on-background font-body-md antialiased">
+<main class="max-w-container-max mx-auto px-margin pb-section-gap pt-margin">
+<header class="mb-gutter">
+<p class="font-label-sm text-label-sm text-[#86868B] uppercase tracking-widest mb-unit">IMPLEMENTATION</p>
+<h1 class="font-display-xl text-display-xl text-[#1D1D1F] font-bold">Python 스크립트 + Airtable REST API</h1>
+</header>
+<div class="w-full h-px bg-outline-variant/30 mb-margin"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<section class="flex flex-col gap-stack-gap">
+<h2 class="font-headline-md text-headline-md text-primary font-semibold mb-unit">스크립트 구성</h2>
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl overflow-hidden relative flex">
+<div class="w-1 bg-[#0071E3] shrink-0"></div>
+<div class="p-stack-gap flex-grow flex flex-col gap-unit">
+<span class="bg-[#0071E3]/10 text-[#0071E3] px-2 py-1 rounded font-label-sm text-label-sm w-max">Python</span>
+<h3 class="font-mono text-body-lg text-primary font-semibold">tms_weekly_backfill.py</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">약속납기일 필드 자동 백필</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl overflow-hidden relative flex">
+<div class="w-1 bg-[#0071E3] shrink-0"></div>
+<div class="p-stack-gap flex-grow flex flex-col gap-unit">
+<span class="bg-[#0071E3]/10 text-[#0071E3] px-2 py-1 rounded font-label-sm text-label-sm w-max">Python</span>
+<h3 class="font-mono text-body-lg text-primary font-semibold">tms_weekly_runner.py</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">TMS KPI 분석 + 마크다운 리포트 생성</p>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-stack-gap">
+<h2 class="font-headline-md text-headline-md text-primary font-semibold mb-unit">데이터 레이어</h2>
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl overflow-hidden relative flex">
+<div class="w-1 bg-[#6E6E73] shrink-0"></div>
+<div class="p-stack-gap flex-grow flex flex-col gap-unit">
+<span class="bg-[#86868B]/10 text-[#86868B] px-2 py-1 rounded font-label-sm text-label-sm w-max">Airtable REST API</span>
+<p class="font-body-lg text-body-lg text-primary">read-only 접근, 인증 토큰</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl overflow-hidden relative flex">
+<div class="w-1 bg-[#6E6E73] shrink-0"></div>
+<div class="p-stack-gap flex-grow flex flex-col gap-unit">
+<span class="bg-[#86868B]/10 text-[#86868B] px-2 py-1 rounded font-label-sm text-label-sm w-max">GitHub Actions</span>
+<p class="font-body-lg text-body-lg text-primary">CI/CD 파이프라인 자동 실행</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

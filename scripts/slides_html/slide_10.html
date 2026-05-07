@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AutoResearch 프로세스</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#1d1d1f",
+                        "on-primary-container": "#ffffff",
+                        "primary": "#0071E3",
+                        "secondary": "#86868b",
+                        "surface": "#F5F5F7",
+                        "on-surface": "#1d1d1f",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#D2D2D7",
+                        "tertiary-container": "#1c1c1e",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ff3b30",
+                        "success": "#34c759",
+                        "warning": "#ff9500"
+                    },
+                    spacing: {
+                        "gutter": "32px",
+                        "margin": "40px",
+                        "stack-gap": "24px"
+                    },
+                    fontFamily: {
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-xl": ["Inter"]
+                    },
+                    fontSize: {
+                        "label-sm": ["12px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "body-md": ["17px", { lineHeight: "1.5", letterSpacing: "0em", fontWeight: "400" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "display-xl": ["56px", { lineHeight: "1.1", letterSpacing: "-0.015em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col items-center justify-center p-gutter">
+<header class="w-full max-w-[2560px] mx-auto px-gutter h-16 flex justify-between items-center bg-surface border-b border-outline-variant font-label-sm text-label-sm uppercase tracking-widest text-on-surface">
+<div class="font-headline-md text-headline-md text-primary-container tracking-tighter">Presentation</div>
+</header>
+<main class="w-full max-w-[2560px] mx-auto flex-grow flex flex-col justify-center py-[120px]">
+<div class="text-center mb-[120px]">
+<p class="font-label-sm text-label-sm text-secondary uppercase tracking-[0.1em] mb-stack-gap">AUTORESEARCH WORKFLOW</p>
+<h1 class="font-display-xl text-display-xl text-on-surface mb-stack-gap tracking-tight">분석부터 개선까지, 4단계 루프</h1>
+<p class="font-headline-md text-headline-md text-secondary font-normal">Claude Code + Obsidian Vault 기반 자동화 분석</p>
+</div>
+<div class="grid grid-cols-4 gap-gutter relative w-full max-w-7xl mx-auto items-start">
+<div class="absolute top-[28px] left-[12%] right-[12%] h-[1px] bg-outline-variant z-0 hidden md:block"></div>
+<div class="absolute top-[16px] left-[25%] -translate-x-1/2 z-10 hidden md:flex items-center justify-center bg-surface w-12 h-12 text-secondary">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+<div class="absolute top-[16px] left-[50%] -translate-x-1/2 z-10 hidden md:flex items-center justify-center bg-surface w-12 h-12 text-secondary">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+<div class="absolute top-[16px] left-[75%] -translate-x-1/2 z-10 hidden md:flex items-center justify-center bg-surface w-12 h-12 text-secondary">
+<span class="material-symbols-outlined">arrow_forward</span>
+</div>
+<div class="flex flex-col items-center z-20">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-surface-container-lowest font-headline-md text-headline-md mb-6 shadow-sm">1</div>
+<h3 class="font-headline-md text-headline-md text-center whitespace-pre-line mb-8">Claude Code<br/>분석 요청</h3>
+<div class="bg-tertiary-container rounded-xl w-full p-6 text-on-tertiary border border-outline-variant/20 shadow-sm h-[280px] font-mono text-sm">
+<div class="flex items-center gap-2 mb-4">
+<div class="w-3 h-3 rounded-full bg-error"></div>
+<div class="w-3 h-3 rounded-full bg-warning"></div>
+<div class="w-3 h-3 rounded-full bg-success"></div>
+</div>
+<div class="mb-4">
+<span class="text-secondary mr-2">USER ›</span>
+<span>지난주 오토리서치 아직 분석 못했는데 진행하자</span>
+</div>
+<div class="flex items-center gap-2 mb-4 text-success">
+<div class="w-2 h-2 rounded-full bg-success"></div>
+<span>obsidian-routing · skill</span>
+</div>
+<div class="text-secondary mt-8 animate-pulse">&gt; Reading SCM log...</div>
+</div>
+</div>
+<div class="flex flex-col items-center z-20">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-surface-container-lowest font-headline-md text-headline-md mb-6 shadow-sm">2</div>
+<h3 class="font-headline-md text-headline-md text-center whitespace-pre-line mb-8">Obsidian<br/>분석 저장</h3>
+<div class="bg-surface-container-lowest rounded-xl w-full p-6 border border-outline-variant shadow-sm h-[280px] flex flex-col">
+<div class="font-label-sm text-label-sm text-secondary mb-2 truncate">SCM/_AutoResearch/outputs/</div>
+<h4 class="font-headline-md text-[20px] font-bold mb-4">TMS-2026-W18</h4>
+<p class="font-label-sm text-label-sm text-secondary uppercase mb-3">KPI 요약</p>
+<div class="flex-grow flex flex-col gap-3">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/50 font-body-md text-[15px]">
+<span class="text-secondary">내부 소화율</span>
+<span class="font-medium text-warning flex items-center gap-1">60.0% 미달</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/50 font-body-md text-[15px]">
+<span class="text-secondary">OTIF On-Time</span>
+<span class="font-medium text-success flex items-center gap-1">99.9% 달성</span>
+</div>
+<div class="flex justify-between items-center py-2 font-body-md text-[15px]">
+<span class="text-secondary">약속납기일</span>
+<span class="font-medium text-success flex items-center gap-1">100.0%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-center z-20">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-surface-container-lowest font-headline-md text-headline-md mb-6 shadow-sm">3</div>
+<h3 class="font-headline-md text-headline-md text-center whitespace-pre-line mb-8">Claude<br/>개선 논의</h3>
+<div class="bg-surface-container-lowest rounded-xl w-full p-6 border border-outline-variant shadow-sm h-[280px] relative overflow-hidden flex flex-col">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-warning"></div>
+<div class="mb-4">
+<h4 class="font-headline-md text-[18px] font-bold mb-1">이슈 1 — 내부 소화율</h4>
+<div class="inline-block px-2 py-1 bg-warning/10 text-warning rounded text-[13px] font-semibold mb-2">3주 연속 미달</div>
+<p class="font-body-md text-[14px] text-secondary">W16: 56.2% → W17: 61.8% → W18: 60.0%</p>
+</div>
+<div class="h-px bg-outline-variant/50 w-full my-4"></div>
+<div>
+<h4 class="font-headline-md text-[18px] font-bold mb-1">이슈 2 — W19 월요일 피크 22건</h4>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-center z-20">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-surface-container-lowest font-headline-md text-headline-md mb-6 shadow-sm">4</div>
+<h3 class="font-headline-md text-headline-md text-center whitespace-pre-line mb-8">Obsidian<br/>최종 저장</h3>
+<div class="bg-surface-container-lowest rounded-xl w-full p-6 border border-outline-variant shadow-sm h-[280px] flex flex-col">
+<h4 class="font-headline-md text-[18px] font-bold mb-4 text-success flex items-center gap-2">확정 개선안</h4>
+<div class="flex-grow flex flex-col gap-3">
+<div class="bg-surface p-3 rounded border border-outline-variant/30 flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-[11px] px-1.5 py-0.5 bg-on-surface text-surface-container-lowest rounded uppercase">단기</span>
+<span class="font-label-sm text-[12px] text-secondary">05/04</span>
+</div>
+<span class="font-body-md text-[14px] font-medium mt-1">고고엑스 사전 예약</span>
+</div>
+<div class="bg-surface p-3 rounded border border-outline-variant/30 flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-[11px] px-1.5 py-0.5 bg-secondary text-surface-container-lowest rounded uppercase">중기</span>
+<span class="font-label-sm text-[12px] text-secondary">W19~W20</span>
+</div>
+<span class="font-body-md text-[14px] font-medium mt-1">기사 15→22일 목표</span>
+</div>
+<div class="bg-surface p-3 rounded border border-outline-variant/30 flex flex-col gap-1">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-[11px] px-1.5 py-0.5 bg-secondary text-surface-container-lowest rounded uppercase">중기</span>
+<span class="font-label-sm text-[12px] text-secondary">W20</span>
+</div>
+<span class="font-body-md text-[14px] font-medium mt-1">Gap 분석 검토</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="flex justify-between items-center w-full px-gutter py-margin max-w-container-max mx-auto bg-transparent relative">
+<div class="font-label-sm text-label-sm text-on-surface">Internal Team Alpha • 2024</div>
+<div class="font-label-sm text-label-sm text-secondary">10 / 11</div>
+</footer>
+</body></html>

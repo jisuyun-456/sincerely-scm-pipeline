@@ -1,0 +1,146 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Performance Improvement Case Study</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#1b1b1d",
+                      "surface-tint": "#5f5e60",
+                      "secondary-fixed": "#e3e2e7",
+                      "primary-container": "#1d1d1f",
+                      "on-background": "#1c1b1b",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed-variant": "#45474a",
+                      "tertiary-fixed-dim": "#c6c6ca",
+                      "surface-container-low": "#f7f3f2",
+                      "tertiary-fixed": "#e3e2e6",
+                      "on-tertiary-container": "#848589",
+                      "surface-container-high": "#ebe7e7",
+                      "outline": "#77767b",
+                      "tertiary-container": "#1c1d20",
+                      "on-secondary-fixed-variant": "#46464b",
+                      "on-surface": "#1c1b1b",
+                      "secondary-container": "#e0dfe4",
+                      "on-tertiary-fixed": "#1a1c1f",
+                      "on-primary": "#ffffff",
+                      "secondary": "#5e5e63",
+                      "inverse-on-surface": "#f4f0ef",
+                      "inverse-primary": "#c8c6c8",
+                      "primary": "#030304",
+                      "surface-bright": "#fdf8f8",
+                      "surface-dim": "#ddd9d9",
+                      "secondary-fixed-dim": "#c7c6cb",
+                      "primary-fixed": "#e4e2e4",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#e5e2e1",
+                      "surface-container": "#f1edec",
+                      "surface": "#fdf8f8",
+                      "on-secondary-container": "#626267",
+                      "on-primary-fixed-variant": "#474649",
+                      "primary-fixed-dim": "#c8c6c8",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#46464a",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#c7c6ca",
+                      "inverse-surface": "#313030",
+                      "error": "#ba1a1a",
+                      "on-secondary": "#ffffff",
+                      "background": "#fdf8f8",
+                      "on-secondary-fixed": "#1a1b1f",
+                      "surface-container-highest": "#e5e2e1",
+                      "tertiary": "#020304",
+                      "on-primary-container": "#868587"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "gutter": "32px",
+                      "section-gap": "160px",
+                      "stack-gap": "24px",
+                      "margin": "40px",
+                      "container-max": "1200px"
+              },
+              "fontFamily": {
+                      "label-sm": ["Inter"],
+                      "display-xl": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "display-2xl": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                      "display-xl": ["56px", { "lineHeight": "1.1", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+                      "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                      "display-2xl": ["80px", { "lineHeight": "1.05", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                      "body-lg": ["19px", { "lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400" }],
+                      "body-md": ["17px", { "lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400" }],
+                      "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .text-apple-blue {
+            color: #0071E3;
+        }
+      </style>
+</head>
+<body class="bg-[#F5F5F7] min-h-screen flex flex-col font-sans antialiased text-on-surface selection:bg-primary-container selection:text-on-primary">
+<header class="w-full px-gutter pt-margin max-w-container-max mx-auto">
+<div class="mb-unit">
+<span class="font-label-sm text-label-sm text-[#86868B] uppercase tracking-widest">PERFORMANCE IMPROVEMENT</span>
+</div>
+<h1 class="text-[44px] leading-tight font-bold text-primary-container tracking-tight mb-stack-gap">
+            즉각 응답으로 전환
+        </h1>
+<hr class="border-t border-[#D2D2D7]">
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-gutter w-full max-w-container-max mx-auto my-section-gap">
+<div class="flex flex-col md:flex-row items-center justify-center gap-12 md:gap-24 w-full mb-section-gap">
+<div class="flex flex-col items-center text-center">
+<span class="font-label-sm text-label-sm text-[#86868B] uppercase mb-unit tracking-widest">BEFORE</span>
+<span class="text-[96px] font-bold text-primary-container leading-none tracking-tighter">1–3분</span>
+</div>
+<div class="flex items-center justify-center">
+<span class="text-[64px] font-light text-apple-blue leading-none">→</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<span class="font-label-sm text-label-sm text-[#86868B] uppercase mb-unit tracking-widest">AFTER</span>
+<span class="text-[96px] font-bold text-apple-blue leading-none tracking-tighter">5–30초</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-[#D2D2D7] rounded-xl px-12 py-10 w-full max-w-2xl text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+<h2 class="font-headline-md text-headline-md text-primary-container mb-8">pkg_schedule API 최적화</h2>
+<div class="flex items-center justify-center gap-6 mb-4">
+<span class="font-headline-lg text-headline-lg text-primary-container">2분</span>
+<span class="text-[32px] font-light text-apple-blue leading-none">→</span>
+<span class="font-headline-lg text-headline-lg text-apple-blue">10초</span>
+</div>
+<p class="font-body-md text-[14px] text-[#86868B] italic">filterByFormula(전체 스캔) → 병렬 직접 조회</p>
+</div>
+</main>
+<footer class="bg-transparent fixed bottom-0 w-full flex justify-between items-center px-gutter py-margin max-w-container-max mx-auto left-0 right-0">
+<div class="font-label-sm text-label-sm text-secondary dark:text-secondary-fixed-dim">
+            Internal Team Alpha • 2024
+        </div>
+<div class="font-label-sm text-label-sm text-on-surface">
+            05 / 12
+        </div>
+</footer>
+</body></html>

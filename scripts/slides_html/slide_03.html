@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#5e5e63",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#c6c6ca",
+                    "inverse-on-surface": "#f4f0ef",
+                    "on-primary-container": "#868587",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#848589",
+                    "on-secondary-fixed-variant": "#46464b",
+                    "tertiary": "#020304",
+                    "secondary-fixed": "#e3e2e7",
+                    "tertiary-fixed": "#e3e2e6",
+                    "inverse-surface": "#313030",
+                    "on-tertiary-fixed": "#1a1c1f",
+                    "primary-container": "#1d1d1f",
+                    "background": "#fdf8f8",
+                    "outline-variant": "#c7c6ca",
+                    "surface-tint": "#5f5e60",
+                    "on-primary-fixed-variant": "#474649",
+                    "on-secondary-container": "#626267",
+                    "primary-fixed-dim": "#c8c6c8",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#f1edec",
+                    "secondary-container": "#e0dfe4",
+                    "surface": "#fdf8f8",
+                    "surface-bright": "#fdf8f8",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#e5e2e1",
+                    "primary": "#030304",
+                    "primary-fixed": "#e4e2e4",
+                    "tertiary-container": "#1c1d20",
+                    "on-surface": "#1c1b1b",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#ebe7e7",
+                    "on-error-container": "#93000a",
+                    "on-background": "#1c1b1b",
+                    "surface-dim": "#ddd9d9",
+                    "inverse-primary": "#c8c6c8",
+                    "surface-variant": "#e5e2e1",
+                    "on-secondary-fixed": "#1a1b1f",
+                    "on-primary-fixed": "#1b1b1d",
+                    "surface-container-low": "#f7f3f2",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#c7c6cb",
+                    "on-surface-variant": "#46464a",
+                    "on-tertiary-fixed-variant": "#45474a",
+                    "outline": "#77767b",
+                    "surface-container-lowest": "#ffffff",
+                    "brand-apple-gray": "#F5F5F7",
+                    "brand-apple-text-secondary": "#86868B",
+                    "brand-apple-blue": "#0071E3",
+                    "brand-success": "#34C759"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin": "40px",
+                    "unit": "8px",
+                    "container-max": "1200px",
+                    "section-gap": "160px",
+                    "stack-gap": "24px",
+                    "gutter": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter", "sans-serif"],
+                    "headline-md": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "label-sm": ["Inter", "sans-serif"],
+                    "body-lg": ["Inter", "sans-serif"],
+                    "display-2xl": ["Inter", "sans-serif"],
+                    "display-xl": ["Inter", "sans-serif"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #F5F5F7;
+            -webkit-font-smoothing: antialiased;
+        }
+        .architecture-line {
+            width: 2px;
+            height: 40px;
+            background-color: #0071E3;
+        }
+    </style>
+</head>
+<body class="text-on-surface font-body-md">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex min-h-screen flex-col">
+<!-- Shared Header Logic: Focused View Exception -->
+<nav class="flex items-center px-10 py-6 max-w-container-max mx-auto w-full">
+<button class="flex items-center gap-2 text-brand-apple-text-secondary hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+<span class="text-sm font-medium">Back</span>
+</button>
+</nav>
+<!-- Main Editorial Section -->
+<main class="flex-1 flex items-center justify-center px-margin py-24">
+<div class="max-w-container-max w-full grid grid-cols-12 gap-gutter items-center">
+<!-- Left Column (55%) -->
+<div class="col-span-12 lg:col-span-7 flex flex-col">
+<span class="text-label-sm uppercase tracking-widest text-brand-apple-text-secondary mb-4">
+                            AFTER — fly.io
+                        </span>
+<h1 class="text-[52px] font-bold leading-[1.1] tracking-tight text-on-surface mb-6">
+                            항상 켜진 단일 서버
+                        </h1>
+<p class="text-body-lg text-secondary mb-12 max-w-[540px]">
+                            모든 문서 타입을 하나의 FastAPI 엔드포인트에서 처리
+                        </p>
+<div class="w-full h-px bg-outline-variant opacity-50 mb-10"></div>
+<div class="flex flex-col gap-6">
+<!-- Feature Row 1 -->
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-brand-success" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-md font-medium text-on-surface">NanumGothic 폰트 Docker 이미지에 내장</span>
+</div>
+<!-- Feature Row 2 -->
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-brand-success" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-md font-medium text-on-surface">FastAPI + uvicorn 상시 가동</span>
+</div>
+<!-- Feature Row 3 -->
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-brand-success" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-body-md font-medium text-on-surface">Tokyo (nrt) 리전 — 한국 최저 레이턴시</span>
+</div>
+</div>
+</div>
+<!-- Right Column (45%) -->
+<div class="col-span-12 lg:col-span-5 flex flex-col items-center justify-center">
+<div class="w-full max-w-[400px] flex flex-col items-center p-8 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30">
+<!-- Box 1 -->
+<div class="w-full bg-surface-container py-5 px-6 rounded-lg text-center border border-outline-variant/20">
+<span class="text-body-md font-semibold text-secondary">Airtable 버튼 클릭</span>
+</div>
+<!-- Arrow 1 -->
+<div class="flex flex-col items-center py-2">
+<div class="architecture-line"></div>
+<span class="material-symbols-outlined text-brand-apple-blue -mt-2">keyboard_arrow_down</span>
+</div>
+<!-- Box 2 (Highlighted) -->
+<div class="w-full bg-brand-apple-blue py-6 px-6 rounded-lg text-center shadow-lg transform scale-105 transition-transform">
+<div class="flex items-center justify-center gap-2 mb-1">
+<span class="material-symbols-outlined text-white text-sm">bolt</span>
+<span class="text-white text-label-sm font-bold tracking-widest uppercase">Active Node</span>
+</div>
+<span class="text-headline-md font-bold text-white">fly.io FastAPI</span>
+</div>
+<!-- Arrow 2 -->
+<div class="flex flex-col items-center py-2">
+<div class="architecture-line"></div>
+<span class="material-symbols-outlined text-brand-apple-blue -mt-2">keyboard_arrow_down</span>
+</div>
+<!-- Box 3 -->
+<div class="w-full bg-surface-container py-5 px-6 rounded-lg text-center border border-outline-variant/20">
+<span class="text-body-md font-semibold text-secondary">PDF 즉시 생성</span>
+</div>
+</div>
+<!-- Visual Decoration Background -->
+<div class="absolute -z-10 right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-10 blur-3xl pointer-events-none rounded-full bg-brand-apple-blue/20"></div>
+</div>
+</div>
+</main>
+<!-- Secondary Contextual Image Section -->
+</div>
+</div>
+</body></html>

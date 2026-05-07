@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Weekly Automation Pipeline</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#46464a",
+                    "on-secondary-fixed": "#1a1b1f",
+                    "secondary-container": "#e0dfe4",
+                    "surface-tint": "#5f5e60",
+                    "primary-fixed": "#e4e2e4",
+                    "on-primary-fixed": "#1b1b1d",
+                    "tertiary-fixed": "#e3e2e6",
+                    "on-tertiary-fixed": "#1a1c1f",
+                    "primary": "#030304",
+                    "surface-bright": "#fdf8f8",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#1d1d1f",
+                    "on-primary-container": "#868587",
+                    "on-surface": "#1c1b1b",
+                    "inverse-primary": "#c8c6c8",
+                    "background": "#fdf8f8",
+                    "surface-container": "#f1edec",
+                    "surface-dim": "#ddd9d9",
+                    "on-secondary-fixed-variant": "#46464b",
+                    "tertiary-fixed-dim": "#c6c6ca",
+                    "surface-variant": "#e5e2e1",
+                    "outline": "#77767b",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c7c6ca",
+                    "on-primary": "#ffffff",
+                    "secondary": "#5e5e63",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed": "#e3e2e7",
+                    "surface-container-high": "#ebe7e7",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#e5e2e1",
+                    "tertiary-container": "#1c1d20",
+                    "on-background": "#1c1b1b",
+                    "tertiary": "#020304",
+                    "on-secondary-container": "#626267",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#848589",
+                    "primary-fixed-dim": "#c8c6c8",
+                    "on-tertiary-fixed-variant": "#45474a",
+                    "surface": "#fdf8f8",
+                    "surface-container-low": "#f7f3f2",
+                    "secondary-fixed-dim": "#c7c6cb",
+                    "inverse-on-surface": "#f4f0ef",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#313030",
+                    "on-primary-fixed-variant": "#474649",
+                    "accent-blue": "#0071E3",
+                    "bg-gray": "#F5F5F7",
+                    "text-light": "#86868B",
+                    "text-gray": "#6E6E73",
+                    "border-light": "#D2D2D7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px",
+                    "card": "12px"
+            },
+            "spacing": {
+                    "stack-gap": "24px",
+                    "container-max": "1200px",
+                    "gutter": "32px",
+                    "margin": "40px",
+                    "unit": "8px",
+                    "section-gap": "160px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "display-xl": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-2xl": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "body-lg": ["19px", { "lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400" }],
+                    "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "display-xl": ["56px", { "lineHeight": "1.1", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+                    "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                    "display-2xl": ["80px", { "lineHeight": "1.05", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "body-md": ["17px", { "lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400" }],
+                    "header": ["44px", { "lineHeight": "1.1", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-bg-gray text-primary min-h-screen font-body-md antialiased selection:bg-accent-blue selection:text-white">
+<main class="max-w-[800px] mx-auto px-margin pb-section-gap pt-20">
+<header class="mb-16">
+<div class="font-label-sm text-label-sm uppercase text-text-light mb-4">
+                WEEKLY PIPELINE
+            </div>
+<h1 class="text-header text-primary mb-12">
+                매주 월요일 08:30 KST 자동 실행
+            </h1>
+<hr class="border-border-light"/>
+</header>
+<div class="relative">
+<div class="absolute left-6 top-6 bottom-6 w-[2px] bg-border-light -ml-[1px]"></div>
+<div class="space-y-stack-gap">
+<div class="relative flex items-start gap-gutter group">
+<div class="z-10 flex-shrink-0 w-12 h-12 bg-accent-blue rounded-full border-[4px] border-bg-gray flex items-center justify-center shadow-sm">
+<span class="font-label-sm text-label-sm text-white">1</span>
+</div>
+<div class="flex-grow bg-surface-container-lowest border border-border-light rounded-card p-8 transition-shadow duration-300 hover:shadow-lg">
+<h3 class="font-headline-md text-headline-md text-primary mb-2">트리거</h3>
+<p class="font-body-md text-body-md text-text-gray">GitHub Actions cron 스케줄 (매주 월 08:30 KST)</p>
+</div>
+</div>
+<div class="relative flex items-start gap-gutter group">
+<div class="z-10 flex-shrink-0 w-12 h-12 bg-accent-blue rounded-full border-[4px] border-bg-gray flex items-center justify-center shadow-sm">
+<span class="font-label-sm text-label-sm text-white">2</span>
+</div>
+<div class="flex-grow bg-surface-container-lowest border border-border-light rounded-card p-8 transition-shadow duration-300 hover:shadow-lg">
+<h3 class="font-headline-md text-headline-md text-primary mb-2">약속납기일 백필</h3>
+<p class="font-body-md text-body-md text-text-gray">tms_weekly_backfill.py 실행 → Airtable 업데이트</p>
+</div>
+</div>
+<div class="relative flex items-start gap-gutter group">
+<div class="z-10 flex-shrink-0 w-12 h-12 bg-accent-blue rounded-full border-[4px] border-bg-gray flex items-center justify-center shadow-sm">
+<span class="font-label-sm text-label-sm text-white">3</span>
+</div>
+<div class="flex-grow bg-surface-container-lowest border border-border-light rounded-card p-8 transition-shadow duration-300 hover:shadow-lg">
+<h3 class="font-headline-md text-headline-md text-primary mb-2">KPI 분석 리포트</h3>
+<p class="font-body-md text-body-md text-text-gray">tms_weekly_runner.py → 마크다운 리포트 생성</p>
+</div>
+</div>
+<div class="relative flex items-start gap-gutter group">
+<div class="z-10 flex-shrink-0 w-12 h-12 bg-accent-blue rounded-full border-[4px] border-bg-gray flex items-center justify-center shadow-sm">
+<span class="font-label-sm text-label-sm text-white">4</span>
+</div>
+<div class="flex-grow bg-surface-container-lowest border border-border-light rounded-card p-8 transition-shadow duration-300 hover:shadow-lg">
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Git 커밋 &amp; 저장</h3>
+<p class="font-body-md text-body-md text-text-gray">_AutoResearch/SCM/outputs/ 자동 저장 + 커밋</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
