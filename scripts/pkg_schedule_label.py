@@ -9,6 +9,7 @@ pkg_schedule 테이블 → 투입자재 피킹 라벨 PDF (80×55mm)
 """
 
 import argparse, base64, os, platform, re, sys, time
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 
 import requests
@@ -126,25 +127,28 @@ def _parse_qtys(raw) -> list[str]:
 
 
 def _fetch_task_pairs(task_ids: list) -> list:
-    """pkg_task + material 배치 조회 → (item_name, qty_str) 리스트.
-    filterByFormula=OR(RECORD_ID()=...) 로 각 1회씩만 호출."""
+    """pkg_task + material 개별 조회 (병렬) → (item_name, qty_str) 리스트.
+    filterByFormula는 전체 테이블 스캔(느림). 직접 /recordId 조회 + 병렬 실행."""
     if not task_ids:
         return []
 
-    # ── Step 1: pkg_task 배치 조회 ──────────────────────────────
-    cond = ",".join(f"RECORD_ID()='{rid}'" for rid in task_ids)
-    formula = f"OR({cond})" if len(task_ids) > 1 else f"RECORD_ID()='{task_ids[0]}'"
-    try:
-        r = SESSION.get(
-            f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}",
-            params=[("filterByFormula", formula),
-                    ("fields[]", F_PT_ITEM), ("fields[]", F_PT_QTY)],
-            timeout=60,
-        )
-        r.raise_for_status()
-        task_map = {rec["id"]: rec["fields"] for rec in r.json().get("records", [])}
-    except Exception:
-        return []
+    # ── Step 1: pkg_task 병렬 조회 ──────────────────────────────
+    def _fetch_task(rec_id):
+        try:
+            r = SESSION.get(
+                f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG_TASK}/{rec_id}",
+                timeout=60,
+            )
+            r.raise_for_status()
+            return rec_id, r.json().get("fields", {})
+        except Exception:
+            return rec_id, None
+
+    task_map: dict = {}
+    with ThreadPoolExecutor(max_workers=min(10, len(task_ids))) as ex:
+        for rec_id, fields in ex.map(_fetch_task, task_ids):
+            if fields is not None:
+                task_map[rec_id] = fields
 
     # ── Step 2: 유니크 material ID 수집 ────────────────────────
     all_mat_ids: list = []
@@ -157,22 +161,23 @@ def _fetch_task_pairs(task_ids: list) -> list:
                 all_mat_ids.append(mid)
                 seen.add(mid)
 
-    # ── Step 3: material 배치 조회 ─────────────────────────────
+    # ── Step 3: material 병렬 조회 ─────────────────────────────
     mat_names: dict = {}
     if all_mat_ids:
-        mcond = ",".join(f"RECORD_ID()='{mid}'" for mid in all_mat_ids)
-        mformula = f"OR({mcond})" if len(all_mat_ids) > 1 else f"RECORD_ID()='{all_mat_ids[0]}'"
-        try:
-            mr = SESSION.get(
-                f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MATERIAL}",
-                params=[("filterByFormula", mformula), ("fields[]", "Name")],
-                timeout=60,
-            )
-            mr.raise_for_status()
-            for rec in mr.json().get("records", []):
-                mat_names[rec["id"]] = rec["fields"].get("Name", rec["id"])
-        except Exception:
-            pass
+        def _fetch_material(mid):
+            try:
+                r = SESSION.get(
+                    f"https://api.airtable.com/v0/{BASE_ID}/{TBL_MATERIAL}/{mid}",
+                    timeout=60,
+                )
+                r.raise_for_status()
+                return mid, r.json().get("fields", {}).get("Name", mid)
+            except Exception:
+                return mid, mid
+
+        with ThreadPoolExecutor(max_workers=min(10, len(all_mat_ids))) as ex:
+            for mid, name in ex.map(_fetch_material, all_mat_ids):
+                mat_names[mid] = name
 
     # ── Step 4: 원래 순서대로 pairs 빌드 ──────────────────────
     pairs = []
