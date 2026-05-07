@@ -391,6 +391,7 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     # 품목 — 재고 출하 품목 필드 우선 (PT코드-품목 || 수량 형식일 때만)
     stock_raw   = get_field(f, "재고 출하 품목")
     stock_lines = [l.strip() for l in str(stock_raw).split("\n") if l.strip()]
+    order_raw   = ""
     if stock_lines and any(STOCK_ITEM_RE.match(l) for l in stock_lines):
         items     = parse_stock_items(stock_raw)
         bad_lines = [l for l in stock_lines if not STOCK_ITEM_RE.match(l)]
@@ -425,6 +426,30 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
         error_parts.append(("C", "품목 포맷 오류",
             "아래 라인을 '품목명(설명) 수량+여분' 형식으로 수정해주세요:\n"
             + "\n".join(f"  • {l}" for l in bad_lines)))
+    elif order_raw:
+        actual_non_note = [r for r in items if not r.get("is_note")]
+        order_item_lines = [
+            l.strip() for l in str(order_raw).split("\n")
+            if l.strip() and (ITEM_RE.match(l.strip()) or ITEM_RE2.match(l.strip()))
+        ]
+        qty_mismatches = [
+            r for r in actual_non_note
+            if r.get("ordered_qty") and r["ordered_qty"] != str(r["qty"]).split(" ")[0]
+        ]
+        count_mismatch = bool(order_item_lines) and len(order_item_lines) != len(actual_non_note)
+        if qty_mismatches or count_mismatch:
+            detail_lines = []
+            for r in qty_mismatches:
+                detail_lines.append(
+                    f"  • {r['name']}: 출하 {r['ordered_qty']}개 → 출고 {str(r['qty']).split(' ')[0]}개"
+                )
+            if count_mismatch:
+                detail_lines.append(
+                    f"  • 품목 수 불일치: 출하 {len(order_item_lines)}개 항목 vs 출고 {len(actual_non_note)}개 항목"
+                )
+            error_parts.append(("D", "출하/출고 품목 불일치",
+                "출하 품목과 출고 품목이 다릅니다. Airtable에서 수정해주세요.\n"
+                + "\n".join(detail_lines)))
 
     return {
         "record_id":      rec["id"],
