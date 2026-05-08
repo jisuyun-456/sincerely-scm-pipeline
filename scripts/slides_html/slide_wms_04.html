@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>C2 재고생산 / Material 오류</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        theme: { extend: {
+            colors: { "primary":"#1D1D1F","secondary":"#86868B","surface":"#FFFFFF","background":"#F5F5F7","outline-variant":"#D2D2D7","on-surface-variant":"#6E6E73","accent":"#0071E3" },
+            fontFamily: { "sans":["Inter","sans-serif"] }
+        }}
+    }
+</script>
+<style>body { font-family:'Inter',sans-serif; background:#F5F5F7; color:#1D1D1F; }</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<header class="w-full px-10 h-12 flex items-center border-b border-outline-variant bg-background">
+    <span class="inline-block w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-[11px] font-bold text-center leading-6 mr-3">C2</span>
+    <span class="text-[13px] font-semibold text-primary">재고생산 / Material 오류</span>
+    <span class="ml-auto text-[11px] text-on-surface-variant">9건 (Slack 보고 13건)</span>
+</header>
+
+<main class="flex-grow flex flex-col max-w-[1360px] mx-auto w-full px-8 py-5">
+
+    <p class="text-[12px] text-on-surface-variant mb-3">생산산출·조립투입 데이터 오류, 자재 이중 입력, 잘못된 이동목적 — 8건 Airtable 매칭 확인, 1건(MM00185622) 기간 외</p>
+
+    <div class="bg-white border border-outline-variant rounded-xl overflow-hidden">
+        <table class="w-full text-[12px]">
+            <thead>
+                <tr class="bg-[#F5F5F7] border-b border-outline-variant">
+                    <th class="text-center px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-8">#</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-24">날짜</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-28">MM번호</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-44">거래처 (PNA)</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider">이슈 내용</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-36">Airtable 확인</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-[#F0F0F2]">
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">1</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-01-19</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00193003</td>
+                    <td class="px-3 py-3 text-primary font-medium">(재고생산)</td>
+                    <td class="px-3 py-3 text-on-surface-variant">[project] vs [project_name] 필드 상이, status=lost — 유효 데이터 여부 불명확</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">재고생산 | 에이원 | 200개</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">2</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-01-12</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00191311</td>
+                    <td class="px-3 py-3 text-primary font-medium">(재고생산)</td>
+                    <td class="px-3 py-3 text-on-surface-variant">재고생산 과업 오류로 재생성 처리 요청 — 기존 데이터 취소 후 재생성</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">재고생산 | 에이원 | 100개</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">3</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-02-09</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00196323</td>
+                    <td class="px-3 py-3 text-primary font-medium">PNA50562-NHR(현대모비스)</td>
+                    <td class="px-3 py-3 text-on-surface-variant">생산샘플→생산산출 변경 이유 확인 — 생산산출 맞다면 조립투입까지 생성 필요</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">생산샘플 | 에이원 | 1개</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">4</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-01-15</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00192235</td>
+                    <td class="px-3 py-3 text-primary font-medium">PNA50013-현대자동차</td>
+                    <td class="px-3 py-3 text-on-surface-variant">오더 수정으로 입고자재 생성 오류 — MM 데이터 불일치 (1차)</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">생산산출 | 에이원 | 101개</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">5</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-01-15</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00192236</td>
+                    <td class="px-3 py-3 text-primary font-medium">PNA50013-현대자동차</td>
+                    <td class="px-3 py-3 text-on-surface-variant">오더 수정으로 입고자재 생성 오류 — MM 데이터 불일치 (2차)</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">생산산출 | 에이원 | 102개</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">6</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-03-26</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00203536</td>
+                    <td class="px-3 py-3 text-primary font-medium">PNA51279-LG유플러스</td>
+                    <td class="px-3 py-3 text-on-surface-variant">졸업 파츠 PT4770이 조립투입으로 생성 — 취소 후 올바른 파츠로 재생성 필요</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">조립투입 | 출고자재 있음</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">7</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-04-06</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00205269</td>
+                    <td class="px-3 py-3 text-primary font-medium">PNA51293-FIG</td>
+                    <td class="px-3 py-3 text-on-surface-variant">1개 레코드에 입고자재+출고자재 모두 입력 — 이동목적 오입력, 이중 입력 상태</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">생산산출 | 에이원 | 603개</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">8</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-04-14</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00206739</td>
+                    <td class="px-3 py-3 text-primary font-medium">PNA51286-광화문스퀘어민관합동협의회</td>
+                    <td class="px-3 py-3 text-on-surface-variant">자재 없이 task만 있고 조립투입 생성 — 산출 변경 시 조립투입 미연동</td>
+                    <td class="px-3 py-3 text-green-700 text-[10.5px]">생산산출 | 에이원 | 119개</td>
+                </tr>
+                <tr class="bg-red-50 hover:bg-red-100">
+                    <td class="px-3 py-3 text-center text-on-surface-variant">9</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2026-05-06</td>
+                    <td class="px-3 py-3 font-mono text-[10.5px] text-accent">MM00185622</td>
+                    <td class="px-3 py-3 text-primary font-medium">PNA36271-휴메딕스</td>
+                    <td class="px-3 py-3 text-on-surface-variant">2025년 11월 건 — 조립투입에 입고+출고자재 이중 입력, 이중 입력 제거 필요</td>
+                    <td class="px-3 py-3 text-red-600 text-[10.5px]">❌ 기간 외 미조회</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer class="w-full px-10 py-3 flex justify-between items-center border-t border-outline-variant bg-background">
+    <span class="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant">Internal Team Alpha · 2026</span>
+    <span class="text-[11px] font-semibold text-on-surface-variant">WMS-4 / 6</span>
+</footer>
+
+</body>
+</html>

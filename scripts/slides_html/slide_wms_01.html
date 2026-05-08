@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WMS 이슈 교차검증 요약</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        theme: { extend: {
+            colors: { "primary":"#1D1D1F","secondary":"#86868B","surface":"#FFFFFF","background":"#F5F5F7","outline-variant":"#D2D2D7","on-surface-variant":"#6E6E73","accent":"#0071E3" },
+            fontFamily: { "sans":["Inter","sans-serif"] }
+        }}
+    }
+</script>
+<style>body { font-family:'Inter',sans-serif; background:#F5F5F7; color:#1D1D1F; }</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<header class="w-full px-10 h-14 flex items-center border-b border-outline-variant bg-background">
+    <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">WMS 이슈 교차검증</span>
+</header>
+
+<main class="flex-grow flex flex-col max-w-[1200px] mx-auto w-full px-10 py-8 gap-6">
+
+    <!-- Title -->
+    <div>
+        <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-on-surface-variant mb-2">2026-01-01 ~ 2026-05-08 · Slack #scm_팀_재고관리</p>
+        <div class="w-10 h-[1.5px] bg-outline-variant mb-4"></div>
+        <h1 class="text-[48px] font-bold leading-none tracking-[-0.02em] text-primary">WMS 이슈 분석 결과</h1>
+        <p class="text-[16px] text-on-surface-variant mt-2">Slack 보고 71건 기준 → MM번호 직접 수집 → Airtable Movement 교차검증</p>
+    </div>
+
+    <!-- Category summary table -->
+    <div class="bg-white border border-outline-variant rounded-2xl overflow-hidden flex-shrink-0">
+        <table class="w-full text-[13px]">
+            <thead>
+                <tr class="bg-[#F5F5F7] border-b border-outline-variant">
+                    <th class="text-left px-5 py-3 font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">카테고리</th>
+                    <th class="text-center px-4 py-3 font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">Slack 보고</th>
+                    <th class="text-center px-4 py-3 font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">MM 확보</th>
+                    <th class="text-center px-4 py-3 font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">Airtable 매칭</th>
+                    <th class="text-left px-4 py-3 font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">주요 이슈 유형</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-[#F0F0F2]">
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-5 py-3.5 font-semibold text-primary"><span class="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold text-center leading-6 mr-2">C1</span>입고자재 공란 / 위치 상이</td>
+                    <td class="px-4 py-3.5 text-center text-on-surface-variant">21건</td>
+                    <td class="px-4 py-3.5 text-center font-semibold text-primary">33건</td>
+                    <td class="px-4 py-3.5 text-center"><span class="text-green-700 font-semibold">32 / 33 ✓</span></td>
+                    <td class="px-4 py-3.5 text-on-surface-variant">입고자재 미연결, 입하장소 vs 자재위치 불일치</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-5 py-3.5 font-semibold text-primary"><span class="inline-block w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-[11px] font-bold text-center leading-6 mr-2">C2</span>재고생산 / Material 오류</td>
+                    <td class="px-4 py-3.5 text-center text-on-surface-variant">13건</td>
+                    <td class="px-4 py-3.5 text-center font-semibold text-primary">9건</td>
+                    <td class="px-4 py-3.5 text-center"><span class="text-green-700 font-semibold">8 / 9 ✓</span></td>
+                    <td class="px-4 py-3.5 text-on-surface-variant">조립투입 오류, 자재 이중입력, 이동목적 오입력</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-5 py-3.5 font-semibold text-primary"><span class="inline-block w-6 h-6 rounded-full bg-red-100 text-red-700 text-[11px] font-bold text-center leading-6 mr-2">C3</span>재고이동 / 전산수량 미반영</td>
+                    <td class="px-4 py-3.5 text-center text-on-surface-variant">12건</td>
+                    <td class="px-4 py-3.5 text-center font-semibold text-primary">6건</td>
+                    <td class="px-4 py-3.5 text-center"><span class="text-green-700 font-semibold">2 / 6 ✓</span></td>
+                    <td class="px-4 py-3.5 text-on-surface-variant">전산/실재고 차이, 운송오더 미반영 (TMS별도)</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-5 py-3.5 font-semibold text-primary"><span class="inline-block w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-[11px] font-bold text-center leading-6 mr-2">C4</span>가용재고 / 수량 공유</td>
+                    <td class="px-4 py-3.5 text-center text-on-surface-variant">6건</td>
+                    <td class="px-4 py-3.5 text-center font-semibold text-primary">2건</td>
+                    <td class="px-4 py-3.5 text-center"><span class="text-on-surface-variant">PT코드 — 해당없음</span></td>
+                    <td class="px-4 py-3.5 text-on-surface-variant">임가공 후 가용재고 차감 미반영</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-5 py-3.5 font-semibold text-primary"><span class="inline-block w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 text-[11px] font-bold text-center leading-6 mr-2">C5</span>아카이브 / 데이터 정합성</td>
+                    <td class="px-4 py-3.5 text-center text-on-surface-variant">5건</td>
+                    <td class="px-4 py-3.5 text-center font-semibold text-primary">1건</td>
+                    <td class="px-4 py-3.5 text-center"><span class="text-green-700 font-semibold">1 / 1 ✓</span></td>
+                    <td class="px-4 py-3.5 text-on-surface-variant">아카이브 오분류 → 입고 미반영</td>
+                </tr>
+                <tr class="hover:bg-[#FAFAFA]">
+                    <td class="px-5 py-3.5 font-semibold text-primary"><span class="inline-block w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-[11px] font-bold text-center leading-6 mr-2">C6</span>기타 안내 및 확인 요청</td>
+                    <td class="px-4 py-3.5 text-center text-on-surface-variant">14건</td>
+                    <td class="px-4 py-3.5 text-center font-semibold text-primary">3건</td>
+                    <td class="px-4 py-3.5 text-center"><span class="text-green-700 font-semibold">3 / 3 ✓</span></td>
+                    <td class="px-4 py-3.5 text-on-surface-variant">입하예상일 누락, 이동목적 불일치</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="bg-[#F5F5F7] border-t-2 border-outline-variant">
+                    <td class="px-5 py-3 font-bold text-primary">합계</td>
+                    <td class="px-4 py-3 text-center font-bold text-primary">71건</td>
+                    <td class="px-4 py-3 text-center font-bold text-primary">54건</td>
+                    <td class="px-4 py-3 text-center font-bold text-primary">48 / 54</td>
+                    <td class="px-4 py-3 text-on-surface-variant">미조회: MM00185622 (기간 외)</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Bottom note -->
+    <div class="flex gap-6 text-[12px] text-on-surface-variant">
+        <span>· Airtable Base: appLui4ZR5HWcQRri (WMS Movement)</span>
+        <span>· 조회 방법: MM번호 직접 수집 → OR formula 배치 조회</span>
+        <span>· C3/C4 일부: PT코드만 확보 (WMS Movement 레코드 없음)</span>
+    </div>
+
+</main>
+
+<footer class="w-full px-10 py-4 flex justify-between items-center border-t border-outline-variant bg-background">
+    <span class="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant">Internal Team Alpha · 2026</span>
+    <span class="text-[11px] font-semibold text-on-surface-variant">WMS-1 / 6</span>
+</footer>
+
+</body>
+</html>

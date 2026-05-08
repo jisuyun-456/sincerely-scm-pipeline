@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>C1 입고자재 공란/위치 상이 (1/2)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        theme: { extend: {
+            colors: { "primary":"#1D1D1F","secondary":"#86868B","surface":"#FFFFFF","background":"#F5F5F7","outline-variant":"#D2D2D7","on-surface-variant":"#6E6E73","accent":"#0071E3" },
+            fontFamily: { "sans":["Inter","sans-serif"] }
+        }}
+    }
+</script>
+<style>body { font-family:'Inter',sans-serif; background:#F5F5F7; color:#1D1D1F; }</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<header class="w-full px-10 h-12 flex items-center border-b border-outline-variant bg-background">
+    <span class="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold text-center leading-6 mr-3">C1</span>
+    <span class="text-[13px] font-semibold text-primary">입고자재 공란 / 위치 상이</span>
+    <span class="ml-auto text-[11px] text-on-surface-variant">33건 (Slack 보고 21건) · 1/2</span>
+</header>
+
+<main class="flex-grow flex flex-col max-w-[1360px] mx-auto w-full px-8 py-5">
+
+    <p class="text-[12px] text-on-surface-variant mb-3">입하장소 vs 입고자재 위치 불일치, 자재 공란 입력 오류 — 주로 생산산출·재고생산 이동목적에서 발생</p>
+
+    <div class="bg-white border border-outline-variant rounded-xl overflow-hidden flex-grow">
+        <table class="w-full text-[11.5px]">
+            <thead>
+                <tr class="bg-[#F5F5F7] border-b border-outline-variant">
+                    <th class="text-center px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-8">#</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-24">날짜</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-28">MM번호</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-44">거래처 (PNA)</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider">이슈 내용</th>
+                    <th class="text-left px-3 py-2.5 font-semibold text-on-surface-variant text-[10px] uppercase tracking-wider w-36">Airtable 확인</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-[#F0F0F2]">
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">1</td><td class="px-3 py-2 text-on-surface-variant">2026-01-05</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00189501</td><td class="px-3 py-2 text-primary font-medium">PNA37618-YTN</td><td class="px-3 py-2 text-on-surface-variant">입고자재 공란 — 생산산출 처리됐으나 자재 미입력</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 4개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">2</td><td class="px-3 py-2 text-on-surface-variant">2026-01-08</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00190815</td><td class="px-3 py-2 text-primary font-medium">PNA38139-충북자립지원전담기관</td><td class="px-3 py-2 text-on-surface-variant">입고자재 공란 — 자재 필드 미입력</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 1개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">3</td><td class="px-3 py-2 text-on-surface-variant">2026-01-09</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00190973</td><td class="px-3 py-2 text-primary font-medium">PNA38334-서울공예박물관</td><td class="px-3 py-2 text-on-surface-variant">입고자재 공란 — 입고 레코드에 자재 연결 없음</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 1개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">4</td><td class="px-3 py-2 text-on-surface-variant">2026-01-09</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00190938</td><td class="px-3 py-2 text-primary font-medium">PNA37834-삼성서울병원</td><td class="px-3 py-2 text-on-surface-variant">입하장소 신시어리웨일즈 vs 자재위치 불일치</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 웨일즈 | 353개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">5</td><td class="px-3 py-2 text-on-surface-variant">2026-01-15</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00192263</td><td class="px-3 py-2 text-primary font-medium">PNA37444-브레인크루</td><td class="px-3 py-2 text-on-surface-variant">내부생산 재제작마다 입고자재 반복 누락</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 1개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">6</td><td class="px-3 py-2 text-on-surface-variant">2026-01-14</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00191981</td><td class="px-3 py-2 text-primary font-medium">PNA38610-㎝메가터치</td><td class="px-3 py-2 text-on-surface-variant">입하수량 555개 처리됐으나 자재 미입력</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 555개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">7</td><td class="px-3 py-2 text-on-surface-variant">2026-01-28</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00194601</td><td class="px-3 py-2 text-primary font-medium">PNA50137-티르티르</td><td class="px-3 py-2 text-on-surface-variant">MROZ 입하 30개, 자재 공란</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | MROZ | 30개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">8</td><td class="px-3 py-2 text-on-surface-variant">2026-01-28</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00194652</td><td class="px-3 py-2 text-primary font-medium">PNA50240-가비아</td><td class="px-3 py-2 text-on-surface-variant">에이원 입하 101개, 자재 필드 미입력</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 101개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">9</td><td class="px-3 py-2 text-on-surface-variant">2026-01-29</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00194966</td><td class="px-3 py-2 text-primary font-medium">PNA50223-에코다</td><td class="px-3 py-2 text-on-surface-variant">에이원 입하 100개, 자재 필드 미입력</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 100개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">10</td><td class="px-3 py-2 text-on-surface-variant">2026-02-06</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00196014</td><td class="px-3 py-2 text-primary font-medium">PNA37761-밀테니바이오텍</td><td class="px-3 py-2 text-on-surface-variant">담당자 직접 발견, 입고자재 공란 확인 요청</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">11</td><td class="px-3 py-2 text-on-surface-variant">2026-02-25</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00198061</td><td class="px-3 py-2 text-primary font-medium">PNA50517-머스크컨트랙트</td><td class="px-3 py-2 text-on-surface-variant">에이원 입하 4개, 자재 필드 미입력</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 4개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">12</td><td class="px-3 py-2 text-on-surface-variant">2026-02-26</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00198264</td><td class="px-3 py-2 text-primary font-medium">PNA50165-오피스넥스</td><td class="px-3 py-2 text-on-surface-variant">동일 배치 점검 시 발견, 에이원 104개 자재 공란</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 에이원 | 104개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">13</td><td class="px-3 py-2 text-on-surface-variant">2026-02-23</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00197740</td><td class="px-3 py-2 text-primary font-medium">PNA50588-주식회사디마이너스원</td><td class="px-3 py-2 text-on-surface-variant">입하장소 vs 자재위치 상이 — 위치 불일치 확인 요청</td><td class="px-3 py-2 text-orange-600 text-[10.5px]">필드 미확인</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">14</td><td class="px-3 py-2 text-on-surface-variant">2026-03-16</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00201674</td><td class="px-3 py-2 text-primary font-medium">PNA50693-삼성전자</td><td class="px-3 py-2 text-on-surface-variant">입하장소 MROZ vs 입고자재 위치 불일치</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | MROZ | 220개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">15</td><td class="px-3 py-2 text-on-surface-variant">2026-02-27</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00198417</td><td class="px-3 py-2 text-primary font-medium">PNA50799-플랜비리서치</td><td class="px-3 py-2 text-on-surface-variant">입하장소 에이원 설정됐으나 자재 미연결</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산샘플 | 에이원 | 2개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">16</td><td class="px-3 py-2 text-on-surface-variant">2026-03-30</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00204075</td><td class="px-3 py-2 text-primary font-medium">PNA51301-사단법인조정인협회</td><td class="px-3 py-2 text-on-surface-variant">타우하이텍 입하 82개, 자재 위치 불일치</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | 타우하이텍 | 82개</td></tr>
+                <tr class="hover:bg-[#FAFAFA]"><td class="px-3 py-2 text-center text-on-surface-variant">17</td><td class="px-3 py-2 text-on-surface-variant">2026-04-01</td><td class="px-3 py-2 font-mono text-[10.5px] text-accent">MM00204618</td><td class="px-3 py-2 text-primary font-medium">PNA51130-라운비</td><td class="px-3 py-2 text-on-surface-variant">피앤더블유인터네셔널 입하 130개, 자재 위치 불일치</td><td class="px-3 py-2 text-green-700 text-[10.5px]">생산산출 | P&W | 130개</td></tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer class="w-full px-10 py-3 flex justify-between items-center border-t border-outline-variant bg-background">
+    <span class="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant">Internal Team Alpha · 2026</span>
+    <span class="text-[11px] font-semibold text-on-surface-variant">WMS-2 / 6</span>
+</footer>
+
+</body>
+</html>
