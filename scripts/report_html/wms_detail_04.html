@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>C3 재고이동 / 전산수량 미반영</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: #fff; color: #1a1a1a; width: 794px; min-height: 1123px; display: flex; flex-direction: column; }
+.page-header { padding: 20px 36px 12px; border-bottom: 1px solid #e8e8e8; }
+.channel-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.page-title { font-size: 13px; font-weight: 600; color: #333; }
+.main { flex: 1; padding: 20px 36px; }
+.cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.cat-bullet { width: 10px; height: 10px; border-radius: 50%; background: #E64A1B; flex-shrink: 0; }
+.cat-title { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+.cat-count { font-size: 13px; color: #E64A1B; font-weight: 600; }
+.cat-desc { font-size: 11px; color: #666; margin-bottom: 14px; margin-left: 20px; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+thead tr { background: #F5F5F5; }
+th { text-align: left; padding: 7px 8px; font-size: 10px; font-weight: 600; color: #555; border: 1px solid #e0e0e0; letter-spacing: 0.03em; }
+td { padding: 6px 8px; border: 1px solid #ebebeb; color: #333; vertical-align: top; line-height: 1.45; }
+tr:nth-child(even) td { background: #FAFAFA; }
+.mm { font-family: 'Courier New', monospace; font-size: 10px; color: #0066CC; }
+.mm-to { font-family: 'Courier New', monospace; font-size: 10px; color: #0055AA; }
+.mm-pt { font-family: 'Courier New', monospace; font-size: 10px; color: #666; }
+.airtable-ok { color: #2a7d2a; font-size: 10px; }
+.airtable-pt { color: #888; font-size: 10px; }
+.airtable-tms { color: #0055AA; font-size: 10px; }
+.row-pt td { background: #FFFDF0 !important; }
+.row-tms td { background: #F0F6FF !important; }
+.legend { margin-top: 16px; display: flex; gap: 20px; font-size: 10px; color: #666; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.footer { padding: 14px 36px; border-top: 1px solid #e8e8e8; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="channel-label">#scm_팀_재고관리 채널 | 유형별 상세 내역</div>
+  <div class="page-title">물류팀 재고 이슈 안내 취합 리포트 — 카테고리별 MM번호 상세 (4/5)</div>
+</div>
+
+<div class="main">
+  <div class="cat-header">
+    <div class="cat-bullet"></div>
+    <div class="cat-title">재고이동 / 전산수량 미반영</div>
+    <div class="cat-count">6건</div>
+  </div>
+  <div class="cat-desc">이동·출고 후 전산재고 미차감, 발주 vs 조립투입 수량 불일치 (Slack 보고 12건 / MM번호 확보 6건)</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px">#</th>
+        <th style="width:72px">날짜</th>
+        <th style="width:90px">번호</th>
+        <th style="width:150px">거래처 / 자재</th>
+        <th>이슈 내용</th>
+        <th style="width:110px">확인</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>2026-01-06</td><td class="mm">MM00189921</td><td>PNA38303-한국장기조직기증원</td><td>전산 오더 150개 vs 조립투입 7개 불일치 — 품절 공지 후 발주 반영으로 재고 소진, 수량 정합성 확인 필요</td><td class="airtable-ok">조립투입 | 출고자재 있음</td></tr>
+      <tr><td>2</td><td>2026-01-06</td><td class="mm">MM00189927</td><td>PNA38303-한국장기조직기증원</td><td>단품박스 조립투입 수량 불일치 — 공지 이전 입력 수량과 실제 투입 수량 상이, 조립투입 레코드 수정 필요</td><td class="airtable-ok">조립투입 | 출고자재 있음</td></tr>
+      <tr class="row-pt"><td>3</td><td>2026-04-02</td><td class="mm-pt">PT3325</td><td>리마커블UV컷솔살균기</td><td>전산재고 379개 vs 실재고 약 900개 미반영 — 이전 입고 건 전산 미차감 추정, 실사 후 ADJUST 처리 필요</td><td class="airtable-pt">PT코드 — WMS없음</td></tr>
+      <tr class="row-pt"><td>4</td><td>2026-04-13</td><td class="mm-pt">PT4763/PT4764</td><td>파워업PD충전기 (본품+박스)</td><td>본품+박스 결합 입고됐으나 전산/실재고 차이 — PT4763 본품·PT4764 박스 분리 입고 처리 필요</td><td class="airtable-pt">PT코드 — WMS없음</td></tr>
+      <tr class="row-tms"><td>5</td><td>2026-04-27</td><td class="mm-to">TO00015690</td><td>(TMS 운송오더)</td><td>재고이동 운송오더 신청됐으나 WMS 입/출고 처리 필요 — 이동목적=재고이동, 전산수량 미반영</td><td class="airtable-tms">TMS전용 — 별도확인</td></tr>
+      <tr class="row-tms"><td>6</td><td>2026-04-27</td><td class="mm-to">TO00015657</td><td>(TMS 운송오더)</td><td>재고이동 운송오더 신청됐으나 WMS 입/출고 처리 필요 — 이동목적=재고이동, 전산수량 미반영</td><td class="airtable-tms">TMS전용 — 별도확인</td></tr>
+    </tbody>
+  </table>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#FFFDF0;border:1px solid #ddd;"></div><span>PT코드만 확보 — WMS Movement 레코드 없음, 재고 실사 필요</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#F0F6FF;border:1px solid #ddd;"></div><span>TO번호 — TMS Shipment 테이블에서 별도 확인 필요</span></div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>본 리포트는 Slack #scm_팀_재고관리 채널 기준 물류팀 발신 메시지를 집계한 결과입니다.</span>
+  <span>생성일: 2026.05.08</span>
+</div>
+
+</body>
+</html>

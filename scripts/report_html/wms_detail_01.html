@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>C1 입고자재 공란/위치 상이 (1/2)</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: #fff; color: #1a1a1a; width: 794px; min-height: 1123px; display: flex; flex-direction: column; }
+.page-header { padding: 20px 36px 12px; border-bottom: 1px solid #e8e8e8; }
+.channel-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.page-title { font-size: 13px; font-weight: 600; color: #333; }
+.main { flex: 1; padding: 20px 36px; }
+.cat-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.cat-bullet { width: 10px; height: 10px; border-radius: 50%; background: #E64A1B; flex-shrink: 0; margin-top: 2px; }
+.cat-title { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+.cat-count { font-size: 13px; color: #E64A1B; font-weight: 600; }
+.cat-desc { font-size: 11px; color: #666; margin-bottom: 14px; margin-left: 20px; }
+.page-note { font-size: 11px; color: #888; margin-bottom: 12px; margin-left: 20px; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+thead tr { background: #F5F5F5; }
+th { text-align: left; padding: 6px 8px; font-size: 10px; font-weight: 600; color: #555; border: 1px solid #e0e0e0; letter-spacing: 0.03em; }
+td { padding: 5px 8px; border: 1px solid #ebebeb; color: #333; vertical-align: top; line-height: 1.4; }
+tr:nth-child(even) td { background: #FAFAFA; }
+.mm { font-family: 'Courier New', monospace; font-size: 10px; color: #0066CC; }
+.airtable-ok { color: #2a7d2a; font-size: 10px; }
+.airtable-warn { color: #cc6600; font-size: 10px; }
+.footer { padding: 14px 36px; border-top: 1px solid #e8e8e8; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="channel-label">#scm_팀_재고관리 채널 | 유형별 상세 내역</div>
+  <div class="page-title">물류팀 재고 이슈 안내 취합 리포트 — 카테고리별 MM번호 상세 (1/5)</div>
+</div>
+
+<div class="main">
+  <div class="cat-header">
+    <div class="cat-bullet"></div>
+    <div class="cat-title">입고자재 공란 / 위치 상이</div>
+    <div class="cat-count">33건</div>
+  </div>
+  <div class="cat-desc">입하장소 vs 입고자재 위치 불일치, 자재 공란 입력 오류 (Slack 보고 21건 / 실제 MM번호 기준 33건)</div>
+  <div class="page-note">1 ~ 17번 · 계속 → 다음 페이지</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px">#</th>
+        <th style="width:72px">날짜</th>
+        <th style="width:90px">MM번호</th>
+        <th style="width:140px">거래처 (PNA)</th>
+        <th>이슈 내용</th>
+        <th style="width:110px">Airtable 확인</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>2026-01-05</td><td class="mm">MM00189501</td><td>PNA37618-YTN</td><td>입고자재 공란 — 생산산출 처리됐으나 어떤 자재인지 미입력, 자재 추적 불가</td><td class="airtable-ok">생산산출 | 에이원 | 4개</td></tr>
+      <tr><td>2</td><td>2026-01-08</td><td class="mm">MM00190815</td><td>PNA38139-충북자립지원전담기관</td><td>입고자재 공란 — 동일하게 자재 필드 미입력, 확인·수정 요청</td><td class="airtable-ok">생산산출 | 에이원 | 1개</td></tr>
+      <tr><td>3</td><td>2026-01-09</td><td class="mm">MM00190973</td><td>PNA38334-서울공예박물관</td><td>입고자재 공란 — 입고 레코드 생성됐으나 자재 연결 없음</td><td class="airtable-ok">생산산출 | 에이원 | 1개</td></tr>
+      <tr><td>4</td><td>2026-01-09</td><td class="mm">MM00190938</td><td>PNA37834-삼성서울병원</td><td>입하장소 신시어리웨일즈 vs 입고자재 위치 불일치 — 재고 위치 파악 불가</td><td class="airtable-ok">생산산출 | 웨일즈 | 353개</td></tr>
+      <tr><td>5</td><td>2026-01-15</td><td class="mm">MM00192263</td><td>PNA37444-브레인크루</td><td>내부생산 재제작마다 입고자재 반복 누락 — 원인 파악 및 납품 전 체크 요청</td><td class="airtable-ok">생산산출 | 에이원 | 1개</td></tr>
+      <tr><td>6</td><td>2026-01-14</td><td class="mm">MM00191981</td><td>PNA38610-㎝메가터치</td><td>입하수량 555개 처리됐으나 자재 미입력</td><td class="airtable-ok">생산산출 | 에이원 | 555개</td></tr>
+      <tr><td>7</td><td>2026-01-28</td><td class="mm">MM00194601</td><td>PNA50137-티르티르</td><td>MROZ 입하 30개, 자재 공란</td><td class="airtable-ok">생산산출 | MROZ | 30개</td></tr>
+      <tr><td>8</td><td>2026-01-28</td><td class="mm">MM00194652</td><td>PNA50240-가비아</td><td>에이원 입하 101개, 자재 필드 미입력</td><td class="airtable-ok">생산산출 | 에이원 | 101개</td></tr>
+      <tr><td>9</td><td>2026-01-29</td><td class="mm">MM00194966</td><td>PNA50223-에코다</td><td>에이원 입하 100개, 자재 필드 미입력</td><td class="airtable-ok">생산산출 | 에이원 | 100개</td></tr>
+      <tr><td>10</td><td>2026-02-06</td><td class="mm">MM00196014</td><td>PNA37761-밀테니바이오텍코리아</td><td>담당자 직접 발견, 입고자재 공란으로 확인 요청</td><td class="airtable-ok">생산산출 | 에이원</td></tr>
+      <tr><td>11</td><td>2026-02-25</td><td class="mm">MM00198061</td><td>PNA50517-머스크컨트랙트로지스틱스코리아</td><td>에이원 입하 4개, 자재 필드 미입력</td><td class="airtable-ok">생산산출 | 에이원 | 4개</td></tr>
+      <tr><td>12</td><td>2026-02-26</td><td class="mm">MM00198264</td><td>PNA50165-오피스넥스</td><td>동일 배치 점검 시 발견, 에이원 104개 자재 공란</td><td class="airtable-ok">생산산출 | 에이원 | 104개</td></tr>
+      <tr><td>13</td><td>2026-02-23</td><td class="mm">MM00197740</td><td>PNA50588-주식회사디마이너스원</td><td>입하장소 vs 자재위치 상이 — 위치 불일치 확인 요청</td><td class="airtable-warn">필드 미확인</td></tr>
+      <tr><td>14</td><td>2026-03-16</td><td class="mm">MM00201674</td><td>PNA50693-삼성전자</td><td>입하장소 MROZ vs 입고자재 위치 불일치</td><td class="airtable-ok">생산산출 | MROZ | 220개</td></tr>
+      <tr><td>15</td><td>2026-02-27</td><td class="mm">MM00198417</td><td>PNA50799-플랜비리서치</td><td>입하장소 에이원 설정됐으나 자재 미연결</td><td class="airtable-ok">생산샘플 | 에이원 | 2개</td></tr>
+      <tr><td>16</td><td>2026-03-30</td><td class="mm">MM00204075</td><td>PNA51301-사단법인조정인협회</td><td>타우하이텍 입하 82개, 자재 위치 불일치</td><td class="airtable-ok">생산산출 | 타우하이텍 | 82개</td></tr>
+      <tr><td>17</td><td>2026-04-01</td><td class="mm">MM00204618</td><td>PNA51130-라운비</td><td>피앤더블유인터네셔널 입하 130개, 자재 위치 불일치</td><td class="airtable-ok">생산산출 | P&W | 130개</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  <span>본 리포트는 Slack #scm_팀_재고관리 채널 기준 물류팀 발신 메시지를 집계한 결과입니다.</span>
+  <span>생성일: 2026.05.08</span>
+</div>
+
+</body>
+</html>
