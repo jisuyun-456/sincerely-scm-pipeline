@@ -27,11 +27,13 @@
 | 레이어 | 도구 |
 |--------|------|
 | 운영 입력 | Airtable (WMS base appLui4ZR5HWcQRri / TMS base app4x70a8mOrIKsMf) |
-| 백엔드 | NestJS (PM2) — 일부 자동화만 |
+| 백엔드 (PDF 등) | FastAPI on Railway (`api/app.py`) |
 | 파이프라인 | GitHub Actions + Python |
 | 회의록 백업 | PostToolUse 훅 → Obsidian Vault + Slack 공유폴더 |
+| 대시보드 (별도 레포) | `sincerely-scm-dashboard`: React on Vercel + Supabase + GitHub Actions cron |
 
-> Supabase / NocoDB / Metabase / Retool 미사용 확정 (메모리 `project_scm_redesign` 참조). 도입 제안 금지.
+> **Supabase 정책 (2026-05-08 갱신):** SCM 운영 데이터(WMS/TMS movement·inventory)는 Airtable이 단일 진실 원천 — 절대 Supabase로 이중화 금지. 대시보드 전용 스냅샷·집계 데이터에 한해 `sincerely-scm-dashboard` 서브프로젝트에서만 Supabase free tier 허용.
+> NocoDB / Metabase / Retool 은 계속 미사용 (메모리 `project_scm_redesign` 참조).
 
 ## 언어 설정
 

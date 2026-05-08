@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-05-08",
+  "tasks": [
+    {
+      "id": "DASH-01",
+      "title": "sincerely-scm-dashboard v1 — Agentic OS dashboard (React + Supabase + Vercel)",
+      "priority": "high",
+      "domain": "dashboard",
+      "status": "in_progress",
+      "created_at": "2026-05-08",
+      "notes": "Plan approved 2026-05-08. Build sequence: pre-impl TODO → schema → sync → React skeleton → widgets → hooks → polish."
+    },
+    {
+      "id": "PKG-LABEL-01",
+      "title": "pkg_schedule_label.py — Airtable RTT 최적화 (fields[] filtering, batch fetch)",
+      "priority": "high",
+      "domain": "pkg-label",
+      "status": "in_progress",
+      "created_at": "2026-04-25",
+      "notes": "최근 10 커밋 대부분 이 작업. 4e1ae63까지 진행. uncommitted change in scripts/pkg_schedule_label.py."
+    },
+    {
+      "id": "WMS-PHASE0-01",
+      "title": "W-NEW-01 SAP_이동유형 마스터 테이블 신설 (Phase 0 우선)",
+      "priority": "high",
+      "domain": "wms",
+      "status": "pending",
+      "created_at": "2026-04-20",
+      "notes": "TMS GAP 완료 후 WMS 착수 대기. Phase 0의 첫 항목."
+    },
+    {
+      "id": "TMS-AR-02",
+      "title": "TMS AutoResearch Iter2 — 차량이용률 버그수정 + OTIF 재계산",
+      "priority": "medium",
+      "domain": "tms",
+      "status": "pending",
+      "created_at": "2026-04-15",
+      "notes": "Iter1 결과: 차량이용률 19.4%/OTIF 100%. Iter2 목표는 차량이용률 계산 로직 수정."
+    },
+    {
+      "id": "PAPERCLIP-01",
+      "title": "Paperclip 연동 — Claude 구독토큰으로 Gemini 대체 (뉴스 분석 자동화)",
+      "priority": "medium",
+      "domain": "stock",
+      "status": "pending",
+      "created_at": "2026-04-30",
+      "notes": "STOCK_WORK 프로젝트. 다음 세션 착수 예정."
+    },
+    {
+      "id": "RAILWAY-MIG-01",
+      "title": "Railway FastAPI 무료 호스팅 마이그레이션 검토",
+      "priority": "low",
+      "domain": "infra",
+      "status": "pending",
+      "created_at": "2026-05-08",
+      "notes": "옵션: Render free (cold start), HF Spaces, 자체 호스트. 대시보드 v1과 분리 진행."
+    },
+    {
+      "id": "TMS-GAP-COMPLETE",
+      "title": "TMS GAP 17 테이블 + 796건 백필",
+      "priority": "done",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-04-10",
+      "completed_at": "2026-04-15",
+      "notes": "완료. 메모리 project_tms_gap_completed 참조."
+    }
+  ]
+}
