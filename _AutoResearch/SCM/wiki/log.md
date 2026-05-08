@@ -312,3 +312,30 @@
 
 ### 다음 주 포커스
 - 납기 지연 공급사 지속 모니터링
+## [2026-05-08] WMS | Slack 이슈 교차검증 완료
+
+**상태:** 완료
+
+### 교차검증 요약
+- WMS Movement 조회: 21,510건
+- 카테고리 Slack 근접 ✅: 2/6개
+- Slack 보고 총계: 71건
+
+### 산출물
+- [WMS-SlackXVal-20260508.md](../outputs/WMS-SlackXVal-20260508.md)
+
+### 다음 포커스
+- NOT_FOUND 케이스 Airtable UI 직접 확인
+- TO번호 TMS Shipment 별도 검증
+
+## [2026-05-08] SCM | WMS Slack MM 직접 조회 보고서
+
+**상태:** 완료
+
+### 산출물
+- [WMS-SlackMM-20260508.md](../outputs/WMS-SlackMM-20260508.md)
+
+### 요약
+- 전체 6개 카테고리 / Slack 71건 기준 MM번호 직접 조회
+- C1: 33건 (Slack 21건 / 실제 MM수), C2: 9건, C3: 6건, C4: 2건, C5: 1건, C6: 3건
+
