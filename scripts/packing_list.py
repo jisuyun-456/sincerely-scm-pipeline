@@ -156,12 +156,12 @@ def _format_qty(qty_str: str) -> str:
     m = re.match(r"^(\d+)\+(.+)$", qty_str)
     if not m:
         return qty_str
-    bonus = re.sub(r"\([^)]*\)", "", m.group(2)).strip()
+    bonus = re.sub(r"\(.+\)", "", m.group(2)).strip()
     return f"{m.group(1)} + {bonus}" if bonus else m.group(1)
 
 
 def _parse_remainder(qty_str: str) -> list[dict]:
-    m = re.search(r"\+잔여분\(([^)]+)\)", qty_str)
+    m = re.search(r"\+잔여분\((.+)\)", qty_str)
     if not m:
         return []
     result = []

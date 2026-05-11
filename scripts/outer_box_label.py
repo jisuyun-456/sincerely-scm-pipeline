@@ -173,7 +173,7 @@ def _format_qty(qty_str: str) -> str:
     m = re.match(r"^(\d+)\+(.+)$", qty_str)
     if not m:
         return qty_str
-    bonus = re.sub(r"\([^)]*\)", "", m.group(2)).strip()
+    bonus = re.sub(r"\(.+\)", "", m.group(2)).strip()
     return f"{m.group(1)} + {bonus}" if bonus else m.group(1)
 
 
@@ -182,7 +182,7 @@ def _parse_remainder(qty_str: str) -> list[dict]:
     '3+잔여분(브랜디드타월1,브랜디드피규어키링2,올웨이즈양우산1)'
     → [{"name":"브랜디드타월","qty":"1"}, {"name":"브랜디드피규어키링","qty":"2"}, ...]
     """
-    m = re.search(r"\+잔여분\(([^)]+)\)", qty_str)
+    m = re.search(r"\+잔여분\((.+)\)", qty_str)
     if not m:
         return []
     result = []

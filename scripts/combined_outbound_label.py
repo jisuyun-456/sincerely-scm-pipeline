@@ -171,7 +171,7 @@ def _clean_item_name(s: str) -> str:
 
 
 def _parse_remainder(qty_str: str) -> list[dict]:
-    m = re.search(r"\+잔여분\(([^)]+)\)", qty_str)
+    m = re.search(r"\+잔여분\((.+)\)", qty_str)
     if not m:
         return []
     result = []
