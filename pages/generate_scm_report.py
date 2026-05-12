@@ -132,7 +132,7 @@ TMS_SHIP_FIELDS = [TF_DATE,TF_ITEM,TF_BOX_PARSED,TF_BOX_MANUAL,TF_TOTAL_CBM,
                    TF_STATUS,TF_ITEM_DETAIL,TF_REVENUE,TF_COST,TF_PARTNER,TF_DEPARTURE,
                    TF_ADDRESS,TF_SLOT,TF_WISH_TIME]  # 버그픽스: 라우팅 주소/슬롯 필드 추가
 TMS_BOX_FIELDS  = ["fldELrd8bBVjQCHnp","fldgvlGjLb4FTlQ0v","fldjFaXiYzeJ2Zt7M"]
-TMS_PROD_FIELDS = ["fldx01uKEnCd0J0nP","fldN1JrkxIr5m6pXz","fld6W5ImO7UeBVMPI"]
+TMS_PROD_FIELDS = ["fldx01uKEnCd0J0nP","fldCeJ0RqSUGlfEw4","fld6W5ImO7UeBVMPI","fldN1JrkxIr5m6pXz"]
 
 BOX_CBM = {
     "극소":0.0098,"S280":0.0098,"소":0.0117,"S360":0.0117,
@@ -304,6 +304,11 @@ def fetch_box_cbm_live():
     return live
 
 def fetch_product_cbm():
+    """
+    Product 마스터 → (정규화된 품목명, cbm_per_unit) 리스트 반환.
+    fldCeJ0RqSUGlfEw4 = "CBM" 필드 = 개당 CBM (박스당 CBM ÷ 박스당 제품수).
+    fldN1JrkxIr5m6pXz = "개당 박스단위" = 1/박스당 제품수 (비율값, CBM 아님) — 사용 금지.
+    """
     url = f"https://api.airtable.com/v0/{TMS_BASE_ID}/{TMS_TABLE_PRODUCT}"
     fp  = "&".join(f"fields[]={f}" for f in TMS_PROD_FIELDS)
     recs = _fetch_all(url, fp, {}, _tms_headers())
@@ -311,7 +316,8 @@ def fetch_product_cbm():
     for rec in recs:
         c    = _c(rec)
         name = (c.get("fldx01uKEnCd0J0nP") or "").strip()
-        cbm  = c.get("fldN1JrkxIr5m6pXz") or c.get("fld6W5ImO7UeBVMPI") or None
+        # CBM 필드(개당 실제 CBM) 우선 사용; 없으면 키트용 필드 사용
+        cbm  = c.get("fldCeJ0RqSUGlfEw4") or c.get("fld6W5ImO7UeBVMPI") or None
         if name and cbm:
             try: result.append((re.sub(r"\s+","",name), float(cbm)))
             except (ValueError,TypeError): pass
@@ -345,15 +351,11 @@ def match_cbm_from_product(item_str, product_cbm):
                 matched=True; break
     return round(total,4) if matched else 0.0
 
-def get_cbm_tms(f, live, product_cbm=None):
+def get_cbm_tms(f, live, product_cbm=None, use_estimate=False):
     """
-    CBM 우선순위: Total_CBM(수동) > 박스파싱 > 0 (unmatched)
-    
-    버그 수정: product_match 제거.
-    이유: 품목문자열의 수량(qty)은 개수(EA)이지 박스 수가 아님.
-    cbm_per_box × qty(개수)로 계산하면 수량이 클 때 CBM이 수십~수백배 뻥튀기됨.
-    예) 브릭메모 1000개 × 0.05m³/박스 = 50m³ (실제는 ~1m³)
-    product_cbm은 top_items 표시용 item_agg에서만 사용.
+    CBM 우선순위: Total_CBM(수동) > 박스파싱 > product 예상(use_estimate=True일 때만)
+    use_estimate=True: 다음주 예상 가동률 계산용. product_cbm 값은 개당 CBM(fldCeJ0RqSUGlfEw4).
+    use_estimate=False: 실적 데이터용 — product 매칭 사용 안 함.
     """
     v = f.get(TF_TOTAL_CBM)
     if v and v>0: return float(v), "manual"
@@ -363,6 +365,10 @@ def get_cbm_tms(f, live, product_cbm=None):
     if box and _BOX_RE.search(box):
         cv, _ = parse_box_cbm(box, live)
         return cv, "box_parse"
+    if use_estimate and product_cbm:
+        item_str = f.get(TF_ITEM) or ""
+        est = match_cbm_from_product(item_str, product_cbm)
+        if est > 0: return est, "product_match"
     return 0.0, "unmatched"
 
 # ================================================================
@@ -581,7 +587,7 @@ def fetch_additional_usage(start, end):
 # ================================================================
 # TMS 분석 함수 (주간 / 월간 공용)
 # ================================================================
-def analyze_tms(records, live_cbm, product_cbm=None):
+def analyze_tms(records, live_cbm, product_cbm=None, use_estimate=False):
     by_date     = defaultdict(lambda:{"cnt":0,"cbm":0.0,"completed":0,"pending":0,"revenue":0.0,"cost":0.0})
     box_type_all= defaultdict(int)
     item_agg    = defaultdict(lambda:{"qty":0,"cbm":0.0})
@@ -611,7 +617,7 @@ def analyze_tms(records, live_cbm, product_cbm=None):
         cost=f.get(TF_COST) or 0
         total_rev+=rev; total_cost+=cost
 
-        cbm_val, src = get_cbm_tms(f, live_cbm, product_cbm)
+        cbm_val, src = get_cbm_tms(f, live_cbm, product_cbm, use_estimate=use_estimate)
         cbm_sources[src]+=1
 
         box_qty=f.get(TF_BOX_PARSED) or f.get(TF_BOX_MANUAL) or ""
@@ -970,7 +976,7 @@ def main():
     if REPORT_MODE in ("weekly_review","weekly_forecast"):
         nmon,nfri=next_week_range()
         next_recs=fetch_shipments_tms(nmon,nfri)
-        next_tms=analyze_tms(next_recs,live_cbm,product_cbm)
+        next_tms=analyze_tms(next_recs,live_cbm,product_cbm,use_estimate=True)
 
     # ================================================================
     # pages_data.json (dashboard.html용 - WMS+TMS 통합)
