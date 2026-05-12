@@ -1,7 +1,43 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-08",
+  "updated_at": "2026-05-13",
   "tasks": [
+    {
+      "id": "CBM-VERIFIER-01",
+      "title": "Harness Verifier 설계법 적용 — verifier.py (formative + summative)",
+      "priority": "high",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-05-13",
+      "notes": "jkf87.github.io/harness-verifier-rubric 보고서 기반. 5차원 루브릭: 범위/무결성/커버리지/이상치/비즈니스룰. harness/settlement/verifier.py 신규 작성 + backfill_total_cbm_safe.py 통합. formative(건별) / summative(전체 완료 후 게이트) 분리."
+    },
+    {
+      "id": "CBM-BACKFILL-VERIFY-01",
+      "title": "Total_CBM 백필 완료 확인 + 결과 검증",
+      "priority": "high",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-05-13",
+      "notes": "backfill_total_cbm_safe.py 백그라운드 실행 중 (task bdg1yt00n). 완료 후 filled/skipped/errors 집계 확인 필요. 박종성 104건 수동 상하차비용 정리도 병행."
+    },
+    {
+      "id": "CBM-PHASE-C-01",
+      "title": "Phase C — W3 WMS Box-Mix Forecast 위젯",
+      "priority": "medium",
+      "domain": "dashboard",
+      "status": "pending",
+      "created_at": "2026-05-13",
+      "notes": "sync_wms_box_mix.py (매일 17:00 KST) + WMS탭 내일 필요 박스명칭별 예상 수량 스택바. wms_box_mix_forecast 테이블 (schema.sql에 미포함, 별도 migration 필요)."
+    },
+    {
+      "id": "CBM-PHASE-D-01",
+      "title": "Phase D — K1 차량이용률 v2 (CBM-weighted) AutoResearch 업데이트",
+      "priority": "medium",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-05-13",
+      "notes": "tms_weekly_runner.py에 util_v2 = Σ(Total_CBM) / Σ(vehicle.capacity_m3) 추가. tms_carrier_capacity 마스터 활용. 주간 리포트에 count기반/CBM기반 이용률 병렬 표시."
+    },
     {
       "id": "DASH-01",
       "title": "sincerely-scm-dashboard v1 — Agentic OS dashboard (React + Supabase + Vercel)",
@@ -9,7 +45,7 @@
       "domain": "dashboard",
       "status": "in_progress",
       "created_at": "2026-05-08",
-      "notes": "Plan approved 2026-05-08. Build sequence: pre-impl TODO → schema → sync → React skeleton → widgets → hooks → polish."
+      "notes": "Phase 2 CBM 위젯 완료 (W1/W2/W4). Phase C(W3 WMS) + Phase D(K1 AutoResearch) 대기."
     },
     {
       "id": "PKG-LABEL-01",
@@ -30,15 +66,6 @@
       "notes": "TMS GAP 완료 후 WMS 착수 대기. Phase 0의 첫 항목."
     },
     {
-      "id": "TMS-AR-02",
-      "title": "TMS AutoResearch Iter2 — 차량이용률 버그수정 + OTIF 재계산",
-      "priority": "medium",
-      "domain": "tms",
-      "status": "pending",
-      "created_at": "2026-04-15",
-      "notes": "Iter1 결과: 차량이용률 19.4%/OTIF 100%. Iter2 목표는 차량이용률 계산 로직 수정."
-    },
-    {
       "id": "PAPERCLIP-01",
       "title": "Paperclip 연동 — Claude 구독토큰으로 Gemini 대체 (뉴스 분석 자동화)",
       "priority": "medium",
@@ -55,6 +82,16 @@
       "status": "pending",
       "created_at": "2026-05-08",
       "notes": "옵션: Render free (cold start), HF Spaces, 자체 호스트. 대시보드 v1과 분리 진행."
+    },
+    {
+      "id": "TMS-AR-02",
+      "title": "TMS AutoResearch Iter2 — 차량이용률 버그수정 + OTIF 재계산",
+      "priority": "done",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-04-15",
+      "completed_at": "2026-04-15",
+      "notes": "완료. 차량이용률 19.4%→34.9% 수정, 오버부킹 117→2건."
     },
     {
       "id": "TMS-GAP-COMPLETE",

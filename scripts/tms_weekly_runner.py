@@ -45,6 +45,13 @@ TBL_PARTNER = "tblI4ZXrte7WyhXyd"  # 배송파트너
 
 FORECAST_HIGH_THRESHOLD = 20  # 일별 건수 이 이상이면 추가 배차 권고
 
+# 기사별 트럭 적재 용량 (m³) — 2026-05-12 확정
+TRUCK_CAPACITY_M3: dict[str, float] = {
+    "이장훈": 7.6,
+    "조희선": 7.6,
+    "박종성": 9.5,
+}
+
 AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
 HEADERS = {
     "Authorization": f"Bearer {AIRTABLE_PAT}",
@@ -310,8 +317,10 @@ def analyze_iter2_dispatch_efficiency(data: dict) -> dict:
 
     total = sum(cat.values()) or 1
 
-    # ── 기사별 운행일 (배차일지 CBM>0 기준) ───────────────────────────────────
+    # ── 기사별 운행일 + CBM 집계 (배차일지 CBM>0 기준) ────────────────────────
     driver_days: dict[str, int] = {}
+    driver_cbm:  dict[str, float] = {}
+
     for rec in dispatches:
         f = rec["fields"]
         cbm_raw = f.get("fldVJoKjjzcwpHIHC")
@@ -324,14 +333,44 @@ def analyze_iter2_dispatch_efficiency(data: dict) -> dict:
         for pid in (f.get("fldIQqaoj2CYlCSFH") or []):
             name = partner_cache.get(pid, pid)
             driver_days[name] = driver_days.get(name, 0) + 1
+            driver_cbm[name]  = driver_cbm.get(name, 0.0) + cbm_val
+
+    # ── util_v2: CBM 적재율 per driver (Σ CBM / Σ capacity×days) ───────────────
+    driver_util_v2: dict[str, float] = {}
+    for driver_name, cap in TRUCK_CAPACITY_M3.items():
+        # partner_cache 이름에 기사 이름 substring 매칭
+        matched_name = next(
+            (n for n in driver_days if driver_name in n), None
+        )
+        if matched_name:
+            days = driver_days.get(matched_name, 0)
+            cbm  = driver_cbm.get(matched_name, 0.0)
+            driver_util_v2[driver_name] = round(cbm / (cap * days) * 100, 1) if days > 0 else 0.0
+        else:
+            driver_util_v2[driver_name] = 0.0
+
+    # overall CBM 적재율
+    total_cbm_loaded  = sum(driver_cbm.values())
+    total_cap_avail   = sum(
+        TRUCK_CAPACITY_M3.get(dn, 0) * driver_days.get(
+            next((n for n in driver_days if dn in n), ""), 0
+        )
+        for dn in TRUCK_CAPACITY_M3
+    )
+    util_v2_overall = round(
+        total_cbm_loaded / total_cap_avail * 100, 1
+    ) if total_cap_avail > 0 else 0.0
 
     return {
-        "sample_size":   len(quik_ships),
-        "internal_rate": round(cat["internal"] / total * 100, 1),
-        "gogox_rate":    round(cat["gogox"]    / total * 100, 1),
-        "external_rate": round(cat["external"] / total * 100, 1),
-        "none_rate":     round(cat["none"]     / total * 100, 1),
-        "driver_days":   driver_days,
+        "sample_size":     len(quik_ships),
+        "internal_rate":   round(cat["internal"] / total * 100, 1),
+        "gogox_rate":      round(cat["gogox"]    / total * 100, 1),
+        "external_rate":   round(cat["external"] / total * 100, 1),
+        "none_rate":       round(cat["none"]     / total * 100, 1),
+        "driver_days":     driver_days,
+        "driver_cbm":      driver_cbm,
+        "driver_util_v2":  driver_util_v2,
+        "util_v2_overall": util_v2_overall,
     }
 
 
@@ -558,7 +597,7 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 
 ---
 
-## Iteration 2: 배송 효율 (내부 소화율)
+## Iteration 2: 배송 효율 (내부 소화율 + 차량이용률)
 
 - 분석 샘플: {r2["sample_size"]}건 (퀵 수도권 최근 30일)
 - 내부 소화율: **{r2["internal_rate"]}%** (목표 ≥80%)
@@ -567,6 +606,21 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 
 기사별 운행일 (최근 30일):
 {chr(10).join(f"  {k}: {v}일" for k, v in r2["driver_days"].items()) if r2["driver_days"] else "  (데이터 없음)"}
+
+### K1 차량이용률 v2 (CBM 적재율)
+
+> util_v2 = Total_CBM 합계 / (트럭 용량 x 운행일수)
+
+| 기사 | 트럭 용량 | 총 CBM | 운행일 | 적재율 |
+|------|---------|--------|--------|--------|
+{chr(10).join(
+    f"| {dn} | {TRUCK_CAPACITY_M3.get(dn, '-')}m³ | "
+    + f"{r2['driver_cbm'].get(next((n for n in r2['driver_cbm'] if dn in n), ''), 0.0):.2f}m³ | "
+    + f"{r2['driver_days'].get(next((n for n in r2['driver_days'] if dn in n), ''), 0)}일 | "
+    + f"**{r2['driver_util_v2'].get(dn, 0.0)}%** |"
+    for dn in ["이장훈", "조희선", "박종성"]
+)}
+| **전체** | - | {sum(r2['driver_cbm'].values()):.2f}m³ | - | **{r2['util_v2_overall']}%** |
 
 > {'목표 달성' if r2["internal_rate"] >= 80 else f'미달 — {80 - r2["internal_rate"]:.1f}%p 개선 필요 (고고엑스 건 내부 흡수 검토)'}
 
@@ -658,6 +712,7 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 ### KPI 스냅샷
 - 내부 소화율: {r2["internal_rate"]}% (목표 ≥80%) | 고고엑스: {r2["gogox_rate"]}%
 - OTIF On-Time: {r4["on_time_rate"]}% (목표 ≥90%)
+- 차량이용률 v2 (CBM 적재율): {r2["util_v2_overall"]}%
 - 약속납기일 전환율: {r4["proxy_conversion_rate"]}%
 - 다음 주 예측: {r5["total_forecast"]}건 (피크 {r5["peak_day"]}요일)
 
