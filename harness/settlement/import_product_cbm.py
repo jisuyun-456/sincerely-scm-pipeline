@@ -26,6 +26,7 @@ FLD_CODE     = "fldtpUf2UVooLcxwd"
 FLD_BOX_TYPE = "fldqGM1lw2TUpZdKW"
 FLD_QTY      = "fldENIdfxbVn8YnPI"
 FLD_CBM      = "fldCeJ0RqSUGlfEw4"
+FLD_BOX_SIZE = "fld1ECU2hhnEurOef"  # 박스사이즈 singleSelect — '480*380*270' 등
 
 
 def _load_existing(headers: dict) -> dict[str, dict]:
@@ -36,7 +37,7 @@ def _load_existing(headers: dict) -> dict[str, dict]:
     while True:
         params: dict = {
             "returnFieldsByFieldId": "true",
-            "fields[]": [FLD_NAME, FLD_CODE, FLD_BOX_TYPE, FLD_QTY, FLD_CBM],
+            "fields[]": [FLD_NAME, FLD_CODE, FLD_BOX_TYPE, FLD_QTY, FLD_CBM, FLD_BOX_SIZE],
             "pageSize": 100,
         }
         if cursor:
@@ -54,6 +55,7 @@ def _load_existing(headers: dict) -> dict[str, dict]:
                     "box_type":    str(f.get(FLD_BOX_TYPE) or "").strip(),
                     "qty_per_box": f.get(FLD_QTY),
                     "cbm":         str(f.get(FLD_CBM) or "").strip(),
+                    "box_size":    str(f.get(FLD_BOX_SIZE) or "").strip(),
                 }
         cursor = data.get("offset")
         if not cursor:
@@ -63,18 +65,20 @@ def _load_existing(headers: dict) -> dict[str, dict]:
 
 
 def _fields_from(product: dict) -> dict:
-    return {
+    fields = {
         FLD_NAME:     product["name"],
         FLD_CODE:     product["code"].upper(),
         FLD_BOX_TYPE: product["box_type"],
         FLD_QTY:      product["qty_per_box"],
         FLD_CBM:      str(product["cbm"]),
     }
+    if product.get("box_size"):
+        fields[FLD_BOX_SIZE] = product["box_size"]
+    return fields
 
 
 def _changed(product: dict, existing: dict) -> dict:
     """Return only fields that differ from the existing record."""
-    new_fields = _fields_from(product)
     delta: dict = {}
     if existing["name"] != product["name"]:
         delta[FLD_NAME] = product["name"]
@@ -84,7 +88,8 @@ def _changed(product: dict, existing: dict) -> dict:
         delta[FLD_QTY] = product["qty_per_box"]
     if existing["cbm"] != str(product["cbm"]):
         delta[FLD_CBM] = str(product["cbm"])
-    _ = new_fields  # used above indirectly
+    if product.get("box_size") and existing.get("box_size") != product["box_size"]:
+        delta[FLD_BOX_SIZE] = product["box_size"]
     return delta
 
 
@@ -141,7 +146,7 @@ def main():
                 r = requests.post(
                     url,
                     headers=headers,
-                    json={"fields": fields},
+                    json={"fields": fields, "typecast": True},
                     timeout=15,
                 )
                 if r.ok:

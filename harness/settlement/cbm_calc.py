@@ -29,6 +29,26 @@ BOX_FEE_RULES: dict[str, tuple[str, int, int]] = {
 }
 MAX_UNLOAD_FEE = 50_000
 
+# Standard box volume (m³) — fallback when Airtable '박스 당 CBM' formula returns 0.
+# The formula maps 박스사이즈(mm) → m³ but covers only 3 sizes, AND most records have
+# blank 박스사이즈, so ~98% of products return 0. This dict is the authoritative source.
+BOX_TYPE_TO_CBM_M3: dict[str, float] = {
+    "극소형": 0.0098,   # S280 (280×250×140)
+    "중형":   0.0201,   # M350 (350×250×230)
+    "중대형": 0.0493,   # M480 (480×380×270)
+    "대형":   0.1066,   # L510 (510×510×410)
+    "특대형": 0.1662,   # L560 (560×530×560)
+}
+
+# 박스명칭 → 박스사이즈 (singleSelect option string) for Airtable inserts.
+BOX_TYPE_TO_SIZE_STR: dict[str, str] = {
+    "극소형": "280*250*140",
+    "중형":   "350*250*230",
+    "중대형": "480*380*270",
+    "대형":   "510*510*410",
+    "특대형": "560*530*560",
+}
+
 
 def load_product_lookup(headers: dict) -> dict[str, dict]:
     """
@@ -57,11 +77,14 @@ def load_product_lookup(headers: dict) -> dict[str, dict]:
                 cbm_box = float(f.get(FLD_PROD_CBM_BOX) or 0)
             except (ValueError, TypeError):
                 cbm_box = 0.0
+            box_type = str(f.get(FLD_PROD_BOX_TYPE) or "").strip()
+            if cbm_box <= 0:
+                cbm_box = BOX_TYPE_TO_CBM_M3.get(box_type, 0.0)
             entries.append({
                 "rec_id":      rec["id"],
                 "name":        str(f.get(FLD_PROD_NAME) or "").strip(),
                 "code":        str(f.get(FLD_PROD_CODE) or "").strip().upper(),
-                "box_type":    str(f.get(FLD_PROD_BOX_TYPE) or "").strip(),
+                "box_type":    box_type,
                 "qty_per_box": max(1, int(f.get(FLD_PROD_QTY) or 1)),
                 "cbm_per_box": cbm_box,
             })
@@ -80,6 +103,10 @@ def load_product_lookup(headers: dict) -> dict[str, dict]:
 
 
 def _tokenize(text: str) -> frozenset:
+    # Split on Korean↔Latin character boundaries before tokenizing
+    # so "Tailored스트랩박스" → "Tailored 스트랩박스" and matches the Product table name
+    text = re.sub(r"([가-힣])([A-Za-z])", r"\1 \2", text)
+    text = re.sub(r"([A-Za-z])([가-힣])", r"\1 \2", text)
     tokens: set[str] = set()
     for part in re.split(r"[\s,+×()/·xX*]+", text):
         stripped = re.sub(r"\d+", "", part).strip()
