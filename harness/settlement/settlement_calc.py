@@ -163,10 +163,13 @@ def fetch_week(monday: str, sunday: str) -> list[dict]:
     """Fetch all Shipments for the given week with a 배송파트너 linked."""
     url = f"https://api.airtable.com/v0/{TMS_BASE}/{SHIPMENT_TABLE}"
     headers = {"Authorization": f"Bearer {AIRTABLE_PAT}"}
+    # Airtable stores dates as ISO datetime strings ("2026-05-08T00:00:00.000Z"),
+    # so <= 'YYYY-MM-DD' would exclude that day. Use < next_day instead.
+    end_excl = (date.fromisoformat(sunday) + timedelta(days=1)).isoformat()
     formula = (
         f"AND("
         f"{{출하확정일}}>='{monday}',"
-        f"{{출하확정일}}<='{sunday}',"
+        f"{{출하확정일}}<'{end_excl}',"
         f"NOT({{배송파트너}}='')"
         f")"
     )
