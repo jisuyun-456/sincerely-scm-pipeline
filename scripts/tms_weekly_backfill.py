@@ -36,6 +36,7 @@ from backfill_택배추적로그 import run as run_tracking
 from backfill_운임합계    import run as run_fare_sum
 from backfill_구간유형    import run as run_zone
 from backfill_전주평균CBM import run as run_cbm_avg
+from backfill_상하차비용  import run as run_unload_fee
 
 PAT = os.environ.get(
     "AIRTABLE_PAT",
@@ -48,9 +49,10 @@ MODES = {
     "otif":     ("OTIF",       run_otif),
     "event":    ("배송이벤트",  run_event),
     "tracking": ("택배추적로그", run_tracking),
-    "fare_sum": ("운임합계",    run_fare_sum),   # 배차일지 운임합계 집계 (dispatch 다음 실행)
-    "zone":     ("구간유형",    run_zone),       # 구간유형 자동분류
-    "cbm_avg":  ("전주평균CBM", run_cbm_avg),   # 배차일지 전주평균CBM
+    "fare_sum":   ("운임합계",    run_fare_sum),    # 배차일지 운임합계 집계 (dispatch 다음 실행)
+    "zone":       ("구간유형",    run_zone),        # 구간유형 자동분류
+    "cbm_avg":    ("전주평균CBM", run_cbm_avg),    # 배차일지 전주평균CBM
+    "unload_fee": ("상하차비용",  run_unload_fee), # 박종성 상하차비용 + Total_CBM 소급 백필
 }
 
 

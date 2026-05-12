@@ -16,6 +16,7 @@ Settlement 로직:
 import os
 import re
 import json
+import sys
 import time
 import math
 import argparse
@@ -23,6 +24,9 @@ import requests
 from datetime import date, timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+
+sys.path.insert(0, str(Path(__file__).parent))
+from cbm_calc import load_product_lookup, calc_from_products
 
 load_dotenv()
 
@@ -64,6 +68,8 @@ F_BOX_QTY_DIRECT  = "fldRjMaXa5TdSsGDL"  # 외박스 수량 (직접입력) — P
 F_BOX_QTY         = "fldGXhlBwI6toXSJC"   # 외박스 수량 (rollup from 배송요청) — PNA fallback
 F_PROJECT_CODE    = "fldTs3FzaSdGYEiKX"   # project code (rollup) — PNA 식별용
 F_REQUEST_NOTE    = "fldHQdGWe8jNrNYEM"   # 배송 요청사항 (rollup)
+F_ITEMS_MFG       = "fldCnwsVrpkKHt4Hl"   # 임가공 품목 및 수량 (rollup, has qty) — CBM 계산용
+F_PRODUCT_FINAL   = "fldgSupj5XLjJXYQo"   # 최종 출하 품목 (formula, name only) — CBM fallback
 
 # Korean district coordinate lookup (same as crossvalidation.py)
 KR_COORDS: dict[str, tuple[float, float]] = {
@@ -234,7 +240,7 @@ def fetch_week(monday: str, sunday: str) -> list[dict]:
             "fields[]": [F_SC_ID, F_DATE, F_PARTNER, F_FARE, F_UNLOAD,
                          F_ORIGIN_ADDR, F_DEST_ADDR, F_BOX_TEXT,
                          F_BOX_QTY_DIRECT, F_BOX_QTY, F_PROJECT_CODE,
-                         F_REQUEST_NOTE],
+                         F_REQUEST_NOTE, F_ITEMS_MFG, F_PRODUCT_FINAL],
             "pageSize": 100,
         }
         if cursor:
@@ -384,12 +390,14 @@ def _is_pna(rec: dict) -> bool:
     return "PNA" in code.upper()
 
 
-def calc_park(recs: list[dict]) -> list[dict]:
+def calc_park(recs: list[dict], product_lookup: dict | None = None) -> list[dict]:
     """
     박종성:
       일반건: 운송비용 = PARK_BASE_FARE + PARK_KM_RATE × road_km
-              상하차비용 = 중대/5 + 대/3 + 특대/3 각 5,000원 (최대 50,000원)
-              박스 수량값 없으면 상하차비용=0 (출하지=다영기획 협력사 케이스)
+              상하차비용 우선순위:
+                1) F_BOX_TEXT 있으면 → parse_unload_fee
+                2) F_BOX_TEXT 없고 PNA → F_BOX_QTY_DIRECT / F_BOX_QTY fallback
+                3) 위 모두 없고 product_lookup 있으면 → cbm_calc (임가공 품목 및 수량)
       외주임가공건: SC id='MM'+수령인=다영기획+요청사항='외주임가공'
               → 일일 고정 70,000원 / 당일 해당 건수
     """
@@ -434,6 +442,16 @@ def calc_park(recs: list[dict]) -> list[dict]:
                 or _str_field(rec["fields"].get(F_BOX_QTY))
                 or ""
             )
+        # Priority 3: CBM 마스터 기반 하차비 (박스 데이터 없을 때)
+        cbm_unload = 0
+        if not box_text and product_lookup:
+            items_text = (
+                _str_field(rec["fields"].get(F_ITEMS_MFG))
+                or _str_field(rec["fields"].get(F_PRODUCT_FINAL))
+            )
+            if items_text:
+                cbm_result = calc_from_products(items_text, product_lookup)
+                cbm_unload = cbm_result["unload_fee"]
 
         origin_coord = ORIGINS["에이원지식산업센터"]
         if "성남시" in origin_addr or "다영" in origin_addr:
@@ -451,7 +469,7 @@ def calc_park(recs: list[dict]) -> list[dict]:
         else:
             note = f"NO_COORD: {dest_addr[:30]}"
 
-        unload_calc = parse_unload_fee(box_text)
+        unload_calc = parse_unload_fee(box_text) or cbm_unload
         existing_fare = rec["fields"].get(F_FARE) or 0
 
         if fare_calc and existing_fare:
@@ -507,11 +525,21 @@ def main():
     park_recs = [r for r in all_recs if DRIVER_PARK in (r["fields"].get(F_PARTNER) or [])]
     print(f"  이장훈={len(lee_recs)}  조희선={len(cho_recs)}  박종성={len(park_recs)}")
 
+    # 3b. Load CBM product lookup for 박종성 unload fee fallback
+    product_lookup: dict | None = None
+    if park_recs:
+        print(f"  CBM 품목 룩업 로딩 중...")
+        try:
+            product_lookup = load_product_lookup({"Authorization": f"Bearer {AIRTABLE_PAT}"})
+            print(f"  {len(product_lookup)//2}개 품목 로드 완료")
+        except Exception as e:
+            print(f"  WARNING: CBM 룩업 실패 (unload fallback 비활성) — {e}")
+
     # 4. Calculate
     settlement = (
         calc_lee(lee_recs) +
         calc_cho(cho_recs) +
-        calc_park(park_recs)
+        calc_park(park_recs, product_lookup=product_lookup)
     )
 
     if not settlement:
