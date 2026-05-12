@@ -372,10 +372,10 @@
 ### 다음 주 포커스
 - 내부 소화율 개선 (고고엑스 건 흡수 검토)
 
-## [2026-05-12] CBM | 박종성 다영기획 하차비 자동계산 — 코드 완료, 실행 대기
+## [2026-05-12] CBM | 박종성 다영기획 CBM 시뮬레이션 완료 — 2026-05-13 하네스 가동
 
 **타입:** Settlement / CBM Master Data
-**상태:** 코드 완료, 다음 세션에서 실행 예정
+**상태:** 시뮬레이션 완료, 5/13부터 하네스 실운영
 
 ### 배경
 - 박종성 기사 다영기획 출발 71건(2026-01~05) 박스 데이터 전무 → 하차비 0원 누적
@@ -418,25 +418,18 @@
 - Airtable Product 약 334번 행까지 기존 입력 존재 (사용자 스크린샷 확인)
 - PDF 7페이지 품목 대부분 이미 Airtable에 존재 가능성 → UPSERT 시 충돌 없이 PATCH
 
-### 다음 세션 실행 순서 (그대로 복사)
-```bash
-py harness/settlement/import_product_cbm.py --dry-run   # 14건 CREATE/UPDATE 미리보기
-py harness/settlement/import_product_cbm.py             # Airtable Product 반영
-py scripts/backfill/backfill_상하차비용.py --dry-run    # 박종성 71건 소급 미리보기
-py scripts/backfill/backfill_상하차비용.py              # 검토 후 반영
-```
+### CBM 시뮬레이션 결과 (2026-05-12 세션)
+- 대상: 박종성 다영기획 출발 박스 없는 건 **197건** (2024-01-01 ~ 2026-05-12)
+- 완전 매칭 33.5% / 부분 매칭 60.9% / 전부 미매칭 0% ✅ / 품목텍스트 없음 5.6%
+- 하차비 계산 가능 (sim > 0): **60건 (30.5%)**
+- 시뮬 합계 **1,255,000원** vs 실제 지급 475,000원 → 2.6배 (캡 50,000원 정상 적용)
+- 소량 건 0원은 정상 동작 (박스 임계치 미달)
+- 스크립트: `harness/settlement/simulate_park_dayoung_cbm.py`
 
-### 실행 후 검증
-- Airtable Product UI에서 신규 5건 (NFCA, AWTW, SORB, FANB, ATSS) 직접 확인
-- 박종성 다영기획 71건 매칭 성공률 (목표: 70~80%)
-- 매칭 실패 품목명 로그 → PDF 추가 항목 입력 필요 여부 판단
+### 미매칭 Top 품목 (Product 마스터 보강 필요)
+페이퍼샤쉐(6), 브랜디드타월(6), Tailored스트랩박스키트(4), 에디트캘린더/리유저블캘린더/페이퍼링캘린더(3), Simple슬라이드지퍼백(M)키트(3+2), 데일리짐색(3+2), 보냉키트백(3)
 
 ### 다음 단계
-1. **즉시:** 위 실행 순서 4단계 진행
-2. **이후 (선택):** PDF 7페이지 전체 ~320 품목 `product_cbm_data.py` 입력 → 매칭률 향상
-
-### 미커밋 변경사항
-- `harness/settlement/cbm_calc.py` (토크나이저 버그 픽스, BOX_TYPE_TO_CBM_M3/SIZE_STR fallback)
-- `harness/settlement/product_cbm_data.py` (14건 데이터)
-- `harness/settlement/import_product_cbm.py` (FLD_BOX_SIZE 필드)
-- `_AutoResearch/SCM/wiki/log.md` (이 항목)
+1. **5/13~:** 하네스 실운영 → 박종성 다영기획 건 상하차비용 자동 계산 시작
+2. **이후:** 실운영 데이터 보면서 운임비 로직 개선 의논
+3. **선택:** 미매칭 Top 품목 Product 마스터 추가 → 매칭률 90%+ 목표
