@@ -1,6 +1,14 @@
 {
   "periods": [
     {
+      "key": "2026-W20_forecast",
+      "label": "W20 (5/11~) 예측",
+      "mode": "weekly_forecast",
+      "mode_label": "주간 예측",
+      "generated_at": "2026-05-12T16:18:24",
+      "file": "2026-W20_forecast.json"
+    },
+    {
       "key": "2026-W19_review",
       "label": "W19 (5/4~) 실적",
       "mode": "weekly_review",
