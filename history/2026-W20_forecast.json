@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-12T16:18:24",
+  "generated_at": "2026-05-12T16:30:57",
   "report_mode": "weekly_forecast",
   "period_key": "2026-W20_forecast",
   "period": {
@@ -640,9 +640,9 @@
       },
       "routing": {
         "driver_weekly_km": {
-          "신시어리 (이장훈)": 56.86,
-          "신시어리 (조희선)": 212.18,
-          "신시어리 (박종성)": 347.37
+          "신시어리 (이장훈)": 60.23,
+          "신시어리 (조희선)": 212.35,
+          "신시어리 (박종성)": 348.98
         },
         "driver_daily_routes": {
           "신시어리 (이장훈)": {
@@ -659,8 +659,8 @@
               ]
             },
             "2026-05-06": {
-              "total_km": 8.23,
-              "total_min": 23,
+              "total_km": 11.6,
+              "total_min": 21,
               "stops": 1,
               "depot": "에이원센터",
               "route": [
@@ -672,7 +672,7 @@
             },
             "2026-05-07": {
               "total_km": 23.77,
-              "total_min": 42,
+              "total_min": 41,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -729,7 +729,7 @@
               ]
             },
             "2026-05-07": {
-              "total_km": 91.89,
+              "total_km": 91.91,
               "total_min": 93,
               "stops": 3,
               "depot": "에이원센터",
@@ -749,8 +749,8 @@
               ]
             },
             "2026-05-08": {
-              "total_km": 42.63,
-              "total_min": 89,
+              "total_km": 42.78,
+              "total_min": 90,
               "stops": 4,
               "depot": "에이원센터",
               "route": [
@@ -775,7 +775,7 @@
           },
           "신시어리 (박종성)": {
             "2026-05-04": {
-              "total_km": 64.27,
+              "total_km": 64.57,
               "total_min": 77,
               "stops": 4,
               "depot": "다영기획",
@@ -799,7 +799,7 @@
               ]
             },
             "2026-05-06": {
-              "total_km": 49.37,
+              "total_km": 49.36,
               "total_min": 55,
               "stops": 2,
               "depot": "다영기획",
@@ -815,8 +815,8 @@
               ]
             },
             "2026-05-07": {
-              "total_km": 79.13,
-              "total_min": 103,
+              "total_km": 80.45,
+              "total_min": 102,
               "stops": 3,
               "depot": "다영기획",
               "route": [
@@ -836,7 +836,7 @@
             },
             "2026-05-08": {
               "total_km": 154.6,
-              "total_min": 140,
+              "total_min": 139,
               "stops": 2,
               "depot": "에이원센터",
               "route": [
@@ -856,20 +856,20 @@
     },
     "next_week": {
       "summary": {
-        "total_cbm": 14.015,
+        "total_cbm": 22.715,
         "total_count": 67,
         "completed": 0,
         "pending": 67,
         "revenue": 0.0,
         "cost": 0.0,
         "profit": 0.0,
-        "cbm_per_shipment": 0.209,
+        "cbm_per_shipment": 0.339,
         "cbm_unit_cost": 0.0
       },
       "by_date": {
         "2026-05-18": {
           "cnt": 14,
-          "cbm": 3.3732,
+          "cbm": 4.665,
           "completed": 0,
           "pending": 14,
           "revenue": 0.0,
@@ -877,7 +877,7 @@
         },
         "2026-05-19": {
           "cnt": 14,
-          "cbm": 1.7643,
+          "cbm": 4.0249,
           "completed": 0,
           "pending": 14,
           "revenue": 0.0,
@@ -885,7 +885,7 @@
         },
         "2026-05-20": {
           "cnt": 13,
-          "cbm": 3.1381,
+          "cbm": 3.1577,
           "completed": 0,
           "pending": 13,
           "revenue": 0.0,
@@ -893,7 +893,7 @@
         },
         "2026-05-21": {
           "cnt": 15,
-          "cbm": 0.8669,
+          "cbm": 5.7821,
           "completed": 0,
           "pending": 15,
           "revenue": 0.0,
@@ -901,7 +901,7 @@
         },
         "2026-05-22": {
           "cnt": 11,
-          "cbm": 4.8721,
+          "cbm": 5.0853,
           "completed": 0,
           "pending": 11,
           "revenue": 0.0,
