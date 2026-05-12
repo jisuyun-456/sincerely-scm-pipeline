@@ -12,7 +12,9 @@ import os, time, re
 from collections import defaultdict
 import requests
 
-PAT     = os.environ.get("AIRTABLE_PAT") or "patU9ew1rwbJbEpOn.d5c7c1bb42c3ad69edd2701ee0424ddcb04c4d261a0ed422f8e5edaf1fa20edc"
+PAT     = os.environ.get("AIRTABLE_PAT", "")
+if not PAT:
+    raise SystemExit("ERROR: AIRTABLE_PAT not set in environment (.env)")
 BASE_ID = "app4x70a8mOrIKsMf"
 SHIP_TBL = "tbllg1JoHclGYer7m"
 EVT_TBL  = "tblQyuAW30yf21WEf"

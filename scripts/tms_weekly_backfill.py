@@ -38,10 +38,9 @@ from backfill_구간유형    import run as run_zone
 from backfill_전주평균CBM import run as run_cbm_avg
 from backfill_상하차비용  import run as run_unload_fee
 
-PAT = os.environ.get(
-    "AIRTABLE_PAT",
-    "patU9ew1rwbJbEpOn.d5c7c1bb42c3ad69edd2701ee0424ddcb04c4d261a0ed422f8e5edaf1fa20edc",
-)
+PAT = os.environ.get("AIRTABLE_PAT", "")
+if not PAT:
+    raise SystemExit("ERROR: AIRTABLE_PAT not set in environment (.env)")
 HEADERS = {"Authorization": f"Bearer {PAT}", "Content-Type": "application/json"}
 
 MODES = {
