@@ -20,6 +20,10 @@ reports/
 *.pdf
 tmp_*.json
 
+# Settlement harness — large cache files (not source, auto-regenerated)
+harness/settlement/state/crossval_cache.json
+harness/settlement/state/settlement_*.json
+
 # Legacy archive data files (completed backfills)
 _archive/wms/*.json
 _archive/wms/__pycache__/
