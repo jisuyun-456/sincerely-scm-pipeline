@@ -154,10 +154,8 @@ def week_range(week_start: str) -> tuple[str, str]:
     return mon.isoformat(), sun.isoformat()
 
 
-def prev_week_monday() -> str:
-    today = date.today()
-    last_mon = today - timedelta(days=today.weekday() + 7)
-    return last_mon.isoformat()
+def today_iso() -> str:
+    return date.today().isoformat()
 
 # ─── Airtable API ─────────────────────────────────────────────────────────────
 
@@ -355,7 +353,8 @@ def calc_park(recs: list[dict]) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description="기사님 운임비 정산 자동화")
-    parser.add_argument("--week", help="정산 주 시작일 (YYYY-MM-DD, 월요일 기준)")
+    parser.add_argument("--date", help="정산 날짜 (YYYY-MM-DD). 기본: 오늘")
+    parser.add_argument("--week", help="정산 주 시작일 (YYYY-MM-DD, 월요일 기준) — 주간 일괄 모드")
     parser.add_argument("--dry-run", action="store_true", help="실제 쓰기 없이 미리보기")
     parser.add_argument("--force", action="store_true", help="기존 운송비용 있어도 덮어쓰기")
     parser.add_argument("--auto-confirm", action="store_true", help="사용자 확인 없이 자동 실행 (CI용)")
@@ -365,16 +364,20 @@ def main():
         print("ERROR: AIRTABLE_PAT environment variable not set")
         return
 
-    # 1. Determine week
-    week_start = args.week or prev_week_monday()
-    monday, sunday = week_range(week_start)
-    print(f"\n[Settlement] Week: {monday} ~ {sunday}", end="")
-    print(f"  {'[DRY-RUN]' if args.dry_run else '[LIVE WRITE]'}\n")
+    # 1. Determine date range
+    if args.week:
+        monday, sunday = week_range(args.week)
+        label = f"Week: {monday} ~ {sunday}"
+    else:
+        target = args.date or today_iso()
+        monday = sunday = target
+        label = f"Date: {target}"
+    print(f"\n[Settlement] {label}  {'[DRY-RUN]' if args.dry_run else '[LIVE WRITE]'}\n")
 
     # 2. Fetch shipments
     print(f"Fetching shipments...")
     all_recs = fetch_week(monday, sunday)
-    print(f"  Total this week: {len(all_recs)}")
+    print(f"  Total: {len(all_recs)}")
 
     # 3. Split by driver
     lee_recs = [r for r in all_recs if DRIVER_LEE in (r["fields"].get(F_PARTNER) or [])]

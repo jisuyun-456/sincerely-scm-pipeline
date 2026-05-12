@@ -1,13 +1,17 @@
-name: Settlement Weekly (기사님 운임 정산)
+name: Settlement Daily (기사님 운임 정산)
 
 on:
   schedule:
-    # 매주 월요일 13:00 UTC = 22:00 KST
-    - cron: '0 13 * * 1'
+    # 매일 11:00 UTC = 20:00 KST
+    - cron: '0 11 * * *'
   workflow_dispatch:
     inputs:
+      date:
+        description: '정산 날짜 (YYYY-MM-DD). 비워두면 오늘.'
+        required: false
+        default: ''
       week:
-        description: '정산 주 시작일 (YYYY-MM-DD, 월요일). 비워두면 직전 주 자동.'
+        description: '주간 일괄 모드 — 주 시작일 (YYYY-MM-DD, 월요일). date보다 우선.'
         required: false
         default: ''
       dry_run:
@@ -42,6 +46,8 @@ jobs:
           ARGS="--auto-confirm"
           if [ -n "${{ github.event.inputs.week }}" ]; then
             ARGS="$ARGS --week ${{ github.event.inputs.week }}"
+          elif [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="$ARGS --date ${{ github.event.inputs.date }}"
           fi
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             ARGS="$ARGS --dry-run"
