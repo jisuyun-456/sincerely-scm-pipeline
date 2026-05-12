@@ -43,9 +43,10 @@
       "title": "sincerely-scm-dashboard v1 — Agentic OS dashboard (React + Supabase + Vercel)",
       "priority": "high",
       "domain": "dashboard",
-      "status": "in_progress",
+      "status": "done",
       "created_at": "2026-05-08",
-      "notes": "Phase 2 CBM 위젯 완료 (W1/W2/W4). Phase C(W3 WMS) + Phase D(K1 AutoResearch) 대기."
+      "completed_at": "2026-05-13",
+      "notes": "Phase 2 CBM 위젯 완료 (W1/W2/W4/W3). Phase C(W3 WMS Box-Mix) + Phase D(K1 util_v2) 모두 완료. 17:00 KST 전용 cron 추가."
     },
     {
       "id": "PKG-LABEL-01",
