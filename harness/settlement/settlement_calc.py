@@ -25,6 +25,7 @@ from pathlib import Path
 
 # ─── Config ─────────────────────────────────────────────────────────────────
 AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
+SLACK_WEBHOOK = os.environ.get("SLACK_WEBHOOK_URL", "")
 TMS_BASE = "app4x70a8mOrIKsMf"
 SHIPMENT_TABLE = "tbllg1JoHclGYer7m"
 LOG_DIR = Path(__file__).parent / "state"
@@ -192,6 +193,21 @@ def fetch_week(monday: str, sunday: str) -> list[dict]:
             break
         time.sleep(0.2)
     return records
+
+
+def notify_slack(monday: str, sunday: str, dry_run: bool, written: int, skipped: int, totals: dict) -> None:
+    if not SLACK_WEBHOOK:
+        return
+    label = "[DRY-RUN] " if dry_run else ""
+    lines = [f"{label}*정산 완료* {monday} ~ {sunday}"]
+    for drv, t in totals.items():
+        u_str = f"  상하차 {t['unload']:,}" if t.get("unload") else ""
+        lines.append(f"  {drv}: {t['count']}건  운임 {t['fare']:,}{u_str}")
+    lines.append(f"작성: {written}건 / 기존값 스킵: {skipped}건")
+    try:
+        requests.post(SLACK_WEBHOOK, json={"text": "\n".join(lines)}, timeout=10)
+    except Exception:
+        pass
 
 
 def update_record(rec_id: str, fare: int, unload: int, dry_run: bool) -> bool:
@@ -412,6 +428,7 @@ def main():
 
     if args.dry_run:
         print("\n[DRY-RUN] No changes written.")
+        notify_slack(monday, sunday, dry_run=True, written=0, skipped=skipped_existing, totals=driver_totals)
         return
 
     # 7. Confirm
@@ -445,6 +462,7 @@ def main():
         }, f, ensure_ascii=False, indent=2)
 
     print(f"\nDone: {ok}/{len(to_write)} written. Log -> {log_path}")
+    notify_slack(monday, sunday, dry_run=False, written=ok, skipped=skipped_existing, totals=driver_totals)
 
 
 if __name__ == "__main__":

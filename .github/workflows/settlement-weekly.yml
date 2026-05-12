@@ -1,0 +1,49 @@
+name: Settlement Weekly (기사님 운임 정산)
+
+on:
+  schedule:
+    # 매주 월요일 13:00 UTC = 22:00 KST
+    - cron: '0 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      week:
+        description: '정산 주 시작일 (YYYY-MM-DD, 월요일). 비워두면 직전 주 자동.'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry-run (실제 쓰기 없이 미리보기)'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  settlement:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements-autoresearch.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-autoresearch.txt
+
+      - name: Run settlement calc
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_SETTLEMENT }}
+        run: |
+          ARGS="--auto-confirm"
+          if [ -n "${{ github.event.inputs.week }}" ]; then
+            ARGS="$ARGS --week ${{ github.event.inputs.week }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python harness/settlement/settlement_calc.py $ARGS
