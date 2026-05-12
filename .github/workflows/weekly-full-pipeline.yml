@@ -2,8 +2,8 @@ name: Weekly Full Pipeline (TMS + WMS)
 
 on:
   schedule:
-    # 매주 월요일 23:30 UTC = 08:30 KST
-    - cron: '30 23 * * 0'
+    # 매주 월요일 12:00 UTC = 21:00 KST
+    - cron: '0 12 * * 1'
   workflow_dispatch:
 
 jobs:
@@ -30,6 +30,8 @@ jobs:
       - name: TMS Weekly Backfill (주간분석 리포트)
         env:
           AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
         run: python scripts/tms_weekly_backfill.py
 
       # ── Step 2: TMS AutoResearch ─────────────────────────────────────────

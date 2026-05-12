@@ -122,6 +122,36 @@ def main():
         for label, result in summary.items():
             f.write(f"  {label}: {result}\n")
     print(f"\n[로그 저장] {log_path}")
+    _notify_slack(start, end, args.dry_run, summary)
+
+
+def _notify_slack(start, end, dry_run: bool, summary: dict) -> None:
+    token = os.environ.get("SLACK_BOT_TOKEN", "")
+    user_id = os.environ.get("SLACK_DM_USER_ID", "")
+    if not token or not user_id:
+        return
+    label = "[DRY] " if dry_run else ""
+    lines = [f"{label}*TMS 백필 완료* {start} ~ {end}"]
+    for lbl, result in summary.items():
+        if "error" in result:
+            lines.append(f"  {lbl}: [오류] {result['error']}")
+        else:
+            lines.append(f"  {lbl}: {result.get('created', 0)}건")
+    try:
+        import requests
+        ch = requests.post(
+            "https://slack.com/api/conversations.open",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"users": user_id}, timeout=10,
+        ).json()["channel"]["id"]
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"channel": ch, "text": "\n".join(lines)},
+            timeout=10,
+        )
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

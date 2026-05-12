@@ -2,8 +2,8 @@ name: Settlement Daily (기사님 운임 정산)
 
 on:
   schedule:
-    # 매일 11:00 UTC = 20:00 KST
-    - cron: '0 11 * * *'
+    # 매일 12:00 UTC = 21:00 KST
+    - cron: '0 12 * * *'
   workflow_dispatch:
     inputs:
       date:
