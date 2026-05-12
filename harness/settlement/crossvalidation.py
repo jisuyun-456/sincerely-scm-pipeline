@@ -177,7 +177,7 @@ def parse_unload_fee(box_text) -> int:
     s = str(box_text)
     try:
         heavy = int(re.search(r"중대(\d+)", s).group(1)) if re.search(r"중대(\d+)", s) else 0
-        large = int(re.search(r"(?<!중)대(\d+)", s).group(1)) if re.search(r"(?<!중)대(\d+)", s) else 0
+        large = int(re.search(r"(?<!중)(?<!특)대(\d+)", s).group(1)) if re.search(r"(?<!중)(?<!특)대(\d+)", s) else 0
         xlarge = int(re.search(r"특대(\d+)", s).group(1)) if re.search(r"특대(\d+)", s) else 0
         return min((heavy // 5) * 5000 + (large // 3) * 5000 + (xlarge // 3) * 5000, 50000)
     except Exception:

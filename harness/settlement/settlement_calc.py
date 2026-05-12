@@ -59,8 +59,11 @@ F_FARE = "fldRT95SC88KSBATT"       # 운송비용
 F_UNLOAD = "fldxmAZrBGqS7sQoL"    # 상하차비용
 F_ORIGIN_ADDR = "fldb24I9EQ2KPXv6S"  # 출고지 주소 (rollup)
 F_DEST_ADDR = "fldyJHUh9gN44Ggnh"   # 수령인(주소) (rollup)
-F_BOX_TEXT = "fldTjLDmw5sNGszeD"    # 최종 외박스 수량 값 (formula)
-F_REQUEST_NOTE = "fldHQdGWe8jNrNYEM" # 배송 요청사항 (rollup)
+F_BOX_TEXT        = "fldTjLDmw5sNGszeD"   # 최종 외박스 수량 값 (formula)
+F_BOX_QTY_DIRECT  = "fldRjMaXa5TdSsGDL"  # 외박스 수량 (직접입력) — PNA fallback
+F_BOX_QTY         = "fldGXhlBwI6toXSJC"   # 외박스 수량 (rollup from 배송요청) — PNA fallback
+F_PROJECT_CODE    = "fldTs3FzaSdGYEiKX"   # project code (rollup) — PNA 식별용
+F_REQUEST_NOTE    = "fldHQdGWe8jNrNYEM"   # 배송 요청사항 (rollup)
 
 # Korean district coordinate lookup (same as crossvalidation.py)
 KR_COORDS: dict[str, tuple[float, float]] = {
@@ -189,7 +192,7 @@ def parse_unload_fee(box_text) -> int:
     s = str(box_text)
     try:
         heavy = int(re.search(r"중대(\d+)", s).group(1)) if re.search(r"중대(\d+)", s) else 0
-        large = int(re.search(r"(?<!중)대(\d+)", s).group(1)) if re.search(r"(?<!중)대(\d+)", s) else 0
+        large = int(re.search(r"(?<!중)(?<!특)대(\d+)", s).group(1)) if re.search(r"(?<!중)(?<!특)대(\d+)", s) else 0
         xlarge = int(re.search(r"특대(\d+)", s).group(1)) if re.search(r"특대(\d+)", s) else 0
         return min((heavy // 5) * 5000 + (large // 3) * 5000 + (xlarge // 3) * 5000, 50000)
     except Exception:
@@ -229,7 +232,9 @@ def fetch_week(monday: str, sunday: str) -> list[dict]:
             "filterByFormula": formula,
             "returnFieldsByFieldId": "true",
             "fields[]": [F_SC_ID, F_DATE, F_PARTNER, F_FARE, F_UNLOAD,
-                         F_ORIGIN_ADDR, F_DEST_ADDR, F_BOX_TEXT, F_REQUEST_NOTE],
+                         F_ORIGIN_ADDR, F_DEST_ADDR, F_BOX_TEXT,
+                         F_BOX_QTY_DIRECT, F_BOX_QTY, F_PROJECT_CODE,
+                         F_REQUEST_NOTE],
             "pageSize": 100,
         }
         if cursor:
@@ -373,6 +378,12 @@ def _is_outsource(rec: dict) -> bool:
     )
 
 
+def _is_pna(rec: dict) -> bool:
+    """PNA 프로젝트 고객납품건 여부 — project code 필드에 'PNA' 포함."""
+    code = _str_field(rec["fields"].get(F_PROJECT_CODE))
+    return "PNA" in code.upper()
+
+
 def calc_park(recs: list[dict]) -> list[dict]:
     """
     박종성:
@@ -415,7 +426,14 @@ def calc_park(recs: list[dict]) -> list[dict]:
         date_val = rec["fields"].get(F_DATE, "")
         origin_addr = _str_field(rec["fields"].get(F_ORIGIN_ADDR))
         dest_addr   = _str_field(rec["fields"].get(F_DEST_ADDR))
-        box_text    = rec["fields"].get(F_BOX_TEXT, "") or ""
+        box_text = rec["fields"].get(F_BOX_TEXT, "") or ""
+        if not box_text and _is_pna(rec):
+            # PNA 고객납품건: 직접입력 → rollup 순으로 fallback
+            box_text = (
+                _str_field(rec["fields"].get(F_BOX_QTY_DIRECT))
+                or _str_field(rec["fields"].get(F_BOX_QTY))
+                or ""
+            )
 
         origin_coord = ORIGINS["에이원지식산업센터"]
         if "성남시" in origin_addr or "다영" in origin_addr:
