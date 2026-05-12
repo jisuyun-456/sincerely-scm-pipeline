@@ -40,6 +40,7 @@ DRIVER_PARK = "recXCfwVTqaoeQ9SS"  # 신시어리 박종성
 PARK_BASE_FARE = 55421
 PARK_KM_RATE = 831
 PARK_TOLERANCE = 0.30  # flag if calc vs actual differs by >30%
+OUTSOURCE_DAILY = 70_000  # 외주임가공→다영기획 일일 고정 운임 (수동 조정 예정)
 
 # Origin coords for 박종성 distance calc
 ORIGINS = {
@@ -56,6 +57,7 @@ F_UNLOAD = "fldxmAZrBGqS7sQoL"    # 상하차비용
 F_ORIGIN_ADDR = "fldb24I9EQ2KPXv6S"  # 출고지 주소 (rollup)
 F_DEST_ADDR = "fldyJHUh9gN44Ggnh"   # 수령인(주소) (rollup)
 F_BOX_TEXT = "fldTjLDmw5sNGszeD"    # 최종 외박스 수량 값 (formula)
+F_REQUEST_NOTE = "fldHQdGWe8jNrNYEM" # 배송 요청사항 (rollup)
 
 # Korean district coordinate lookup (same as crossvalidation.py)
 KR_COORDS: dict[str, tuple[float, float]] = {
@@ -180,7 +182,7 @@ def fetch_week(monday: str, sunday: str) -> list[dict]:
             "filterByFormula": formula,
             "returnFieldsByFieldId": "true",
             "fields[]": [F_SC_ID, F_DATE, F_PARTNER, F_FARE, F_UNLOAD,
-                         F_ORIGIN_ADDR, F_DEST_ADDR, F_BOX_TEXT],
+                         F_ORIGIN_ADDR, F_DEST_ADDR, F_BOX_TEXT, F_REQUEST_NOTE],
             "pageSize": 100,
         }
         if cursor:
@@ -309,24 +311,65 @@ def calc_cho(recs: list[dict]) -> list[dict]:
     return results
 
 
+def _is_outsource(rec: dict) -> bool:
+    """MM 외주임가공 → 다영기획 배송 여부 판별.
+    SC id가 'MM'으로 시작 + 수령인(주소)에 '다영기획' + 배송요청사항에 '외주임가공' 포함.
+    이 경우 일일 고정 70,000원을 당일 해당 건수로 나눔(수동 콘솔 조정 예정).
+    """
+    sc_id = rec["fields"].get(F_SC_ID, "") or ""
+    dest  = _str_field(rec["fields"].get(F_DEST_ADDR))
+    note  = _str_field(rec["fields"].get(F_REQUEST_NOTE))
+    return (
+        sc_id.startswith("MM") and
+        "다영기획" in dest and
+        "외주임가공" in note
+    )
+
+
 def calc_park(recs: list[dict]) -> list[dict]:
     """
     박종성:
-      운송비용 = PARK_BASE_FARE + PARK_KM_RATE × road_km
-      상하차비용 = 중대/5 + 대/3 + 특대/3 각 5,000원 (최대 50,000원)
+      일반건: 운송비용 = PARK_BASE_FARE + PARK_KM_RATE × road_km
+              상하차비용 = 중대/5 + 대/3 + 특대/3 각 5,000원 (최대 50,000원)
+              박스 수량값 없으면 상하차비용=0 (출하지=다영기획 협력사 케이스)
+      외주임가공건: SC id='MM'+수령인=다영기획+요청사항='외주임가공'
+              → 일일 고정 70,000원 / 당일 해당 건수
     """
+    from collections import defaultdict
+
+    outsource = [r for r in recs if _is_outsource(r)]
+    normal    = [r for r in recs if not _is_outsource(r)]
+
     results = []
-    for rec in recs:
+
+    # ── 외주임가공 케이스: 날짜별 70,000원 균등 배분 ──
+    outsource_by_date: defaultdict[str, list] = defaultdict(list)
+    for rec in outsource:
+        outsource_by_date[rec["fields"].get(F_DATE, "")].append(rec)
+
+    for d, day_recs in sorted(outsource_by_date.items()):
+        n = len(day_recs)
+        per_ship = round(OUTSOURCE_DAILY / n)
+        for rec in day_recs:
+            results.append({
+                "rec_id": rec["id"],
+                "sc_id": rec["fields"].get(F_SC_ID, ""),
+                "date": d,
+                "driver": "박종성",
+                "fare_calc": per_ship,
+                "unload_calc": 0,
+                "fare_existing": rec["fields"].get(F_FARE) or 0,
+                "note": f"MM외주임가공70k/{n}건",
+            })
+
+    # ── 일반 케이스: haversine 거리 운임 ──
+    for rec in normal:
         sc_id = rec["fields"].get(F_SC_ID, "")
         date_val = rec["fields"].get(F_DATE, "")
-        origin_raw = rec["fields"].get(F_ORIGIN_ADDR)
-        dest_raw = rec["fields"].get(F_DEST_ADDR)
-        box_text = rec["fields"].get(F_BOX_TEXT, "") or ""
+        origin_addr = _str_field(rec["fields"].get(F_ORIGIN_ADDR))
+        dest_addr   = _str_field(rec["fields"].get(F_DEST_ADDR))
+        box_text    = rec["fields"].get(F_BOX_TEXT, "") or ""
 
-        origin_addr = _str_field(origin_raw)
-        dest_addr = _str_field(dest_raw)
-
-        # Map origin to known warehouse
         origin_coord = ORIGINS["에이원지식산업센터"]
         if "성남시" in origin_addr or "다영" in origin_addr:
             origin_coord = ORIGINS["다영기획"]
@@ -346,7 +389,6 @@ def calc_park(recs: list[dict]) -> list[dict]:
         unload_calc = parse_unload_fee(box_text)
         existing_fare = rec["fields"].get(F_FARE) or 0
 
-        # Tolerance check
         if fare_calc and existing_fare:
             delta = abs(fare_calc - existing_fare) / existing_fare
             if delta > PARK_TOLERANCE:
