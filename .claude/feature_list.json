@@ -25,7 +25,7 @@
       "title": "Phase C — W3 WMS Box-Mix Forecast 위젯",
       "priority": "medium",
       "domain": "dashboard",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-05-13",
       "notes": "sync_wms_box_mix.py (매일 17:00 KST) + WMS탭 내일 필요 박스명칭별 예상 수량 스택바. wms_box_mix_forecast 테이블 (schema.sql에 미포함, 별도 migration 필요)."
     },
