@@ -178,9 +178,9 @@ def estimate_dest_coord(addr: str):
     return None
 
 
-def _round1k(x: float) -> int:
-    """1,000원 단위 반올림 (주유소 정액 요금 기준)"""
-    return round(x / 1000) * 1000
+def _round500(x: float) -> int:
+    """500원 단위 올림 — 1~499원은 500원으로, 501~999원은 1,000원으로"""
+    return math.ceil(x / 500) * 500
 
 
 def parse_unload_fee(box_text) -> int:
@@ -307,7 +307,7 @@ def calc_lee(recs: list[dict]) -> list[dict]:
     results = []
     for d, day_recs in sorted(daily.items()):
         n = len(day_recs)
-        per_ship = _round1k(160000 / n)
+        per_ship = _round500(160000 / n)
         for rec in day_recs:
             results.append({
                 "rec_id": rec["id"],
@@ -342,7 +342,7 @@ def calc_cho(recs: list[dict]) -> list[dict]:
         surcharge = max(0, gyeonggi_count - 1) * 30000
         daily_total = 360000 + surcharge
         n = len(day_recs)
-        per_ship = _round1k(daily_total / n)
+        per_ship = _round500(daily_total / n)
         for rec in day_recs:
             dest = _str_field(rec["fields"].get(F_DEST_ADDR))
             results.append({
@@ -396,7 +396,7 @@ def calc_park(recs: list[dict]) -> list[dict]:
 
     for d, day_recs in sorted(outsource_by_date.items()):
         n = len(day_recs)
-        per_ship = _round1k(OUTSOURCE_DAILY / n)
+        per_ship = _round500(OUTSOURCE_DAILY / n)
         for rec in day_recs:
             results.append({
                 "rec_id": rec["id"],
@@ -428,7 +428,7 @@ def calc_park(recs: list[dict]) -> list[dict]:
         if dest_coord:
             hav = haversine_km(origin_coord[0], origin_coord[1], dest_coord[0], dest_coord[1])
             road_km = hav * 1.35
-            fare_calc = _round1k(PARK_BASE_FARE + PARK_KM_RATE * road_km)
+            fare_calc = _round500(PARK_BASE_FARE + PARK_KM_RATE * road_km)
             note = f"{road_km:.1f}km ({PARK_BASE_FARE}+{PARK_KM_RATE}x{road_km:.1f})"
         else:
             note = f"NO_COORD: {dest_addr[:30]}"
