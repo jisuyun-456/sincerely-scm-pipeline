@@ -41,7 +41,8 @@ jobs:
       - name: Run settlement calc
         env:
           AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_SETTLEMENT }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
         run: |
           ARGS="--auto-confirm"
           if [ -n "${{ github.event.inputs.week }}" ]; then

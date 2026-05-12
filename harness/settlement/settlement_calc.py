@@ -25,7 +25,8 @@ from pathlib import Path
 
 # ─── Config ─────────────────────────────────────────────────────────────────
 AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
-SLACK_WEBHOOK = os.environ.get("SLACK_WEBHOOK_URL", "")
+SLACK_TOKEN = os.environ.get("SLACK_BOT_TOKEN", "")
+SLACK_DM_USER = os.environ.get("SLACK_DM_USER_ID", "")
 TMS_BASE = "app4x70a8mOrIKsMf"
 SHIPMENT_TABLE = "tbllg1JoHclGYer7m"
 LOG_DIR = Path(__file__).parent / "state"
@@ -197,16 +198,27 @@ def fetch_week(monday: str, sunday: str) -> list[dict]:
 
 
 def notify_slack(monday: str, sunday: str, dry_run: bool, written: int, skipped: int, totals: dict) -> None:
-    if not SLACK_WEBHOOK:
+    if not SLACK_TOKEN or not SLACK_DM_USER:
         return
     label = "[DRY-RUN] " if dry_run else ""
-    lines = [f"{label}*정산 완료* {monday} ~ {sunday}"]
+    date_label = monday if monday == sunday else f"{monday} ~ {sunday}"
+    lines = [f"{label}*정산 완료* {date_label}"]
     for drv, t in totals.items():
         u_str = f"  상하차 {t['unload']:,}" if t.get("unload") else ""
         lines.append(f"  {drv}: {t['count']}건  운임 {t['fare']:,}{u_str}")
     lines.append(f"작성: {written}건 / 기존값 스킵: {skipped}건")
     try:
-        requests.post(SLACK_WEBHOOK, json={"text": "\n".join(lines)}, timeout=10)
+        ch = requests.post(
+            "https://slack.com/api/conversations.open",
+            headers={"Authorization": f"Bearer {SLACK_TOKEN}", "Content-Type": "application/json"},
+            json={"users": SLACK_DM_USER}, timeout=10,
+        ).json()["channel"]["id"]
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": f"Bearer {SLACK_TOKEN}", "Content-Type": "application/json"},
+            json={"channel": ch, "text": "\n".join(lines)},
+            timeout=10,
+        )
     except Exception:
         pass
 
