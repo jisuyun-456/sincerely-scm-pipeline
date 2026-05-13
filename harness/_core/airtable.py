@@ -95,6 +95,7 @@ class AirtableClient:
         view_id: str | None = None,
         filter_formula: str | None = None,
         fields: list[str] | None = None,
+        return_fields_by_field_id: bool = False,
     ) -> list[dict]:
         params: dict = {}
         if view_id:
@@ -104,6 +105,8 @@ class AirtableClient:
         if fields:
             for f in fields:
                 params.setdefault("fields[]", []).append(f)
+        if return_fields_by_field_id:
+            params["returnFieldsByFieldId"] = "true"
 
         records: list[dict] = []
         offset: str | None = None
