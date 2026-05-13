@@ -46,12 +46,11 @@ def run() -> int:
     cfg = get_config()
     dry_run = cfg.dry_run
 
-    all_ships = db.select(
+    pending = db.select(
         "shipment",
-        None,
+        {"pod_status": ["pending", "in_transit"]},
         columns="ship_id, carrier_id, driver_name, pod_status",
     )
-    pending = [s for s in all_ships if s.get("pod_status") in ("pending", "in_transit")]
     if not pending:
         logger.info("%s: no pending/in_transit shipments found", AGENT_NAME)
         return 0
