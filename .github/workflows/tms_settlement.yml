@@ -46,9 +46,9 @@ jobs:
       - name: Check required secrets
         shell: bash
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
         run: |
-          [[ -n "$AIRTABLE_PAT" ]] || { echo "::error::AIRTABLE_PAT secret is not set"; exit 1; }
+          [[ -n "$AIRTABLE_PAT" ]] || { echo "::error::AIRTABLE_API_KEY_TMS secret is not set"; exit 1; }
 
       - name: Resolve week
         id: week
@@ -68,7 +68,7 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
       - name: Validate module imports
         shell: bash
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
         run: python -c "from harness.tms_settlement.main import main; print('imports OK')"
 
   # ── 2. Calculate ──────────────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
       - name: Dry-run calculation
         shell: bash
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
         run: |
           python -m harness.tms_settlement.main \
             --week "${{ needs.validate.outputs.week }}" \
@@ -145,11 +145,11 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
       - name: Write settlement to Airtable
         shell: bash
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           ARGS="--week ${{ needs.validate.outputs.week }} --auto-confirm"
           [[ "${{ github.event.inputs.force }}" == "true" ]] && ARGS="$ARGS --force"
