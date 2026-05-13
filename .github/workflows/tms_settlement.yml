@@ -1,0 +1,183 @@
+name: TMS Settlement — 기사님 운임 정산
+
+on:
+  schedule:
+    # 매주 월요일 12:00 UTC = 21:00 KST (지난 주 Mon–Sun 정산)
+    - cron: '0 12 * * 1'
+  workflow_dispatch:
+    inputs:
+      week:
+        description: '주 시작일 (YYYY-MM-DD, 월요일). 비워두면 지난 월요일.'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry-run — 실제 쓰기 없이 미리보기'
+        type: boolean
+        required: false
+        default: false
+      force:
+        description: 'Overwrite existing fare values (--force)'
+        type: boolean
+        required: false
+        default: false
+
+env:
+  PYTHON_VERSION: '3.11'
+  REQS: harness/requirements.txt
+
+jobs:
+  # ── 1. Validate ───────────────────────────────────────────────────────────────
+  validate:
+    name: '1 · Validate — env & imports'
+    runs-on: ubuntu-latest
+    outputs:
+      week: ${{ steps.week.outputs.week }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.REQS }}
+
+      - run: pip install -r ${{ env.REQS }}
+
+      - name: Check required secrets
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+        run: |
+          [[ -n "$AIRTABLE_PAT" ]] || { echo "::error::AIRTABLE_PAT secret is not set"; exit 1; }
+
+      - name: Resolve week
+        id: week
+        shell: bash
+        run: |
+          if [[ -n "${{ github.event.inputs.week }}" ]]; then
+            W="${{ github.event.inputs.week }}"
+          else
+            W=$(python -c "
+from datetime import date, timedelta
+t = date.today()
+print((t - timedelta(days=t.weekday() + 7)).isoformat())
+")
+          fi
+          echo "week=$W" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Validate module imports
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+        run: python -c "from harness.tms_settlement.main import main; print('imports OK')"
+
+  # ── 2. Calculate ──────────────────────────────────────────────────────────────
+  calculate:
+    name: '2 · Calculate — dry-run preview'
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.REQS }}
+
+      - run: pip install -r ${{ env.REQS }}
+
+      - name: Dry-run calculation
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+        run: |
+          python -m harness.tms_settlement.main \
+            --week "${{ needs.validate.outputs.week }}" \
+            --dry-run --auto-confirm \
+            2>&1 | tee settlement-preview.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: settlement-preview-${{ needs.validate.outputs.week }}
+          path: settlement-preview.txt
+          retention-days: 14
+
+  # ── 3. Verify ─────────────────────────────────────────────────────────────────
+  verify:
+    name: '3 · Verify — anomaly gate'
+    runs-on: ubuntu-latest
+    needs: [validate, calculate]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: settlement-preview-${{ needs.validate.outputs.week }}
+
+      - name: Check for anomalies
+        shell: bash
+        run: |
+          echo "=== Settlement Preview (week: ${{ needs.validate.outputs.week }}) ==="
+          cat settlement-preview.txt
+          # Abort if critical patterns found: blocked ratio >0% or fetch error
+          if grep -qiE "blocked ratio.*[1-9][0-9]?%|fetch failed|CRITICAL" settlement-preview.txt; then
+            echo "::error::Anomaly detected — review settlement-preview.txt before writing"
+            exit 1
+          fi
+          echo "::notice::No anomalies detected — safe to proceed"
+
+  # ── 4. Write ──────────────────────────────────────────────────────────────────
+  write:
+    name: '4 · Write — commit to Airtable'
+    runs-on: ubuntu-latest
+    needs: [validate, verify]
+    if: ${{ github.event.inputs.dry_run != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.REQS }}
+
+      - run: pip install -r ${{ env.REQS }}
+
+      - name: Write settlement to Airtable
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          ARGS="--week ${{ needs.validate.outputs.week }} --auto-confirm"
+          [[ "${{ github.event.inputs.force }}" == "true" ]] && ARGS="$ARGS --force"
+          python -m harness.tms_settlement.main $ARGS
+
+  # ── 5. Notify ─────────────────────────────────────────────────────────────────
+  notify:
+    name: '5 · Notify — workflow summary'
+    runs-on: ubuntu-latest
+    needs: [validate, write]
+    if: always()
+    steps:
+      - name: Write step summary
+        shell: bash
+        run: |
+          WEEK="${{ needs.validate.outputs.week }}"
+          case "${{ needs.write.result }}" in
+            success)   STATUS="✅ 완료" ;;
+            skipped)   STATUS="⏭️ 건너뜀 (dry-run)" ;;
+            failure)   STATUS="❌ 실패" ;;
+            cancelled) STATUS="🚫 취소" ;;
+            *)         STATUS="❓ ${{ needs.write.result }}" ;;
+          esac
+          {
+            echo "## TMS Settlement — $WEEK"
+            echo "| 항목 | 값 |"
+            echo "|------|-----|"
+            echo "| 주간 | \`$WEEK\` |"
+            echo "| 상태 | $STATUS |"
+            echo "| 실행 | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |"
+          } >> "$GITHUB_STEP_SUMMARY"
