@@ -1,0 +1,44 @@
+name: CI — tms_settlement golden tests
+
+on:
+  push:
+    paths:
+      - 'harness/**'
+      - 'tests/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'harness/**'
+      - 'tests/**'
+
+jobs:
+  golden:
+    name: Golden tests + coverage gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: harness/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r harness/requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run golden tests (tms_settlement)
+        run: |
+          python -m pytest tests/tms_settlement/ -v --tb=short
+
+      - name: Coverage gate — harness/_core (90%)
+        run: |
+          python -m pytest tests/tms_settlement/ \
+            --cov=harness/_core \
+            --cov-report=term-missing \
+            --cov-fail-under=90 \
+            -q
