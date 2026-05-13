@@ -50,7 +50,7 @@ class Notifier:
             # Final fallback — always succeeds
             _log.error(
                 "notify fallback: all tiers failed, logging only",
-                msg=full_msg,
+                notification=full_msg,
             )
 
     def _try_slack(self, msg: str, severity: str) -> bool:

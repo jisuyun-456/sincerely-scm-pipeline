@@ -115,9 +115,12 @@ def main() -> None:
         sys.exit(1)
 
     if unregistered:
-        msg = f"Unregistered driver IDs: {unregistered} — aborting (P0/D1)"
+        msg = f"Unregistered driver IDs: {unregistered} - aborting (P0/D1)"
         _log.error(msg)
         notifier.notify(msg, severity="CRITICAL", domain=DOMAIN)
+        if sink:
+            sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
+                           week=monday, status="failed", summary=msg)
         sys.exit(2)
 
     if not records:
