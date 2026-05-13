@@ -35,6 +35,7 @@ model: opus
 5. **AutoResearch 주간 리포트 생성**
    - `ClaudeVault/_AutoResearch/SCM/outputs/week_YYYYMMDD.md` 저장
    - 표·차트·인사이트·다음 Iteration 액션
+   - **운임 비용 섹션 포함**: 전주 총 운임 비용 / CBM당 단가 vs. 전전주 비교 (이상 감지 시 SK-09 tms-cost-lane 에스컬레이션)
 6. **이상치 플래그 → 메인 Claude로 보고**
    - 차량이용률 비정상 (음수, >150%) → 데이터 검증 요청
    - OTIF 급락 (-10%p 이상) → 원인 분석 권고
@@ -48,4 +49,6 @@ model: opus
 - 운영 데이터 추출 → SK-05 tms-shipment
 - 입하 Dock-to-Stock 데이터 → SK-02 wms-inbound
 - KPI 미달 시 개선 로드맵 → D3 consulting-pm-expert + D1 scm-logistics-expert
+- 운임 비용 이상 감지 (±15% 이탈) → SK-09 tms-cost-lane
+- TMS 개선 프로젝트 착수 필요 판단 → D-TMS1 tms-improvement
 - AutoResearch Iteration 설계 → D1 scm-logistics-expert
