@@ -62,7 +62,7 @@
 
 | 키워드 | 에이전트 | 모델 |
 |--------|---------|------|
-| TMS 개선, 프로젝트 착수, 로드맵, Gap 분석, AS-IS, TO-BE, 요구사항, 개선계획, TMS 설계, TMS 고도화 | tms-improvement (D-TMS1) | **opus** |
+| TMS 개선, 프로젝트 착수, 로드맵, Gap 분석, AS-IS, TO-BE, 요구사항, 개선계획, TMS 설계, TMS 고도화, TMS 5 Forces, TMS SWOT, TMS PESTEL, TMS 7S, TMS Issue Tree, TMS MECE, TMS Pyramid, BCG Matrix, 3 Horizons, carrier market 분석, lane 포트폴리오 | tms-improvement (D-TMS1) | **opus** |
 | carrier 평가, 3PL, 운임 재협상, RFQ, 외주, 계약, SLA, scorecard, 파트너사, carrier 전략, 택배사 변경 | tms-carrier (D-TMS2) | **opus** |
 | 재고전략, 물류컨설팅, SCM개선, 공급망, SCOR, ABC분석, XYZ, 거점, 소싱, 리드타임, Bullwhip | scm-logistics-expert (D1) | **opus** |
 | 분개, 전표, 세금, 기간마감, K-IFRS, 더존, 계정코드, 역분개, 재고자산, 이전가격, 부가세 | tax-accounting-expert (D2) | **opus** |
