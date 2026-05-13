@@ -2,8 +2,9 @@
 TMS Settlement — thin CLI orchestrator.
 
 Usage:
-  py -m harness.tms_settlement.main --week 2026-05-04    # weekly batch
-  py -m harness.tms_settlement.main                      # defaults to last Monday
+  py -m harness.tms_settlement.main                      # defaults to today (KST)
+  py -m harness.tms_settlement.main --date 2026-05-13    # specific day
+  py -m harness.tms_settlement.main --week 2026-05-04    # Mon–Sun weekly batch
   py -m harness.tms_settlement.main --dry-run            # no writes
   py -m harness.tms_settlement.main --force              # overwrite existing fare
   py -m harness.tms_settlement.main --mode fresh         # ignore checkpoint
@@ -48,14 +49,11 @@ from harness.tms_settlement.write import write_batch
 _log = StructuredLogger(DOMAIN)
 
 
-def _last_monday() -> date:
-    today = today_kst()
-    return today - timedelta(days=today.weekday() + 7)
-
-
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="기사님 운임비 정산 자동화 (tms_settlement)")
-    p.add_argument("--week", help="Week start date YYYY-MM-DD (Monday). Default: last Monday.")
+    grp = p.add_mutually_exclusive_group()
+    grp.add_argument("--date", help="Settlement date YYYY-MM-DD (default: today KST).")
+    grp.add_argument("--week", help="Week start Monday YYYY-MM-DD — settles Mon–Sun range.")
     p.add_argument("--dry-run", action="store_true", help="Preview only — no Airtable writes.")
     p.add_argument("--force", action="store_true", help="Overwrite existing fare values.")
     p.add_argument(
@@ -81,21 +79,25 @@ def main() -> None:
 
     # ── 2. Determine date range ───────────────────────────────────────────────
     if args.week:
-        monday_d = date.fromisoformat(args.week)
+        start_d = date.fromisoformat(args.week)
+        end_d = start_d + timedelta(days=6)
+    elif args.date:
+        start_d = end_d = date.fromisoformat(args.date)
     else:
-        monday_d = _last_monday()
+        start_d = end_d = today_kst()
 
     try:
-        assert_week_in_window(monday_d)
+        assert_week_in_window(start_d)
     except Exception as exc:
-        _log.error("week out of allowed window", error=str(exc))
+        _log.error("date out of allowed window", error=str(exc))
         sys.exit(1)
 
-    monday, sunday = monday_d.isoformat(), (monday_d + timedelta(days=6)).isoformat()
-    _log.info("settlement start", monday=monday, sunday=sunday, dry_run=args.dry_run)
+    start, end = start_d.isoformat(), end_d.isoformat()
+    period = start if start == end else f"{start} ~ {end}"
+    _log.info("settlement start", start=start, end=end, dry_run=args.dry_run)
     if sink:
         sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
-                       week=monday, status="started")
+                       week=start, status="started")
 
     # ── 3. Airtable client ────────────────────────────────────────────────────
     client = AirtableClient.get_or_create(TMS_BASE, SHIPMENT_TABLE, cfg.pat)
@@ -105,17 +107,26 @@ def main() -> None:
 
     # ── 4. Fetch ──────────────────────────────────────────────────────────────
     try:
-        records, unregistered = fetch_week(client, monday, sunday)
+        records, unregistered = fetch_week(client, start, end)
     except Exception as exc:
         _log.error("fetch failed", error=str(exc))
         notifier.notify(f"Settlement fetch failed: {exc}", severity="CRITICAL", domain=DOMAIN)
         if sink:
             sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
-                           week=monday, status="failed", summary=f"fetch failed: {exc}")
+                           week=start, status="failed", summary=f"fetch failed: {exc}")
         sys.exit(1)
 
+    if unregistered:
+        msg = f"Unregistered driver IDs: {unregistered} - aborting (P0/D1)"
+        _log.error(msg)
+        notifier.notify(msg, severity="CRITICAL", domain=DOMAIN)
+        if sink:
+            sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
+                           week=start, status="failed", summary=msg)
+        sys.exit(2)
+
     if not records:
-        _log.info("no settlement shipments for this week — done")
+        _log.info("no settlement shipments for this period — done")
         sys.exit(0)
 
     by_driver = split_by_driver(records)
@@ -144,7 +155,7 @@ def main() -> None:
 
     # ── 7. Interactive confirm (skipped in CI / dry-run) ──────────────────────
     if not args.dry_run and not args.auto_confirm:
-        print(f"\nSettlement preview: {len(settlement)} records  ({monday} ~ {sunday})")
+        print(f"\nSettlement preview: {len(settlement)} records  ({period})")
         for item in settlement:
             u = f"  unload={item.unload_calc:,}" if item.unload_calc else ""
             flag = "  [NO_COORD]" if item.no_coord else ""
@@ -158,27 +169,27 @@ def main() -> None:
     # ── 8. Write (with IdempotentRunner checkpoint) ───────────────────────────
     verifier = SettlementVerifier(force=args.force)
 
-    with IdempotentRunner(DOMAIN, monday, mode=args.mode) as runner:
+    with IdempotentRunner(DOMAIN, start, mode=args.mode) as runner:
         try:
             result = write_batch(
                 settlement, client, verifier, runner,
                 dry_run=args.dry_run,
                 force=args.force,
-                week=monday,
+                week=start,
                 fetched_count=len(records),
             )
         except SystemExit:
-            msg = f"Settlement batch blocked >10% - manual review required ({monday})"
+            msg = f"Settlement batch blocked >10% - manual review required ({period})"
             notifier.notify(msg, severity="CRITICAL", domain=DOMAIN)
             if sink:
                 sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
-                               week=monday, status="failed", summary=msg)
+                               week=start, status="failed", summary=msg)
             raise
 
     # ── 9. Notify ─────────────────────────────────────────────────────────────
-    label = "[DRY-RUN] " if args.dry_run else ""
+    dry_label = "[DRY-RUN] " if args.dry_run else ""
     lines = [
-        f"{label}*정산 완료* {monday} ~ {sunday}",
+        f"{dry_label}*정산 완료* {period}",
         f"Written={result.written}  Skipped={result.skipped_existing}  "
         f"Blocked={result.skipped_blocked}  NoCoord={result.skipped_no_coord}  "
         f"Failed={result.failed}",
@@ -192,7 +203,7 @@ def main() -> None:
     notifier.notify(summary, severity="INFO", domain=DOMAIN)
     if sink:
         sink.log_event(
-            source="harness", agent_id=DOMAIN, domain="TMS", week=monday,
+            source="harness", agent_id=DOMAIN, domain="TMS", week=start,
             status="failed" if result.failed else "completed",
             duration_ms=int((time.monotonic() - t0) * 1000),
             summary=f"written={result.written} failed={result.failed} skipped={result.skipped_existing}",

@@ -6,8 +6,12 @@ on:
     - cron: '0 12 * * *'
   workflow_dispatch:
     inputs:
+      date:
+        description: '특정 날짜 (YYYY-MM-DD). 비워두면 오늘.'
+        required: false
+        default: ''
       week:
-        description: '주 시작일 (YYYY-MM-DD, 월요일). 비워두면 지난 월요일.'
+        description: '주간 배치 — 주 시작일 (YYYY-MM-DD, 월요일). date보다 우선.'
         required: false
         default: ''
       dry_run:
@@ -31,7 +35,8 @@ jobs:
     name: '1 · Validate — env & imports'
     runs-on: ubuntu-latest
     outputs:
-      week: ${{ steps.week.outputs.week }}
+      date_flag: ${{ steps.resolve.outputs.date_flag }}
+      label: ${{ steps.resolve.outputs.label }}
     steps:
       - uses: actions/checkout@v4
 
@@ -50,20 +55,23 @@ jobs:
         run: |
           [[ -n "$AIRTABLE_PAT" ]] || { echo "::error::AIRTABLE_API_KEY_TMS secret is not set"; exit 1; }
 
-      - name: Resolve week
-        id: week
+      - name: Resolve date
+        id: resolve
         shell: bash
         run: |
           if [[ -n "${{ github.event.inputs.week }}" ]]; then
-            W="${{ github.event.inputs.week }}"
+            DATE_FLAG="--week ${{ github.event.inputs.week }}"
+            LABEL="${{ github.event.inputs.week }}"
+          elif [[ -n "${{ github.event.inputs.date }}" ]]; then
+            DATE_FLAG="--date ${{ github.event.inputs.date }}"
+            LABEL="${{ github.event.inputs.date }}"
           else
-            W=$(python -c "
-from datetime import date, timedelta
-t = date.today()
-print((t - timedelta(days=t.weekday() + 7)).isoformat())
-")
+            TODAY=$(python -c "from datetime import date; print(date.today().isoformat())")
+            DATE_FLAG="--date $TODAY"
+            LABEL="$TODAY"
           fi
-          echo "week=$W" | tee -a "$GITHUB_OUTPUT"
+          echo "date_flag=$DATE_FLAG" | tee -a "$GITHUB_OUTPUT"
+          echo "label=$LABEL" | tee -a "$GITHUB_OUTPUT"
 
       - name: Validate module imports
         shell: bash
@@ -93,13 +101,13 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
           AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
         run: |
           python -m harness.tms_settlement.main \
-            --week "${{ needs.validate.outputs.week }}" \
+            ${{ needs.validate.outputs.date_flag }} \
             --dry-run --auto-confirm \
             2>&1 | tee settlement-preview.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: settlement-preview-${{ needs.validate.outputs.week }}
+          name: settlement-preview-${{ needs.validate.outputs.label }}
           path: settlement-preview.txt
           retention-days: 14
 
@@ -111,12 +119,12 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: settlement-preview-${{ needs.validate.outputs.week }}
+          name: settlement-preview-${{ needs.validate.outputs.label }}
 
       - name: Check for anomalies
         shell: bash
         run: |
-          echo "=== Settlement Preview (week: ${{ needs.validate.outputs.week }}) ==="
+          echo "=== Settlement Preview (${{ needs.validate.outputs.label }}) ==="
           cat settlement-preview.txt
           # Abort if critical patterns found: blocked ratio >0% or fetch error
           if grep -qiE "blocked ratio.*[1-9][0-9]?%|fetch failed|CRITICAL" settlement-preview.txt; then
@@ -151,7 +159,7 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
-          ARGS="--week ${{ needs.validate.outputs.week }} --auto-confirm"
+          ARGS="${{ needs.validate.outputs.date_flag }} --auto-confirm"
           [[ "${{ github.event.inputs.force }}" == "true" ]] && ARGS="$ARGS --force"
           python -m harness.tms_settlement.main $ARGS
 
@@ -165,7 +173,7 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
       - name: Write step summary
         shell: bash
         run: |
-          WEEK="${{ needs.validate.outputs.week }}"
+          LABEL="${{ needs.validate.outputs.label }}"
           case "${{ needs.write.result }}" in
             success)   STATUS="✅ 완료" ;;
             skipped)   STATUS="⏭️ 건너뜀 (dry-run)" ;;
@@ -174,10 +182,10 @@ print((t - timedelta(days=t.weekday() + 7)).isoformat())
             *)         STATUS="❓ ${{ needs.write.result }}" ;;
           esac
           {
-            echo "## TMS Settlement — $WEEK"
+            echo "## TMS Settlement — $LABEL"
             echo "| 항목 | 값 |"
             echo "|------|-----|"
-            echo "| 주간 | \`$WEEK\` |"
+            echo "| 날짜 | \`$LABEL\` |"
             echo "| 상태 | $STATUS |"
             echo "| 실행 | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |"
           } >> "$GITHUB_STEP_SUMMARY"
