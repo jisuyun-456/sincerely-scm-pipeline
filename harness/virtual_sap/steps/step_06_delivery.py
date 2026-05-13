@@ -105,9 +105,9 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
             db.insert("shipment", {
                 "ship_id": ship_id,
                 "carrier_id": carrier_id,
-                "planned_pickup_at": f"{now_date.isoformat()}T02:00:00",
-                "actual_pickup_at": f"{now_date.isoformat()}T03:00:00",
-                "actual_delivery_at": actual_delivery.isoformat(),
+                "planned_pickup": f"{now_date.isoformat()}T02:00:00",
+                "actual_pickup": f"{now_date.isoformat()}T03:00:00",
+                "actual_delivery": actual_delivery.isoformat(),
                 "total_cbm": total_cbm,
                 "total_fare": total_fare,
                 "pod_status": pod_outcome,
@@ -123,13 +123,13 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
                 {
                     "ship_id": ship_id,
                     "event_type": "pickup",
-                    "event_at": f"{now_date.isoformat()}T03:00:00",
+                    "event_ts": f"{now_date.isoformat()}T03:00:00",
                     "note": f"sim_run={sim_run_id}",
                 },
                 {
                     "ship_id": ship_id,
                     "event_type": pod_outcome,
-                    "event_at": actual_delivery.isoformat(),
+                    "event_ts": actual_delivery.isoformat(),
                     "note": f"sim_run={sim_run_id}",
                 },
             ], dry_run=dry_run)

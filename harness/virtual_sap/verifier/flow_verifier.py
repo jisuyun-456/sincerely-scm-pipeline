@@ -47,7 +47,7 @@ def verify(sim_run_id: str) -> VerifierResult:
 
     # D3: every outbound_delivery with goods_issue_status='posted' has goods_issue_mat_doc_id
     for od in outbound_deliveries:
-        od_id = od.get("delivery_id", "?")
+        od_id = od.get("dlv_id", "?")
         if od.get("goods_issue_status") == "posted":
             if not od.get("goods_issue_mat_doc_id"):
                 d3_issues.append(Issue(
@@ -71,13 +71,18 @@ def verify(sim_run_id: str) -> VerifierResult:
     # ── D5 BizRule: delivery qty <= sales_order ordered_qty ───────────────────
     d5_issues: list[Issue] = []
     # Fetch delivery items for quantity check
-    delivery_ids = {od.get("delivery_id") for od in outbound_deliveries if od.get("delivery_id")}
-    delivery_items = db.select("outbound_delivery_item", {"delivery_id": list(delivery_ids)}) if delivery_ids else []
+    delivery_ids = {od.get("dlv_id") for od in outbound_deliveries if od.get("dlv_id")}
+    delivery_items = db.select("outbound_delivery_item", {"dlv_id": list(delivery_ids)}) if delivery_ids else []
+
+    # Build dlv_id → so_id map from outbound_deliveries
+    so_id_by_dlv: dict[str, str] = {od["dlv_id"]: od["so_id"] for od in outbound_deliveries
+                                     if od.get("dlv_id") and od.get("so_id")}
 
     # Sum delivery qty per (so_id, material_id)
     delivered_qty_by_so_mat: dict[tuple, float] = {}
     for di in delivery_items:
-        so_id = di.get("so_id")
+        dlv_id = di.get("dlv_id")
+        so_id = so_id_by_dlv.get(dlv_id, "")
         mat_id = di.get("material_id")
         key = (so_id, mat_id)
         delivered_qty_by_so_mat[key] = delivered_qty_by_so_mat.get(key, 0.0) + float(di.get("delivery_qty") or 0)

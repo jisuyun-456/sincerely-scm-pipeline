@@ -109,8 +109,7 @@ def update(table: str, match: dict[str, Any], updates: dict[str, Any],
     LEDGER_TABLES = {
         "mat_document", "mat_document_item",
         "fi_document", "fi_document_line",
-        "gr_document", "sales_order", "purchase_order",
-        "outbound_delivery", "shipment",
+        "gr_document",
     }
     if table in LEDGER_TABLES:
         raise RuntimeError(

@@ -198,7 +198,7 @@
     { "gl_code": "1420", "name": "제품 (재고자산)", "account_type": "asset", "is_inventory": true, "normal_balance": "D" },
     { "gl_code": "1430", "name": "재공품", "account_type": "asset", "is_inventory": true, "normal_balance": "D" },
     { "gl_code": "1440", "name": "원재료", "account_type": "asset", "is_inventory": true, "normal_balance": "D" },
-    { "gl_code": "1110", "name": "현금및현금성자산", "account_type": "asset", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "1010", "name": "현금및현금성자산", "account_type": "asset", "is_inventory": false, "normal_balance": "D" },
     { "gl_code": "2110", "name": "미지급금-GR/IR", "account_type": "liability", "is_inventory": false, "normal_balance": "C" },
     { "gl_code": "2120", "name": "외상매입금", "account_type": "liability", "is_inventory": false, "normal_balance": "C" },
     { "gl_code": "2130", "name": "선수금", "account_type": "liability", "is_inventory": false, "normal_balance": "C" },

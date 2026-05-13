@@ -87,20 +87,15 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
                 dlv_items.append({
                     "dlv_id": dlv_id,
                     "item_no": item_no,
-                    "so_id": so_id,
-                    "so_item_no": item["item_no"],
                     "material_id": mat_id,
                     "delivery_qty": delivery_qty,
                     "uom": item.get("uom", "EA"),
-                    "total_cbm": round(cbm, 6),
                 })
 
             db.insert("outbound_delivery", {
                 "dlv_id": dlv_id,
                 "so_id": so_id,
                 "plant_id": PLANT_ID,
-                "sloc_id": SLOC_ID,
-                "delivery_date": now_date.isoformat(),
                 "picking_status": "completed",
                 "packing_status": "completed",
                 "goods_issue_status": "pending",

@@ -64,7 +64,7 @@ def verify(sim_run_id: str) -> VerifierResult:
 
     # ── D4 Outlier: negative qty_on_hand in inventory_snapshot ───────────────
     d4_issues: list[Issue] = []
-    snapshots = db.select("inventory_snapshot", {"sim_run_id": sim_run_id})
+    snapshots = db.select("inventory_snapshot", limit=500)
     for snap in snapshots:
         qty = snap.get("qty_on_hand")
         if qty is not None and qty < 0:
@@ -101,7 +101,7 @@ def verify(sim_run_id: str) -> VerifierResult:
                 ))
         elif mvt in _POSITIVE_MOVEMENTS:
             for item in doc_items:
-                if (item.get("qty") or 0) <= 0:
+                if (item.get("qty_signed") or 0) <= 0:
                     d5_issues.append(Issue(
                         dim="D5", severity=Severity.WARN,
                         entity_type="mat_document_item", entity_id=str(item.get("item_id", "?")),
@@ -109,7 +109,7 @@ def verify(sim_run_id: str) -> VerifierResult:
                     ))
         elif mvt in _NEGATIVE_MOVEMENTS:
             for item in doc_items:
-                if (item.get("qty") or 0) >= 0:
+                if (item.get("qty_signed") or 0) >= 0:
                     d5_issues.append(Issue(
                         dim="D5", severity=Severity.WARN,
                         entity_type="mat_document_item", entity_id=str(item.get("item_id", "?")),

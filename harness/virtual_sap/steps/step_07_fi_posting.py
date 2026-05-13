@@ -61,9 +61,9 @@ def _make_line(fi_doc_id: str, line_no: int, gl: str, debit: float, credit: floa
     return {
         "fi_doc_id": fi_doc_id,
         "line_no": line_no,
-        "gl_account": gl,
-        "debit_amount": round(debit, 2),
-        "credit_amount": round(credit, 2),
+        "gl_code": gl,
+        "debit_credit": "D" if debit > 0 else "C",
+        "amount_local": round(debit if debit > 0 else credit, 2),
     }
 
 

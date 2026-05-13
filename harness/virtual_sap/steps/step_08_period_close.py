@@ -79,7 +79,7 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
             "posting_date": now_date.isoformat(),
             "period": prior_period,
             "source_mat_doc_id": None,
-            "note": f"period_close placeholder reval | sim_run={sim_run_id}",
+            "description": f"period_close placeholder reval | sim_run={sim_run_id}",
             "sim_run_id": sim_run_id,
         }, dry_run=dry_run)
 
@@ -87,16 +87,16 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
             {
                 "fi_doc_id": fi_id,
                 "line_no": 1,
-                "gl_account": GL_MAP["inventory_adj"],
-                "debit_amount": 1.0,
-                "credit_amount": 0.0,
+                "gl_code": GL_MAP["inventory_adj"],
+                "debit_credit": "D",
+                "amount_local": 1.0,
             },
             {
                 "fi_doc_id": fi_id,
                 "line_no": 2,
-                "gl_account": GL_MAP["inventory_adj"],
-                "debit_amount": 0.0,
-                "credit_amount": 1.0,
+                "gl_code": GL_MAP["inventory_adj"],
+                "debit_credit": "C",
+                "amount_local": 1.0,
             },
         ], dry_run=dry_run)
         docs_created += 1
