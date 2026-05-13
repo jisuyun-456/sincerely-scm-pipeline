@@ -2,8 +2,8 @@ name: TMS Settlement — 기사님 운임 정산
 
 on:
   schedule:
-    # 매주 월요일 12:00 UTC = 21:00 KST (지난 주 Mon–Sun 정산)
-    - cron: '0 12 * * 1'
+    # 매일 12:00 UTC = 21:00 KST
+    - cron: '0 12 * * *'
   workflow_dispatch:
     inputs:
       week:
