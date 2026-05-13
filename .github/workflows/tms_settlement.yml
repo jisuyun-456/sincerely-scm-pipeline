@@ -28,6 +28,7 @@ on:
 env:
   PYTHON_VERSION: '3.11'
   REQS: harness/requirements.txt
+  TZ: Asia/Seoul
 
 jobs:
   # ── 1. Validate ───────────────────────────────────────────────────────────────
@@ -66,7 +67,7 @@ jobs:
             DATE_FLAG="--date ${{ github.event.inputs.date }}"
             LABEL="${{ github.event.inputs.date }}"
           else
-            TODAY=$(python -c "from datetime import date; print(date.today().isoformat())")
+            TODAY=$(python -c "from harness._core.calendar import today_kst; print(today_kst().isoformat())")
             DATE_FLAG="--date $TODAY"
             LABEL="$TODAY"
           fi
