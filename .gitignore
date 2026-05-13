@@ -20,9 +20,8 @@ reports/
 *.pdf
 tmp_*.json
 
-# Settlement harness — large cache files (not source, auto-regenerated)
-harness/settlement/state/crossval_cache.json
-harness/settlement/state/settlement_*.json
+# Settlement harness — state dir contains PII (driver names/fares); never commit
+harness/settlement/state/
 
 # Legacy archive data files (completed backfills)
 _archive/wms/*.json
