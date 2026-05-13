@@ -27,8 +27,9 @@ app = FastAPI()
 REPO_ROOT      = Path(__file__).parent.parent
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 
-# 256MB 환경: uvicorn ~50MB + 스크립트 1개 ~80MB × 2 = ~210MB → 안전 상한 2
-_SUBPROCESS_SEM = threading.Semaphore(2)
+# 256MB 환경: uvicorn ~50MB + TMS PDF 스크립트 ~80MB peak → 동시 실행 시 OOM kill 발생
+# rc=-9 확인 (2026-05-13 로그), 직렬화로 수정
+_SUBPROCESS_SEM = threading.Semaphore(1)
 
 
 # ── 요청 모델 ────────────────────────────────────────────────────────────────
