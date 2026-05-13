@@ -101,9 +101,9 @@ jobs:
         env:
           AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
         run: |
-          python -m harness.tms_settlement.main \
-            ${{ needs.validate.outputs.date_flag }} \
-            --dry-run --auto-confirm \
+          ARGS="${{ needs.validate.outputs.date_flag }} --dry-run --auto-confirm"
+          [[ "${{ github.event.inputs.force }}" == "true" ]] && ARGS="$ARGS --force"
+          python -m harness.tms_settlement.main $ARGS \
             2>&1 | tee settlement-preview.txt
 
       - uses: actions/upload-artifact@v4
