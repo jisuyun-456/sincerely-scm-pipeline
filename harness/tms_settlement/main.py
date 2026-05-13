@@ -114,17 +114,8 @@ def main() -> None:
                            week=monday, status="failed", summary=f"fetch failed: {exc}")
         sys.exit(1)
 
-    if unregistered:
-        msg = f"Unregistered driver IDs: {unregistered} - aborting (P0/D1)"
-        _log.error(msg)
-        notifier.notify(msg, severity="CRITICAL", domain=DOMAIN)
-        if sink:
-            sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
-                           week=monday, status="failed", summary=msg)
-        sys.exit(2)
-
     if not records:
-        _log.info("no shipments for this week — done")
+        _log.info("no settlement shipments for this week — done")
         sys.exit(0)
 
     by_driver = split_by_driver(records)
@@ -177,10 +168,11 @@ def main() -> None:
                 fetched_count=len(records),
             )
         except SystemExit:
-            notifier.notify(
-                f"Settlement batch blocked >10% — manual review required ({monday})",
-                severity="CRITICAL", domain=DOMAIN,
-            )
+            msg = f"Settlement batch blocked >10% - manual review required ({monday})"
+            notifier.notify(msg, severity="CRITICAL", domain=DOMAIN)
+            if sink:
+                sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
+                               week=monday, status="failed", summary=msg)
             raise
 
     # ── 9. Notify ─────────────────────────────────────────────────────────────

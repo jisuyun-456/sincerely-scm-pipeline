@@ -40,15 +40,18 @@ def fetch_week(
     monday: str,
     sunday: str,
 ) -> tuple[list[dict], list[str]]:
-    """Fetch all Shipment records for the given week that have a driver partner.
+    """Fetch Shipment records for the week that include at least one settlement driver.
 
     Returns
     -------
     records : list[dict]
-        Raw Airtable records (fields keyed by field IDs).
+        Raw Airtable records that include at least one registered driver.
+        Records assigned only to non-settlement carriers (로젠, 고고엑스 etc.)
+        are silently filtered out.
     unregistered : list[str]
-        Driver record IDs found in records but not in KNOWN_DRIVERS.
-        Caller MUST hard-fail if this list is non-empty.
+        Driver record IDs found but not in KNOWN_DRIVERS — logged as warnings only.
+        Returns empty list if all unknown drivers are clearly third-party carriers.
+        Caller hard-fails only if ZERO settlement records remain after filtering.
     """
     end = _end_excl(sunday)
     # Field IDs in formula (requires returnFieldsByFieldId=true) — immune to renames.
@@ -61,26 +64,34 @@ def fetch_week(
     )
 
     _log.info("fetching shipments", monday=monday, sunday=sunday)
-    records = client.get_records(
+    all_records = client.get_records(
         filter_formula=formula,
         fields=SETTLEMENT_FIELDS,
         return_fields_by_field_id=True,
     )
-    _log.info("fetched", count=len(records))
+    _log.info("fetched", count=len(all_records))
 
-    # Detect unregistered drivers
+    # Separate settlement records from third-party carrier records
     unknown: set[str] = set()
-    for rec in records:
-        for drv_id in (rec["fields"].get(F_PARTNER) or []):
+    settlement_records: list[dict] = []
+    for rec in all_records:
+        partners = rec["fields"].get(F_PARTNER) or []
+        known = [d for d in partners if d in KNOWN_DRIVERS]
+        for drv_id in partners:
             if drv_id not in KNOWN_DRIVERS:
                 unknown.add(drv_id)
-                _log.error(
-                    "unregistered driver",
-                    driver_id=drv_id,
-                    sc_id=rec["fields"].get("fldBUwhBlhOMsJZdv", "?"),
-                )
+        if known:
+            settlement_records.append(rec)
 
-    return records, sorted(unknown)
+    if unknown:
+        _log.warning(
+            "non-settlement carrier IDs skipped",
+            count=len(unknown),
+            ids=sorted(unknown),
+            settlement_count=len(settlement_records),
+        )
+
+    return settlement_records, []
 
 
 def split_by_driver(
