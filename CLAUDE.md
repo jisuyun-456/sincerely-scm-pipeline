@@ -54,6 +54,7 @@
 | 피킹, 패킹, Wave, SSCC, 출고지시, 박스라벨, Packing List, Shipping Mark | wms-outbound (SK-04) | sonnet |
 | 운송장, 택배, 로젠, POD, 배차, 드라이버 | tms-shipment (SK-05) | sonnet |
 | OTIF, KPI, Dock-to-Stock 분석, 소화율, 약속납기, 차량이용률, AutoResearch | tms-otif-kpi (SK-06) | **opus** |
+| 운임 비용, lane, 노선, CBM당 비용, 발송 모드, 통합 ROI, 비용 이상, 물류비, lane 수익성, 배송비 분석 | tms-cost-lane (SK-09) | sonnet |
 | 반품, 역물류, RESTOCK, DISPOSE, NCR, 불량 | wms-return (SK-07) | sonnet |
 | 회의록, 미팅노트, 주간 운영 회의, 회의 분석 | meeting-analysis (SK-08) | sonnet |
 
@@ -61,6 +62,8 @@
 
 | 키워드 | 에이전트 | 모델 |
 |--------|---------|------|
+| TMS 개선, 프로젝트 착수, 로드맵, Gap 분석, AS-IS, TO-BE, 요구사항, 개선계획, TMS 설계, TMS 고도화 | tms-improvement (D-TMS1) | **opus** |
+| carrier 평가, 3PL, 운임 재협상, RFQ, 외주, 계약, SLA, scorecard, 파트너사, carrier 전략, 택배사 변경 | tms-carrier (D-TMS2) | **opus** |
 | 재고전략, 물류컨설팅, SCM개선, 공급망, SCOR, ABC분석, XYZ, 거점, 소싱, 리드타임, Bullwhip | scm-logistics-expert (D1) | **opus** |
 | 분개, 전표, 세금, 기간마감, K-IFRS, 더존, 계정코드, 역분개, 재고자산, 이전가격, 부가세 | tax-accounting-expert (D2) | **opus** |
 | 프로젝트계획, 로드맵, 리스크, MECE, Issue Tree, PMP, OKR, 스프린트, WBS, Pyramid, 7S, Porter, SWOT | consulting-pm-expert (D3) | **opus** |
@@ -74,8 +77,8 @@
 | worktree, 병렬 작업 | `/worktree` |
 | 실수 기록, learn | `/learn` |
 
-> **라우팅 우선순위:** 세밀한 운영(SK-01~07) > 도메인 전문가(D1/D2/D3) > 빌트인.
-> **분기 충돌 시:** "운영 집계" → SK / "전략 진단·로드맵" → D / "코드 구현" → 빌트인.
+> **라우팅 우선순위:** 세밀한 운영(SK-01~09) > TMS 전략(D-TMS1/D-TMS2) > 도메인 전문가(D1/D2/D3) > 빌트인.
+> **분기 충돌 시:** "운영 집계" → SK / "TMS 개선·착수" → D-TMS1 / "carrier 평가·계약" → D-TMS2 / "전략 진단·로드맵" → D / "코드 구현" → 빌트인.
 > **복합 요청:** 메인 Claude가 Agent 툴 병렬 호출 (예: D1+SK-03 = 음수재고 패턴+전략).
 
 ## 태스크 관리
