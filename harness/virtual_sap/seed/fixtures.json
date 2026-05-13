@@ -1,0 +1,215 @@
+{
+  "plant": [
+    {
+      "plant_id": "P001",
+      "name": "에이원지식산업센터 물류창고",
+      "address": "경기도 부천시 에이원지식산업센터",
+      "country": "KR"
+    }
+  ],
+  "storage_location": [
+    { "plant_id": "P001", "sloc_id": "WH01", "name": "메인 창고 (General Stock)", "sloc_type": "warehouse" },
+    { "plant_id": "P001", "sloc_id": "STG01", "name": "입하 스테이징 (GR Staging)", "sloc_type": "staging" },
+    { "plant_id": "P001", "sloc_id": "PROD01", "name": "생산작업장 (Production Area)", "sloc_type": "production" },
+    { "plant_id": "P001", "sloc_id": "QC01", "name": "품질격리 (QI Quarantine)", "sloc_type": "quarantine" }
+  ],
+  "material": [
+    {
+      "material_id": "MAT-0001",
+      "name": "심볼 NFC 키링",
+      "material_group": "굿즈",
+      "uom": "EA",
+      "unit_weight_kg": 0.05,
+      "unit_cbm": 0.000134,
+      "std_price": 4500,
+      "valuation_class": "3000",
+      "reorder_point": 500
+    },
+    {
+      "material_id": "MAT-0002",
+      "name": "아트워크 타월",
+      "material_group": "섬유류",
+      "uom": "EA",
+      "unit_weight_kg": 0.25,
+      "unit_cbm": 0.002462,
+      "std_price": 12000,
+      "valuation_class": "3000",
+      "reorder_point": 200
+    },
+    {
+      "material_id": "MAT-0003",
+      "name": "솔리드 레디백",
+      "material_group": "가방류",
+      "uom": "EA",
+      "unit_weight_kg": 0.8,
+      "unit_cbm": 0.055402,
+      "std_price": 35000,
+      "valuation_class": "3000",
+      "reorder_point": 50
+    },
+    {
+      "material_id": "MAT-0004",
+      "name": "어반 스텐 런치박스",
+      "material_group": "주방용품",
+      "uom": "EA",
+      "unit_weight_kg": 0.45,
+      "unit_cbm": 0.002736,
+      "std_price": 22000,
+      "valuation_class": "3000",
+      "reorder_point": 100
+    },
+    {
+      "material_id": "MAT-0005",
+      "name": "하우스 핸드타월",
+      "material_group": "섬유류",
+      "uom": "EA",
+      "unit_weight_kg": 0.12,
+      "unit_cbm": 0.000985,
+      "std_price": 6500,
+      "valuation_class": "3000",
+      "reorder_point": 300
+    },
+    {
+      "material_id": "MAT-0006",
+      "name": "어텐션 스포츠 보틀",
+      "material_group": "생활용품",
+      "uom": "EA",
+      "unit_weight_kg": 0.35,
+      "unit_cbm": 0.002962,
+      "std_price": 18000,
+      "valuation_class": "3000",
+      "reorder_point": 150
+    },
+    {
+      "material_id": "MAT-0007",
+      "name": "슬림 터보 선풍기",
+      "material_group": "가전류",
+      "uom": "EA",
+      "unit_weight_kg": 1.2,
+      "unit_cbm": 0.000985,
+      "std_price": 55000,
+      "valuation_class": "3100",
+      "reorder_point": 80
+    },
+    {
+      "material_id": "MAT-0008",
+      "name": "하우스 핸드타월 키트",
+      "material_group": "섬유류",
+      "uom": "EA",
+      "unit_weight_kg": 0.18,
+      "unit_cbm": 0.002897,
+      "std_price": 15000,
+      "valuation_class": "3000",
+      "reorder_point": 100
+    },
+    {
+      "material_id": "MAT-0009",
+      "name": "커스텀 포장박스 (중형)",
+      "material_group": "포장재",
+      "uom": "EA",
+      "unit_weight_kg": 0.3,
+      "unit_cbm": 0.008000,
+      "std_price": 2200,
+      "valuation_class": "3200",
+      "reorder_point": 1000
+    },
+    {
+      "material_id": "MAT-0010",
+      "name": "에코백 (오가닉 코튼)",
+      "material_group": "가방류",
+      "uom": "EA",
+      "unit_weight_kg": 0.18,
+      "unit_cbm": 0.003200,
+      "std_price": 9500,
+      "valuation_class": "3000",
+      "reorder_point": 200
+    }
+  ],
+  "business_partner": [
+    {
+      "bp_id": "C-0001",
+      "name": "삼성전자 DS부문 (홍보팀)",
+      "bp_type": "customer",
+      "address": "경기도 수원시",
+      "region": "경기",
+      "incoterms": "DAP",
+      "payment_terms": "NET30"
+    },
+    {
+      "bp_id": "C-0002",
+      "name": "LG화학 기업PR팀",
+      "bp_type": "customer",
+      "address": "서울특별시 영등포구",
+      "region": "서울",
+      "incoterms": "DAP",
+      "payment_terms": "NET30"
+    },
+    {
+      "bp_id": "C-0003",
+      "name": "현대자동차 홍보기획팀",
+      "bp_type": "customer",
+      "address": "서울특별시 서초구",
+      "region": "서울",
+      "incoterms": "DAP",
+      "payment_terms": "NET45"
+    },
+    {
+      "bp_id": "V-0001",
+      "name": "다영기획 (협력공장)",
+      "bp_type": "vendor",
+      "address": "인천광역시",
+      "region": "인천",
+      "incoterms": "EXW",
+      "payment_terms": "NET30"
+    },
+    {
+      "bp_id": "CA-0001",
+      "name": "로젠택배",
+      "bp_type": "carrier",
+      "address": "서울특별시",
+      "region": "전국",
+      "incoterms": "DAP",
+      "payment_terms": "NET30"
+    },
+    {
+      "bp_id": "CA-0002",
+      "name": "이장훈 기사 (자차)",
+      "bp_type": "carrier",
+      "address": "경기도",
+      "region": "수도권",
+      "incoterms": "DAP",
+      "payment_terms": "WEEKLY"
+    },
+    {
+      "bp_id": "CA-0003",
+      "name": "박종성 기사 (자차)",
+      "bp_type": "carrier",
+      "address": "경기도",
+      "region": "수도권",
+      "incoterms": "DAP",
+      "payment_terms": "WEEKLY"
+    }
+  ],
+  "gl_account": [
+    { "gl_code": "1110", "name": "외상매출금", "account_type": "asset", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "1120", "name": "받을어음", "account_type": "asset", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "1310", "name": "선급금", "account_type": "asset", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "1410", "name": "상품 (재고자산)", "account_type": "asset", "is_inventory": true, "normal_balance": "D" },
+    { "gl_code": "1420", "name": "제품 (재고자산)", "account_type": "asset", "is_inventory": true, "normal_balance": "D" },
+    { "gl_code": "1430", "name": "재공품", "account_type": "asset", "is_inventory": true, "normal_balance": "D" },
+    { "gl_code": "1440", "name": "원재료", "account_type": "asset", "is_inventory": true, "normal_balance": "D" },
+    { "gl_code": "1110", "name": "현금및현금성자산", "account_type": "asset", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "2110", "name": "미지급금-GR/IR", "account_type": "liability", "is_inventory": false, "normal_balance": "C" },
+    { "gl_code": "2120", "name": "외상매입금", "account_type": "liability", "is_inventory": false, "normal_balance": "C" },
+    { "gl_code": "2130", "name": "선수금", "account_type": "liability", "is_inventory": false, "normal_balance": "C" },
+    { "gl_code": "2210", "name": "미지급비용", "account_type": "liability", "is_inventory": false, "normal_balance": "C" },
+    { "gl_code": "3110", "name": "자본금", "account_type": "equity", "is_inventory": false, "normal_balance": "C" },
+    { "gl_code": "3210", "name": "이익잉여금", "account_type": "equity", "is_inventory": false, "normal_balance": "C" },
+    { "gl_code": "4110", "name": "매출 (제품·상품)", "account_type": "revenue", "is_inventory": false, "normal_balance": "C" },
+    { "gl_code": "5110", "name": "매출원가", "account_type": "expense", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "5210", "name": "물류비 (운송·창고)", "account_type": "expense", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "5310", "name": "인건비", "account_type": "expense", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "5510", "name": "폐기손실", "account_type": "expense", "is_inventory": false, "normal_balance": "D" },
+    { "gl_code": "5610", "name": "재고조정손익", "account_type": "expense", "is_inventory": false, "normal_balance": "D" }
+  ]
+}

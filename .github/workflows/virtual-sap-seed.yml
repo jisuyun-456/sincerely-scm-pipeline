@@ -1,0 +1,32 @@
+name: Virtual SAP — Seed Master Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        type: boolean
+        default: true
+        description: Dry run first, then re-run with false to apply
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-virtual-sap.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-virtual-sap.txt
+
+      - name: Seed master data
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_DRY_RUN:              ${{ github.event.inputs.dry_run }}
+        run: python -m harness.virtual_sap.cli seed ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}

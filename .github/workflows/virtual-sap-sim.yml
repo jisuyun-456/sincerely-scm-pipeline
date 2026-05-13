@@ -1,0 +1,70 @@
+name: Virtual SAP Simulation
+
+on:
+  schedule:
+    # Daily tick at 02:00 KST (17:00 UTC) — period-close check included
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [manual, daily, backfill]
+        default: manual
+        description: Simulation mode
+      orders:
+        type: string
+        default: '2'
+        description: Orders to generate per tick
+      dry_run:
+        type: boolean
+        default: false
+        description: Dry run (no DB writes)
+
+concurrency:
+  group: virtual-sap-sim
+  cancel-in-progress: false  # never cancel mid-tick
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-virtual-sap.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-virtual-sap.txt
+
+      - name: Determine mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "mode=daily" >> $GITHUB_OUTPUT
+          else
+            echo "mode=${{ github.event.inputs.mode || 'manual' }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run simulation tick
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_MODE:                 ${{ steps.mode.outputs.mode }}
+          VSAP_DRY_RUN:              ${{ github.event.inputs.dry_run || 'false' }}
+          VSAP_ORDERS_PER_TICK:      ${{ github.event.inputs.orders || '2' }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.cli tick --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsap-run-${{ github.run_id }}
+          path: harness/virtual_sap/state/*.json
+          retention-days: 14
+          if-no-files-found: ignore
