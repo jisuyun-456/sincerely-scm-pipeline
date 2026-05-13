@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from datetime import date, timedelta
 
 from harness._core.airtable import AirtableClient
@@ -24,6 +25,7 @@ from harness._core.calendar import assert_week_in_window, today_kst, week_range
 from harness._core.logger import StructuredLogger
 from harness._core.notifier import Notifier
 from harness._core.runner import IdempotentRunner
+from harness._core.supabase_sink import SupabaseSink
 from harness.tms_settlement import DOMAIN
 from harness.tms_settlement.calc import calc_cho, calc_lee, calc_park
 from harness.tms_settlement.config import (
@@ -74,6 +76,9 @@ def main() -> None:
         _log.error("config validation failed", error=str(exc))
         sys.exit(1)
 
+    sink = SupabaseSink.from_env()
+    t0 = time.monotonic()
+
     # ── 2. Determine date range ───────────────────────────────────────────────
     if args.week:
         monday_d = date.fromisoformat(args.week)
@@ -88,6 +93,9 @@ def main() -> None:
 
     monday, sunday = monday_d.isoformat(), (monday_d + timedelta(days=6)).isoformat()
     _log.info("settlement start", monday=monday, sunday=sunday, dry_run=args.dry_run)
+    if sink:
+        sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
+                       week=monday, status="started")
 
     # ── 3. Airtable client ────────────────────────────────────────────────────
     client = AirtableClient.get_or_create(TMS_BASE, SHIPMENT_TABLE, cfg.pat)
@@ -101,6 +109,9 @@ def main() -> None:
     except Exception as exc:
         _log.error("fetch failed", error=str(exc))
         notifier.notify(f"Settlement fetch failed: {exc}", severity="CRITICAL", domain=DOMAIN)
+        if sink:
+            sink.log_event(source="harness", agent_id=DOMAIN, domain="TMS",
+                           week=monday, status="failed", summary=f"fetch failed: {exc}")
         sys.exit(1)
 
     if unregistered:
@@ -184,6 +195,15 @@ def main() -> None:
     summary = "\n".join(lines)
     _log.info("settlement complete", written=result.written, failed=result.failed)
     notifier.notify(summary, severity="INFO", domain=DOMAIN)
+    if sink:
+        sink.log_event(
+            source="harness", agent_id=DOMAIN, domain="TMS", week=monday,
+            status="failed" if result.failed else "completed",
+            duration_ms=int((time.monotonic() - t0) * 1000),
+            summary=f"written={result.written} failed={result.failed} skipped={result.skipped_existing}",
+            meta={"written": result.written, "failed": result.failed,
+                  "skipped": result.skipped_existing, "dry_run": args.dry_run},
+        )
 
     if result.failed:
         sys.exit(1)

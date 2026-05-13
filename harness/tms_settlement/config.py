@@ -108,6 +108,8 @@ class SettlementConfig(ConfigBase):
         "SLACK_BOT_TOKEN",
         "SLACK_DM_USER_ID",
         "SETTLEMENT_VIEW_ID",
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_KEY",
     ]
 
     @property
