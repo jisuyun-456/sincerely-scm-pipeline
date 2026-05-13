@@ -78,3 +78,13 @@ model: opus
 - KPI 현행값 조회 → SK-06 tms-otif-kpi
 - 프로젝트 거버넌스 (PMO 수준) → D3 consulting-pm-expert
 - 회계·세무 영향 → D2 tax-accounting-expert
+
+## 다른 에이전트와의 분기
+
+| 상황 | 라우팅 | 기준 |
+|------|--------|------|
+| "TMS 개선 WBS/Charter 작성" | D-TMS1 (이 에이전트) | TMS 도메인 특화 — 운송 프로세스·시스템 지식 필수 |
+| "TMS Sprint Backlog 정의" | D-TMS1 (이 에이전트) | TMS 태스크 분류는 도메인 지식 필요 |
+| "전사 PMO·포트폴리오 거버넌스" | D3 consulting-pm-expert | TMS 외 다중 프로젝트 조율 |
+| "OKR/SWOT/Porter 프레임워크 (TMS 외)" | D3 consulting-pm-expert | 범용 PM 프레임워크 |
+| "Carrier 계약·SLA 설계" | D-TMS2 tms-carrier | 소싱·조달 도메인 |
