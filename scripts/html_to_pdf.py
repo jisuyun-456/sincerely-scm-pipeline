@@ -11,13 +11,13 @@ from PIL import Image
 from playwright.async_api import async_playwright
 
 SLIDES_DIR = Path(__file__).parent / "slides_html"
-OUTPUT = Path(__file__).parent.parent / "SCM_presentation_2026-05_v2.pdf"
+OUTPUT = Path(__file__).parent.parent / "SCM_presentation_2026-05.pdf"
 VIEWPORT = {"width": 1440, "height": 900}
 
 SLIDE_FILES = (
-    [SLIDES_DIR / f"slide_{n:02d}.html" for n in range(1, 7)]
+    [SLIDES_DIR / f"slide_{n:02d}.html" for n in range(1, 6)]
     + [SLIDES_DIR / "slide_06_5.html"]
-    + [SLIDES_DIR / f"slide_{n:02d}.html" for n in range(7, 12)]
+    + [SLIDES_DIR / f"slide_{n:02d}.html" for n in range(6, 12)]
 )
 
 

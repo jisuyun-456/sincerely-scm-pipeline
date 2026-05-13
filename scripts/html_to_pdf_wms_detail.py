@@ -1,4 +1,4 @@
-"""
+﻿"""
 WMS 유형별 상세 내역 5페이지를 렌더링 후
 scm_재고관리_이슈취합_물류팀.pdf(2페이지) 뒤에 합쳐
 scm_재고관리_이슈취합_물류팀_v2.pdf(7페이지) 저장.
@@ -14,11 +14,11 @@ import pypdf
 
 REPORT_DIR = Path(__file__).parent / "report_html"
 ORIGINAL   = Path("C:/Users/yjisu/Desktop/scm_재고관리_이슈취합_물류팀.pdf")
-OUTPUT     = Path("C:/Users/yjisu/Desktop/scm_재고관리_이슈취합_물류팀_v2.pdf")
+OUTPUT     = Path("C:/Users/yjisu/Desktop/scm_재고관리_이슈취합_물류팀_v4.pdf")
 TMP_DETAIL = Path(__file__).parent.parent / "_wms_detail_tmp.pdf"
 VIEWPORT   = {"width": 794, "height": 1123}   # A4 portrait
 
-DETAIL_FILES = [REPORT_DIR / f"wms_detail_{n:02d}.html" for n in range(1, 6)]
+DETAIL_FILES = [REPORT_DIR / f"wms_detail_{n:02d}.html" for n in [1, 2, 4, 3, 5]]
 
 
 async def screenshot_page(page, html_file: Path) -> Image.Image:

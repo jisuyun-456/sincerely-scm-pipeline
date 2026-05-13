@@ -16,15 +16,18 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #fff; color: #1a1a1a
 .cat-bullet { width: 10px; height: 10px; border-radius: 50%; background: #E64A1B; flex-shrink: 0; }
 .cat-title { font-size: 15px; font-weight: 700; color: #1a1a1a; }
 .cat-count { font-size: 13px; color: #E64A1B; font-weight: 600; }
-.page-note { font-size: 11px; color: #888; margin-bottom: 12px; margin-left: 20px; }
-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.page-note { font-size: 11px; color: #888; margin-bottom: 8px; margin-left: 20px; }
+.section-label { font-size: 10px; font-weight: 600; color: #555; background: #F5F5F5; padding: 3px 8px; margin: 8px 0 4px; border-left: 3px solid #E64A1B; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 6px; }
 thead tr { background: #F5F5F5; }
 th { text-align: left; padding: 6px 8px; font-size: 10px; font-weight: 600; color: #555; border: 1px solid #e0e0e0; letter-spacing: 0.03em; }
 td { padding: 5px 8px; border: 1px solid #ebebeb; color: #333; vertical-align: top; line-height: 1.4; }
 tr:nth-child(even) td { background: #FAFAFA; }
 .mm { font-family: 'Courier New', monospace; font-size: 10px; color: #0066CC; }
 .airtable-ok { color: #2a7d2a; font-size: 10px; }
+.airtable-warn { color: #cc6600; font-size: 10px; }
 .highlight td { background: #FFF8F5 !important; }
+.fyi-row td { background: #F0F4FF !important; }
 .footer { padding: 14px 36px; border-top: 1px solid #e8e8e8; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
 </style>
 </head>
@@ -39,10 +42,11 @@ tr:nth-child(even) td { background: #FAFAFA; }
   <div class="cat-header">
     <div class="cat-bullet"></div>
     <div class="cat-title">입고자재 공란 / 위치 상이</div>
-    <div class="cat-count">33건 (계속)</div>
+    <div class="cat-count">29건 (통합)</div>
   </div>
-  <div class="page-note">18 ~ 33번 · 4월 집중 발생 — Apr 8 배치 보고 6건 포함</div>
+  <div class="page-note">13 ~ 29번 · 4월 이슈 포함 / 하단 ★ = 윤지수 fyi @문경선</div>
 
+  <div class="section-label">문경선 발신 (13~24번)</div>
   <table>
     <thead>
       <tr>
@@ -55,29 +59,46 @@ tr:nth-child(even) td { background: #FAFAFA; }
       </tr>
     </thead>
     <tbody>
-      <tr><td>18</td><td>2026-03-31</td><td class="mm">MM00204188</td><td>PNA51205-롯데의료재단</td><td>에이원 입하 예정이나 입고자재 미입력 (300개)</td><td class="airtable-ok">생산산출 | 에이원 | 300개</td></tr>
-      <tr><td>19</td><td>2026-03-31</td><td class="mm">MM00204359</td><td>PNA51287-테스</td><td>에이원 입하 302개, 자재 미연결</td><td class="airtable-ok">생산산출 | 에이원 | 302개</td></tr>
-      <tr><td>20</td><td>2026-04-02</td><td class="mm">MM00204915</td><td>PNA51375-무니스</td><td>에이원 입하 105개, 자재 필드 미입력</td><td class="airtable-ok">생산산출 | 에이원 | 105개</td></tr>
-      <tr class="highlight"><td>21</td><td>2026-04-08</td><td class="mm">MM00205658</td><td>PNA51330-서울우유협동조합</td><td>에이원 입하 51개, 자재 공란 (4월 8일 배치 보고)</td><td class="airtable-ok">생산산출 | 에이원 | 51개</td></tr>
-      <tr class="highlight"><td>22</td><td>2026-04-08</td><td class="mm">MM00205683</td><td>PNA51453-나이키</td><td>에이원 입하 122개, 자재 공란 (4월 8일 배치 보고)</td><td class="airtable-ok">생산산출 | 에이원 | 122개</td></tr>
-      <tr class="highlight"><td>23</td><td>2026-04-08</td><td class="mm">MM00205731</td><td>PNA51288-한국디자인진흥원</td><td>에이원 입하 201개, 자재 공란 (4월 8일 배치 보고)</td><td class="airtable-ok">생산산출 | 에이원 | 201개</td></tr>
-      <tr><td>24</td><td>2026-02-24</td><td class="mm">MM00197886</td><td>(PNA 미기재)</td><td>베스트원 입하, 자재위치 vs 입하장소 불일치 (이동목적=재고생산, 690개)</td><td class="airtable-ok">재고생산 | 베스트원 | 690개</td></tr>
-      <tr><td>25</td><td>2026-04-08</td><td class="mm">MM00205770</td><td>PNA51404-어퓨마케팅서비스</td><td>에이원 입하 206개, 자재 미연결</td><td class="airtable-ok">생산산출 | 에이원 | 206개</td></tr>
-      <tr><td>26</td><td>2026-04-12</td><td class="mm">MM00206331</td><td>PNA51431-후지필름</td><td>에이원 입하 303개, 자재 공란</td><td class="airtable-ok">생산산출 | 에이원 | 303개</td></tr>
-      <tr><td>27</td><td>2026-04-14</td><td class="mm">MM00206720</td><td>PNA51476-대명건설 ①</td><td>에이원 입하 101개, 자재 공란 (분할 입고 1/3)</td><td class="airtable-ok">생산산출 | 에이원 | 101개</td></tr>
-      <tr><td>28</td><td>2026-04-14</td><td class="mm">MM00206721</td><td>PNA51476-대명건설 ②</td><td>에이원 입하 101개, 자재 공란 (분할 입고 2/3)</td><td class="airtable-ok">생산산출 | 에이원 | 101개</td></tr>
-      <tr><td>29</td><td>2026-04-14</td><td class="mm">MM00206722</td><td>PNA51476-대명건설 ③</td><td>에이원 입하 101개, 자재 공란 (분할 입고 3/3)</td><td class="airtable-ok">생산산출 | 에이원 | 101개</td></tr>
-      <tr><td>30</td><td>2026-04-20</td><td class="mm">MM00207739</td><td>PNA51597-하이퍼엑셀</td><td>입하장소 MROZ vs 자재위치 불일치, 확인·수정 요청</td><td class="airtable-ok">생산산출 | MROZ | 110개</td></tr>
-      <tr><td>31</td><td>2026-04-17</td><td class="mm">MM00207314</td><td>PNA51619-더에스엠씨</td><td>입하장소 에이원 설정됐으나 입고자재 공란 (워터보틀 샘플)</td><td class="airtable-ok">생산산출 | 에이원 | 2개</td></tr>
-      <tr><td>32</td><td>2026-04-16</td><td class="mm">MM00207124</td><td>PNA51368-아머스포츠코리아</td><td>본제작 건, 협력사 납품 후 임가공 예정으로 분할 입고 처리</td><td class="airtable-ok">생산투입 | 아인디스트리</td></tr>
-      <tr><td>33</td><td>2026-04-30</td><td class="mm">MM00209373</td><td>PNA51482-풀무원식품</td><td>입하장소 다영기획 vs 자재위치 상이 — 조립투입에 입고+출고자재 모두 입력</td><td class="airtable-ok">생산산출 | 다영기획 | 5개</td></tr>
+      <tr><td>13</td><td>2026-03-31</td><td class="mm">MM00204188</td><td>PNA51205-롯데의료재단</td><td>에이원 입하 예정, 입고자재 공란 — 입고자재 미입력</td><td class="airtable-ok">생산산출 | 에이원 | 300개</td></tr>
+      <tr><td>14</td><td>2026-04-02</td><td class="mm">MM00204915</td><td>PNA51375-무니스</td><td>에이원 입하 105개, 입고자재 공란 입력 오류</td><td class="airtable-ok">생산산출 | 에이원 | 105개</td></tr>
+      <tr class="highlight"><td>15</td><td>2026-04-08</td><td class="mm">MM00205658</td><td>PNA51330-서울우유협동조합</td><td>에이원 입하 51개, 입고자재 공란 (4월 8일 기준 보고)</td><td class="airtable-ok">생산산출 | 에이원 | 51개</td></tr>
+      <tr class="highlight"><td>16</td><td>2026-04-08</td><td class="mm">MM00205683</td><td>PNA51453-나이키</td><td>에이원 입하 122개, 입고자재 공란 (4월 8일 기준 보고)</td><td class="airtable-ok">생산산출 | 에이원 | 122개</td></tr>
+      <tr class="highlight"><td>17</td><td>2026-04-08</td><td class="mm">MM00205731</td><td>PNA51288-한국디자인진흥원</td><td>에이원 입하 201개, 입고자재 공란 (4월 8일 기준 보고)</td><td class="airtable-ok">생산산출 | 에이원 | 201개</td></tr>
+      <tr><td>18</td><td>2026-04-09</td><td class="mm">MM00197886</td><td>PNA 미확인</td><td>베스트원 입하, 입고자재 위치 vs 입하장소 상이 (재고이동목적=재고이전, 690개)</td><td class="airtable-ok">생산산출 | 베스트원 | 690개</td></tr>
+      <tr><td>19</td><td>2026-04-09</td><td class="mm">MM00205770</td><td>PNA51404-어퓨마케팅서비스</td><td>에이원 입하 206개, 입고자재 공란 입력 오류</td><td class="airtable-ok">생산산출 | 에이원 | 206개</td></tr>
+      <tr><td>20</td><td>2026-04-12</td><td class="mm">MM00206331</td><td>PNA51431-후지필름</td><td>에이원 입하 303개, 입고자재 공란</td><td class="airtable-ok">생산산출 | 에이원 | 303개</td></tr>
+      <tr><td>21</td><td>2026-04-20</td><td class="mm">MM00207739</td><td>PNA51597-하이퍼엑셀</td><td>입하장소 MROZ vs 입고자재장소 상이, 수량 확인·수정 필요</td><td class="airtable-ok">생산산출 | MROZ | 110개</td></tr>
+      <tr><td>22</td><td>2026-04-17</td><td class="mm">MM00207314</td><td>PNA51619-더에스엔쎄(워터보틀샘플)</td><td>에이원 입하장소, 입고자재 공란 — 재확인 요청</td><td class="airtable-ok">생산산출 | 에이원 | 2개</td></tr>
+      <tr><td>23</td><td>2026-04-16</td><td class="mm">MM00207124</td><td>PNA51368-아머스포츠코리아(본제작)</td><td>에이원 입하, 입고자재 공란 — 검토 후 정정 처리</td><td class="airtable-ok">생산투입 | 아인디스트리뷰션</td></tr>
+      <tr><td>24</td><td>2026-04-30</td><td class="mm">MM00209373</td><td>PNA51482-풀무원식품</td><td>입하장소 vs 입고자재장소 상이, 다영기획 직입하 건 — 확인·정정 요청</td><td class="airtable-ok">생산산출 | 다영기획 | 5개</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-label">★ 윤지수 fyi @문경선 (25~29번)</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px">#</th>
+        <th style="width:72px">날짜</th>
+        <th style="width:90px">MM번호</th>
+        <th style="width:140px">거래처 (PNA)</th>
+        <th>이슈 내용</th>
+        <th style="width:110px">Airtable 확인</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="fyi-row"><td>25</td><td>2026-02-05</td><td class="mm">MM00195854</td><td>PNA50548-더피프티원</td><td>입하장소 vs 입고자재 장소 불일치 — 신시어리웨일즈로 material 변경 필요</td><td class="airtable-ok">생산산출 | 웨일즈 | 161개</td></tr>
+      <tr class="fyi-row"><td>26</td><td>2026-02-05</td><td class="mm">MM00195853</td><td>PNA50548-더피프티원 (연관 MM)</td><td>material 변경으로 동일 건 연관 추가 MM 영향 — 함께 확인 필요</td><td class="airtable-ok">생산산출 | 에이원 | 161개</td></tr>
+      <tr class="fyi-row"><td>27</td><td>2026-02-06</td><td class="mm">MM00196013</td><td>PNA37360-연세의료원</td><td>입고자재 누락 — 확인 부탁</td><td class="airtable-ok">생산산출 | 에이원 | 251개</td></tr>
+      <tr class="fyi-row"><td>28</td><td>2026-02-09</td><td class="mm">MM00196014</td><td>PNA37761-밀테니바이오텍코리아</td><td>입고자재 공란 — 확인 요청</td><td class="airtable-ok">생산샘플 | 에이원 | 1개</td></tr>
+      <tr class="fyi-row"><td>29</td><td>2026-02-10</td><td class="mm">MM 미확인</td><td>PNA 미확인</td><td>입고자재 공란 — 첨부 이미지 내 MM번호, Slack 원본 확인 필요</td><td class="airtable-warn">MM번호 미확인</td></tr>
     </tbody>
   </table>
 </div>
 
 <div class="footer">
   <span>본 리포트는 Slack #scm_팀_재고관리 채널 기준 물류팀 발신 메시지를 집계한 결과입니다.</span>
-  <span>생성일: 2026.05.08</span>
+  <span>생성일: 2026.05.11</span>
 </div>
 
 </body>
