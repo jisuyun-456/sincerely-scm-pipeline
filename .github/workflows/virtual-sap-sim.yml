@@ -38,7 +38,16 @@ jobs:
           cache-dependency-path: requirements-virtual-sap.txt
 
       - name: Install dependencies
-        run: pip install -r requirements-virtual-sap.txt
+        run: pip install -r requirements-virtual-sap.txt pytest
+
+      - name: Validate (dry-run tests, no DB)
+        env:
+          VSAP_SUPABASE_URL: https://fake.supabase.co
+          VSAP_SUPABASE_SERVICE_KEY: fake-key
+          VSAP_DRY_RUN: "true"
+          VSAP_MODE: manual
+          VSAP_ORDERS_PER_TICK: "2"
+        run: pytest tests/virtual_sap/ -v
 
       - name: Determine mode
         id: mode
@@ -59,6 +68,38 @@ jobs:
           SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
         run: python -m harness.virtual_sap.cli tick --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
+        run: |
+          python - <<'EOF'
+          import os, urllib.request, json, sys
+          token = os.environ.get("SLACK_BOT_TOKEN", "")
+          user  = os.environ.get("SLACK_DM_USER_ID", "")
+          if not token or not user:
+              print("Slack secrets not configured — skipping DM", flush=True)
+              sys.exit(0)
+          run_url = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          text = (
+              ":x: *Virtual SAP tick FAILED*\n"
+              "Run `${{ github.run_id }}` (attempt ${{ github.run_attempt }})\n"
+              f"<{run_url}|View run>"
+          )
+          body = json.dumps({"channel": user, "text": text}).encode()
+          req = urllib.request.Request(
+              "https://slack.com/api/chat.postMessage",
+              data=body,
+              headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"},
+          )
+          with urllib.request.urlopen(req) as resp:
+              result = json.loads(resp.read())
+          if not result.get("ok"):
+              print(f"Slack error: {result.get('error')}", flush=True)
+              sys.exit(1)
+          EOF
 
       - name: Upload run log
         if: always()
