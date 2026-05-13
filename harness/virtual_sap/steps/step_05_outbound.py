@@ -1,10 +1,13 @@
 """Step 05 — Outbound Delivery + Goods Issue (601).
 
-For each open SO not yet delivered in this sim_run_id:
+For each open SO not yet delivered:
   - Create outbound_delivery + outbound_delivery_items
   - Simulate pick/pack completion
   - Post goods issue movement 601 from WH01
   - Update delivery goods_issue_status='posted'
+
+Continuous mode: global idempotency (not per-run), time gate prod_doc must be >1h old,
+                 PACK_DAMAGE (4%) issue injection reducing delivery qty 10%.
 
 Inserts into: sap.outbound_delivery, sap.outbound_delivery_item,
               sap.mat_document, sap.mat_document_item
@@ -13,13 +16,15 @@ Updates (non-ledger): sap.outbound_delivery
 from __future__ import annotations
 
 import logging
+import random
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import TypedDict
 
 from .. import supabase_client as db
 from ..id_gen import next_id
 from ..config import get_config
+from .issue_injector import IssueCode, maybe_inject, record_issue
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +42,8 @@ MATERIAL_CBM = {
 class SimContext(TypedDict):
     sim_run_id: str
     now_date: str
+    now_ts: str
+    is_continuous: bool
     dry_run: bool
     orders_count: int
 
@@ -55,20 +62,46 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
     issues: list[str] = []
     docs_created = 0
 
+    seed = hash(sim_run_id + ctx["now_date"] + "step05") & 0x7FFFFFFF
+    rng = random.Random(seed)
+
     try:
-        open_sos = db.select("sales_order", {"status": "open"}, columns="so_id")
+        if ctx.get("is_continuous"):
+            # Global idempotency: all deliveries ever, not just this run
+            existing_dlvs = db.select("outbound_delivery", {}, columns="so_id")
+            already_delivered = {row["so_id"] for row in existing_dlvs}
+
+            # Time gate: production mat_doc(261) must be > 1h old
+            now_utc = datetime.fromisoformat(ctx["now_ts"])
+            prod_docs = db.select(
+                "mat_document",
+                {"movement_type": "261", "source_doc_type": "SO"},
+                columns="source_doc_id, created_at",
+            )
+            eligible_so_ids = {
+                d["source_doc_id"]
+                for d in prod_docs
+                if d["source_doc_id"] not in already_delivered
+                and (
+                    now_utc - datetime.fromisoformat(
+                        d["created_at"].replace("Z", "+00:00")
+                    )
+                ) >= timedelta(hours=1)
+            }
+            open_sos = [{"so_id": sid} for sid in eligible_so_ids]
+        else:
+            open_sos = db.select("sales_order", {"status": "open"}, columns="so_id")
+            existing_dlvs = db.select(
+                "outbound_delivery", {"sim_run_id": sim_run_id}, columns="so_id"
+            )
+            already_delivered = {row["so_id"] for row in existing_dlvs}
+            open_sos = [r for r in open_sos if r["so_id"] not in already_delivered]
+
         if not open_sos:
             return StepResult("step_05_outbound", "skipped", 0, issues)
 
-        existing_dlvs = db.select(
-            "outbound_delivery", {"sim_run_id": sim_run_id}, columns="so_id"
-        )
-        already_delivered = {row["so_id"] for row in existing_dlvs}
-
         for so_row in open_sos:
             so_id = so_row["so_id"]
-            if so_id in already_delivered:
-                continue
 
             so_items = db.select("sales_order_item", {"so_id": so_id})
             if not so_items:
@@ -91,6 +124,17 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
                     "delivery_qty": delivery_qty,
                     "uom": item.get("uom", "EA"),
                 })
+
+            # Issue injection: PACK_DAMAGE reduces delivery qty 10%
+            pack_damaged = False
+            if maybe_inject(rng, IssueCode.PACK_DAMAGE, rate=0.04):
+                for item in dlv_items:
+                    item["delivery_qty"] = round(item["delivery_qty"] * 0.9, 3)
+                total_cbm = round(total_cbm * 0.9, 6)
+                pack_damaged = True
+                msg = f"PACK_DAMAGE: DLV {dlv_id} — packing damage, 10% qty reduction"
+                record_issue(db, sim_run_id, "WARN", msg, dry_run)
+                issues.append(msg)
 
             db.insert("outbound_delivery", {
                 "dlv_id": dlv_id,
@@ -143,8 +187,9 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
             )
 
             docs_created += 1
-            logger.info("601 GI %s | DLV %s | SO %s | CBM %.4f",
-                        doc_number, dlv_id, so_id, total_cbm)
+            logger.info("601 GI %s | DLV %s | SO %s | CBM %.4f%s",
+                        doc_number, dlv_id, so_id, total_cbm,
+                        " [PACK_DAMAGE]" if pack_damaged else "")
 
     except Exception as exc:
         issues.append(f"step_05_outbound failed: {exc}")

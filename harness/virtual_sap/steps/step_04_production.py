@@ -5,7 +5,9 @@ For each open SO item whose material is in a production material_group
   - Post movement 261 (production consumption) from STG01
   - qty_signed = -ordered_qty (issue = negative)
   - Update SO item confirmed_qty = ordered_qty (non-ledger write, allowed)
-  - Skip if already processed in this sim_run_id
+
+Continuous mode: global idempotency (not per-run), time gate SO must be >2h old,
+                 STOCK_SHORT (8%) and PROD_DELAY (5%) issue injection.
 
 Inserts into:
   sap.mat_document, sap.mat_document_item
@@ -13,13 +15,15 @@ Inserts into:
 from __future__ import annotations
 
 import logging
+import random
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import TypedDict
 
 from .. import supabase_client as db
 from ..id_gen import next_id
 from ..config import get_config
+from .issue_injector import IssueCode, maybe_inject, record_issue
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +35,8 @@ SOURCE_SLOC = "STG01"
 class SimContext(TypedDict):
     sim_run_id: str
     now_date: str
+    now_ts: str
+    is_continuous: bool
     dry_run: bool
     orders_count: int
 
@@ -55,26 +61,63 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
     issues: list[str] = []
     docs_created = 0
 
+    seed = hash(sim_run_id + ctx["now_date"]) & 0x7FFFFFFF
+    rng = random.Random(seed)
+
     try:
-        # Find open SOs
-        open_sos = db.select("sales_order", {"status": "open"}, columns="so_id")
-        if not open_sos:
-            logger.info("step_04_production: no open SOs, skipping")
+        if ctx.get("is_continuous"):
+            # Global idempotency: all 261 docs ever, not just this run
+            existing_prod = db.select(
+                "mat_document",
+                {"movement_type": "261", "source_doc_type": "SO"},
+                columns="source_doc_id",
+            )
+            already_issued_so_ids = {row["source_doc_id"] for row in existing_prod}
+
+            # Time gate: SO must be > 2h old
+            now_utc = datetime.fromisoformat(ctx["now_ts"])
+            open_sos_raw = db.select(
+                "sales_order", {"status": "open"}, columns="so_id, created_at"
+            )
+            so_ids = [
+                row["so_id"]
+                for row in open_sos_raw
+                if row["so_id"] not in already_issued_so_ids
+                and (
+                    now_utc - datetime.fromisoformat(
+                        row["created_at"].replace("Z", "+00:00")
+                    )
+                ) >= timedelta(hours=2)
+            ]
+        else:
+            open_sos = db.select("sales_order", {"status": "open"}, columns="so_id")
+            existing_prod = db.select(
+                "mat_document",
+                {"sim_run_id": sim_run_id, "movement_type": "261"},
+                columns="source_doc_id",
+            )
+            already_issued_so_ids = {row["source_doc_id"] for row in existing_prod}
+            so_ids = [
+                row["so_id"] for row in open_sos
+                if row["so_id"] not in already_issued_so_ids
+            ]
+
+        if not so_ids:
+            logger.info("step_04_production: no eligible SOs, skipping")
             return StepResult("step_04_production", "skipped", 0, issues)
 
-        so_ids = [row["so_id"] for row in open_sos]
-
-        # Find mat_docs already posted for production in this sim_run_id
-        existing_prod = db.select(
-            "mat_document",
-            {"sim_run_id": sim_run_id, "movement_type": "261"},
-            columns="source_doc_id",
-        )
-        already_issued_so_ids = {row["source_doc_id"] for row in existing_prod}
-
         for so_id in so_ids:
-            if so_id in already_issued_so_ids:
-                logger.debug("SO %s already has 261 in this run, skipping", so_id)
+            # Issue injection before processing
+            if maybe_inject(rng, IssueCode.STOCK_SHORT, rate=0.08):
+                msg = f"STOCK_SHORT: SO {so_id} — insufficient inventory, production deferred"
+                record_issue(db, sim_run_id, "WARN", msg, dry_run)
+                issues.append(msg)
+                continue
+
+            if maybe_inject(rng, IssueCode.PROD_DELAY, rate=0.05):
+                msg = f"PROD_DELAY: SO {so_id} — production line delay, retry next tick"
+                record_issue(db, sim_run_id, "WARN", msg, dry_run)
+                issues.append(msg)
                 continue
 
             so_items = db.select("sales_order_item", {"so_id": so_id})

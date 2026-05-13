@@ -2,14 +2,16 @@ name: Virtual SAP Simulation
 
 on:
   schedule:
-    # Daily tick at 02:00 KST (17:00 UTC) — period-close check included
+    # Continuous tick every 30 min (24/7 sim, steps are internally time-gated)
+    - cron: '*/30 * * * *'
+    # Daily batch at 02:00 KST (17:00 UTC) — period-close check included
     - cron: '0 17 * * *'
   workflow_dispatch:
     inputs:
       mode:
         type: choice
-        options: [manual, daily, backfill]
-        default: manual
+        options: [manual, daily, backfill, continuous]
+        default: continuous
         description: Simulation mode
       orders:
         type: string
@@ -53,9 +55,13 @@ jobs:
         id: mode
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "mode=daily" >> $GITHUB_OUTPUT
+            if [ "${{ github.event.schedule }}" = "*/30 * * * *" ]; then
+              echo "mode=continuous" >> $GITHUB_OUTPUT
+            else
+              echo "mode=daily" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "mode=${{ github.event.inputs.mode || 'manual' }}" >> $GITHUB_OUTPUT
+            echo "mode=${{ github.event.inputs.mode || 'continuous' }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Run simulation tick
@@ -68,6 +74,14 @@ jobs:
           SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
         run: python -m harness.virtual_sap.cli tick --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Run 출고확인서 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.delivery_confirm_agent
 
       - name: Notify on failure
         if: failure()
@@ -109,3 +123,26 @@ jobs:
           path: harness/virtual_sap/state/*.json
           retention-days: 14
           if-no-files-found: ignore
+
+  dispatch-advisor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements-virtual-sap.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-virtual-sap.txt
+
+      - name: Run 배차추천 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.dispatch_advisor

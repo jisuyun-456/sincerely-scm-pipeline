@@ -188,6 +188,24 @@
       "region": "수도권",
       "incoterms": "DAP",
       "payment_terms": "WEEKLY"
+    },
+    {
+      "bp_id": "CA-0004",
+      "name": "김민준 기사 (자차)",
+      "bp_type": "carrier",
+      "address": "서울특별시",
+      "region": "수도권",
+      "incoterms": "DAP",
+      "payment_terms": "WEEKLY"
+    },
+    {
+      "bp_id": "CA-0005",
+      "name": "퀵서비스 (바로고)",
+      "bp_type": "carrier",
+      "address": "서울특별시",
+      "region": "수도권",
+      "incoterms": "DAP",
+      "payment_terms": "NET7"
     }
   ],
   "gl_account": [

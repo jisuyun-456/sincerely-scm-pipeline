@@ -7,6 +7,9 @@ For each posted outbound_delivery without a shipment yet:
   - Insert shipment_event records (pickup + delivered/exception)
   - total_fare = total_cbm * 12000 KRW/CBM
 
+Continuous mode: time gate outbound_delivery must be >30min old,
+                 DLV_EXCEPTION (5% rate) recorded to sim_issue.
+
 Inserts into: sap.shipment, sap.shipment_delivery_link, sap.shipment_event
 """
 from __future__ import annotations
@@ -14,12 +17,13 @@ from __future__ import annotations
 import random
 import logging
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import TypedDict
 
 from .. import supabase_client as db
 from ..id_gen import next_id
 from ..config import get_config
+from .issue_injector import record_issue
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +37,8 @@ FARE_RATE_KRW_PER_CBM = 12_000
 class SimContext(TypedDict):
     sim_run_id: str
     now_date: str
+    now_ts: str
+    is_continuous: bool
     dry_run: bool
     orders_count: int
 
@@ -67,10 +73,25 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
         posted_dlvs = db.select(
             "outbound_delivery",
             {"goods_issue_status": "posted"},
-            columns="dlv_id,so_id,total_cbm",
+            columns="dlv_id,so_id,total_cbm,created_at",
         )
         if not posted_dlvs:
             return StepResult("step_06_delivery", "skipped", 0, issues)
+
+        # Continuous mode: time gate outbound must be > 30min old
+        if ctx.get("is_continuous"):
+            now_utc = datetime.fromisoformat(ctx["now_ts"])
+            posted_dlvs = [
+                d for d in posted_dlvs
+                if d.get("created_at") and (
+                    now_utc - datetime.fromisoformat(
+                        d["created_at"].replace("Z", "+00:00")
+                    )
+                ) >= timedelta(minutes=30)
+            ]
+            if not posted_dlvs:
+                logger.info("step_06_delivery: no outbound deliveries older than 30min")
+                return StepResult("step_06_delivery", "skipped", 0, issues)
 
         linked = db.select("shipment_delivery_link", columns="dlv_id")
         already_linked = {row["dlv_id"] for row in linked}
@@ -99,6 +120,9 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
             else:
                 pod_outcome = "exception"
                 actual_delivery = now_date + timedelta(days=1)
+                msg = f"DLV_EXCEPTION: SH for DLV {dlv_id} — delivery exception, pod_status=exception"
+                record_issue(db, sim_run_id, "ERROR", msg, dry_run)
+                issues.append(msg)
 
             ship_id = next_id("SH", now_date, dry_run=dry_run)
 
