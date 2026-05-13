@@ -2,6 +2,7 @@
 -- All tables in schema: sap
 -- Immutable Ledger: INSERT-only for all transaction tables (enforced via RLS)
 -- K-IFRS GL codes, SAP movement types (101/201/261/311/601/701/122/551)
+-- Idempotent: safe to re-run on a project that already has partial sap.* tables
 
 CREATE SCHEMA IF NOT EXISTS sap;
 
@@ -9,7 +10,7 @@ CREATE SCHEMA IF NOT EXISTS sap;
 -- SIMULATION BOOKKEEPING (create first — referenced by all)
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.sim_run (
+CREATE TABLE IF NOT EXISTS sap.sim_run (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     started_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     finished_at     TIMESTAMPTZ,
@@ -22,7 +23,7 @@ CREATE TABLE sap.sim_run (
     docs_created    INT DEFAULT 0
 );
 
-CREATE TABLE sap.sim_step_log (
+CREATE TABLE IF NOT EXISTS sap.sim_step_log (
     step_id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sim_run_id      UUID NOT NULL REFERENCES sap.sim_run(id),
     step_name       TEXT NOT NULL,
@@ -33,7 +34,7 @@ CREATE TABLE sap.sim_step_log (
     docs_created_count INT DEFAULT 0
 );
 
-CREATE TABLE sap.sim_issue (
+CREATE TABLE IF NOT EXISTS sap.sim_issue (
     issue_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     sim_run_id      UUID NOT NULL REFERENCES sap.sim_run(id),
     step_id         UUID REFERENCES sap.sim_step_log(step_id),
@@ -49,7 +50,7 @@ CREATE TABLE sap.sim_issue (
 -- MASTER DATA
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.plant (
+CREATE TABLE IF NOT EXISTS sap.plant (
     plant_id        TEXT PRIMARY KEY,          -- e.g. P001
     name            TEXT NOT NULL,
     address         TEXT,
@@ -57,7 +58,7 @@ CREATE TABLE sap.plant (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.storage_location (
+CREATE TABLE IF NOT EXISTS sap.storage_location (
     plant_id        TEXT NOT NULL REFERENCES sap.plant(plant_id),
     sloc_id         TEXT NOT NULL,             -- e.g. WH01, STG01
     name            TEXT NOT NULL,
@@ -66,7 +67,7 @@ CREATE TABLE sap.storage_location (
     PRIMARY KEY (plant_id, sloc_id)
 );
 
-CREATE TABLE sap.material (
+CREATE TABLE IF NOT EXISTS sap.material (
     material_id     TEXT PRIMARY KEY,          -- e.g. MAT-0001
     name            TEXT NOT NULL,
     material_group  TEXT NOT NULL,             -- carton / label / tote / packaging
@@ -80,7 +81,7 @@ CREATE TABLE sap.material (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.business_partner (
+CREATE TABLE IF NOT EXISTS sap.business_partner (
     bp_id           TEXT PRIMARY KEY,          -- C-0001 (customer) / V-0001 (vendor) / CA-0001 (carrier)
     name            TEXT NOT NULL,
     bp_type         TEXT NOT NULL CHECK (bp_type IN ('customer','vendor','carrier','internal')),
@@ -93,7 +94,7 @@ CREATE TABLE sap.business_partner (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.gl_account (
+CREATE TABLE IF NOT EXISTS sap.gl_account (
     gl_code         TEXT PRIMARY KEY,          -- K-IFRS / 더존 코드 e.g. 1110
     name            TEXT NOT NULL,
     account_type    TEXT NOT NULL CHECK (account_type IN ('asset','liability','equity','revenue','expense')),
@@ -103,7 +104,7 @@ CREATE TABLE sap.gl_account (
 );
 
 -- Document number counter (for SAP-style sequential numbering)
-CREATE TABLE sap.doc_counter (
+CREATE TABLE IF NOT EXISTS sap.doc_counter (
     prefix          TEXT NOT NULL,             -- SO / PO / GR / DLV / SH / FI / MAT
     period          TEXT NOT NULL,             -- YYYYMM
     last_seq        INT NOT NULL DEFAULT 0,
@@ -114,7 +115,7 @@ CREATE TABLE sap.doc_counter (
 -- PROCUREMENT (Procure-to-Pay)
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.purchase_order (
+CREATE TABLE IF NOT EXISTS sap.purchase_order (
     po_id           TEXT PRIMARY KEY,          -- PO-YYYYMMDD-####
     vendor_id       TEXT NOT NULL REFERENCES sap.business_partner(bp_id),
     plant_id        TEXT NOT NULL REFERENCES sap.plant(plant_id),
@@ -125,7 +126,7 @@ CREATE TABLE sap.purchase_order (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.purchase_order_item (
+CREATE TABLE IF NOT EXISTS sap.purchase_order_item (
     po_id           TEXT NOT NULL REFERENCES sap.purchase_order(po_id),
     item_no         INT NOT NULL,
     material_id     TEXT NOT NULL REFERENCES sap.material(material_id),
@@ -140,7 +141,7 @@ CREATE TABLE sap.purchase_order_item (
 -- WMS INBOUND (Goods Receipt + QI)
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.gr_document (
+CREATE TABLE IF NOT EXISTS sap.gr_document (
     gr_id           TEXT PRIMARY KEY,          -- GR-YYYYMMDD-####
     po_id           TEXT NOT NULL REFERENCES sap.purchase_order(po_id),
     posting_date    DATE NOT NULL,
@@ -152,7 +153,7 @@ CREATE TABLE sap.gr_document (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.qi_inspection (
+CREATE TABLE IF NOT EXISTS sap.qi_inspection (
     qi_id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     gr_id           TEXT NOT NULL REFERENCES sap.gr_document(gr_id),
     material_id     TEXT NOT NULL REFERENCES sap.material(material_id),
@@ -171,7 +172,7 @@ CREATE TABLE sap.qi_inspection (
 -- INVENTORY (Material Document = SAP MKPF/MSEG equivalent)
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.mat_document (
+CREATE TABLE IF NOT EXISTS sap.mat_document (
     mat_doc_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     doc_number      TEXT UNIQUE NOT NULL,      -- MAT-YYYYMMDD-####
     posting_date    DATE NOT NULL,
@@ -185,7 +186,7 @@ CREATE TABLE sap.mat_document (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.mat_document_item (
+CREATE TABLE IF NOT EXISTS sap.mat_document_item (
     mat_doc_id      UUID NOT NULL REFERENCES sap.mat_document(mat_doc_id),
     item_no         INT NOT NULL,
     material_id     TEXT NOT NULL REFERENCES sap.material(material_id),
@@ -199,7 +200,7 @@ CREATE TABLE sap.mat_document_item (
 );
 
 -- Materialized inventory snapshot (rebuilt each daily tick)
-CREATE TABLE sap.inventory_snapshot (
+CREATE TABLE IF NOT EXISTS sap.inventory_snapshot (
     material_id     TEXT NOT NULL REFERENCES sap.material(material_id),
     plant_id        TEXT NOT NULL REFERENCES sap.plant(plant_id),
     sloc_id         TEXT NOT NULL,
@@ -216,7 +217,7 @@ CREATE TABLE sap.inventory_snapshot (
 -- SALES ORDER (Order-to-Cash)
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.sales_order (
+CREATE TABLE IF NOT EXISTS sap.sales_order (
     so_id           TEXT PRIMARY KEY,          -- SO-YYYYMMDD-####
     customer_id     TEXT NOT NULL REFERENCES sap.business_partner(bp_id),
     order_date      DATE NOT NULL,
@@ -229,7 +230,7 @@ CREATE TABLE sap.sales_order (
 );
 
 -- Status event log (keeps SO header immutable while tracking transitions)
-CREATE TABLE sap.sales_order_status_event (
+CREATE TABLE IF NOT EXISTS sap.sales_order_status_event (
     event_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     so_id           TEXT NOT NULL REFERENCES sap.sales_order(so_id),
     from_status     TEXT,
@@ -238,7 +239,7 @@ CREATE TABLE sap.sales_order_status_event (
     sim_run_id      UUID REFERENCES sap.sim_run(id)
 );
 
-CREATE TABLE sap.sales_order_item (
+CREATE TABLE IF NOT EXISTS sap.sales_order_item (
     so_id           TEXT NOT NULL REFERENCES sap.sales_order(so_id),
     item_no         INT NOT NULL,
     material_id     TEXT NOT NULL REFERENCES sap.material(material_id),
@@ -253,7 +254,7 @@ CREATE TABLE sap.sales_order_item (
 -- WMS OUTBOUND
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.outbound_delivery (
+CREATE TABLE IF NOT EXISTS sap.outbound_delivery (
     dlv_id          TEXT PRIMARY KEY,          -- DLV-YYYYMMDD-####
     so_id           TEXT NOT NULL REFERENCES sap.sales_order(so_id),
     plant_id        TEXT NOT NULL REFERENCES sap.plant(plant_id),
@@ -267,7 +268,7 @@ CREATE TABLE sap.outbound_delivery (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.outbound_delivery_item (
+CREATE TABLE IF NOT EXISTS sap.outbound_delivery_item (
     dlv_id          TEXT NOT NULL REFERENCES sap.outbound_delivery(dlv_id),
     item_no         INT NOT NULL,
     material_id     TEXT NOT NULL REFERENCES sap.material(material_id),
@@ -283,7 +284,7 @@ CREATE TABLE sap.outbound_delivery_item (
 -- TMS (Shipment / Delivery)
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.shipment (
+CREATE TABLE IF NOT EXISTS sap.shipment (
     ship_id         TEXT PRIMARY KEY,          -- SH-YYYYMMDD-####
     carrier_id      TEXT NOT NULL REFERENCES sap.business_partner(bp_id),
     driver_name     TEXT,
@@ -298,14 +299,14 @@ CREATE TABLE sap.shipment (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.shipment_delivery_link (
+CREATE TABLE IF NOT EXISTS sap.shipment_delivery_link (
     ship_id         TEXT NOT NULL REFERENCES sap.shipment(ship_id),
     dlv_id          TEXT NOT NULL REFERENCES sap.outbound_delivery(dlv_id),
     sequence_no     INT NOT NULL DEFAULT 1,
     PRIMARY KEY (ship_id, dlv_id)
 );
 
-CREATE TABLE sap.shipment_event (
+CREATE TABLE IF NOT EXISTS sap.shipment_event (
     event_id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ship_id         TEXT NOT NULL REFERENCES sap.shipment(ship_id),
     event_ts        TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -318,7 +319,7 @@ CREATE TABLE sap.shipment_event (
 -- FINANCIAL ACCOUNTING (FI)
 -- ─────────────────────────────────────────────────────────
 
-CREATE TABLE sap.period_close (
+CREATE TABLE IF NOT EXISTS sap.period_close (
     period          TEXT PRIMARY KEY,          -- YYYYMM e.g. 202605
     status          TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','in_progress','closed')),
     closed_at       TIMESTAMPTZ,
@@ -326,7 +327,7 @@ CREATE TABLE sap.period_close (
     inventory_revaluation_doc_id TEXT
 );
 
-CREATE TABLE sap.fi_document (
+CREATE TABLE IF NOT EXISTS sap.fi_document (
     fi_doc_id       TEXT PRIMARY KEY,          -- FI-YYYYMMDD-####
     posting_date    DATE NOT NULL,
     doc_type        TEXT NOT NULL CHECK (doc_type IN ('RE','WE','SD','GI','ADJ','REVAL')),
@@ -340,7 +341,7 @@ CREATE TABLE sap.fi_document (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE sap.fi_document_line (
+CREATE TABLE IF NOT EXISTS sap.fi_document_line (
     fi_doc_id       TEXT NOT NULL REFERENCES sap.fi_document(fi_doc_id),
     line_no         INT NOT NULL,
     gl_code         TEXT NOT NULL REFERENCES sap.gl_account(gl_code),
@@ -418,6 +419,10 @@ BEGIN
 END;
 $$;
 
+-- Drop triggers before recreating (CREATE TRIGGER has no IF NOT EXISTS in PG14)
+DROP TRIGGER IF EXISTS trg_period_closed_fi  ON sap.fi_document;
+DROP TRIGGER IF EXISTS trg_period_closed_mat ON sap.mat_document;
+
 CREATE TRIGGER trg_period_closed_fi
     BEFORE INSERT ON sap.fi_document
     FOR EACH ROW EXECUTE FUNCTION sap.enforce_period_closed();
@@ -439,6 +444,26 @@ ALTER TABLE sap.purchase_order       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sap.gr_document          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sap.outbound_delivery    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sap.shipment             ENABLE ROW LEVEL SECURITY;
+
+-- Drop policies before recreating (CREATE POLICY has no IF NOT EXISTS)
+DROP POLICY IF EXISTS mat_doc_select   ON sap.mat_document;
+DROP POLICY IF EXISTS mat_doc_insert   ON sap.mat_document;
+DROP POLICY IF EXISTS mat_doc_item_sel ON sap.mat_document_item;
+DROP POLICY IF EXISTS mat_doc_item_ins ON sap.mat_document_item;
+DROP POLICY IF EXISTS fi_doc_select    ON sap.fi_document;
+DROP POLICY IF EXISTS fi_doc_insert    ON sap.fi_document;
+DROP POLICY IF EXISTS fi_line_select   ON sap.fi_document_line;
+DROP POLICY IF EXISTS fi_line_insert   ON sap.fi_document_line;
+DROP POLICY IF EXISTS so_select        ON sap.sales_order;
+DROP POLICY IF EXISTS so_insert        ON sap.sales_order;
+DROP POLICY IF EXISTS po_select        ON sap.purchase_order;
+DROP POLICY IF EXISTS po_insert        ON sap.purchase_order;
+DROP POLICY IF EXISTS gr_select        ON sap.gr_document;
+DROP POLICY IF EXISTS gr_insert        ON sap.gr_document;
+DROP POLICY IF EXISTS dlv_select       ON sap.outbound_delivery;
+DROP POLICY IF EXISTS dlv_insert       ON sap.outbound_delivery;
+DROP POLICY IF EXISTS ship_select      ON sap.shipment;
+DROP POLICY IF EXISTS ship_insert      ON sap.shipment;
 
 -- Allow authenticated/service_role to SELECT and INSERT (not UPDATE or DELETE)
 -- mat_document
@@ -471,17 +496,17 @@ CREATE POLICY ship_insert ON sap.shipment FOR INSERT WITH CHECK (true);
 -- INDEXES
 -- ─────────────────────────────────────────────────────────
 
-CREATE INDEX idx_mat_doc_posting_date    ON sap.mat_document(posting_date);
-CREATE INDEX idx_mat_doc_movement_type   ON sap.mat_document(movement_type);
-CREATE INDEX idx_mat_doc_sim_run         ON sap.mat_document(sim_run_id);
-CREATE INDEX idx_mat_doc_item_material   ON sap.mat_document_item(material_id, plant_id);
-CREATE INDEX idx_fi_doc_period           ON sap.fi_document(period);
-CREATE INDEX idx_fi_doc_sim_run          ON sap.fi_document(sim_run_id);
-CREATE INDEX idx_so_status               ON sap.sales_order(status);
-CREATE INDEX idx_so_customer             ON sap.sales_order(customer_id);
-CREATE INDEX idx_dlv_so                  ON sap.outbound_delivery(so_id);
-CREATE INDEX idx_dlv_gi_status           ON sap.outbound_delivery(goods_issue_status);
-CREATE INDEX idx_ship_pod_status         ON sap.shipment(pod_status);
-CREATE INDEX idx_sim_run_status          ON sap.sim_run(status);
-CREATE INDEX idx_sim_issue_run           ON sap.sim_issue(sim_run_id);
-CREATE INDEX idx_inv_snap_material       ON sap.inventory_snapshot(material_id, plant_id, as_of_date);
+CREATE INDEX IF NOT EXISTS idx_mat_doc_posting_date    ON sap.mat_document(posting_date);
+CREATE INDEX IF NOT EXISTS idx_mat_doc_movement_type   ON sap.mat_document(movement_type);
+CREATE INDEX IF NOT EXISTS idx_mat_doc_sim_run         ON sap.mat_document(sim_run_id);
+CREATE INDEX IF NOT EXISTS idx_mat_doc_item_material   ON sap.mat_document_item(material_id, plant_id);
+CREATE INDEX IF NOT EXISTS idx_fi_doc_period           ON sap.fi_document(period);
+CREATE INDEX IF NOT EXISTS idx_fi_doc_sim_run          ON sap.fi_document(sim_run_id);
+CREATE INDEX IF NOT EXISTS idx_so_status               ON sap.sales_order(status);
+CREATE INDEX IF NOT EXISTS idx_so_customer             ON sap.sales_order(customer_id);
+CREATE INDEX IF NOT EXISTS idx_dlv_so                  ON sap.outbound_delivery(so_id);
+CREATE INDEX IF NOT EXISTS idx_dlv_gi_status           ON sap.outbound_delivery(goods_issue_status);
+CREATE INDEX IF NOT EXISTS idx_ship_pod_status         ON sap.shipment(pod_status);
+CREATE INDEX IF NOT EXISTS idx_sim_run_status          ON sap.sim_run(status);
+CREATE INDEX IF NOT EXISTS idx_sim_issue_run           ON sap.sim_issue(sim_run_id);
+CREATE INDEX IF NOT EXISTS idx_inv_snap_material       ON sap.inventory_snapshot(material_id, plant_id, as_of_date);
