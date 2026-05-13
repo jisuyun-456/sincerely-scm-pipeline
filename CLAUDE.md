@@ -50,7 +50,7 @@
 |--------|---------|------|
 | 품목코드, 로케이션, 공급사, 바코드, ROP, BIN | wms-master-data (SK-01) | sonnet |
 | 입하, 검수, GR, ASN, AQL, 납품, Dock-to-Stock | wms-inbound (SK-02) | sonnet |
-| 재고불일치, 사이클카운팅, 음수재고, ADJUST, 실사, 정정 | wms-inventory (SK-03) | sonnet |
+| 재고불일치, 사이클카운팅, 음수재고, ADJUST, 실사, 재고 정정 | wms-inventory (SK-03) | sonnet |
 | 피킹, 패킹, Wave, SSCC, 출고지시, 박스라벨, Packing List, Shipping Mark | wms-outbound (SK-04) | sonnet |
 | 운송장, 택배, 로젠, POD, 배차, 드라이버 | tms-shipment (SK-05) | sonnet |
 | OTIF, KPI, Dock-to-Stock 분석, 소화율, 약속납기, 차량이용률, AutoResearch | tms-otif-kpi (SK-06) | **opus** |

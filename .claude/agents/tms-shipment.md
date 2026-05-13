@@ -38,9 +38,21 @@ model: sonnet
 - 출하확정 후 Shipment 핵심 필드(배송파트너·운송장·약속납기일) UPDATE 금지 — 사유 기록 + 신규 레코드
 - 배송이벤트 DELETE 금지
 - 오버부킹 자동 강행 금지
+- 사후 OTIF·차량이용률 KPI 리포트 작성 금지 → SK-06 tms-otif-kpi 위임
 
 ## 협조 위임
 - OTIF·차량이용률 KPI 분석 → SK-06 tms-otif-kpi
 - 배송클레임 (지연·파손·오배송) → SK-07 wms-return + 배송클레임 INSERT
 - 운송 분개 (운임 비용) → D2 tax-accounting-expert
 - 배차 효율 개선·거점 최적화 → D1 scm-logistics-expert
+- Carrier 청구서 수취 시 shipment_id별 운임 INSERT, 분개 검증은 D2 tax-accounting-expert
+
+## 다른 에이전트와의 분기
+
+| 상황 | 라우팅 | 기준 |
+|------|--------|------|
+| 배송클레임 접수·INSERT | SK-05 (이 에이전트) | 운송 실행 도메인 |
+| 클레임 물리 반품·검사·처리 | SK-07 wms-return | 입출고 이동 도메인 |
+| 클레임 집계·KPI 분석 | SK-06 tms-otif-kpi | KPI 측정 도메인 |
+| Carrier 손해 청구·정산 | D-TMS2 tms-carrier | 계약·소싱 도메인 |
+| 사후 OTIF·차량이용률 리포트 | SK-06 tms-otif-kpi | 배차 시점 시뮬레이션만 SK-05 |

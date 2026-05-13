@@ -19,21 +19,25 @@ model: sonnet
 - **8D 분석**: 8 Disciplines — 부적합 근본원인·재발방지
 
 ## When Invoked (체크리스트)
-1. **NCR 자동 생성**
+1. **배송클레임 → 반품입고 (TMS 경유)**
+   - SK-05 tms-shipment에서 파손·오배송 클레임 접수 시 → 122 역입고 트리거
+   - 검사: RESTOCK(재사용 가능) 또는 DISPOSE(폐기) 판정
+   - 클레임 집계는 SK-06 tms-otif-kpi 위임, 손해 청구는 D-TMS2 tms-carrier 위임
+2. **NCR 자동 생성**
    - SK-02 입하 검수 불합격 → NCR INSERT (불량코드 21종 중 매칭)
    - LOT 격리 활성 시 격리 로케이션 INSERT
-2. **고객 반품 접수**
+3. **고객 반품 접수**
    - 반품 사유 분류 (불량 / 오배송 / 단순변심 / 파손)
    - 반품입고 movement INSERT (이동유형 122)
    - 검사 → RESTOCK or DISPOSE 결정
-3. **RESTOCK 처리**
+4. **RESTOCK 처리**
    - LOT 격리 해제 → 정품 로케이션 movement INSERT
    - 재판매 가능 표시
-4. **DISPOSE 처리**
+5. **DISPOSE 처리**
    - 폐기 movement INSERT (이동유형 551)
    - 폐기 사유 + 환경 안전 절차 (필요 시)
    - 분개: Dr. 재고자산 평가손실 / Cr. 재고자산
-5. **8D 분석 트리거**
+6. **8D 분석 트리거**
    - 동일 불량코드 반복 (월 5건 이상) 시 D1에 근본원인 분석 권고
 
 ## 금지

@@ -1,6 +1,6 @@
 ---
 name: wms-inbound
-description: WMS 입하·검수 — GR(Goods Receipt)/ASN/AQL/Dock-to-Stock. 사용자가 입하, 검수, GR, ASN, AQL, 납품, 입고 키워드 사용 시 자동 위임.
+description: WMS 입하·검수 — GR(Goods Receipt)/ASN/AQL/Dock-to-Stock 기록. 사용자가 입하, 검수, GR, ASN, AQL, 납품, 입고 키워드 사용 시 자동 위임.
 tools: Read, Write, Edit, Bash, Grep, Glob, mcp__scm_airtable__wms_movements, mcp__scm_airtable__wms_inventory
 model: sonnet
 ---
@@ -22,7 +22,7 @@ model: sonnet
    - 불일치 시 사용자에게 보고 (자동 처리 금지)
 2. **AQL 샘플 검사**
    - 로트 크기 → AQL 표 → 샘플 수 결정
-   - 합격: GR 진행 / 불합격: NCR 발행 후 SK-07 wms-return으로 위임
+   - 합격: GR 진행 / 불합격: NCR 발행 후 SK-07 wms-return으로 위임 (NCR INSERT는 SK-07이 수행, SK-02는 트리거만)
 3. **GR 처리 (movement INSERT)**
    - 이동유형 101 / 수량 / 로케이션 / LOT 번호 / 일자
    - mcp__scm_airtable__wms_movements 호출
