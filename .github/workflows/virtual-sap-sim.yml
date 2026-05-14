@@ -66,8 +66,8 @@ jobs:
 
       - name: Run simulation tick
         env:
-          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
-          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           VSAP_MODE:                 ${{ steps.mode.outputs.mode }}
           VSAP_DRY_RUN:              ${{ github.event.inputs.dry_run || 'false' }}
           VSAP_ORDERS_PER_TICK:      ${{ github.event.inputs.orders || '2' }}
@@ -77,28 +77,28 @@ jobs:
 
       - name: Run 출고확인서 agent
         env:
-          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
-          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
         run: python -m harness.virtual_sap.agents.delivery_confirm_agent
 
       - name: Run 고객출고알림 agent
         env:
-          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
-          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python -m harness.virtual_sap.agents.customer_notify_agent
 
       - name: Run 자재출고요청 agent
         env:
-          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
-          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python -m harness.virtual_sap.agents.material_release_agent
 
       - name: Run 임가공출고요청 agent
         env:
-          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
-          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python -m harness.virtual_sap.agents.oem_release_agent
 
       - name: Notify on failure
@@ -159,14 +159,14 @@ jobs:
 
       - name: Run 배차추천 agent
         env:
-          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
-          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
         run: python -m harness.virtual_sap.agents.dispatch_advisor
 
       - name: Run 운송장기입 agent
         env:
-          VSAP_SUPABASE_URL:         ${{ secrets.VSAP_SUPABASE_URL }}
-          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.VSAP_SUPABASE_SERVICE_KEY }}
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python -m harness.virtual_sap.agents.tracking_number_agent
