@@ -261,8 +261,11 @@ def parse_packing_detail(text: str) -> list[dict]:
             else:
                 mc = _BOX_ROW_COMPACT.match(line)
                 if mc:
-                    current_item = mc.group(1).strip()
+                    raw_item = mc.group(1).strip()
                     qty_str = mc.group(2)
+                    if raw_item.endswith('+') and re.search(r'\d\+[가-힣A-Za-z]', raw_item):
+                        raw_item = raw_item + qty_str
+                    current_item = _clean_item_name(raw_item)
                     for _ in range(int(mc.group(3))):
                         box_num += 1
                         boxes.append({
