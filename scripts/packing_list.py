@@ -149,6 +149,8 @@ def _check_box_sum_internal(box_sum_str: str) -> tuple[bool, int, int]:
 
 
 def _clean_item_name(s: str) -> str:
+    if re.search(r'\d\+[가-힣A-Za-z]', s):
+        return s.strip()
     return re.sub(r"\s*\d+$", "", s).strip()
 
 
@@ -491,6 +493,25 @@ def _draw_error_page(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str):
                         f"SINCERELY Co., Ltd.  ·  데이터 오류  ·  {rec.get('to_num', '')}")
 
 
+def _sort_summary_by_box_order(summary_lines: list, groups: list) -> list:
+    ordered_names = []
+    for grp in groups:
+        combined = _parse_combined_items(grp["item"])
+        if combined:
+            for sub in combined:
+                ordered_names.append(sub["name"])
+        else:
+            ordered_names.append(grp["item"])
+
+    def score(line: str) -> int:
+        for i, name in enumerate(ordered_names):
+            if name[:4] in line or line[:4] in name:
+                return i
+        return len(ordered_names)
+
+    return sorted(summary_lines, key=score)
+
+
 # ────────────────────────────────────────────────────────────────────────────
 # PDF 그리기
 # ────────────────────────────────────────────────────────────────────────────
@@ -628,7 +649,7 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
     # ── 요약 행 (외박스 포장 물품 및 수량 통합) ─────────────────────────────
     tbl_start_y = y
     SUMM_ACCENT = 3 * mm   # 좌측 강조 바 폭
-    for sl in rec.get("summary_lines", []):
+    for sl in _sort_summary_by_box_order(rec.get("summary_lines", []), rec.get("groups", [])):
         c.setFillColor(TINT)
         c.rect(M, y - ROW_H_TBL, TBL_W, ROW_H_TBL, fill=1, stroke=0)
         # 좌측 네이비 액센트

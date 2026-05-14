@@ -161,6 +161,8 @@ def _check_box_sum_internal(box_sum_str: str) -> tuple[bool, int, int]:
 
 
 def _clean_item_name(s: str) -> str:
+    if re.search(r'\d\+[가-힣A-Za-z]', s):
+        return s.strip()
     return re.sub(r"\s*\d+$", "", s).strip()
 
 

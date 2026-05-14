@@ -167,7 +167,38 @@ def _check_box_sum_internal(box_sum_str: str) -> tuple[bool, int, int]:
 
 
 def _clean_item_name(s: str) -> str:
+    if re.search(r'\d\+[가-힣A-Za-z]', s):
+        return s.strip()
     return re.sub(r"\s*\d+$", "", s).strip()
+
+
+def _format_qty(qty_str: str) -> str:
+    m = re.match(r"^(\d+)\+(.+)$", qty_str)
+    if not m:
+        return qty_str
+    bonus = re.sub(r"\(.+\)", "", m.group(2)).strip()
+    return f"{m.group(1)}+{bonus}" if bonus else m.group(1)
+
+
+def _is_combined_pack(item_name: str) -> bool:
+    return bool(re.search(r'\d\+[가-힣A-Za-z]', item_name))
+
+
+def _parse_combined_items(item_name: str) -> list[dict]:
+    if not _is_combined_pack(item_name):
+        return []
+    parts = re.split(r'(?<=\d)\+(?=[가-힣A-Za-z])', item_name)
+    result = []
+    for part in parts:
+        part = part.strip().rstrip('+').strip()
+        if not part:
+            continue
+        m = re.match(r'^(.+?)(\d+(?:\+\d+)*)\+?$', part)
+        if m:
+            result.append({'name': m.group(1).strip(), 'qty': m.group(2)})
+        elif part:
+            result.append({'name': part, 'qty': ''})
+    return result if len(result) >= 2 else []
 
 
 def _parse_remainder(qty_str: str) -> list[dict]:
@@ -540,30 +571,40 @@ def draw_carton_label(c: rl_canvas.Canvas, x: float, y: float,
 
     c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
     c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
-    c.setFont(font_bold, 25.5); c.setFillColor(INK)
-    c.drawString(x + PAD, CONT_TXT_Y, box["item"][:18])
-
-    c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
-    c.drawString(x + PAD, QTY_LBL_Y, "QTY")
-
-    m_qty = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
-    main  = m_qty.group(1) if m_qty else box["qty"]
-    extra = m_qty.group(2) if m_qty else None
-
-    c.setFont(font_bold, 31.2); c.setFillColor(INK)
-    c.drawString(x + PAD, QTY_TXT_Y, main)
-    cur_x = x + PAD + c.stringWidth(main, font_bold, 31.2)
-
-    if extra:
-        c.setFont(font_bold, 9); c.setFillColor(MUTED2)
-        c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 4 * mm, "+")
-        cur_x += 1 * mm + c.stringWidth("+", font_bold, 9)
-        c.setFont(font_bold, 22.7); c.setFillColor(INK2)
-        c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 1 * mm, extra)
-        cur_x += 1 * mm + c.stringWidth(extra, font_bold, 22.7)
-
-    c.setFont(font_bold, 17); c.setFillColor(INK2)
-    c.drawString(cur_x + 2 * mm, QTY_TXT_Y + 1 * mm, "EA")
+    combined = _parse_combined_items(box["item"])
+    if combined:
+        c.setFont(font_bold, 13); c.setFillColor(INK)
+        c.drawString(x + PAD, CONT_TXT_Y + 4 * mm, combined[0]["name"][:20])
+        if len(combined) > 1:
+            c.drawString(x + PAD, CONT_TXT_Y - 3 * mm, combined[1]["name"][:20])
+        c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+        c.drawString(x + PAD, QTY_LBL_Y, "QTY")
+        c.setFont(font_bold, 16); c.setFillColor(INK)
+        q0 = _format_qty(combined[0]["qty"]) + " EA" if combined[0]["qty"] else "EA"
+        c.drawString(x + PAD, QTY_TXT_Y + 4 * mm, q0)
+        if len(combined) > 1:
+            q1 = _format_qty(combined[1]["qty"]) + " EA" if combined[1]["qty"] else "EA"
+            c.drawString(x + PAD, QTY_TXT_Y - 4 * mm, q1)
+    else:
+        c.setFont(font_bold, 25.5); c.setFillColor(INK)
+        c.drawString(x + PAD, CONT_TXT_Y, box["item"][:18])
+        c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+        c.drawString(x + PAD, QTY_LBL_Y, "QTY")
+        m_qty = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
+        main  = m_qty.group(1) if m_qty else box["qty"]
+        extra = m_qty.group(2) if m_qty else None
+        c.setFont(font_bold, 31.2); c.setFillColor(INK)
+        c.drawString(x + PAD, QTY_TXT_Y, main)
+        cur_x = x + PAD + c.stringWidth(main, font_bold, 31.2)
+        if extra:
+            c.setFont(font_bold, 9); c.setFillColor(MUTED2)
+            c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 4 * mm, "+")
+            cur_x += 1 * mm + c.stringWidth("+", font_bold, 9)
+            c.setFont(font_bold, 22.7); c.setFillColor(INK2)
+            c.drawString(cur_x + 1 * mm, QTY_TXT_Y + 1 * mm, extra)
+            cur_x += 1 * mm + c.stringWidth(extra, font_bold, 22.7)
+        c.setFont(font_bold, 17); c.setFillColor(INK2)
+        c.drawString(cur_x + 2 * mm, QTY_TXT_Y + 1 * mm, "EA")
 
     remainders = box.get("remainder_items", [])
     if remainders:
@@ -725,12 +766,19 @@ def draw_unified_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
     c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
     c.drawString(x + PAD, CONT_TOP, "CONTENTS")
 
-    item_text = box["item"]
-    item_fs = 20
-    while c.stringWidth(item_text, font_bold, item_fs) > W - 2 * PAD and item_fs > 11:
-        item_fs -= 1
-    c.setFont(font_bold, item_fs); c.setFillColor(INK)
-    c.drawString(x + PAD, CONT_TOP - 10 * mm, item_text)
+    combined = _parse_combined_items(box["item"])
+    if combined:
+        c.setFont(font_bold, 13); c.setFillColor(INK)
+        c.drawString(x + PAD, CONT_TOP - 7 * mm, combined[0]["name"][:28])
+        if len(combined) > 1:
+            c.drawString(x + PAD, CONT_TOP - 14 * mm, combined[1]["name"][:28])
+    else:
+        item_text = box["item"]
+        item_fs = 20
+        while c.stringWidth(item_text, font_bold, item_fs) > W - 2 * PAD and item_fs > 11:
+            item_fs -= 1
+        c.setFont(font_bold, item_fs); c.setFillColor(INK)
+        c.drawString(x + PAD, CONT_TOP - 10 * mm, item_text)
 
     # ── QTY + 잔여분 (나머지 공간 전부) ────────────────────────────────────
     FTR_H     = 10 * mm
@@ -740,24 +788,29 @@ def draw_unified_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
     c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
     c.drawString(x + PAD, QTY_LBL_Y, "QTY")
 
-    m_qty    = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
-    main_qty = m_qty.group(1) if m_qty else box["qty"]
-    extra    = m_qty.group(2) if m_qty else None
-
-    c.setFont(font_bold, 30); c.setFillColor(INK)
-    c.drawString(x + PAD, QTY_NUM_Y, main_qty)
-    cur_x = x + PAD + c.stringWidth(main_qty, font_bold, 30)
-
-    if extra:
-        c.setFont(font_bold, 9); c.setFillColor(MUTED2)
-        c.drawString(cur_x + 1 * mm, QTY_NUM_Y + 4 * mm, "+")
-        cur_x += 1 * mm + c.stringWidth("+", font_bold, 9)
-        c.setFont(font_bold, 20); c.setFillColor(INK2)
-        c.drawString(cur_x + 1 * mm, QTY_NUM_Y + 1 * mm, extra)
-        cur_x += 1 * mm + c.stringWidth(extra, font_bold, 20)
-
-    c.setFont(font_bold, 16); c.setFillColor(INK2)
-    c.drawString(cur_x + 2 * mm, QTY_NUM_Y + 1 * mm, "EA")
+    if combined:
+        c.setFont(font_bold, 18); c.setFillColor(INK)
+        q0 = _format_qty(combined[0]["qty"]) + " EA" if combined[0]["qty"] else "EA"
+        c.drawString(x + PAD, QTY_NUM_Y + 5 * mm, q0)
+        if len(combined) > 1:
+            q1 = _format_qty(combined[1]["qty"]) + " EA" if combined[1]["qty"] else "EA"
+            c.drawString(x + PAD, QTY_NUM_Y - 5 * mm, q1)
+    else:
+        m_qty    = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
+        main_qty = m_qty.group(1) if m_qty else box["qty"]
+        extra    = m_qty.group(2) if m_qty else None
+        c.setFont(font_bold, 30); c.setFillColor(INK)
+        c.drawString(x + PAD, QTY_NUM_Y, main_qty)
+        cur_x = x + PAD + c.stringWidth(main_qty, font_bold, 30)
+        if extra:
+            c.setFont(font_bold, 9); c.setFillColor(MUTED2)
+            c.drawString(cur_x + 1 * mm, QTY_NUM_Y + 4 * mm, "+")
+            cur_x += 1 * mm + c.stringWidth("+", font_bold, 9)
+            c.setFont(font_bold, 20); c.setFillColor(INK2)
+            c.drawString(cur_x + 1 * mm, QTY_NUM_Y + 1 * mm, extra)
+            cur_x += 1 * mm + c.stringWidth(extra, font_bold, 20)
+        c.setFont(font_bold, 16); c.setFillColor(INK2)
+        c.drawString(cur_x + 2 * mm, QTY_NUM_Y + 1 * mm, "EA")
 
     remainders = box.get("remainder_items", [])
     if remainders:

@@ -134,6 +134,8 @@ _BOX_ROW_COMPACT = re.compile(r"^(.+?)(\d+)\s*\*\s*(\d+)\s+(\S+(?:\s*\([^)]*\))?
 
 
 def _clean_item_name(s: str) -> str:
+    if re.search(r'\d\+[가-힣A-Za-z]', s):
+        return s.strip()
     return re.sub(r"\s*\d+$", "", s).strip()
 
 
