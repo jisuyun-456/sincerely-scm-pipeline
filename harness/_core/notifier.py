@@ -45,6 +45,8 @@ class Notifier:
         if not sent:
             sent = self._try_slack(full_msg, severity)
         if not sent:
+            sent = self._try_gmail(full_msg, severity)
+        if not sent:
             sent = self._try_github_issue(full_msg, severity)
         if not sent:
             # Final fallback — always succeeds
@@ -76,11 +78,29 @@ class Notifier:
             return False
 
     def _try_gmail(self, msg: str, severity: str) -> bool:
-        # Gmail OAuth not yet configured — implement in Phase 4
-        raise NotImplementedError(
-            "Gmail notifier tier is a Phase 4 TODO. "
-            "Configure Gmail OAuth service account and implement here."
-        )
+        import smtplib
+        import ssl
+        from email.mime.text import MIMEText
+
+        sender = os.environ.get("GMAIL_SENDER")
+        password = os.environ.get("GMAIL_APP_PASSWORD")
+        recipient = os.environ.get("GMAIL_RECIPIENT")
+        if not sender or not password or not recipient:
+            return False
+        try:
+            mime = MIMEText(msg, "plain", "utf-8")
+            mime["Subject"] = f"[SCM Harness] {severity}"
+            mime["From"] = sender
+            mime["To"] = recipient
+            ctx = ssl.create_default_context()
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as smtp:
+                smtp.login(sender, password)
+                smtp.send_message(mime)
+            _log.info("notify sent via Gmail", severity=severity)
+            return True
+        except Exception as exc:
+            _log.warning("Gmail notify exception", error=str(exc))
+            return False
 
     def _try_github_issue(self, msg: str, severity: str) -> bool:
         token = os.environ.get("GITHUB_TOKEN")

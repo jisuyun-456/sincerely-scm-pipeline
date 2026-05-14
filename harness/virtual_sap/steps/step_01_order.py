@@ -143,4 +143,47 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
         logger.exception("step_01_order error")
         return StepResult("step_01_order", "failed", docs_created, issues)
 
+    # Process AQL-rejected reorder queue (Phase F)
+    try:
+        reorder_items = db.select("so_reorder_queue", {"status": "pending"},
+                                  columns="id, material_id, plant_id, qty")
+        for item in reorder_items:
+            so_id = next_id("SO", now_date, dry_run=dry_run)
+            customer_id = rng.choice(CUSTOMERS)
+            price = float(PRICES.get(item["material_id"], 5000))
+            qty = float(item["qty"])
+            requested_delivery = now_date + timedelta(days=rng.randint(5, 14))
+
+            db.insert("sales_order", {
+                "so_id": so_id,
+                "customer_id": customer_id,
+                "order_date": now_date.isoformat(),
+                "requested_delivery_date": requested_delivery.isoformat(),
+                "plant_id": item["plant_id"],
+                "status": "open",
+                "total_value": round(qty * price, 2),
+                "sim_run_id": sim_run_id,
+            }, dry_run=dry_run)
+            db.insert("sales_order_item", [{
+                "so_id": so_id,
+                "item_no": 1,
+                "material_id": item["material_id"],
+                "ordered_qty": qty,
+                "uom": "EA",
+                "net_price": price,
+            }], dry_run=dry_run)
+            db.insert("sales_order_status_event", {
+                "so_id": so_id, "from_status": None,
+                "to_status": "open", "sim_run_id": sim_run_id,
+            }, dry_run=dry_run)
+            db.update("so_reorder_queue", {"id": item["id"]}, {
+                "status": "processed",
+                "processed_so_id": so_id,
+            }, dry_run=dry_run)
+            docs_created += 1
+            logger.info("Reorder SO %s: %s qty=%.0f (AQL rejection)", so_id, item["material_id"], qty)
+    except Exception as exc:
+        issues.append(f"reorder_queue processing failed: {exc}")
+        logger.warning("reorder_queue error (non-fatal): %s", exc)
+
     return StepResult("step_01_order", "ok", docs_created, issues)

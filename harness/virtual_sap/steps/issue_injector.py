@@ -28,3 +28,39 @@ def record_issue(db, sim_run_id: str, severity: str, message: str, dry_run: bool
         "severity": severity,
         "message": message,
     }, dry_run=dry_run)
+
+
+# ─────────────────────────────────────────────────────
+# Phase F — Manual fault injection (for testing agents)
+# ─────────────────────────────────────────────────────
+
+def inject_aql_failure(db, gr_id: str, dry_run: bool = False) -> bool:
+    """Set qi_inspection.disposition='block' for all items in a GR.
+
+    Simulates an AQL inspection failure → triggers quality_reject_agent on next tick.
+    """
+    rows = db.select("qi_inspection", {"gr_id": gr_id}, columns="qi_id, disposition")
+    if not rows:
+        logger.warning("inject_aql_failure: no qi_inspection rows for gr_id=%s", gr_id)
+        return False
+    for row in rows:
+        if row.get("disposition") != "block":
+            db.update("qi_inspection", {"qi_id": row["qi_id"]},
+                      {"disposition": "block"}, dry_run=dry_run)
+    logger.info("inject_aql_failure: %d row(s) set to block for gr_id=%s", len(rows), gr_id)
+    return True
+
+
+def inject_pod_damage(db, ship_id: str, dry_run: bool = False) -> bool:
+    """Set shipment.pod_status='exception' to simulate a damaged/short delivery.
+
+    Triggers claim_agent on next tick.
+    """
+    rows = db.select("shipment", {"ship_id": ship_id}, columns="ship_id, pod_status", limit=1)
+    if not rows:
+        logger.warning("inject_pod_damage: shipment %s not found", ship_id)
+        return False
+    db.update("shipment", {"ship_id": ship_id},
+              {"pod_status": "exception"}, dry_run=dry_run)
+    logger.info("inject_pod_damage: shipment %s → pod_status=exception", ship_id)
+    return True

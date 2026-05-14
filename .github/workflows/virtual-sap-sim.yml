@@ -87,6 +87,8 @@ jobs:
         env:
           VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GMAIL_SENDER:              ${{ secrets.GMAIL_SENDER }}
+          GMAIL_APP_PASSWORD:        ${{ secrets.GMAIL_APP_PASSWORD }}
         run: python -m harness.virtual_sap.agents.customer_notify_agent
 
       - name: Run 자재출고요청 agent
@@ -100,6 +102,54 @@ jobs:
           VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python -m harness.virtual_sap.agents.oem_release_agent
+
+      - name: Run 납품지연알림 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.delivery_delay_agent
+
+      - name: Run 기간마감경고 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.period_close_warning_agent
+
+      - name: Run 재고부족알림 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.inventory_alert_agent
+
+      - name: Run 품질불합격재발주 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.quality_reject_agent
+
+      - name: Run 클레임접수 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.claim_agent
+
+      - name: Run 세금계산서발행 agent
+        env:
+          VSAP_SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          VSAP_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SLACK_BOT_TOKEN:           ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID:          ${{ secrets.SLACK_DM_USER_ID }}
+        run: python -m harness.virtual_sap.agents.invoice_agent
 
       - name: Notify on failure
         if: failure()

@@ -6,6 +6,7 @@ Trigger: outbound_delivery 중 goods_issue_status='posted'이고
 from __future__ import annotations
 
 import logging
+import os
 import sys
 
 if __name__ == "__main__" and __package__ is None:
@@ -19,6 +20,37 @@ from ..config import get_config
 logger = logging.getLogger(__name__)
 
 AGENT_NAME = "고객출고알림"
+
+
+def _send_customer_email(to_email: str, customer_name: str, so_id: str, goods_issue_date: str) -> bool:
+    import smtplib
+    import ssl
+    from email.mime.text import MIMEText
+
+    sender = os.environ.get("GMAIL_SENDER")
+    password = os.environ.get("GMAIL_APP_PASSWORD")
+    if not sender or not password or not to_email:
+        return False
+    body = (
+        f"안녕하세요, {customer_name}님.\n\n"
+        f"{so_id} 주문 건이 {goods_issue_date}에 출고 완료되었습니다.\n"
+        "곧 배송될 예정이며 운송장 번호는 별도로 안내드리겠습니다.\n\n"
+        "감사합니다.\n신시어리 물류팀 드림"
+    )
+    try:
+        mime = MIMEText(body, "plain", "utf-8")
+        mime["Subject"] = f"[신시어리] {so_id} 출고 완료 안내"
+        mime["From"] = sender
+        mime["To"] = to_email
+        ctx = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as smtp:
+            smtp.login(sender, password)
+            smtp.send_message(mime)
+        logger.info("%s: email sent to %s for SO %s", AGENT_NAME, to_email, so_id)
+        return True
+    except Exception as exc:
+        logger.warning("%s: email failed to %s: %s", AGENT_NAME, to_email, exc)
+        return False
 
 
 def _log_agent_event(target_id: str | None, status: str, message: str,
@@ -77,14 +109,19 @@ def run() -> int:
         bp_rows = db.select(
             "business_partner",
             {"bp_id": customer_id},
-            columns="bp_id, name",
+            columns="bp_id, name, contact_email",
             limit=1,
         )
-        customer_name = bp_rows[0].get("name", customer_id) if bp_rows else customer_id
+        bp = bp_rows[0] if bp_rows else {}
+        customer_name = bp.get("name", customer_id)
+        contact_email = bp.get("contact_email", "")
+
+        email_sent = _send_customer_email(contact_email, customer_name, so_id, goods_issue_date)
+        email_note = f"이메일 발송{'됨' if email_sent else ' 미설정'}"
 
         message = (
             f"{customer_name} | SO {so_id} | 출고일 {goods_issue_date} "
-            f"| 납기 {rdd} | 출고 안내 발송"
+            f"| 납기 {rdd} | {email_note}"
         )
         logger.info("%s: %s", AGENT_NAME, message)
         _log_agent_event(target_id=dlv_id, status="ok", message=message, dry_run=dry_run)
