@@ -576,22 +576,24 @@ def draw_carton_label(c: rl_canvas.Canvas, x: float, y: float,
     c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
     combined = _parse_combined_items(box["item"])
     if combined:
+        n = len(combined)
         item_fs = 16
         for sub in combined:
-            while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 9:
+            while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 8:
                 item_fs -= 1
+        cont_step = (7 * mm) / max(n - 1, 1) if n > 1 else 7 * mm
+        while item_fs > cont_step and item_fs > 8:
+            item_fs -= 1
         c.setFont(font_bold, item_fs); c.setFillColor(INK)
-        c.drawString(x + PAD, CONT_TXT_Y + 4 * mm, combined[0]["name"][:20])
-        if len(combined) > 1:
-            c.drawString(x + PAD, CONT_TXT_Y - 3 * mm, combined[1]["name"][:20])
+        for i, sub in enumerate(combined):
+            c.drawString(x + PAD, CONT_TXT_Y + 4 * mm - i * cont_step, sub["name"][:20])
         c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
         c.drawString(x + PAD, QTY_LBL_Y, "QTY")
-        c.setFont(font_bold, 16); c.setFillColor(INK)
-        q0 = _format_qty(combined[0]["qty"]) + " EA" if combined[0]["qty"] else "EA"
-        c.drawString(x + PAD, QTY_TXT_Y + 4 * mm, q0)
-        if len(combined) > 1:
-            q1 = _format_qty(combined[1]["qty"]) + " EA" if combined[1]["qty"] else "EA"
-            c.drawString(x + PAD, QTY_TXT_Y - 4 * mm, q1)
+        qty_step = (8 * mm) / max(n - 1, 1) if n > 1 else 8 * mm
+        c.setFont(font_bold, item_fs); c.setFillColor(INK)
+        for i, sub in enumerate(combined):
+            q = _format_qty(sub["qty"]) + " EA" if sub["qty"] else "EA"
+            c.drawString(x + PAD, QTY_TXT_Y + 4 * mm - i * qty_step, q)
     else:
         c.setFont(font_bold, 25.5); c.setFillColor(INK)
         c.drawString(x + PAD, CONT_TXT_Y, box["item"][:18])
@@ -775,14 +777,17 @@ def draw_unified_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
 
     combined = _parse_combined_items(box["item"])
     if combined:
+        n = len(combined)
         item_fs = 18
         for sub in combined:
-            while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 11:
+            while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 8:
                 item_fs -= 1
+        cont_step = (7 * mm) / max(n - 1, 1) if n > 1 else 7 * mm
+        while item_fs > cont_step and item_fs > 8:
+            item_fs -= 1
         c.setFont(font_bold, item_fs); c.setFillColor(INK)
-        c.drawString(x + PAD, CONT_TOP - 7 * mm, combined[0]["name"][:28])
-        if len(combined) > 1:
-            c.drawString(x + PAD, CONT_TOP - 14 * mm, combined[1]["name"][:28])
+        for i, sub in enumerate(combined):
+            c.drawString(x + PAD, CONT_TOP - 7 * mm - i * cont_step, sub["name"][:28])
     else:
         item_text = box["item"]
         item_fs = 20
@@ -800,12 +805,15 @@ def draw_unified_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
     c.drawString(x + PAD, QTY_LBL_Y, "QTY")
 
     if combined:
-        c.setFont(font_bold, 18); c.setFillColor(INK)
-        q0 = _format_qty(combined[0]["qty"]) + " EA" if combined[0]["qty"] else "EA"
-        c.drawString(x + PAD, QTY_NUM_Y + 5 * mm, q0)
-        if len(combined) > 1:
-            q1 = _format_qty(combined[1]["qty"]) + " EA" if combined[1]["qty"] else "EA"
-            c.drawString(x + PAD, QTY_NUM_Y - 5 * mm, q1)
+        n = len(combined)
+        qty_fs = 18
+        qty_step = (10 * mm) / max(n - 1, 1) if n > 1 else 10 * mm
+        while qty_fs > qty_step and qty_fs > 8:
+            qty_fs -= 1
+        c.setFont(font_bold, qty_fs); c.setFillColor(INK)
+        for i, sub in enumerate(combined):
+            q = _format_qty(sub["qty"]) + " EA" if sub["qty"] else "EA"
+            c.drawString(x + PAD, QTY_NUM_Y + 5 * mm - i * qty_step, q)
     else:
         m_qty    = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
         main_qty = m_qty.group(1) if m_qty else box["qty"]

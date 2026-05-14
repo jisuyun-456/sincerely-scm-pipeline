@@ -27,7 +27,7 @@ from reportlab.lib.pagesizes import A4
 # 실제 PDF 스크린샷 기반 재현
 boxes_raw = [
     {"box_num": 1, "total_boxes": 5, "item": "Solid 스탠다드 G형박스 키트",  "qty": "50+5",  "size": "대",  "remainder_items": []},
-    {"box_num": 2, "total_boxes": 5, "item": "웰컴페이퍼50+25+사각스티커50+", "qty": "25",   "size": "중",  "remainder_items": []},
+    {"box_num": 2, "total_boxes": 5, "item": "웰컴페이퍼50+25+사각스티커50+25", "qty": "25",   "size": "중",  "remainder_items": []},
     {"box_num": 3, "total_boxes": 5, "item": "리맴버 탁상시계",               "qty": "50",   "size": "중",  "remainder_items": []},
     {"box_num": 4, "total_boxes": 5, "item": "올웨이즈 양우산",              "qty": "50+1", "size": "중대", "remainder_items": []},
     {"box_num": 5, "total_boxes": 5, "item": "슬림 터보선풍기",              "qty": "50+1", "size": "중대", "remainder_items": []},
