@@ -41,10 +41,11 @@ def run_tick(mode: str = "manual", orders_count: int = 2) -> dict:
     now_date = date.today().isoformat()
     sim_run_id = str(uuid.uuid4())
 
-    # Create sim_run record
+    # Create sim_run record — DB constraint only allows manual/daily/backfill
+    db_mode = "manual" if mode == "continuous" else mode
     run_row = db.insert("sim_run", {
         "id": sim_run_id,
-        "mode": mode,
+        "mode": db_mode,
         "status": "running",
         "git_sha": _get_git_sha(),
     }, dry_run=cfg.dry_run)
