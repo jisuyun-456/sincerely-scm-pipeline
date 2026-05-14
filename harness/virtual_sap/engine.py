@@ -54,6 +54,8 @@ def run_tick(mode: str = "manual", orders_count: int = 2) -> dict:
     ctx = {
         "sim_run_id": actual_run_id,
         "now_date": now_date,
+        "now_ts": datetime.now(timezone.utc).isoformat(),
+        "is_continuous": (mode == "continuous"),
         "dry_run": cfg.dry_run,
         "orders_count": orders_count,
     }

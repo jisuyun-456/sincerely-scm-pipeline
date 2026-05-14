@@ -18,7 +18,7 @@ def main() -> None:
     # tick
     p_tick = sub.add_parser("tick", help="Run one simulation tick")
     p_tick.add_argument(
-        "--mode", choices=["manual", "daily", "backfill"], default="manual"
+        "--mode", choices=["manual", "daily", "backfill", "continuous"], default="manual"
     )
     p_tick.add_argument(
         "--orders", type=int, default=2, help="Orders to generate per tick"

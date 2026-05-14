@@ -3,14 +3,18 @@
 Generates ctx["orders_count"] sales orders with random customers,
 materials, and quantities. Inserts into:
   sap.sales_order, sap.sales_order_item, sap.sales_order_status_event
+
+Continuous mode: only runs on weekdays 09:00-18:00 KST, max 5 SOs/day,
+1-2 orders per tick.
 """
 from __future__ import annotations
 
 import random
 import logging
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import TypedDict
+from zoneinfo import ZoneInfo
 
 from .. import supabase_client as db
 from ..id_gen import next_id
@@ -18,6 +22,7 @@ from ..config import get_config
 
 logger = logging.getLogger(__name__)
 
+KST = ZoneInfo("Asia/Seoul")
 CUSTOMERS = ["C-0001", "C-0002", "C-0003"]
 MATERIALS = [
     "MAT-0001", "MAT-0002", "MAT-0003", "MAT-0004", "MAT-0005",
@@ -30,11 +35,14 @@ PRICES = {
     "MAT-0010": 9500,
 }
 PLANT_ID = "P001"
+MAX_DAILY_SOS = 5
 
 
 class SimContext(TypedDict):
     sim_run_id: str
     now_date: str   # YYYY-MM-DD
+    now_ts: str     # ISO UTC timestamp
+    is_continuous: bool
     dry_run: bool
     orders_count: int
 
@@ -57,6 +65,26 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
     # Reproducible seed derived from sim_run_id hash + date
     seed = hash(sim_run_id + ctx["now_date"]) & 0x7FFFFFFF
     rng = random.Random(seed)
+
+    # Continuous mode gates
+    if ctx.get("is_continuous"):
+        kst_now = datetime.now(KST)
+        # Weekdays only (Mon=0 … Fri=4)
+        if kst_now.weekday() >= 5:
+            logger.info("step_01_order: weekend — skipping")
+            return StepResult("step_01_order", "skipped", 0, issues)
+        # Business hours 09:00-18:00 KST
+        if not (9 <= kst_now.hour < 18):
+            logger.info("step_01_order: outside business hours (%02d:xx KST) — skipping", kst_now.hour)
+            return StepResult("step_01_order", "skipped", 0, issues)
+        # Daily cap: check how many SOs created today
+        today_sos = db.select("sales_order", {}, columns="so_id, created_at")
+        today_count = sum(1 for s in today_sos if s.get("created_at", "")[:10] == ctx["now_date"])
+        if today_count >= MAX_DAILY_SOS:
+            logger.info("step_01_order: daily cap reached (%d SOs today) — skipping", today_count)
+            return StepResult("step_01_order", "skipped", 0, issues)
+        # 1-2 orders per tick in continuous mode
+        orders_count = rng.randint(1, 2)
 
     try:
         for _ in range(orders_count):

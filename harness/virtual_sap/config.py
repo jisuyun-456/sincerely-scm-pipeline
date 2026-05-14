@@ -67,7 +67,7 @@ class SimConfig:
     orders_per_tick: int = field(default_factory=lambda: int(os.environ.get("VSAP_ORDERS_PER_TICK", "2")))
 
     def __post_init__(self) -> None:
-        valid_modes = {"manual", "daily", "backfill"}
+        valid_modes = {"manual", "daily", "backfill", "continuous"}
         if self.sim_mode not in valid_modes:
             raise RuntimeError(f"VSAP_MODE must be one of {valid_modes}, got '{self.sim_mode}'")
 
