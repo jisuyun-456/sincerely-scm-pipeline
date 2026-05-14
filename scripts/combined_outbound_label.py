@@ -573,7 +573,11 @@ def draw_carton_label(c: rl_canvas.Canvas, x: float, y: float,
     c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
     combined = _parse_combined_items(box["item"])
     if combined:
-        c.setFont(font_bold, 13); c.setFillColor(INK)
+        item_fs = 16
+        for sub in combined:
+            while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 9:
+                item_fs -= 1
+        c.setFont(font_bold, item_fs); c.setFillColor(INK)
         c.drawString(x + PAD, CONT_TXT_Y + 4 * mm, combined[0]["name"][:20])
         if len(combined) > 1:
             c.drawString(x + PAD, CONT_TXT_Y - 3 * mm, combined[1]["name"][:20])
@@ -768,7 +772,11 @@ def draw_unified_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
 
     combined = _parse_combined_items(box["item"])
     if combined:
-        c.setFont(font_bold, 13); c.setFillColor(INK)
+        item_fs = 18
+        for sub in combined:
+            while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 11:
+                item_fs -= 1
+        c.setFont(font_bold, item_fs); c.setFillColor(INK)
         c.drawString(x + PAD, CONT_TOP - 7 * mm, combined[0]["name"][:28])
         if len(combined) > 1:
             c.drawString(x + PAD, CONT_TOP - 14 * mm, combined[1]["name"][:28])
