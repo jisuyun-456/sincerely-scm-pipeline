@@ -172,7 +172,38 @@ def _parse_remainder(qty_str: str) -> list[dict]:
             result.append({"name": nm.group(1).strip(), "qty": nm.group(2)})
         else:
             result.append({"name": item_str, "qty": ""})
-    return result
+    # 입력 실수 흡수: '이름,수량' 처럼 콤마로 잘못 분리된 경우 직전 항목에 병합
+    merged = []
+    for item in result:
+        if item["name"].isdigit() and merged and not merged[-1]["qty"]:
+            merged[-1]["qty"] = item["name"]
+        else:
+            merged.append(item)
+    return merged
+
+
+def _is_combined_pack(item_name: str) -> bool:
+    """True if item_name encodes multiple 합포장 items (e.g., '웰컴페이퍼50+25+사각스티커50+')."""
+    return bool(re.search(r'\d\+[가-힣A-Za-z]', item_name))
+
+
+def _parse_combined_items(item_name: str) -> list[dict]:
+    """Parse '웰컴페이퍼50+25+사각스티커50+' → [{name, qty}, ...]
+    Returns empty list if not a combined pack or only one segment detected."""
+    if not _is_combined_pack(item_name):
+        return []
+    parts = re.split(r'(?<=\d)\+(?=[가-힣A-Za-z])', item_name)
+    result = []
+    for part in parts:
+        part = part.strip().rstrip('+').strip()
+        if not part:
+            continue
+        m = re.match(r'^(.+?)(\d+(?:\+\d+)*)\+?$', part)
+        if m:
+            result.append({'name': m.group(1).strip(), 'qty': m.group(2)})
+        elif part:
+            result.append({'name': part, 'qty': ''})
+    return result if len(result) >= 2 else []
 
 
 def parse_packing_detail(text: str) -> list[dict]:
@@ -617,25 +648,59 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
         c.line(M, y, M + TBL_W, y)
 
     # 데이터 행
-    row_data = []
+    AMBER     = colors.HexColor("#fff3cd")
+    AMBER_TXT = colors.HexColor("#b7791f")
+
+    row_data = []  # [{"cells": tuple5, "hapojang": bool}, ...]
     for grp in rec["groups"]:
         box_lbl = (f"{grp['box_start']} ~ {grp['box_end']}"
                    if grp["box_start"] != grp["box_end"] else str(grp["box_start"]))
-        row_data.append((box_lbl, grp["item"][:38],
-                         f"{_format_qty(grp['qty'])} EA", f"{grp['size']}형", ""))
-        for rem in grp.get("remainder_items", []):
-            row_data.append(("", f"  └ {rem['name'][:32]}", f"{rem['qty']} EA", "", ""))
+        combined = _parse_combined_items(grp["item"])
+        if combined:
+            for idx, sub in enumerate(combined):
+                qty_str = f"{_format_qty(sub['qty'])} EA" if sub["qty"] else "EA"
+                row_data.append({
+                    "cells": (
+                        box_lbl if idx == 0 else "",
+                        sub["name"][:38] if idx == 0 else f"  └ {sub['name'][:36]}",
+                        qty_str,
+                        f"{grp['size']}형" if idx == 0 else "",
+                        "합포장" if idx == 0 else "",
+                    ),
+                    "hapojang": True,
+                })
+        else:
+            row_data.append({
+                "cells": (box_lbl, grp["item"][:38],
+                           f"{_format_qty(grp['qty'])} EA", f"{grp['size']}형", ""),
+                "hapojang": False,
+            })
+            for rem in grp.get("remainder_items", []):
+                qty_str = f"{rem['qty']} EA" if rem["qty"] else "EA"
+                row_data.append({
+                    "cells": ("", f"  └ {rem['name'][:32]}", qty_str, "", ""),
+                    "hapojang": False,
+                })
 
     for ri, row in enumerate(row_data):
-        bg = colors.white if ri % 2 == 0 else colors.HexColor("#fafbfd")
+        if row["hapojang"]:
+            bg = AMBER
+        else:
+            bg = colors.white if ri % 2 == 0 else colors.HexColor("#fafbfd")
         c.setFillColor(bg)
         c.rect(M, y - ROW_H_TBL, TBL_W, ROW_H_TBL, fill=1, stroke=0)
         c.setStrokeColor(LINE); c.setLineWidth(0.85)
         c.line(M, y - ROW_H_TBL, M + TBL_W, y - ROW_H_TBL)
         c.setFont(font, 9.1); c.setFillColor(INK)
         rx = M
-        for j, (cell, cw, align) in enumerate(zip(row, COL_W, COL_AL)):
-            if align == "C":
+        for j, (cell, cw, align) in enumerate(zip(row["cells"], COL_W, COL_AL)):
+            if j == 4 and cell == "합포장":
+                c.setFont(font_bold, 8)
+                c.setFillColor(AMBER_TXT)
+                c.drawCentredString(rx + cw / 2, y - ROW_H_TBL + 2.5 * mm, cell)
+                c.setFont(font, 9.1)
+                c.setFillColor(INK)
+            elif align == "C":
                 c.drawCentredString(rx + cw / 2, y - ROW_H_TBL + 2.5 * mm, str(cell))
             else:
                 pad = 5 * mm if j == 1 else 3 * mm

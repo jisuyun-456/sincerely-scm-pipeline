@@ -182,7 +182,14 @@ def _parse_remainder(qty_str: str) -> list[dict]:
             result.append({"name": nm.group(1).strip(), "qty": nm.group(2)})
         else:
             result.append({"name": item_str, "qty": ""})
-    return result
+    # 입력 실수 흡수: '이름,수량' 처럼 콤마로 잘못 분리된 경우 직전 항목에 병합
+    merged = []
+    for item in result:
+        if item["name"].isdigit() and merged and not merged[-1]["qty"]:
+            merged[-1]["qty"] = item["name"]
+        else:
+            merged.append(item)
+    return merged
 
 
 def parse_packing_detail(text: str) -> list[dict]:
