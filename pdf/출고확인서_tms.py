@@ -264,18 +264,27 @@ def parse_stock_items(raw: str) -> list[dict]:
                 "qty":         m.group("qty"),
             })
         else:
-            # fallback: || 구분자로만 나눠서 처리
-            parts = line.split("||")
-            name_part = parts[0].strip()
-            qty_str   = ""
-            if len(parts) > 1:
-                qty_m = re.search(r"(\d+)개", parts[1])
-                qty_str = qty_m.group(1) if qty_m else ""
-            # PT코드 분리
-            pt_m = re.match(r"(PT\S+?)-(.+)", name_part)
-            pt   = pt_m.group(1) if pt_m else ""
-            name = pt_m.group(2).strip() if pt_m else name_part
-            rows.append({"no": i, "pt": pt, "name": name, "ordered_qty": "", "qty": qty_str})
+            # 기아_외박스(Category) 수량개 형식 등 || 없는 일반 품목
+            rm = ITEM_RE.match(line) or ITEM_RE2.match(line) or ITEM_RE3.match(line)
+            if rm:
+                rows.append({
+                    "no": i, "pt": "",
+                    "name": rm.group("name").strip(),
+                    "ordered_qty": "",
+                    "qty": rm.group("qty"),
+                })
+            else:
+                # 최후 fallback: || 구분자 분리
+                parts = line.split("||")
+                name_part = parts[0].strip()
+                qty_str   = ""
+                if len(parts) > 1:
+                    qty_m = re.search(r"(\d+)개", parts[1])
+                    qty_str = qty_m.group(1) if qty_m else ""
+                pt_m = re.match(r"(PT\S+?)-(.+)", name_part)
+                pt   = pt_m.group(1) if pt_m else ""
+                name = pt_m.group(2).strip() if pt_m else name_part
+                rows.append({"no": i, "pt": pt, "name": name, "ordered_qty": "", "qty": qty_str})
     return rows
 
 
@@ -398,7 +407,9 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     order_raw   = ""
     if stock_lines and any(STOCK_ITEM_RE.match(l) for l in stock_lines):
         items     = parse_stock_items(stock_raw)
-        bad_lines = [l for l in stock_lines if not STOCK_ITEM_RE.match(l)]
+        bad_lines = [l for l in stock_lines
+                      if not STOCK_ITEM_RE.match(l)
+                      and not ITEM_RE.match(l) and not ITEM_RE2.match(l) and not ITEM_RE3.match(l)]
     else:
         actual_raw = _get_lines(f, "최종 출고 품목 및 수량")
         order_raw  = _get_lines(f, "최종 출하 품목")
