@@ -390,6 +390,38 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
           </table>
         </div>
       </div>
+
+      <!-- ── CBM 섹션 (M-01/M-02) ── -->
+      <div class="two">
+        <div class="panel">
+          <div class="ph"><h3>입하 CBM</h3><span class="badge b-info" id="cbm-week-badge">—</span></div>
+          <div class="pb">
+            <div class="stat"><span class="sk">이번 주 입하 CBM</span><span class="sv2" id="cbm-weekly-total">—</span></div>
+            <div class="stat"><span class="sk">규격 매칭률</span><span class="sv2" id="cbm-match-pct">—</span></div>
+            <div class="stat"><span class="sk">규격 미기재</span><span class="sv2 warn" id="cbm-nospec-pct">—</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>창고 용적률</h3><span class="badge" id="cbm-util-badge">—</span></div>
+          <div class="pb">
+            <div class="stat"><span class="sk">현재 재고 CBM</span><span class="sv2" id="cbm-net-stock">—</span></div>
+            <div class="stat"><span class="sk">창고 용적률</span><span class="sv2" id="cbm-util-pct">—</span></div>
+            <div class="stat"><span class="sk">가용 공간</span><span class="sv2 ok" id="cbm-available">—</span></div>
+            <div style="margin-top:10px">
+              <div style="background:#eee;border-radius:6px;height:10px;overflow:hidden">
+                <div id="cbm-util-bar" style="height:100%;background:#5DCAA5;border-radius:6px;transition:width 0.5s;width:0%"></div>
+              </div>
+              <div style="font-size:10px;color:#8C8375;margin-top:4px">기준: <span id="cbm-capacity-label">44 m³</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h3>일별 입하 CBM</h3></div>
+        <div class="pb">
+          <div class="chart-wrap" style="height:140px"><canvas id="cCbmDaily"></canvas></div>
+        </div>
+      </div>
     </div>
 
     <!-- ── 검수 탭 ── -->
@@ -710,6 +742,36 @@ function applyData(data) {
       const avg = v.cnt ? Math.round(v.in_qty / v.cnt) : 0;
       return `<tr><td>${wk.replace(/^\d{4}-/,'')}</td><td class="tr">${v.cnt.toLocaleString()}건</td><td class="tr">${v.in_qty.toLocaleString()}</td><td class="tr">${avg.toLocaleString()}개</td></tr>`;
     }).join('');
+  }
+
+  // ── CBM 입하 섹션 (M-01/M-02) ──
+  const cbm = data.inbound_cbm || {};
+  if (cbm.weekly_total !== undefined) {
+    setText('cbm-weekly-total', cbm.weekly_total.toFixed(2) + ' m³');
+    setText('cbm-match-pct', cbm.match_pct + '%');
+    setText('cbm-nospec-pct', cbm.no_spec_pct + '%');
+    const cbmWeekBadge = document.getElementById('cbm-week-badge');
+    if (cbmWeekBadge) {
+      const alert = cbm.weekly_total > cbm.capacity_inbound;
+      cbmWeekBadge.textContent = alert ? '⚠ Capa 주의' : '정상';
+      cbmWeekBadge.className = 'badge ' + (alert ? 'b-ng' : 'b-ok');
+    }
+    setText('cbm-net-stock', (cbm.net_stock_cbm || 0).toFixed(2) + ' m³');
+    const util = cbm.utilization_pct || 0;
+    setText('cbm-util-pct', util + '%');
+    setText('cbm-available', (cbm.available_cbm || 0).toFixed(2) + ' m³');
+    setText('cbm-capacity-label', (cbm.capacity_outbound || 44) + ' m³');
+    const barEl = document.getElementById('cbm-util-bar');
+    if (barEl) {
+      const pct = Math.min(util, 100);
+      barEl.style.width = pct + '%';
+      barEl.style.background = util >= 90 ? '#F09595' : util >= 75 ? '#EF9F27' : '#5DCAA5';
+    }
+    const utilBadge = document.getElementById('cbm-util-badge');
+    if (utilBadge) {
+      utilBadge.textContent = util + '%';
+      utilBadge.className = 'badge ' + (util >= 90 ? 'b-ng' : util >= 75 ? 'b-warn' : 'b-ok');
+    }
   }
 
   // ── 검수 탭 동적 섹션 ──
@@ -1183,6 +1245,31 @@ function drawChart(cat) {
         }
       }
     });
+  }
+
+  if (cat === 'inbound' && !charts['cbmDaily']) {
+    const cbm = (D || FALLBACK).inbound_cbm || {};
+    const byDay = cbm.by_day || [];
+    if (byDay.length > 0) {
+      const ctx2 = document.getElementById('cCbmDaily');
+      if (ctx2) {
+        charts.cbmDaily = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: byDay.map(d => d.date.slice(5)),
+            datasets: [{ label: 'CBM (m³)', data: byDay.map(d => d.cbm), backgroundColor: '#5DCAA5', borderRadius: 3 }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { font: { size: 9 } }, grid: { display: false } },
+              y: { ticks: { font: { size: 9 }, callback: v => v + ' m³' }, grid: { color: '#f0f0f0' } }
+            }
+          }
+        });
+      }
+    }
   }
 
   if (cat === 'qc') {

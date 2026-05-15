@@ -25,6 +25,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ── CBM M-01~04 imports ────────────────────────────────────────────────────────
+_ROOT_DIR = Path(__file__).parent.parent
+if str(_ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(_ROOT_DIR))
+
+try:
+    from utils.cbm_utils import fetch_inbound_cbm, load_sync_parts_lookup
+    from wms_cbm_ledger import calc_running_balance, WAREHOUSE_INBOUND_CBM
+    _CBM_AVAILABLE = True
+except ImportError:
+    _CBM_AVAILABLE = False
+
 # ── 경로 설정 ──────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).parent.parent
 OUTPUTS_DIR = ROOT / "_AutoResearch" / "SCM" / "outputs"
@@ -506,6 +518,113 @@ def analyze_supplier_ontime(sap_data: dict) -> dict:
     }
 
 
+# ── Iter 8: 주간 입하 CBM + Capa 신호 (M-01) ─────────────────────────────────
+def analyze_cbm_weekly(week_str: str) -> dict | None:
+    """이번 주 입하 CBM 집계 + 창고 용적 신호."""
+    if not _CBM_AVAILABLE:
+        return None
+    try:
+        sp_lookup = load_sync_parts_lookup()
+        result = fetch_inbound_cbm(sp_lookup, week_str=week_str)
+    except Exception:
+        return None
+
+    total = result["total_cbm"]
+    n_match = result["n_matched"]
+    n_total = n_match + result["n_unmatched"]
+    match_pct = round(n_match / n_total * 100, 1) if n_total else 0.0
+
+    # 피크일 (최대 CBM 날짜)
+    by_date = result["by_date"]
+    peak_day, peak_cbm = "", 0.0
+    for d, v in by_date.items():
+        if d != "날짜없음" and v["cbm"] > peak_cbm:
+            peak_cbm = v["cbm"]
+            peak_day = d
+
+    # 일평균 (날짜 있는 날만)
+    valid_days = [v["cbm"] for d, v in by_date.items() if d != "날짜없음" and v["cbm"] > 0]
+    daily_avg = round(sum(valid_days) / len(valid_days), 4) if valid_days else 0.0
+
+    capa_pct = round(total / WAREHOUSE_INBOUND_CBM * 100, 1)
+    capa_alert = peak_cbm > WAREHOUSE_INBOUND_CBM
+
+    return {
+        "week_str":      week_str,
+        "total_cbm":     total,
+        "n_matched":     n_match,
+        "n_total":       n_total,
+        "match_pct":     match_pct,
+        "daily_avg":     daily_avg,
+        "by_date":       by_date,
+        "by_supplier":   result["by_supplier"],
+        "peak_day":      peak_day,
+        "peak_cbm":      peak_cbm,
+        "capa_pct":      capa_pct,
+        "capa_alert":    capa_alert,
+    }
+
+
+# ── Iter 9: Running Balance (M-02) ────────────────────────────────────────────
+def analyze_cbm_balance(since: date | None = None) -> dict | None:
+    """YTD 창고 Running Balance 계산."""
+    if not _CBM_AVAILABLE:
+        return None
+    try:
+        ytd_start = since or date(date.today().year, 1, 1)
+        return calc_running_balance(since=ytd_start)
+    except Exception:
+        return None
+
+
+# ── Iter 10: D2S × CBM 상관 (M-03) ───────────────────────────────────────────
+def analyze_cbm_dts_corr(cbm_by_date: dict, gr_recs: list) -> dict:
+    """일별 입하 CBM vs Dock-to-Stock 평균 상관 분석."""
+    from collections import defaultdict
+
+    dts_by_date: dict[str, list[float]] = defaultdict(list)
+    for rec in gr_recs:
+        f = rec["fields"]
+        if f.get(FLD_GR_STATUS) not in {"CONFIRMED", "QC_PASS"}:
+            continue
+        dts_val = f.get(FLD_GR_DOCK_MIN)
+        recv_raw = f.get(FLD_GR_RECEIVED)
+        if dts_val is None or not recv_raw:
+            continue
+        d_key = str(recv_raw)[:10]
+        dts_by_date[d_key].append(float(dts_val))
+
+    rows = []
+    for d_key, cbm_entry in sorted(cbm_by_date.items()):
+        if d_key == "날짜없음":
+            continue
+        cbm_val = cbm_entry["cbm"]
+        dts_list = dts_by_date.get(d_key, [])
+        avg_dts = round(sum(dts_list) / len(dts_list), 0) if dts_list else None
+        rows.append({
+            "date":    d_key,
+            "cbm":     cbm_val,
+            "avg_dts": avg_dts,
+        })
+
+    # 상관 인사이트: CBM 상위 3일 vs 하위 3일 D2S 비교
+    with_dts = [r for r in rows if r["avg_dts"] is not None and r["cbm"] > 0]
+    with_dts.sort(key=lambda x: -x["cbm"])
+    top3 = with_dts[:3]
+    bot3 = with_dts[-3:] if len(with_dts) >= 6 else []
+
+    top_avg = round(sum(r["avg_dts"] for r in top3) / len(top3), 0) if top3 else None
+    bot_avg = round(sum(r["avg_dts"] for r in bot3) / len(bot3), 0) if bot3 else None
+
+    return {
+        "rows":    rows,
+        "top3":    top3,
+        "bot3":    bot3,
+        "top_avg_dts": top_avg,
+        "bot_avg_dts": bot_avg,
+    }
+
+
 # ── STEP 3: 리포트 저장 ────────────────────────────────────────────────────────
 def step_save_report(
     results: dict,
@@ -515,13 +634,16 @@ def step_save_report(
 ) -> Path | None:
     print("\n[STEP 3] 주간 리포트 저장")
 
-    qc  = results["qc"]
-    vol = results["volume"]
-    sup = results["supplier"]
-    dts = results.get("dts")
-    inv = results.get("inv")
-    qcp = results.get("qcp")
-    sot = results.get("sot")
+    qc       = results["qc"]
+    vol      = results["volume"]
+    sup      = results["supplier"]
+    dts      = results.get("dts")
+    inv      = results.get("inv")
+    qcp      = results.get("qcp")
+    sot      = results.get("sot")
+    cbm_week = results.get("cbm_week")
+    cbm_bal  = results.get("cbm_bal")
+    cbm_corr = results.get("cbm_corr")
 
     # QC 주요 수치
     qc_rate_str = (
@@ -554,12 +676,15 @@ def step_save_report(
 
     # SAP KPI 섹션 빌드
     sap_section = _build_sap_section(dts, inv, qcp, sot)
+    cbm_section = _build_cbm_section(cbm_week, cbm_bal, cbm_corr)
 
     # KPI 스냅샷 SAP 행 추가
     dts_snap = f"{dts['avg_dts']:.0f}분 (목표≤{DTS_TARGET_MIN}분 달성 {dts['target_pct']}%)" if dts and dts["avg_dts"] else "데이터 부족"
     inv_snap = f"피킹 정확도 {inv['picking_acc_pct']}% (SHORT {inv['task_short']}건/{inv['task_total']}건)" if inv and inv["picking_acc_pct"] else "데이터 부족"
     qcp_snap = f"QC 불합격률 {qcp['fail_rate']}% ({qcp['qc_fail']+qcp['qc_partial']}/{qcp['total_inspected']}건)" if qcp and qcp["fail_rate"] else "데이터 부족"
     sot_snap = f"공급사 납기 준수율 {sot['overall_pct']}% ({sot['total_on']}/{sot['total_gr']}건)" if sot and sot["overall_pct"] else "데이터 부족"
+    cbm_snap = f"입하 {cbm_week['total_cbm']:.2f} m³ (용적률 {cbm_week['capa_pct']}%)" if cbm_week else "데이터 부족"
+    bal_snap = f"재고 {cbm_bal['net_stock_cbm']:.2f} m³ / 가용 {cbm_bal['available_cbm']:.2f} m³ ({cbm_bal['utilization_pct']}%)" if cbm_bal else "데이터 부족"
 
     report = f"""# WMS Weekly — {week_str}  ({date_range})
 
@@ -579,6 +704,8 @@ def step_save_report(
 | **피킹 정확도** | **{inv_snap}** | WMS_PickingTask SAP EWM |
 | **QC 불합격률** | **{qcp_snap}** | WMS_GoodsReceipt SAP EWM |
 | **공급사 납기** | **{sot_snap}** | WMS_GoodsReceipt SAP EWM |
+| **주간 입하 CBM** | **{cbm_snap}** | movement.생산산출 × 제품 규격 |
+| **창고 Running Balance** | **{bal_snap}** | 입하 CBM − 출하 CBM |
 
 ---
 
@@ -619,6 +746,7 @@ def step_save_report(
 
 ---
 {sap_section}
+{cbm_section}
 ## 다음 주 체크포인트
 
 - [ ] QC 불량 proxy 트렌드 추적 (이번 주 대비 개선/악화)
@@ -721,17 +849,112 @@ def _build_sap_section(dts, inv, qcp, sot) -> str:
     return "\n".join(lines)
 
 
+def _build_cbm_section(cbm_week: dict | None, cbm_bal: dict | None, cbm_corr: dict | None) -> str:
+    """Iter 8~11 CBM 섹션 마크다운 빌드."""
+    lines: list[str] = []
+
+    # Iter 8: 주간 입하 CBM + Capa 신호
+    if cbm_week:
+        lines.append("## Iter 8: 주간 입하 CBM + 창고 Capa 신호 (M-01)")
+        lines.append("")
+        lines.append(f"- 이번 주 입하 CBM: **{cbm_week['total_cbm']:.4f} m³**")
+        lines.append(f"- 규격 매칭률: {cbm_week['match_pct']}% ({cbm_week['n_matched']}/{cbm_week['n_total']}건)")
+        lines.append(f"- 일평균 CBM: {cbm_week['daily_avg']:.4f} m³")
+        capa_icon = "⚠️" if cbm_week["capa_alert"] else "✅"
+        lines.append(f"- 입하 창고 용적률: **{cbm_week['capa_pct']}%** (기준: {WAREHOUSE_INBOUND_CBM:.0f} m³)")
+        if cbm_week["peak_day"]:
+            lines.append(f"- 피크일: {cbm_week['peak_day']} — {cbm_week['peak_cbm']:.4f} m³ {capa_icon}")
+        lines.append("")
+        lines.append("| 날짜 | CBM (m³) | 건수 |")
+        lines.append("|------|----------|------|")
+        for d in sorted(cbm_week["by_date"].keys()):
+            if d == "날짜없음":
+                continue
+            v = cbm_week["by_date"][d]
+            lines.append(f"| {d} | {v['cbm']:.4f} | {v['cnt']}건 |")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
+    # Iter 9: Running Balance
+    if cbm_bal:
+        util = cbm_bal["utilization_pct"]
+        util_icon = "🔴" if util >= 90 else ("🟡" if util >= 75 else "🟢")
+        lines.append("## Iter 9: 창고 Running Balance (M-02)")
+        lines.append("")
+        lines.append(f"| 지표 | 값 |")
+        lines.append(f"|------|-----|")
+        lines.append(f"| YTD 입하 CBM ({cbm_bal['since']}~) | {cbm_bal['inbound_cbm']:.4f} m³ |")
+        lines.append(f"| YTD 출하 CBM | {cbm_bal['outbound_cbm']:.4f} m³ |")
+        lines.append(f"| 현재 재고 CBM (추정) | **{cbm_bal['net_stock_cbm']:.4f} m³** |")
+        lines.append(f"| 창고 용적률 | **{util}% {util_icon}** (기준: {cbm_bal['capacity_outbound']:.0f} m³) |")
+        lines.append(f"| 가용 공간 | {cbm_bal['available_cbm']:.4f} m³ |")
+        lines.append(f"| 입하 여유 공간 | {cbm_bal['inbound_headroom_cbm']:.4f} m³ (기준: {cbm_bal['capacity_inbound']:.0f} m³) |")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
+    # Iter 10: D2S × CBM 상관
+    if cbm_corr and cbm_corr["top3"]:
+        lines.append("## Iter 10: Dock-to-Stock × 입하 CBM 상관 (M-03)")
+        lines.append("")
+        lines.append("CBM 상위 3일 vs 하위 3일 D2S 평균:")
+        lines.append("")
+        lines.append("| 날짜 | CBM (m³) | 평균 D2S (분) |")
+        lines.append("|------|----------|------------|")
+        for r in cbm_corr["top3"]:
+            dts_str = f"{r['avg_dts']:.0f}" if r["avg_dts"] is not None else "—"
+            lines.append(f"| {r['date']} (高) | {r['cbm']:.4f} | {dts_str} |")
+        for r in cbm_corr["bot3"]:
+            dts_str = f"{r['avg_dts']:.0f}" if r["avg_dts"] is not None else "—"
+            lines.append(f"| {r['date']} (低) | {r['cbm']:.4f} | {dts_str} |")
+        if cbm_corr["top_avg_dts"] and cbm_corr["bot_avg_dts"]:
+            diff = cbm_corr["top_avg_dts"] - cbm_corr["bot_avg_dts"]
+            sign = "+" if diff >= 0 else ""
+            lines.append(f"")
+            lines.append(f"> CBM 높은 날 D2S 평균: **{cbm_corr['top_avg_dts']:.0f}분** vs 낮은 날: **{cbm_corr['bot_avg_dts']:.0f}분** ({sign}{diff:.0f}분 차이)")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
+    # Iter 11: 공급사별 CBM
+    if cbm_week and cbm_week["by_supplier"]:
+        lines.append("## Iter 11: 공급사별 입하 CBM (M-04)")
+        lines.append("")
+        total_cbm = cbm_week["total_cbm"] or 1.0
+        lines.append("| 공급사 | CBM (m³) | 비중 | 건수 |")
+        lines.append("|--------|----------|------|------|")
+        for sup_name, v in list(cbm_week["by_supplier"].items())[:8]:
+            share = round(v["cbm"] / total_cbm * 100, 1)
+            lines.append(f"| {sup_name} | {v['cbm']:.4f} | {share}% | {v['cnt']}건 |")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 # ── STEP 4: log.md 업데이트 ───────────────────────────────────────────────────
 def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
     print("\n[STEP 4] log.md 업데이트")
 
-    qc  = results["qc"]
-    vol = results["volume"]
-    sup = results["supplier"]
+    qc       = results["qc"]
+    vol      = results["volume"]
+    sup      = results["supplier"]
+    cbm_week = results.get("cbm_week")
+    cbm_bal  = results.get("cbm_bal")
 
     qc_str = (
         f"{qc['issue_rate']}% ({qc['issue_total']}/{qc['target_total']}건)"
         if qc["issue_rate"] is not None else "데이터 부족"
+    )
+    cbm_str = (
+        f"{cbm_week['total_cbm']:.2f} m³ (용적률 {cbm_week['capa_pct']}%, 매칭 {cbm_week['match_pct']}%)"
+        if cbm_week else "데이터 부족"
+    )
+    bal_str = (
+        f"재고 {cbm_bal['net_stock_cbm']:.2f} m³ / 가용 {cbm_bal['available_cbm']:.2f} m³"
+        if cbm_bal else "데이터 부족"
     )
 
     entry = f"""
@@ -743,12 +966,15 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 - QC 이슈 proxy: {qc_str} (생산산출+재고생산 중 이슈카테고리 발생률)
 - 입출고 볼륨: {vol['this_total']}건 (WoW {'+' if vol['wow_change'] >= 0 else ''}{vol['wow_change']}건)
 - 미입하 발생이력: {sup['no_arrive_total']}건
+- 주간 입하 CBM: {cbm_str}
+- 창고 Running Balance: {bal_str}
 
 ### 산출물
 - [{report_path.name}](../outputs/{report_path.name})
 
 ### 다음 주 포커스
 - 납기 지연 공급사 지속 모니터링
+- 창고 용적률 추이 모니터링
 """
 
     existing = LOG_PATH.read_text(encoding="utf-8") if LOG_PATH.exists() else ""
@@ -828,8 +1054,25 @@ def main(dry_run: bool, override_week: str | None = None) -> None:
     print(f"  QC 불합격률: {qcp['fail_rate']}% ({qcp['qc_fail']+qcp['qc_partial']}/{qcp['total_inspected']}건)")
     print(f"  납기 준수율: {sot['overall_pct']}% ({sot['total_on']}/{sot['total_gr']}건)")
 
+    # CBM 분석 (M-01~04)
+    print("\n[STEP 2-CBM] 입하 CBM 분석")
+    cbm_week = None
+    cbm_bal  = None
+    cbm_corr = None
+    if _CBM_AVAILABLE:
+        cbm_week = analyze_cbm_weekly(week_id)
+        cbm_bal  = analyze_cbm_balance()
+        if cbm_week:
+            cbm_corr = analyze_cbm_dts_corr(cbm_week["by_date"], sap_data["gr_recs"])
+            print(f"  주간 입하 CBM: {cbm_week['total_cbm']:.4f} m³ (용적률 {cbm_week['capa_pct']}%)")
+        if cbm_bal:
+            print(f"  YTD 재고 CBM: {cbm_bal['net_stock_cbm']:.4f} m³ (창고 용적률 {cbm_bal['utilization_pct']}%)")
+    else:
+        print("  [SKIP] CBM 모듈 미설치 — utils/cbm_utils.py 또는 scripts/wms_cbm_ledger.py 확인")
+
     results = {"qc": qc, "volume": vol, "supplier": sup,
-               "dts": dts, "inv": inv, "qcp": qcp, "sot": sot}
+               "dts": dts, "inv": inv, "qcp": qcp, "sot": sot,
+               "cbm_week": cbm_week, "cbm_bal": cbm_bal, "cbm_corr": cbm_corr}
 
     # 3. 리포트 저장
     report_path = step_save_report(results, week_id, date_range, dry_run)

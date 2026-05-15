@@ -34,6 +34,18 @@ except ImportError:
 
 import requests
 
+# ── CBM M-01/02 imports ────────────────────────────────────────────────────────
+_ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
+for _p in [str(_ROOT_DIR), str(_ROOT_DIR / "scripts")]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+try:
+    from utils.cbm_utils import fetch_inbound_cbm, load_sync_parts_lookup
+    from wms_cbm_ledger import calc_running_balance, WAREHOUSE_INBOUND_CBM
+    _CBM_AVAILABLE = True
+except ImportError:
+    _CBM_AVAILABLE = False
+
 # ================================================================
 # 환경변수
 # ================================================================
@@ -1031,6 +1043,39 @@ def main():
         next_recs=fetch_shipments_tms(nmon,nfri)
         next_tms=analyze_tms(next_recs,live_cbm,product_cbm,use_estimate=True)
 
+    # ── WMS 입하 CBM 계산 (M-01/M-02) ──────────────────────────────────────
+    inbound_cbm_data: dict = {}
+    if _CBM_AVAILABLE:
+        try:
+            print("[CBM] 입하 CBM 계산 중...")
+            sp_lookup = load_sync_parts_lookup()
+            week_cbm  = fetch_inbound_cbm(sp_lookup, since=start, until=end)
+            ytd_start = date(start.year, 1, 1)
+            balance   = calc_running_balance(since=ytd_start)
+            n_total   = week_cbm["n_matched"] + week_cbm["n_unmatched"]
+            inbound_cbm_data = {
+                "weekly_total":    week_cbm["total_cbm"],
+                "match_pct":       round(week_cbm["n_matched"] / n_total * 100, 1) if n_total else 0,
+                "net_stock_cbm":   balance["net_stock_cbm"],
+                "utilization_pct": balance["utilization_pct"],
+                "available_cbm":   balance["available_cbm"],
+                "capacity_outbound": balance["capacity_outbound"],
+                "capacity_inbound":  balance["capacity_inbound"],
+                "by_day": [
+                    {"date": d, "cbm": round(v["cbm"], 4), "count": v["cnt"]}
+                    for d, v in sorted(week_cbm["by_date"].items())
+                    if d != "날짜없음"
+                ],
+                "by_supplier": [
+                    {"supplier": s, "cbm": round(v["cbm"], 4), "count": v["cnt"]}
+                    for s, v in list(week_cbm["by_supplier"].items())[:10]
+                ],
+                "no_spec_pct": round(week_cbm["n_unmatched"] / n_total * 100, 1) if n_total else 0,
+            }
+            print(f"  → 입하 CBM {inbound_cbm_data['weekly_total']:.2f} m³ / 창고 용적률 {inbound_cbm_data['utilization_pct']}%")
+        except Exception as e:
+            print(f"  [WARN] CBM 계산 실패: {e}")
+
     # ================================================================
     # pages_data.json (dashboard.html용 - WMS+TMS 통합)
     # ================================================================
@@ -1057,7 +1102,7 @@ def main():
         "kpi":{"completion_rate":inb_s["completion_rate"],"defect_rate":qc_s["defect_rate"],
                "picking_total":picking_proj["count"]+picking_a1["count"],
                "issue_total":issue_data["total"]},
-        "inbound":inbound,"qc":qc,
+        "inbound":inbound,"qc":qc,"inbound_cbm":inbound_cbm_data,
         "material":{
             "picking":{
                 "project":    picking_proj,
