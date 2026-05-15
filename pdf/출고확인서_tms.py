@@ -401,24 +401,28 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     else:
         to_str = get_lookup_first(f, "배송요청_lookup")
 
-    # 품목 — 재고 출하 품목 필드 우선 (PT코드-품목 || 수량 형식일 때만)
+    # 품목 — 최종 출하/출고 필드 선취득 (stock path 진입 판별용)
+    final_actual = _get_lines(f, "최종 출고 품목 및 수량")
+    final_order  = _get_lines(f, "최종 출하 품목")
+    final_match  = bool(final_actual.strip()) and final_actual.strip() == final_order.strip()
+
     stock_raw   = get_field(f, "재고 출하 품목")
     stock_lines = [l.strip() for l in str(stock_raw).split("\n") if l.strip()]
     order_raw   = ""
-    if stock_lines and any(STOCK_ITEM_RE.match(l) for l in stock_lines):
+    # 최종 필드 일치 시 재고 출하 품목 무시 — 최종 필드를 우선 사용
+    if stock_lines and any(STOCK_ITEM_RE.match(l) for l in stock_lines) and not final_match:
         items     = parse_stock_items(stock_raw)
         bad_lines = [l for l in stock_lines
                       if not STOCK_ITEM_RE.match(l)
                       and not ITEM_RE.match(l) and not ITEM_RE2.match(l) and not ITEM_RE3.match(l)]
     else:
-        actual_raw = _get_lines(f, "최종 출고 품목 및 수량")
-        order_raw  = _get_lines(f, "최종 출하 품목")
+        actual_raw = final_actual
+        order_raw  = final_order
         items      = parse_items(actual_raw, order_raw)
         act_lines  = [l.strip() for l in str(actual_raw or "").split("\n") if l.strip()]
         bad_lines  = [l for l in act_lines
                       if not ITEM_RE.match(l) and not ITEM_RE2.match(l) and not ITEM_RE3.match(l)]
-        # 최종 출하 == 최종 출고 → 수량 불일치 없음, 포맷 오류 무시
-        if bad_lines and (actual_raw or "").strip() == (order_raw or "").strip():
+        if bad_lines and final_match:
             bad_lines = []
 
     # 수신처 정보 — 리스트 래핑 필드 처리
