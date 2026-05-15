@@ -82,6 +82,7 @@ _LOC_TABLE_ID: str | None = None
 
 ITEM_RE      = re.compile(r"^(?P<name>.+?)\s*\((?P<qty>\d+)\)(?:\+(?P<extra>\d+))?\s*$")
 ITEM_RE2     = re.compile(r"^(?P<name>.+?)\s+(?P<qty>\d+)개?(?:\+(?P<extra>\d+))?\s*$")
+ITEM_RE3     = re.compile(r"^(?P<name>.+?)\s+(?P<qty>\d+)\s*개(?:\s*\+\s*(?P<extra>\d+))?\s*$")
 STOCK_ITEM_RE = re.compile(r"^(?P<pt>PT\S+?)-(?P<name>.+?)\s*\|\|\s*\S+\s+(?P<qty>\d+)개\s*$")
 
 
@@ -283,15 +284,18 @@ NOTE_LINE_RE = re.compile(r"^\+?잔여분|^고객물품")
 def parse_items(actual_raw: str, order_raw: str) -> list[dict]:
     actual_lines = [x.strip() for x in str(actual_raw or "").split("\n") if x.strip()]
 
+    def _match(s: str):
+        return ITEM_RE.match(s) or ITEM_RE2.match(s) or ITEM_RE3.match(s)
+
     # note 행 제외한 실제 품목만 ordered 매핑에 사용 (note 행이 인덱스 어긋남 방지)
-    real_lines = [l for l in actual_lines if (ITEM_RE.match(l) or ITEM_RE2.match(l)) and not NOTE_LINE_RE.match(l)]
+    real_lines = [l for l in actual_lines if _match(l) and not NOTE_LINE_RE.match(l)]
     order_list = split_order_items(order_raw or "", real_lines)
 
     rows = []
     order_idx = 0
     item_no   = 1
     for actual_str in actual_lines:
-        m = ITEM_RE.match(actual_str) or ITEM_RE2.match(actual_str)
+        m = _match(actual_str)
         if m and not NOTE_LINE_RE.match(actual_str):
             name        = m.group("name").strip()
             shipped_qty = m.group("qty")
@@ -400,7 +404,11 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
         order_raw  = _get_lines(f, "최종 출하 품목")
         items      = parse_items(actual_raw, order_raw)
         act_lines  = [l.strip() for l in str(actual_raw or "").split("\n") if l.strip()]
-        bad_lines  = [l for l in act_lines if not ITEM_RE.match(l) and not ITEM_RE2.match(l)]
+        bad_lines  = [l for l in act_lines
+                      if not ITEM_RE.match(l) and not ITEM_RE2.match(l) and not ITEM_RE3.match(l)]
+        # 최종 출하 == 최종 출고 → 수량 불일치 없음, 포맷 오류 무시
+        if bad_lines and (actual_raw or "").strip() == (order_raw or "").strip():
+            bad_lines = []
 
     # 수신처 정보 — 리스트 래핑 필드 처리
     customer = get_field(f, "회사명") or get_field(f, "입하장소")
