@@ -478,6 +478,7 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
     return {
         "record_id":      rec["id"],
         "sc_id":          sc_id,
+        "project":        get_field(f, "project"),
         "to_no":          to_str,
         "location":       location_str,
         "ship_date":      parse_ship_date(get_field(f, "출하확정일")),
@@ -558,11 +559,11 @@ def _draw_summary_row(c: rl_canvas.Canvas, y: float, doc: dict,
 
     tbl = Table(
         [
-            [lbl("SC id"),        val(doc["sc_id"]),
+            [lbl("프로젝트명"),    val(doc["project"]),
              lbl("TO. No."),      val(doc["to_no"], bold=True), "", ""],
             [lbl("출고 좌표"), val(doc["location"]), "", "", "", ""],
         ],
-        colWidths=[18*mm, col1-18*mm, 16*mm, col2-16*mm, 24*mm, col3-24*mm],
+        colWidths=[24*mm, col1-24*mm, 16*mm, col2-16*mm, 24*mm, col3-24*mm],
     )
     cs = _cell_style_base(font, font_bold)
     cs += [
