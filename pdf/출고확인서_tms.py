@@ -701,12 +701,15 @@ def _draw_items_table(c: rl_canvas.Canvas, y: float, doc: dict,
                 _para("", font, 8),
             ])
         else:
+            _pt   = itm.get("pt", "")
+            _nm   = itm.get("name", "")
+            _full = f"{_pt}-{_nm}" if _pt and _nm else _nm
             rows.append([
-                _para(str(itm["no"]) if itm.get("name") else "", font, 8, align="CENTER"),
-                _para(itm.get("name", ""), font, 8.5),
+                _para(str(itm["no"]) if _full else "", font, 8, align="CENTER"),
+                _para(_full, font, 8.5),
                 _para(itm.get("ordered_qty", ""), font, 8.5, align="CENTER"),
                 _para(itm.get("qty", ""), font, 8.5, align="CENTER"),
-                _para("□" if itm.get("name") else "", font, 9, align="CENTER"),
+                _para("□" if _full else "", font, 9, align="CENTER"),
             ])
 
     tbl = Table(rows, colWidths=COL_W)
