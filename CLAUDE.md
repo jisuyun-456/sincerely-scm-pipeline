@@ -42,6 +42,9 @@
 ## 전문가 정체성
 > D1~D5 글로벌 정체성은 `~/.claude/CLAUDE.md` 참조. 본 프로젝트는 SCM 도메인 특화 에이전트로 위임.
 
+## Harness Engineering
+글로벌 Universal Project Harness(`~/.claude/harness/`) 사용. 8h+ 자율 미션은 `/mission <template> --duration <h>`. 본 프로젝트 도메인 라우팅(SK-01~09, D-TMS1/2, D1~D3)은 그대로 유지 — Harness Orchestrator가 *Worker로 위임*. 단발 작업은 기존 키워드 라우팅(Harness 미개입).
+
 ## 에이전트 팀 라우팅
 
 ### SCM 운영 특화 (세밀한 키워드 우선)
@@ -85,10 +88,12 @@
 `.claude/feature_list.json` — 전체 태스크 목록 (priority: critical > high > medium > low > done)
 
 ## 검증 체크포인트 (코드 수정/생성 후 필수)
-1. **훅 결과 확인**: PostToolUse 훅(typecheck, test-on-change) 출력에 오류가 없는지 확인
-2. **결과 보고**: "typecheck: ✅ / 테스트: ✅ N개 통과" 형식으로 보고
-3. **다음 단계 확인**: 사용자에게 "진행 or 수정" 질문
-4. **세션 종료 전**: Stop 훅이 자동으로 git status / 빌드게이트 검증
+1. **Validation Contract 확인** (기능 수정/확장·새 기능 시): Phase 2에서 선언한 통과 조건 N개 각각에 대해 증거 수집
+2. **훅 결과 확인**: PostToolUse 훅(typecheck, test-on-change) 출력에 오류가 없는지 확인
+3. **harness-validator 호출**: Contract 레벨 검증 (Karpathy 원칙·시크릿·파괴적 작업 점검). `feature-dev:code-reviewer`(코드 레벨)와 *병행*. 직교 스코프이므로 중복 없음.
+4. **결과 보고**: "Contract: ✅ N/M 통과 / typecheck: ✅ / 테스트: ✅ K개 통과 / harness-validator: PASS" 형식으로 보고
+5. **다음 단계 확인**: 사용자에게 "진행 or 수정" 질문
+6. **세션 종료 전**: Stop 훅이 자동으로 git status / 빌드게이트 검증
 
 ### 금지 표현 (검증 없이 사용 불가)
 - "완료됐습니다", "구현했습니다" → 훅 결과 없이 사용 금지

@@ -32,4 +32,10 @@ _archive/wms/__pycache__/
 
 # Superpowers plugin (local root only, not project code)
 /superpowers/
+.superpowers/
 scripts/backfill/__pycache__/
+
+# Auto-generated analysis outputs
+pages_v*.json
+scripts/validation_*.json
+docs/인사평가*.md

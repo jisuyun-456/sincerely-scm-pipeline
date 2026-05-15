@@ -9,7 +9,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Noto Sans KR', sans-serif; background: #fff; color: #1a1a1a; width: 794px; }
 
-/* Cover page */
 .cover {
   width: 794px; min-height: 1123px;
   display: flex; flex-direction: column; justify-content: center;
@@ -20,15 +19,12 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #fff; color: #1a1a1a
 .cover-title { font-size: 26px; font-weight: 700; color: #1a1a1a; line-height: 1.4; margin-bottom: 10px; }
 .cover-subtitle { font-size: 14px; color: #555; margin-bottom: 32px; }
 .cover-divider { border: none; border-top: 2px solid #E64A1B; margin: 24px 0 32px; }
-
 .summary-box { border: 1px solid #e8e8e8; border-radius: 6px; padding: 22px 28px; }
 .summary-box-title { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.08em; }
 .summary-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
 .summary-row:last-child { border-bottom: none; font-weight: 700; color: #E64A1B; font-size: 14px; padding-top: 10px; margin-top: 4px; border-top: 2px solid #f0f0f0; }
-
 .cover-total { margin-top: 24px; padding: 20px 28px; background:#FFF3F0; border-radius:6px; font-size:15px; color:#E64A1B; font-weight:700; text-align:center; }
 
-/* Section pages */
 .section-page {
   width: 794px; min-height: 1123px;
   display: flex; flex-direction: column;
@@ -39,7 +35,6 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #fff; color: #1a1a1a
 .page-header { padding: 20px 36px 12px; border-bottom: 1px solid #e8e8e8; }
 .channel-label { font-size: 11px; color: #888; margin-bottom: 4px; }
 .page-title { font-size: 13px; font-weight: 600; color: #333; }
-
 .main { flex: 1; padding: 20px 36px; }
 
 .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
@@ -47,40 +42,38 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #fff; color: #1a1a1a
 .cat-title { font-size: 14px; font-weight: 700; color: #1a1a1a; }
 .cat-count { font-size: 12px; color: #E64A1B; font-weight: 600; }
 .cat-desc { font-size: 11px; color: #666; margin-bottom: 12px; margin-left: 20px; }
+.sub-label { font-size: 11px; font-weight: 600; color: #555; margin: 10px 0 5px 0; border-left: 3px solid #E64A1B; padding-left: 8px; }
 
-.sub-label { font-size: 11px; font-weight: 600; color: #555; margin: 14px 0 6px 0; border-left: 3px solid #E64A1B; padding-left: 8px; }
-
-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px; }
 thead tr { background: #F5F5F5; }
 th { text-align: left; padding: 6px 7px; font-size: 10px; font-weight: 600; color: #555; border: 1px solid #e0e0e0; letter-spacing: 0.03em; }
 td { padding: 5px 7px; border: 1px solid #ebebeb; color: #333; vertical-align: top; line-height: 1.45; }
 tr:nth-child(even) td { background: #FAFAFA; }
 .mm { font-family: 'Courier New', monospace; font-size: 10px; color: #0066CC; }
 .subtotal-row td { background: #FFF8F0 !important; font-weight: 600; color: #E64A1B; }
+.ok  { font-size: 10px; color: #2a7d2a; font-weight: 600; }
+.err { font-size: 10px; color: #cc0000; font-weight: 600; }
+.warn { font-size: 10px; color: #b36b00; font-weight: 600; }
 </style>
 </head>
 <body>
 
-<!-- ===================== COVER PAGE ===================== -->
+<!-- ===================== COVER ===================== -->
 <div class="cover">
   <div class="cover-badge">#scm_팀_재고관리 채널</div>
   <div class="cover-title">WMS 재고 이슈 취합<br>리포트</div>
   <div class="cover-subtitle">물류팀 재고 이슈 안내 — Slack 채널 전수 취합</div>
-
   <hr class="cover-divider"/>
-
   <div class="summary-box">
     <div class="summary-box-title">카테고리별 건수 요약</div>
     <div class="summary-row"><span>C1 입고자재 공란 / 위치 상이</span><span>35건</span></div>
     <div class="summary-row"><span>C2 재고생산 / Material 오류</span><span>15건</span></div>
-    <div class="summary-row"><span>C3 재고이동 / 전산수량 미반영</span><span>2건</span></div>
-    <div class="summary-row"><span>C4 가용재고 / 수량 공유</span><span>4건</span></div>
-    <div class="summary-row"><span>C5 아카이브 / 데이터 정합성</span><span>1건</span></div>
-    <div class="summary-row"><span>C6 기타 안내 / 확인 요청</span><span>9건</span></div>
-    <div class="summary-row"><span>합계</span><span>66건</span></div>
+    <div class="summary-row"><span>C3 생산산출·생산샘플 — task·외주총공정 생산 연결 검증</span><span>24건</span></div>
+    <div class="summary-row"><span>C4 아카이브 / 데이터 정합성</span><span>1건</span></div>
+    <div class="summary-row"><span>C5 기타 안내 / 확인 요청</span><span>9건</span></div>
+    <div class="summary-row"><span>합계</span><span>84건</span></div>
   </div>
-
-  <div class="cover-total">전체 합계: 66건</div>
+  <div class="cover-total">전체 합계: 84건</div>
 </div>
 
 <!-- ===================== PAGE 2: C1 (1/3) ===================== -->
@@ -96,14 +89,13 @@ tr:nth-child(even) td { background: #FAFAFA; }
       <div class="cat-count">35건</div>
     </div>
     <div class="cat-desc">입고자재 필드 공란 또는 입하장소 vs 입고자재위치 불일치 이슈</div>
-
     <table>
       <thead>
         <tr>
-          <th style="width:28px">#</th>
+          <th style="width:24px">#</th>
           <th style="width:72px">날짜</th>
           <th style="width:92px">MM번호</th>
-          <th style="width:170px">거래처 (PNA)</th>
+          <th style="width:168px">거래처 (PNA)</th>
           <th style="width:88px">수신자</th>
           <th>이슈 내용</th>
         </tr>
@@ -136,10 +128,10 @@ tr:nth-child(even) td { background: #FAFAFA; }
     <table>
       <thead>
         <tr>
-          <th style="width:28px">#</th>
+          <th style="width:24px">#</th>
           <th style="width:72px">날짜</th>
           <th style="width:92px">MM번호</th>
-          <th style="width:170px">거래처 (PNA)</th>
+          <th style="width:168px">거래처 (PNA)</th>
           <th style="width:88px">수신자</th>
           <th>이슈 내용</th>
         </tr>
@@ -172,10 +164,10 @@ tr:nth-child(even) td { background: #FAFAFA; }
     <table>
       <thead>
         <tr>
-          <th style="width:28px">#</th>
+          <th style="width:24px">#</th>
           <th style="width:72px">날짜</th>
           <th style="width:92px">MM번호</th>
-          <th style="width:170px">거래처 (PNA)</th>
+          <th style="width:168px">거래처 (PNA)</th>
           <th style="width:88px">수신자</th>
           <th>이슈 내용</th>
         </tr>
@@ -192,7 +184,7 @@ tr:nth-child(even) td { background: #FAFAFA; }
         <tr><td>33</td><td>2026-04-20</td><td class="mm">MM00207124</td><td>PNA51368-아머스포츠코리아(본제작)</td><td>@이난영</td><td>입고자재 공란</td></tr>
         <tr><td>34</td><td>2026-04-20</td><td class="mm">MM00207238</td><td>PNA51628-밀리의서재</td><td>@남인호</td><td>입고자재 공란 (에이원 입고 예정)</td></tr>
         <tr><td>35</td><td>2026-05-06</td><td class="mm">MM00209373</td><td>PNA51482-풀무원식품</td><td>@김민지</td><td>입하장소 vs 입고자재장소 상이, 다영기획 직입하</td></tr>
-        <tr class="subtotal-row"><td colspan="6">↑ C1 전체 소계: 35건</td></tr>
+        <tr class="subtotal-row"><td colspan="6">C1 전체 소계: 35건</td></tr>
       </tbody>
     </table>
   </div>
@@ -211,20 +203,19 @@ tr:nth-child(even) td { background: #FAFAFA; }
       <div class="cat-count">15건</div>
     </div>
     <div class="cat-desc">생산산출 데이터 오류, 자재 이중입력, 잘못된 이동목적, 조립투입 데이터 오류</div>
-
     <table>
       <thead>
         <tr>
-          <th style="width:28px">#</th>
+          <th style="width:24px">#</th>
           <th style="width:72px">날짜</th>
           <th style="width:92px">MM번호</th>
-          <th style="width:150px">거래처 (PNA)</th>
+          <th style="width:148px">거래처 (PNA)</th>
           <th style="width:90px">수신자</th>
           <th>이슈 내용</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>1</td><td>2026-01-22</td><td class="mm">MM00193003</td><td>(재고생산)</td><td>@김하은</td><td>[project] vs [project_name] 필드 상이, status=lost — 유효 데이터 여부 불명확, 확인 후 수정 필요</td></tr>
+        <tr><td>1</td><td>2026-01-22</td><td class="mm">MM00193003</td><td>(재고생산)</td><td>@김하은</td><td>[project] vs [project_name] 필드 상이, status=lost — 유효 데이터 여부 불명확</td></tr>
         <tr><td>2</td><td>2026-01-22</td><td class="mm">MM00191311</td><td>(재고생산)</td><td>@김하은 @김민정</td><td>재고생산 과업 오류, 파츠 상이 — 기존 데이터 취소 후 재생성 처리 요청</td></tr>
         <tr><td>3</td><td>2026-02-19</td><td class="mm">MM00195516</td><td>PNA38814-TSE</td><td>@남인호</td><td>생산품자재 중 material 확인이 필요해 보이는 자재 있음, 확인 후 수정 요청</td></tr>
         <tr><td>4</td><td>2026-03-18</td><td class="mm">MM00196323</td><td>PNA50562-NHR(현대모비스)</td><td>@김민지</td><td>생산샘플→생산산출 변경 이유 확인 — 생산산출 맞다면 조립투입까지 생성 필요</td></tr>
@@ -234,76 +225,102 @@ tr:nth-child(even) td { background: #FAFAFA; }
         <tr><td>8</td><td>2026-03-27</td><td class="mm">MM00203536</td><td>PNA51279-LG유플러스</td><td>@김하은</td><td>졸업된 파츠가 조립투입으로 생성 — 확인 요청</td></tr>
         <tr><td>9</td><td>2026-03-30</td><td class="mm">MM00193371</td><td>(생산투입)</td><td>@남인호</td><td>생산투입 데이터 중 프로젝트 연결 해제되어 수량차감 되지 않는 것 있음, 확인 후 수정 요청</td></tr>
         <tr><td>10</td><td>2026-03-31</td><td class="mm">MM00201812</td><td>PNA50738-중앙일보</td><td>@김민지</td><td>생산샘플 입고수량 변경 + 이동목적[생산샘플] 맞는지 확인 + 입고자재 확인 요청</td></tr>
-        <tr><td>11</td><td>2026-04-08</td><td class="mm">MM00205269</td><td>PNA51293-FIG</td><td>@이난영</td><td>1레코드에 입고자재+출고자재 모두 입력 — 이동목적 오입력으로 이중입력 상태, 재생성 필요</td></tr>
+        <tr><td>11</td><td>2026-04-08</td><td class="mm">MM00205269</td><td>PNA51293-FIG</td><td>@이난영</td><td>1레코드에 입고자재+출고자재 모두 입력 — 이중입력 상태, 재생성 필요</td></tr>
         <tr><td>12</td><td>2026-04-09</td><td class="mm">MM00204807</td><td>PNA50484-SK일렉링크</td><td>@이난영</td><td>가온팩토리 자재로 조립투입 데이터 생성, 산출데이터 변경 시 조립투입 데이터도 함께 확인 필요</td></tr>
         <tr><td>13</td><td>2026-04-14</td><td class="mm">MM00206739</td><td>PNA51286-광화문스퀘어민관합동협의회</td><td>@육승미</td><td>자재 없이 task만 있고 조립투입 데이터 생성 — 검토 후 수정 필요</td></tr>
         <tr><td>14</td><td>2026-04-14</td><td class="mm">MM00204817</td><td>PNA50484-SK일렉링크</td><td>@이난영</td><td>이동목적에 맞게 데이터 수정 필요</td></tr>
         <tr><td>15</td><td>2026-05-06</td><td class="mm">MM00185622</td><td>PNA36271-휴메딕스</td><td>@남인호</td><td>조립투입 데이터에 입고자재+출고자재 모두 입력 — 삭제 요청 (작년 11월 프로젝트인데 입고자재 추가 사유 확인)</td></tr>
-        <tr class="subtotal-row"><td colspan="6">↑ C2 소계: 15건</td></tr>
+        <tr class="subtotal-row"><td colspan="6">C2 소계: 15건</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- ===================== PAGE 6: C3/C4/C5/C6 ===================== -->
+<!-- ===================== PAGE 6: NEW C3 — SERPA task/외주총공정 연결 검증 ===================== -->
+<div class="section-page">
+  <div class="page-header">
+    <div class="channel-label">#scm_팀_재고관리 채널 | 카테고리별 상세 | SERPA v3.0 movement 기준</div>
+    <div class="page-title">WMS 재고 이슈 취합 리포트 — C3 생산산출·생산샘플 task·외주총공정 생산 연결 검증</div>
+  </div>
+  <div class="main">
+    <div class="cat-header">
+      <div class="cat-bullet"></div>
+      <div class="cat-title">C3 — 생산산출·생산샘플 task·외주총공정 생산 연결 검증</div>
+      <div class="cat-count">24건</div>
+    </div>
+    <div class="cat-desc">발주 자동생성 오토메이션으로 생성된 task와 외주총공정 생산 산출물(총외주생산공정산출물재고) 연결 상태 교차검증 — SERPA v3.0 SCM_데이터확인 뷰 기준</div>
+
+    <div class="sub-label">생산산출 (4건)</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:24px">#</th>
+          <th style="width:92px">MM번호</th>
+          <th style="width:165px">거래처 (PNA)</th>
+          <th style="width:65px">과업담당자</th>
+          <th>연결된 task</th>
+          <th style="width:78px">외주총공정 연결</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="mm">MM00183595</td><td>PNA37966-여수히든벡</td><td>—</td><td>(SERPA v3.0 미발견 — 확인 필요)</td><td class="warn">확인 필요</td></tr>
+        <tr><td>2</td><td class="mm">MM00190270</td><td>PNA38507-내부(CX)</td><td>육승미</td><td>PNA38507-내부(CX)_샘플 배송 카드</td><td class="err">미연결</td></tr>
+        <tr><td>3</td><td class="mm">MM00194397</td><td>PNA38858-내부(CX)</td><td>육승미</td><td>PNA38858-내부(CX)_샘플룸 스티커</td><td class="err">미연결</td></tr>
+        <tr><td>4</td><td class="mm">MM00207123</td><td>PNA51368-아머스포츠코리아</td><td>이난영</td><td>PNA51368_밀크에코컵_P1</td><td class="err">미연결</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sub-label" style="margin-top:14px">생산샘플 (20건)</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:24px">#</th>
+          <th style="width:92px">MM번호</th>
+          <th style="width:165px">거래처 (PNA)</th>
+          <th style="width:65px">과업담당자</th>
+          <th>연결된 task</th>
+          <th style="width:78px">외주총공정 연결</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>5</td><td class="mm">MM00192612</td><td>PNA38213-포스코인터내셔널</td><td>육승미</td><td>PNA38213_심볼아크릴트로피[2]_A1</td><td class="ok">PT4917 연결됨</td></tr>
+        <tr><td>6</td><td class="mm">MM00192614</td><td>PNA38213-포스코인터내셔널</td><td>육승미</td><td>PNA38213_심볼아크릴트로피[3]_A1</td><td class="ok">PT4917 연결됨</td></tr>
+        <tr><td>7</td><td class="mm">MM00195230</td><td>PNA50033-내면소통연구소</td><td>육승미</td><td>PNA50033_레더스킨다이어리(커스텀)_B1</td><td class="warn">legacy base</td></tr>
+        <tr><td>8</td><td class="mm">MM00195901</td><td>PNA38397-헥톤프로젝트</td><td>육승미</td><td>PNA38397_시그니처다이어리(커스텀/1000권이상)_G1</td><td class="warn">legacy base</td></tr>
+        <tr><td>9</td><td class="mm">MM00196323</td><td>PNA50562-NHR(현대모비스)</td><td>김민지</td><td>PNA50562_어드벤스3단자동우산_P1</td><td class="ok">PT4605 연결됨</td></tr>
+        <tr><td>10</td><td class="mm">MM00198417</td><td>PNA50799-플랜비리서치</td><td>김민지</td><td>PNA50799_슬로건다이어리(커스텀/1000권이상)_A3</td><td class="warn">legacy base</td></tr>
+        <tr><td>11</td><td class="mm">MM00198418</td><td>PNA50799-플랜비리서치</td><td>육승미</td><td>PNA50799_슬로건다이어리(커스텀/1000권이상)_E1</td><td class="warn">legacy base</td></tr>
+        <tr><td>12</td><td class="mm">MM00201217</td><td>PNA50952-인터퍼퓸코리아</td><td>육승미</td><td>PNA50952_브랜드팝클리어키링[2]_A2</td><td class="err">미연결</td></tr>
+        <tr><td>13</td><td class="mm">MM00202295</td><td>PNA50919-미디컴</td><td>김민지</td><td>PNA50919_데일리짐색(단품)[2]_A1</td><td class="ok">PT4027 연결됨</td></tr>
+        <tr><td>14</td><td class="mm">MM00204200</td><td>PNA51245-SK바이오텍</td><td>이난영</td><td>PNA51245_밀크에코컵[2]_A1</td><td class="ok">PT4803 연결됨</td></tr>
+        <tr><td>15</td><td class="mm">MM00204201</td><td>PNA51245-SK바이오텍</td><td>이난영</td><td>PNA51245_밀크에코컵[1]_A1</td><td class="ok">PT4803 연결됨</td></tr>
+        <tr><td>16</td><td class="mm">MM00206554</td><td>PNA50880-덱스레보</td><td>육승미</td><td>PNA50880_레더스킨다이어리(커스텀)_B1</td><td class="warn">legacy base</td></tr>
+        <tr><td>17</td><td class="mm">MM00207839</td><td>PNA51672-대원미디어</td><td>남인호</td><td>PNA51672_테크미니파우치_A1</td><td class="ok">PT3839 연결됨</td></tr>
+        <tr><td>18</td><td class="mm">MM00208253</td><td>PNA51494-주택도시보증공사</td><td>김민지</td><td>PNA51494_인마이백피크닉매트_A2</td><td class="ok">PT3812+PT3852 연결됨</td></tr>
+        <tr><td>19</td><td class="mm">MM00209933</td><td>PNA51933-OSSTUDIO</td><td>—</td><td>(이동목적 오분류 의심 — 확인 필요)</td><td class="err">미연결/오분류</td></tr>
+        <tr><td>20</td><td class="mm">MM00210026</td><td>PNA51914-OSSTUDIO</td><td>김영준</td><td>PNA51914_모먼트골드스파클[2]_A1</td><td class="ok">PT5299 연결됨</td></tr>
+        <tr><td>21</td><td class="mm">MM00210027</td><td>PNA51914-OSSTUDIO</td><td>김영준</td><td>PNA51914_모먼트골드스파클[1]_A1</td><td class="ok">PT5299 연결됨</td></tr>
+        <tr><td>22</td><td class="mm">MM00210028</td><td>PNA51914-OSSTUDIO</td><td>김민정</td><td>PNA51914_컴포트스텐머그_A1</td><td class="ok">PT5266 연결됨</td></tr>
+        <tr><td>23</td><td class="mm">MM00210029</td><td>PNA51914-OSSTUDIO</td><td>육승미</td><td>PNA51914_스탠딩휴대용선풍기[1]_A1</td><td class="ok">PT3933 연결됨</td></tr>
+        <tr><td>24</td><td class="mm">MM00210832</td><td>PNA51808-에이블피엔디</td><td>김민지</td><td>PNA51808_액티브스포츠타월_A1</td><td class="ok">PT3285 연결됨</td></tr>
+        <tr class="subtotal-row"><td colspan="6">C3 소계: 24건 | 미연결 5건 (생산산출 3 + 생산샘플 2) | legacy base 5건 | 확인필요 1건</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== PAGE 7: C4(구C5) + C5(구C6) ===================== -->
 <div class="section-page">
   <div class="page-header">
     <div class="channel-label">#scm_팀_재고관리 채널 | 카테고리별 상세</div>
-    <div class="page-title">WMS 재고 이슈 취합 리포트 — C3 / C4 / C5 / C6</div>
+    <div class="page-title">WMS 재고 이슈 취합 리포트 — C4 / C5</div>
   </div>
   <div class="main">
 
-    <!-- C3 -->
+    <!-- C4 (구 C5) -->
     <div class="cat-header">
       <div class="cat-bullet"></div>
-      <div class="cat-title">C3 — 재고이동 / 전산수량 미반영</div>
-      <div class="cat-count">2건</div>
-    </div>
-    <div class="cat-desc">재고이동 이동목적 레코드에서 전산수량 미반영 이슈 — MM번호 없음, TO번호로만 확인 가능</div>
-    <table>
-      <thead>
-        <tr>
-          <th style="width:72px">날짜</th>
-          <th style="width:130px">MM/TO번호</th>
-          <th style="width:130px">수신자</th>
-          <th>이슈 내용</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2026-03-10</td><td style="font-size:10px;color:#888">MM 없음 (Airtable 뷰)</td><td>@발주담당자 fyi @김민정 @김영준</td><td>생산품자재 에이원 실제 입하완료됐으나 마지막공정입하처리 미완료 → 전산수량 미반영. 각 발주담당자에게 확인·처리 요청</td></tr>
-        <tr><td>2026-04-27</td><td class="mm">TO00015690<br>TO00015657</td><td>@육승미 fyi @김민정</td><td>조정용 메모 작성 후 운송오더 신청했으나 출고처리 안 됨 — 이동목적=재고이동, 입/출고 처리 완료돼야 전산수량 반영됨</td></tr>
-      </tbody>
-    </table>
-
-    <!-- C4 -->
-    <div class="cat-header" style="margin-top:18px">
-      <div class="cat-bullet"></div>
-      <div class="cat-title">C4 — 가용재고 / 수량 공유</div>
-      <div class="cat-count">4건</div>
-    </div>
-    <div class="cat-desc">임가공·조립 후 가용재고 수량 공유 및 불량 가능성 안내</div>
-    <table>
-      <thead>
-        <tr>
-          <th style="width:72px">날짜</th>
-          <th style="width:110px">PT코드 / MM</th>
-          <th style="width:130px">거래처 / 자재</th>
-          <th style="width:70px">수신자</th>
-          <th>이슈 내용</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>2026-01-09</td><td style="font-size:10px;color:#888">PT 없음</td><td>PNA50108-이란드이노플</td><td>@김민정</td><td>재공품 121ea, 사용가능수량 338ea 공유</td></tr>
-        <tr><td>2026-02-27</td><td class="mm">PT4730</td><td>단품박스(전용)_화이트</td><td>@김하은</td><td>가용재고 365ea 공유, PNA50626/50652/50800 임가공 미완료로 불량 가능성 — 응대 주의 요청</td></tr>
-        <tr><td>2026-03-23</td><td class="mm">PT1718</td><td>샤슈향(골든벨부) / PNA50111-도쿠일렉트론코리아</td><td>@김하은</td><td>306개 임가공 완료 후 차감 미반영 — 현 가용재고 1,345ea로 실제보다 높게 표시됨</td></tr>
-        <tr><td>2026-04-24</td><td class="mm">PT4763/PT4764</td><td>파워업PD충전기</td><td>@김하은</td><td>재고이동 운송오더에 PT4763 중복 입력 이슈, 수정 후 가용재고 공유: PT4763 2,266ea / PT4764 2,305ea</td></tr>
-      </tbody>
-    </table>
-
-    <!-- C5 -->
-    <div class="cat-header" style="margin-top:18px">
-      <div class="cat-bullet"></div>
-      <div class="cat-title">C5 — 아카이브 / 데이터 정합성</div>
+      <div class="cat-title">C4 — 아카이브 / 데이터 정합성</div>
       <div class="cat-count">1건</div>
     </div>
     <div class="cat-desc">아카이브 처리 오류, 취소 후 재고 미정리</div>
@@ -312,8 +329,8 @@ tr:nth-child(even) td { background: #FAFAFA; }
         <tr>
           <th style="width:72px">날짜</th>
           <th style="width:92px">MM번호</th>
-          <th style="width:150px">거래처 (PNA)</th>
-          <th style="width:70px">수신자</th>
+          <th style="width:155px">거래처 (PNA)</th>
+          <th style="width:72px">수신자</th>
           <th>이슈 내용</th>
         </tr>
       </thead>
@@ -322,10 +339,10 @@ tr:nth-child(even) td { background: #FAFAFA; }
       </tbody>
     </table>
 
-    <!-- C6 -->
-    <div class="cat-header" style="margin-top:18px">
+    <!-- C5 (구 C6) -->
+    <div class="cat-header" style="margin-top:24px">
       <div class="cat-bullet"></div>
-      <div class="cat-title">C6 — 기타 안내 및 확인 요청</div>
+      <div class="cat-title">C5 — 기타 안내 및 확인 요청</div>
       <div class="cat-count">9건</div>
     </div>
     <div class="cat-desc">입하예정일/입하예상일 입력 요청, 과업지시서 누락, 이동목적 확인, 기타 운영 문의</div>
@@ -334,7 +351,7 @@ tr:nth-child(even) td { background: #FAFAFA; }
         <tr>
           <th style="width:72px">날짜</th>
           <th style="width:92px">MM번호</th>
-          <th style="width:150px">거래처 (PNA)</th>
+          <th style="width:155px">거래처 (PNA)</th>
           <th style="width:90px">수신자</th>
           <th>이슈 내용</th>
         </tr>
