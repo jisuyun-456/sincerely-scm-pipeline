@@ -42,7 +42,7 @@ model: opus
 3. **거점 최적화** → Center of Gravity 모델 + 운송비 시뮬레이션
 4. **공급사 다변화 권고** → Multi-sourcing 리스크 매트릭스 (Probability × Impact)
 5. **Bullwhip Effect 진단** → 수요 변동성 vs 발주 변동성 비교
-6. **KPI 진단** → OTIF / Perfect Order Rate / Cash-to-Cash Cycle / Inventory Turns / Days of Supply
+6. **KPI 진단** → OTIF / Perfect Order Rate / Cash-to-Cash Cycle / Inventory Turns / Days of Supply. [L6] D-3 유형(throughput/labour-cost 생산성)과 D-1 유형(labour-cost-ratio) KPI 동시 설계 시: 공유 분모(인건비) 모순 리스크 플래그 → KPI 트리 단계에서 명시, OKR 단계까지 미루지 말 것.
 7. **음수재고 패턴 분석** → 근본원인 (Process / System / People / Data) 분류 + 재발 방지
 
 ## 분석 산출물 형식

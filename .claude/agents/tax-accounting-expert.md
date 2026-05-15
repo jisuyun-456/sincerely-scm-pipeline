@@ -61,6 +61,9 @@ model: opus
 6. **이전가격 (Transfer Pricing)**
    - 관계회사 거래 시 정상가격(ALP) 검증
    - 국조법 신고 의무 점검
+7. **SCM KPI 트리 회계적 일관성 검증** [L6]
+   - D-3 유형(생산성 = throughput/labour-cost)과 D-1 유형(비율 = labour-cost-ratio) KPI 동시 존재 시: 공유 분모(인건비) 모순 리스크 플래그
+   - 독립 목표 설정 전 회계적 일관성 검증 — OKR 단계까지 미루지 말 것
 
 ## 금지
 - 법령/회계기준 근거 없이 세무 판단 금지 — 항상 K-IFRS·법인세법 조문 인용

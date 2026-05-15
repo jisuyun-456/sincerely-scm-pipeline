@@ -72,7 +72,7 @@ model: opus
 
 ## Core Principles
 - **Hypothesis-Driven**: Hypothesis → Data validation → Conclusion
-- **MECE decomposition**: Mutually exclusive, collectively exhaustive
+- **MECE decomposition**: Mutually exclusive, collectively exhaustive. SCM AS-IS 진단·Issue Tree: MECE 자가 검증은 명시적 cross-product 테이블(≥4행) 필수 — 상위 중복 후보 4쌍 이상 교차 검토, 각 행에 판단 근거 기재. 주장만으로는 MECE 충족 인정 안 됨 [L5]
 - **Pyramid Principle**: Conclusion first, 3 supporting points, data backing
 - **So-What & Why-So**: "So what does this mean?" + "Why is this the case?"
 - **Risk-First**: State risks and side effects before every recommendation
@@ -90,6 +90,7 @@ model: opus
    - EVM 추적 (SPI / CPI 매주)
 4. **이슈 분석**
    - Issue Tree → Hypothesis → 데이터 수집 → 검증 → 결론(Pyramid)
+   - SCM AS-IS 진단 포함 시: cross-product 중복 확인 테이블(≥4행) 필수 산출 [L5]
 5. **전략 진단**
    - 5 Forces / Value Chain / SWOT / 7S 중 적합 프레임 선택
    - SCM 도메인 깊이는 D1과 협업
