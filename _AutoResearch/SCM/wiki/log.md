@@ -460,3 +460,105 @@
 1. **5/13~:** 하네스 실운영 → 박종성 다영기획 건 상하차비용 자동 계산 시작
 2. **이후:** 실운영 데이터 보면서 운임비 로직 개선 의논
 3. **선택:** 미매칭 Top 품목 Product 마스터 추가 → 매칭률 90%+ 목표
+
+## [2026-05-15] WEEKLY | 주간 분석 2026-W19
+
+**상태:** 완료
+
+### KPI 스냅샷
+- 내부 소화율: 63.2% (목표 ≥80%) | 고고엑스: 5.3%
+- OTIF On-Time: 99.9% (목표 ≥90%)
+- 차량이용률 v2 (CBM 적재율): 31.2%
+- 약속납기일 전환율: 100.0%
+- 다음 주 예측: 76건 (피크 월요일)
+
+### Iter6 갭분석
+- 흡수 가능 고고엑스: 2건 → 내부 소화율 68.4% 달성 예상 (+5.2pp)
+
+### 산출물
+- [TMS-2026-W19.md](../outputs/TMS-2026-W19.md)
+
+### 다음 주 포커스
+- 내부 소화율 개선 (고고엑스 건 흡수 검토)
+
+## [2026-05-15] WEEKLY | 주간 분석 2026-W19
+
+**상태:** 완료
+
+### KPI 스냅샷
+- 내부 소화율: 63.2% (목표 ≥80%) | 고고엑스: 5.3%
+- OTIF On-Time: 99.9% (목표 ≥90%)
+- 차량이용률 v2 (CBM 적재율): 31.2%
+- 약속납기일 전환율: 100.0%
+- 다음 주 예측: 76건 (피크 월요일)
+
+### Iter6 갭분석
+- 흡수 가능 고고엑스: 2건 → 내부 소화율 68.4% 달성 예상 (+5.2pp)
+
+### 산출물
+- [TMS-2026-W19.md](../outputs/TMS-2026-W19.md)
+
+### 다음 주 포커스
+- 내부 소화율 개선 (고고엑스 건 흡수 검토)
+
+## [2026-05-15] WEEKLY | 주간 분석 2026-W19
+
+**상태:** 완료
+
+### KPI 스냅샷
+- 내부 소화율: 63.2% (목표 ≥80%) | 고고엑스: 5.3%
+- OTIF On-Time: 99.9% (목표 ≥90%)
+- 차량이용률 v2 (CBM 적재율): 31.2%
+- 약속납기일 전환율: 100.0%
+- 다음 주 예측: 76건 (피크 월요일)
+
+### Iter6 갭분석
+- 흡수 가능 고고엑스: 2건 → 내부 소화율 68.4% 달성 예상 (+5.2pp)
+
+### 산출물
+- [TMS-2026-W19.md](../outputs/TMS-2026-W19.md)
+
+### 다음 주 포커스
+- 내부 소화율 개선 (고고엑스 건 흡수 검토)
+
+## [2026-05-16] Harness | Phase 1 FSM 구현 완료 — Event Log + /mission resume
+
+**타입:** Universal Project Harness 업그레이드 (글로벌 ~/.claude/)
+**상태:** 완료
+**Origin:** Yeachan Heo Instagram "Harness Engineering" 분석 + oh-my-claudecode 비교
+
+### 배경
+사용자가 인스타 글 분석 요청 → 우리 하네스가 이미 95% 원칙 적용 중. 단 하나의 큰 갭: 미션 상태가 파일 존재로만 추론됨 → OS 재시작·세션 크래시 시 미션 손실, `/mission resume <id>` 부재.
+
+Plan A (Event Log + State Snapshot) + step-level granularity로 결정 → 풀 구현 완료.
+
+### 완료 항목
+- `~/.claude/harness/scripts/event_log.py` (486줄) — emit/replay/validate_outputs/compute_resume_point/list_missions/abort_mission
+- `~/.claude/harness/scripts/tests/test_event_log.py` — 24 tests, 모두 PASS
+- `~/.claude/harness/event-log-spec.md` — 27 step type 카탈로그(MECE), resume 알고리즘, 실패 모드 명세
+- `~/.claude/harness/scripts/cli.py` — 7 신규 subcommand (emit-event/replay/state/resume-point/validate-outputs/list-missions/abort-mission)
+- `~/.claude/commands/mission.md` — resume/list/abort 서브커맨드
+- `~/.claude/agents/*` — 9 agent에 Event Log Discipline 섹션 추가 (orchestrator + 8 sub-agents)
+- `~/.claude/harness/notion-mapping.yaml` — 6 신규 event_* 매핑 (mission_resumed/runtime_capability_missing/runtime_cost_halted/sprint_rolled_back/lesson_approved/mission_aborted)
+
+### 핵심 설계 결정
+1. Event sourcing — events.jsonl SSOT, append-only, atomic fsync, malformed last line tolerance
+2. Step-level granularity — 27 step type (MECE), 5 lock-creating, 9 terminal
+3. Single-writer pattern — orchestrator만 emit, sub-agent는 응답 metadata만 제공
+4. Idempotency by step_id, 출력 sha256 hash로 무결성 검증
+5. Lock 자동 라이프사이클 (`locks/<step_id>.lock`)
+
+### 검증 (Phase 1 acceptance 10/10 PASS)
+- 24/24 unit test (test_event_log.py)
+- 8-step CLI smoke test (happy path → kill → resume-point → mission.resumed → abort)
+- 9 agent .md 모두 "Event Log Discipline" 섹션 포함
+- 기존 38 meeting/render 테스트 모두 PASS (regression 0)
+- `.claude` repo commit: f6c3648 (Stop 훅이 자동 commit, 메시지에 "Plan C"라고 적혔지만 Phase 1 변경 일체 포함)
+
+### Phase 2 (다음 미션)
+**6-Layer MECE 감사** — CLAUDE.md → Harness → Agents → Hooks → Skills → Domain Routing 전 stack 점검. 별도 `/brainstorm` 세션 진입.
+
+### 다음 추천 태스크
+1. Phase 1 실전 검증: 실제 4h `/mission build-pipeline` 1회 end-to-end
+2. Phase 2 MECE 감사 brainstorm 진입
+3. `render_meeting.py` pre-existing 테스트 1건 (`_render_checkpoint_top` NameError) 별도 fix — 이번 작업 무관
