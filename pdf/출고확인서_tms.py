@@ -421,7 +421,8 @@ def build_doc(rec: dict, loc_map: dict) -> dict:
         items      = parse_items(actual_raw, order_raw)
         act_lines  = [l.strip() for l in str(actual_raw or "").split("\n") if l.strip()]
         bad_lines  = [l for l in act_lines
-                      if not ITEM_RE.match(l) and not ITEM_RE2.match(l) and not ITEM_RE3.match(l)]
+                      if not ITEM_RE.match(l) and not ITEM_RE2.match(l) and not ITEM_RE3.match(l)
+                      and not NOTE_LINE_RE.match(l)]
         if bad_lines and final_match:
             bad_lines = []
 
