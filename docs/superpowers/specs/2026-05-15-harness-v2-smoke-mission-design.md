@@ -16,10 +16,10 @@ Universal Project Harness v2 was completed 2026-05-15 (14 agents: Core 9 + Speci
 
 - v1 plan: hybrid smoke (Harness lifecycle + W-NEW-01 + TMS Iter2 real work) → rejected because mission interruption could leave Airtable inconsistent
 - v2 plan: pure synthetic dummy ETL 4h smoke → rejected after user asked "what is this smoke test actually for?" — synthetic deliverables had zero downstream value, and the SCM realignment mission's design-doc deliverables can themselves serve as the smoke vehicle (Sprint 1 = AS-IS diagnosis acts as natural Harness verification)
-- **v3 (current): direct entry to SCM realignment**. First Sprint of the real mission validates Harness lifecycle; design-doc deliverables mean low downside if mission interrupts
-- Slack DM disabled — checkpoints surface in main conversation
-- Subscription tokens only; no separate Anthropic API billing
-- PC must stay on for the mission's duration; `/mission resume` not yet available (Phase 5+)
+- v3 plan: direct entry to SCM realignment, Slack disabled → user questioned why Harness can't resume after mid-mission stop. Honest answer: multi-agent orchestration state isn't serialized in v2 (Phase 5+ deferral, README Known Limitations). User accepted "restart from scratch on interrupt" risk after weighing it against the alternative (skip Harness entirely + use single-agent delegation).
+- **v4 (current): direct entry to SCM realignment, Slack DM enabled.** User will respond to 4h/8h checkpoints to confirm intermediate state. First Sprint of the real mission validates Harness lifecycle; design-doc deliverables mean low downside if interrupted.
+- Subscription tokens only; no separate Anthropic API billing (verified: no `ANTHROPIC_API_KEY` env var, no `anthropic` SDK imports in Harness code, MCPs use OAuth/local auth)
+- PC stays on for the mission's duration; on interrupt, partial Sprint outputs already saved to disk are preserved across the restart
 
 ## Mission — SCM 실 단위 재설계 (this session, 8h)
 
@@ -133,7 +133,7 @@ This is the *side effect* — Mission 1 of Harness usage. Pass conditions identi
 | H7. Notion AgentOps sync | 6 DBs updated |
 | H8. Retro-Learning extraction | ≥ 1 lesson candidate at end |
 | H9. reality-checker triggered | mode=data, duration=8h ≥ 8h threshold → triggered correctly |
-| H10. checkpoint reports | 4h checkpoint in main conversation (Slack disabled) |
+| H10. checkpoint reports | 4h checkpoint sent via Slack DM to user (target U026S3U7KSP); 8h checkpoint at mission end |
 | H11. cost guardrail | warn at $10, hard stop at $30 |
 | H12. Karpathy enforcement | validator rejects scope creep |
 | H13. mission-lock cleanup | removed on success |
@@ -146,12 +146,17 @@ This is the *side effect* — Mission 1 of Harness usage. Pass conditions identi
 ```yaml
 # Passed to harness-orchestrator at mission start
 overrides:
-  notification.slack_target: ""                    # empty → fallback to logs + main conv
-  auto_continue_on_pass: true                      # default
+  # notification.slack_target: keep sprint-config default ("U026S3U7KSP")
+  # → 4h and 8h checkpoint reports sent via Slack DM
+  # → User responds: `승인` / `수정 <지시>` / `중단` / `commit`
+  # → 30-min response timeout (per sprint-config)
+  auto_continue_on_pass: true                      # default — Sprints auto-advance on Contract pass
   retro_learning.enabled: true
   cost_guardrail.warn_token_threshold_usd: 10
   cost_guardrail.hard_stop_token_threshold_usd: 30
 ```
+
+> 4h checkpoint = Sprint 1-2 완료 시점. 8h checkpoint = 미션 종료 시점 (Sprint 4 끝). Sprint 1·3 끝에서는 Contract pass 시 자동 다음 Sprint 진행 (체크포인트 DM 없음).
 
 ### Deliverables checklist
 
