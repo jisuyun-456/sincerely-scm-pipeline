@@ -550,28 +550,29 @@ def _draw_banner(c: rl_canvas.Canvas, y: float, doc: dict,
 def _draw_summary_row(c: rl_canvas.Canvas, y: float, doc: dict,
                       font: str, font_bold: str) -> float:
     LIGHT = colors.HexColor("#F5F5F5")
-    col1 = 60 * mm
-    col2 = 60 * mm
-    col3 = INNER_W - col1 - col2
+    # 4-column: [프로젝트명 lbl | project val | TO lbl | TO val]
+    LBL_PRJ = 26 * mm
+    LBL_TO  = 20 * mm
+    VAL_PRJ = 84 * mm
+    VAL_TO  = INNER_W - LBL_PRJ - VAL_PRJ - LBL_TO  # 50mm
 
     def lbl(t): return _para(t, font, 8, COLOR_MUTED)
     def val(t, bold=False): return _para(t, font_bold if bold else font, 8.5)
 
     tbl = Table(
         [
-            [lbl("프로젝트명"),    val(doc["project"]),
-             lbl("TO. No."),      val(doc["to_no"], bold=True), "", ""],
-            [lbl("출고 좌표"), val(doc["location"]), "", "", "", ""],
+            [lbl("프로젝트명"), val(doc["project"]),
+             lbl("TO. No."),   val(doc["to_no"], bold=True)],
+            [lbl("출고 좌표"), val(doc["location"]), "", ""],
         ],
-        colWidths=[24*mm, col1-24*mm, 16*mm, col2-16*mm, 24*mm, col3-24*mm],
+        colWidths=[LBL_PRJ, VAL_PRJ, LBL_TO, VAL_TO],
     )
     cs = _cell_style_base(font, font_bold)
     cs += [
         ("BACKGROUND", (0, 0), (0, 0), LIGHT),
         ("BACKGROUND", (2, 0), (2, 0), LIGHT),
         ("BACKGROUND", (0, 1), (0, 1), LIGHT),
-        ("SPAN", (3, 0), (5, 0)),
-        ("SPAN", (1, 1), (5, 1)),
+        ("SPAN", (1, 1), (3, 1)),
     ]
     tbl.setStyle(TableStyle(cs))
     h = _draw_table(c, tbl, MARGIN, y, INNER_W, 30 * mm)
