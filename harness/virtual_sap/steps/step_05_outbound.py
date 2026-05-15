@@ -133,7 +133,7 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
                 total_cbm = round(total_cbm * 0.9, 6)
                 pack_damaged = True
                 msg = f"PACK_DAMAGE: DLV {dlv_id} — packing damage, 10% qty reduction"
-                record_issue(db, sim_run_id, "WARN", msg, dry_run)
+                record_issue(db, sim_run_id, "WARN", msg, dry_run, dim="D5")
                 issues.append(msg)
 
             db.insert("outbound_delivery", {

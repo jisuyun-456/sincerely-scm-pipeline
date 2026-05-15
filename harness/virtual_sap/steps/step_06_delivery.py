@@ -121,7 +121,7 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
                 pod_outcome = "exception"
                 actual_delivery = now_date + timedelta(days=1)
                 msg = f"DLV_EXCEPTION: SH for DLV {dlv_id} — delivery exception, pod_status=exception"
-                record_issue(db, sim_run_id, "ERROR", msg, dry_run)
+                record_issue(db, sim_run_id, "ERROR", msg, dry_run, dim="D5")
                 issues.append(msg)
 
             ship_id = next_id("SH", now_date, dry_run=dry_run)

@@ -20,13 +20,14 @@ def maybe_inject(rng: Random, code: IssueCode, rate: float) -> bool:
     return rng.random() < rate
 
 
-def record_issue(db, sim_run_id: str, severity: str, message: str, dry_run: bool) -> None:
+def record_issue(db, sim_run_id: str, severity: str, msg: str, dry_run: bool, dim: str = "D1") -> None:
     """Insert a sim_issue record into the sap schema."""
-    logger.warning("SIM_ISSUE [%s] %s", severity, message)
+    logger.warning("SIM_ISSUE [%s] %s", severity, msg)
     db.insert("sim_issue", {
         "sim_run_id": sim_run_id,
         "severity": severity,
-        "message": message,
+        "dim": dim,
+        "msg": msg,
     }, dry_run=dry_run)
 
 

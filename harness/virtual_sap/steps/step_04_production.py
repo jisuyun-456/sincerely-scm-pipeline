@@ -110,13 +110,13 @@ def run(sim_run_id: str, ctx: SimContext) -> StepResult:
             # Issue injection before processing
             if maybe_inject(rng, IssueCode.STOCK_SHORT, rate=0.08):
                 msg = f"STOCK_SHORT: SO {so_id} — insufficient inventory, production deferred"
-                record_issue(db, sim_run_id, "WARN", msg, dry_run)
+                record_issue(db, sim_run_id, "WARN", msg, dry_run, dim="D3")
                 issues.append(msg)
                 continue
 
             if maybe_inject(rng, IssueCode.PROD_DELAY, rate=0.05):
                 msg = f"PROD_DELAY: SO {so_id} — production line delay, retry next tick"
-                record_issue(db, sim_run_id, "WARN", msg, dry_run)
+                record_issue(db, sim_run_id, "WARN", msg, dry_run, dim="D4")
                 issues.append(msg)
                 continue
 
