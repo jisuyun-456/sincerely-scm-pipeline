@@ -44,6 +44,7 @@ TBL_CLAIM = "tblIZ9kco1QDpUz0u"    # 배송클레임
 TBL_PARTNER = "tblI4ZXrte7WyhXyd"  # 배송파트너
 
 FORECAST_HIGH_THRESHOLD = 20  # 일별 건수 이 이상이면 추가 배차 권고
+BACKFILL_DATE = "2026-05-04"  # 372건 백필 기준일 (zone_classify 314 + events 42 + TRK 16)
 
 # 기사별 트럭 적재 용량 (m³) — 2026-05-12 확정
 TRUCK_CAPACITY_M3: dict[str, float] = {
@@ -552,15 +553,156 @@ def analyze_iter5_forecast(data: dict) -> dict:
     }
 
 
+def analyze_iter6_post_backfill(data: dict) -> dict:
+    """Iteration 6a: 2026-05-04 백필(372건) 이후 구간유형 커버리지 측정"""
+    ships = data["all_shipments"]
+
+    pre: list[dict] = []
+    post: list[dict] = []
+    for r in ships:
+        confirmed = r["fields"].get("fldQvmEwwzvQW95h9") or ""
+        (post if confirmed >= BACKFILL_DATE else pre).append(r)
+
+    def _coverage(records: list[dict]) -> tuple[float, int, int]:
+        with_zone = sum(1 for r in records if r["fields"].get("fldp6haTDFzzF5C74"))
+        total = len(records) or 1
+        return round(with_zone / total * 100, 1), with_zone, len(records)
+
+    pre_pct, pre_with, pre_total   = _coverage(pre)
+    post_pct, post_with, post_total = _coverage(post)
+
+    zone_dist: dict[str, int] = {}
+    for r in post:
+        zone = r["fields"].get("fldp6haTDFzzF5C74") or "미분류"
+        zone_dist[zone] = zone_dist.get(zone, 0) + 1
+
+    return {
+        "backfill_date":    BACKFILL_DATE,
+        "pre_backfill":     {"total": pre_total, "with_zone": pre_with, "coverage_pct": pre_pct},
+        "post_backfill":    {"total": post_total, "with_zone": post_with, "coverage_pct": post_pct},
+        "coverage_delta_pp": round(post_pct - pre_pct, 1),
+        "zone_distribution_post": zone_dist,
+    }
+
+
+def analyze_iter6_absorption_gap(data: dict) -> dict:
+    """Iteration 6b: 고고엑스 내부 흡수 가능성 갭 분석 (CBM 기준)"""
+    quik_ships    = data["quik_ships"]
+    partner_cache = data["partner_cache"]
+    dispatches    = data["dispatches"]
+
+    gogox_count = 0
+    current_internal = 0
+    for r in quik_ships:
+        partners = r["fields"].get("fldM2u6RwLRrO7ymW") or []
+        if not partners:
+            continue
+        cat = classify_partner(partner_cache.get(partners[0], ""))
+        if cat == "gogox":
+            gogox_count += 1
+        elif cat == "internal":
+            current_internal += 1
+
+    # 기사별 여유 CBM 계산 (배차일지 기준)
+    driver_days: dict[str, int]   = {}
+    driver_cbm:  dict[str, float] = {}
+    for rec in dispatches:
+        f = rec["fields"]
+        try:
+            cbm_val = float(f.get("fldVJoKjjzcwpHIHC") or 0)
+        except (ValueError, TypeError):
+            cbm_val = 0.0
+        if cbm_val <= 0:
+            continue
+        for pid in (f.get("fldIQqaoj2CYlCSFH") or []):
+            name = partner_cache.get(pid, pid)
+            driver_days[name] = driver_days.get(name, 0) + 1
+            driver_cbm[name]  = driver_cbm.get(name, 0.0) + cbm_val
+
+    total_headroom = 0.0
+    driver_headroom: dict[str, float] = {}
+    for driver_name, cap in TRUCK_CAPACITY_M3.items():
+        matched = next((n for n in driver_days if driver_name in n), None)
+        if matched:
+            headroom = max(0.0, cap * driver_days[matched] - driver_cbm.get(matched, 0.0))
+        else:
+            headroom = 0.0
+        driver_headroom[driver_name] = round(headroom, 2)
+        total_headroom += headroom
+
+    # 건당 평균 CBM 보수적 추정 (퀵 수도권 소형화물 기준)
+    avg_cbm_per_shipment = 0.5
+    absorbable = min(gogox_count, int(total_headroom / avg_cbm_per_shipment))
+
+    total_quik = len(quik_ships) or 1
+    new_internal_rate = round((current_internal + absorbable) / total_quik * 100, 1)
+    current_internal_rate = round(current_internal / total_quik * 100, 1)
+    gap_closure_pp = round(new_internal_rate - current_internal_rate, 1)
+
+    recs = [
+        f"트럭 여유 합계 {total_headroom:.1f}m³ — 고고엑스 {absorbable}건 즉시 흡수 가능",
+        f"흡수 후 내부 소화율 {current_internal_rate}% → {new_internal_rate}% ({gap_closure_pp:+.1f}pp)",
+        "일별 고고엑스 사전 알림 → 기사 조기 배정으로 추가 흡수 기회 확보",
+        "CBM 데이터 Airtable 입력 표준화 → 정밀 분석 가능 (현재 0.5m³ 추정치 사용)",
+        f"목표 80% 달성까지 잔여 {max(0, 80 - new_internal_rate):.1f}pp — 배송방식 전환 검토 필요",
+    ]
+
+    return {
+        "gogox_count":               gogox_count,
+        "current_internal_rate_pct": current_internal_rate,
+        "total_headroom_cbm":        round(total_headroom, 2),
+        "driver_headroom_cbm":       driver_headroom,
+        "avg_cbm_assumed":           avg_cbm_per_shipment,
+        "absorbable_count":          absorbable,
+        "new_internal_rate_pct":     new_internal_rate,
+        "gap_closure_pp":            gap_closure_pp,
+        "top_recommendations":       recs,
+    }
+
+
 # ── STEP 4: 리포트 저장 ────────────────────────────────────────────────────────
+def _load_prior_kpis(week_str: str) -> dict:
+    """직전 주 리포트에서 KPI 수치를 추출해 delta 계산용으로 반환."""
+    import re
+    try:
+        iso_year, iso_week = week_str.split("-W")
+        prev_week = int(iso_week) - 1
+        prev_year = int(iso_year)
+        if prev_week < 1:
+            prev_week = 52
+            prev_year -= 1
+        prev_path = OUTPUTS_DIR / f"TMS-{prev_year}-W{prev_week:02d}.md"
+        if not prev_path.exists():
+            return {}
+        text = prev_path.read_text(encoding="utf-8")
+        m_internal = re.search(r"내부 소화율.*?\|\s*([\d.]+)%", text)
+        m_otif     = re.search(r"OTIF On-Time율.*?\|\s*([\d.]+)%", text)
+        return {
+            "internal_rate": float(m_internal.group(1)) if m_internal else None,
+            "on_time_rate":  float(m_otif.group(1))     if m_otif     else None,
+        }
+    except Exception:
+        return {}
+
+
+def _delta(current: float, prior: float | None) -> str:
+    if prior is None:
+        return ""
+    diff = current - prior
+    return f" ({'+' if diff >= 0 else ''}{diff:.1f}pp)"
+
+
 def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path:
     print("\n[STEP 4] 주간 리포트 저장")
-    r1 = results["iter1"]
-    r2 = results["iter2"]
-    r3 = results["iter3"]
-    r4 = results["iter4"]
-    r5 = results["iter5"]
-    bf = results["backfill"]
+    r1  = results["iter1"]
+    r2  = results["iter2"]
+    r3  = results["iter3"]
+    r4  = results["iter4"]
+    r5  = results["iter5"]
+    r6a = results["iter6a"]
+    r6b = results["iter6b"]
+    bf  = results["backfill"]
+    prior = _load_prior_kpis(week_str)
 
     efficiency_status = "달성" if r2["internal_rate"] >= 80 else "미달"
     otif_status = "달성" if r4["on_time_rate"] >= 90 else "미달"
@@ -574,12 +716,12 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 
 ## KPI 요약
 
-| 지표 | 실적 | 목표 | 상태 |
-|------|------|------|------|
-| 내부 소화율 (퀵 수도권) | {r2["internal_rate"]}% | ≥80% | {efficiency_status} |
-| OTIF On-Time율 | {r4["on_time_rate"]}% | ≥90% | {otif_status} |
-| In-Full율 | {r4["in_full_rate"]}% | ≥95% | - |
-| 약속납기일 실측 전환율 | {r4["proxy_conversion_rate"]}% | 100% | - |
+| 지표 | 실적 | 전주 대비 | 목표 | 상태 |
+|------|------|---------|------|------|
+| 내부 소화율 (퀵 수도권) | {r2["internal_rate"]}% | {_delta(r2["internal_rate"], prior.get("internal_rate"))} | ≥80% | {efficiency_status} |
+| OTIF On-Time율 | {r4["on_time_rate"]}% | {_delta(r4["on_time_rate"], prior.get("on_time_rate"))} | ≥90% | {otif_status} |
+| In-Full율 | {r4["in_full_rate"]}% | — | ≥95% | - |
+| 약속납기일 실측 전환율 | {r4["proxy_conversion_rate"]}% | — | 100% | - |
 
 ---
 
@@ -666,6 +808,37 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 
 ---
 
+## Iteration 6: Gap Analysis (Post-Backfill)
+
+### 6a. 구간유형 커버리지 ({BACKFILL_DATE} 백필 기준)
+
+| 구분 | 총건수 | 구간 있음 | 커버리지 |
+|------|--------|---------|---------|
+| 백필 이전 ({BACKFILL_DATE} 미만) | {r6a["pre_backfill"]["total"]}건 | {r6a["pre_backfill"]["with_zone"]}건 | {r6a["pre_backfill"]["coverage_pct"]}% |
+| 백필 이후 ({BACKFILL_DATE} 이상) | {r6a["post_backfill"]["total"]}건 | {r6a["post_backfill"]["with_zone"]}건 | {r6a["post_backfill"]["coverage_pct"]}% |
+| **커버리지 델타** | - | - | **{r6a["coverage_delta_pp"]:+.1f}pp** |
+
+백필 이후 구간유형 분포:
+{chr(10).join(f"  {k}: {v}건" for k, v in r6a["zone_distribution_post"].items())}
+
+### 6b. 내부 소화율 갭 분석 (CBM 기준)
+
+- 고고엑스 건수 (최근 30일): **{r6b["gogox_count"]}건**
+- 트럭 여유 용량 합계: **{r6b["total_headroom_cbm"]}m³** (건당 {r6b["avg_cbm_assumed"]}m³ 가정)
+- 흡수 가능 건수: **{r6b["absorbable_count"]}건**
+- 예상 내부 소화율: {r6b["current_internal_rate_pct"]}% → **{r6b["new_internal_rate_pct"]}%** ({r6b["gap_closure_pp"]:+.1f}pp)
+
+기사별 여유 CBM:
+{chr(10).join(f"  {k}: {v}m³" for k, v in r6b["driver_headroom_cbm"].items())}
+
+---
+
+## ⚡ Action Items
+
+{chr(10).join(f"{i+1}. {rec}" for i, rec in enumerate(r6b["top_recommendations"]))}
+
+---
+
 ## 이번 주 백필
 
 - 약속납기일 업데이트: {bf["backfill_count"]}건{"(dry-run)" if bf["dry_run"] else ""}
@@ -700,9 +873,10 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 # ── STEP 5: log.md 업데이트 ───────────────────────────────────────────────────
 def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
     print("\n[STEP 5] log.md 업데이트")
-    r2 = results["iter2"]
-    r4 = results["iter4"]
-    r5 = results["iter5"]
+    r2  = results["iter2"]
+    r4  = results["iter4"]
+    r5  = results["iter5"]
+    r6b = results["iter6b"]
 
     entry = f"""
 ## [{date.today().isoformat()}] WEEKLY | 주간 분석 {week_str}
@@ -715,6 +889,9 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 - 차량이용률 v2 (CBM 적재율): {r2["util_v2_overall"]}%
 - 약속납기일 전환율: {r4["proxy_conversion_rate"]}%
 - 다음 주 예측: {r5["total_forecast"]}건 (피크 {r5["peak_day"]}요일)
+
+### Iter6 갭분석
+- 흡수 가능 고고엑스: {r6b["absorbable_count"]}건 → 내부 소화율 {r6b["new_internal_rate_pct"]}% 달성 예상 ({r6b["gap_closure_pp"]:+.1f}pp)
 
 ### 산출물
 - [{report_path.name}](../outputs/{report_path.name})
@@ -737,6 +914,38 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
         INDEX_PATH.write_text(idx, encoding="utf-8")
 
     print("  log.md / index.md 업데이트 완료")
+
+
+def _notify_slack_report(results: dict, week_str: str, report_path: Path) -> None:
+    """주간 AutoResearch 리포트 요약을 Slack DM으로 발송."""
+    token   = os.environ.get("SLACK_BOT_TOKEN", "")
+    user_id = os.environ.get("SLACK_DM_USER_ID", "")
+    if not token or not user_id:
+        return
+    r2  = results["iter2"]
+    r4  = results["iter4"]
+    r6b = results["iter6b"]
+    lines = [
+        f"*TMS 주간 AutoResearch — {week_str}*",
+        f"  내부 소화율: {r2['internal_rate']}% (목표 ≥80%) | 고고엑스: {r2['gogox_rate']}%",
+        f"  OTIF On-Time: {r4['on_time_rate']}%",
+        f"  갭분석: 흡수 가능 {r6b['absorbable_count']}건 → 소화율 {r6b['new_internal_rate_pct']}% 달성 예상",
+        f"  리포트: {report_path.name}",
+    ]
+    try:
+        ch = requests.post(
+            "https://slack.com/api/conversations.open",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"users": user_id}, timeout=10,
+        ).json()["channel"]["id"]
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"channel": ch, "text": "\n".join(lines)},
+            timeout=10,
+        )
+    except Exception:
+        pass
 
 
 # ── 메인 ───────────────────────────────────────────────────────────────────────
@@ -777,24 +986,35 @@ def main(dry_run: bool) -> None:
 
     # 3. 분석
     print("\n[STEP 3] Iteration 분석")
-    r1 = analyze_iter1_volume(data)
-    r2 = analyze_iter2_dispatch_efficiency(data)
-    r3 = analyze_iter3_cost(data)
-    r4 = analyze_iter4_otif(data)
-    r5 = analyze_iter5_forecast(data)
+    r1  = analyze_iter1_volume(data)
+    r2  = analyze_iter2_dispatch_efficiency(data)
+    r3  = analyze_iter3_cost(data)
+    r4  = analyze_iter4_otif(data)
+    r5  = analyze_iter5_forecast(data)
+    r6a = analyze_iter6_post_backfill(data)
+    r6b = analyze_iter6_absorption_gap(data)
     print(f"  Iter1: 볼륨 {r1['total_shipments']}건, 피크 {r1['peak_day']}요일")
     print(f"  Iter2: 내부 소화율 {r2['internal_rate']}%, 고고엑스 {r2['gogox_rate']}%")
     print(f"  Iter3: 배송방식 {len(r3['by_method'])}종")
     print(f"  Iter4: OTIF On-Time {r4['on_time_rate']}%, 전환율 {r4['proxy_conversion_rate']}%")
     print(f"  Iter5: 다음 주 예측 합계 {r5['total_forecast']}건, 피크 {r5['peak_day']}요일")
+    print(f"  Iter6a: 구간 커버리지 델타 {r6a['coverage_delta_pp']:+.1f}pp")
+    print(f"  Iter6b: 흡수 가능 {r6b['absorbable_count']}건, 예상 소화율 {r6b['new_internal_rate_pct']}%")
 
-    results = {"backfill": bf_result, "iter1": r1, "iter2": r2, "iter3": r3, "iter4": r4, "iter5": r5}
+    results = {
+        "backfill": bf_result,
+        "iter1": r1, "iter2": r2, "iter3": r3, "iter4": r4, "iter5": r5,
+        "iter6a": r6a, "iter6b": r6b,
+    }
 
     # 4. 리포트 저장
     report_path = step_save_report(results, week_str, date_range)
 
     # 5. log.md 업데이트
     step_update_log(results, report_path, week_str)
+
+    # 6. Slack 리포트 발송
+    _notify_slack_report(results, week_str, report_path)
 
     print(f"\n{'='*60}")
     print("주간 분석 완료")

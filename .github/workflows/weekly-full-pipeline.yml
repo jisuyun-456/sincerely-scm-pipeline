@@ -38,6 +38,8 @@ jobs:
       - name: TMS Weekly AutoResearch
         env:
           AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
         run: python scripts/tms_weekly_runner.py
 
       # ── Step 3: WMS SAP 백필 ─────────────────────────────────────────────
