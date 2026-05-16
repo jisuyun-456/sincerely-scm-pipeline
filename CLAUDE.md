@@ -29,21 +29,33 @@
 | 운영 입력 | Airtable (WMS base appLui4ZR5HWcQRri / TMS base app4x70a8mOrIKsMf) |
 | 백엔드 (PDF 등) | FastAPI on Railway (`api/app.py`) |
 | 파이프라인 | GitHub Actions + Python |
-| 회의록 백업 | PostToolUse 훅 → Obsidian Vault + Slack 공유폴더 |
+| 회의록 백업 | *(향후 구현 예정 — Phase 3+)* meeting-analysis SK-08 + Obsidian append. 현재 PostToolUse 훅은 `.py` syntax check만 수행. |
 | 대시보드 (별도 레포) | `sincerely-scm-dashboard`: React on Vercel + Supabase + GitHub Actions cron |
+
+> **ClaudeVault 경로:** `C:\Users\yjisu\Documents\ClaudeVault\` (obsidian-routing 스킬 + SessionStart 훅이 자동 참조). SCM 작업 로그: `ClaudeVault/SCM/_AutoResearch/wiki/log.md`
 
 > **Supabase 정책 (2026-05-08 갱신):** SCM 운영 데이터(WMS/TMS movement·inventory)는 Airtable이 단일 진실 원천 — 절대 Supabase로 이중화 금지. 대시보드 전용 스냅샷·집계 데이터에 한해 `sincerely-scm-dashboard` 서브프로젝트에서만 Supabase free tier 허용.
 > NocoDB / Metabase / Retool 은 계속 미사용 (메모리 `project_scm_redesign` 참조).
 
 ## 언어 설정
 
-**Always respond in English**, regardless of the language the user writes in.
+L1 `~/.claude/CLAUDE.md` "Always respond in English" 정책을 **상속**. 예외:
+- 회의록·운영 보고서·도메인 한정 산출물(SK-08 meeting-analysis 산출 등): 한국어 허용
+- 사용자가 명시적으로 "한국어로" 요청한 즉시 응답: 한국어 허용
 
 ## 전문가 정체성
 > D1~D5 글로벌 정체성은 `~/.claude/CLAUDE.md` 참조. 본 프로젝트는 SCM 도메인 특화 에이전트로 위임.
 
 ## Harness Engineering
-글로벌 Universal Project Harness(`~/.claude/harness/`) 사용. 8h+ 자율 미션은 `/mission <template> --duration <h>`. 본 프로젝트 도메인 라우팅(SK-01~09, D-TMS1/2, D1~D3)은 그대로 유지 — Harness Orchestrator가 *Worker로 위임*. 단발 작업은 기존 키워드 라우팅(Harness 미개입).
+글로벌 Universal Project Harness(`~/.claude/harness/`) 사용. 8h+ 자율 미션은 `/mission <template> --duration <h>` · 재개는 `/mission resume <id>` · 나열 `/mission list` · 중단 `/mission abort <id>` (Phase 1 FSM, 2026-05-16). 본 프로젝트 도메인 라우팅(SK-01~09, D-TMS1/2, D1~D3)은 그대로 유지 — Harness Orchestrator가 *Worker로 위임*. 단발 작업은 기존 키워드 라우팅(Harness 이벤트 로깅 미개입). 모든 미션 전이는 `~/.claude/harness/logs/<mission-id>/events.jsonl` 에 SSOT 기록.
+
+> **Routing 분기 충돌 정의 (Phase 2 audit X7 보완):**
+> - **OTIF/KPI 집계 분석** → SK-06 tms-otif-kpi (운영 집계) / **TMS 개선·로드맵 설계** → D-TMS1 tms-improvement
+> - **TMS 한정 전략 프레임워크** (5 Forces·SWOT·BCG·3 Horizons·MECE·Issue Tree·Pyramid) → D-TMS1 / **범 프로젝트 PM 프레임워크** → D3 consulting-pm-expert
+> - **Lane·CBM·노선 비용** → SK-09 tms-cost-lane (전술) / **거점·소싱·네트워크 재설계** → D1 scm-logistics-expert (전략)
+> - **회의 메모·텍스트·PDF 입력 → 마크다운 회의록** → SK-08 meeting-analysis / **미션 Sprint 결과 합성** → harness meeting-coordinator (미션 모드 한정)
+>
+> **모델 할당 (L1 기본 sonnet override):** 세밀한 운영 SK-01~05/07~09는 sonnet 준수. SK-06 + 모든 D-* (D-TMS1/2, D1~D3)는 깊은 추론·전략 산출이므로 opus 정당화됨.
 
 ## 에이전트 팀 라우팅
 
@@ -78,7 +90,7 @@
 | 코드 구현, 아키텍처, DB, API | 빌트인 `Plan` / `feature-dev:code-architect` / `general-purpose` |
 | UI/디자인 | `frontend-design` 플러그인 + Stitch MCP |
 | worktree, 병렬 작업 | `/worktree` |
-| 실수 기록, learn | `/learn` |
+| 실수 기록, lesson | `/lesson` |
 
 > **라우팅 우선순위:** 세밀한 운영(SK-01~09) > TMS 전략(D-TMS1/D-TMS2) > 도메인 전문가(D1/D2/D3) > 빌트인.
 > **분기 충돌 시:** "운영 집계" → SK / "TMS 개선·착수" → D-TMS1 / "carrier 평가·계약" → D-TMS2 / "전략 진단·로드맵" → D / "코드 구현" → 빌트인.
@@ -103,4 +115,4 @@
 독립 기능 병렬 개발 시 `/worktree` → `.worktrees/<브랜치명>` 생성
 
 ## 실수 학습
-반복 실수 발생 시 `/learn` → 이번 세션 실수를 이 파일 하단에 기록
+반복 실수 발생 시 `/lesson <text>` → Retro-Learning System에 직접 추가. 미션·태스크 진행 중 발견한 반복 오류·개선 후보를 다음 미션에 자동 반영.
