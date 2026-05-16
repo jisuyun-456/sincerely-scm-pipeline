@@ -16,3 +16,13 @@ CREATE TABLE IF NOT EXISTS sap.sim_invoice (
 CREATE INDEX IF NOT EXISTS sim_invoice_fi_doc_id_idx  ON sap.sim_invoice (fi_doc_id);
 CREATE INDEX IF NOT EXISTS sim_invoice_so_id_idx      ON sap.sim_invoice (so_id);
 CREATE INDEX IF NOT EXISTS sim_invoice_customer_id_idx ON sap.sim_invoice (customer_id);
+
+-- RLS: INSERT-only (consistent with other transaction tables)
+ALTER TABLE sap.sim_invoice ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS sim_invoice_select ON sap.sim_invoice;
+DROP POLICY IF EXISTS sim_invoice_insert ON sap.sim_invoice;
+CREATE POLICY sim_invoice_select ON sap.sim_invoice FOR SELECT USING (true);
+CREATE POLICY sim_invoice_insert ON sap.sim_invoice FOR INSERT WITH CHECK (true);
+
+GRANT USAGE ON SCHEMA sap TO anon, authenticated, service_role;
+GRANT SELECT, INSERT ON sap.sim_invoice TO anon, authenticated, service_role;

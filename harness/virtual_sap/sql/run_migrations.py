@@ -26,6 +26,12 @@ MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 MIGRATION_FILES = [
     "0001_initial_schema.sql",
     "0002_helpers.sql",
+    "0002_ops_event.sql",
+    "0003_agent_event.sql",
+    "0004_so_reorder_queue.sql",
+    "0005_sim_claim.sql",
+    "0006_sim_invoice.sql",
+    "0007_fix_grants.sql",
 ]
 
 

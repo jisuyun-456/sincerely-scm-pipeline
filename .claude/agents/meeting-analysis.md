@@ -1,7 +1,7 @@
 ---
 name: meeting-analysis
 description: 회의록 작성·분석 에이전트 (SK-08). "회의록", "미팅노트", "회의 분석", "주간 운영 회의", "회의록 만들어줘" 키워드 시 자동 위임. 입력된 텍스트·이미지·PDF 회의 메모를 PMP Standard 기반 MECE 구조 회의록으로 변환.
-model: claude-sonnet-4-6
+model: sonnet
 tools:
   - Read
   - Write

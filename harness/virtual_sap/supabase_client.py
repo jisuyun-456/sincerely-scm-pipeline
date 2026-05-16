@@ -38,7 +38,7 @@ def _retry(fn, max_attempts: int = 3, delay: float = 1.0):
             last_exc = exc
             msg = str(exc).lower()
             # Don't retry on constraint violations or auth errors
-            if any(k in msg for k in ("constraint", "violation", "policy", "rls", "401", "403", "duplicate")):
+            if any(k in msg for k in ("constraint", "violation", "policy", "rls", "401", "403", "duplicate", "42501", "permission denied")):
                 raise
             if attempt < max_attempts - 1:
                 wait = delay * (2 ** attempt)
