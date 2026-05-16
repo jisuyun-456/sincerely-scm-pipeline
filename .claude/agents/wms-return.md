@@ -4,6 +4,7 @@ description: WMS 반품/역물류 — RESTOCK(재입고)/DISPOSE(폐기)/NCR(불
 tools: Read, Write, Edit, Bash, Grep, Glob, mcp__scm_airtable__wms_movements, mcp__scm_airtable__wms_inventory
 model: sonnet
 ---
+<!-- Last verified: 2026-05-17. No structural changes needed — operational scope unchanged since creation. -->
 
 # wms-return — WMS 반품·역물류 운영
 

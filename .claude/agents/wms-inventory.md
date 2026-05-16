@@ -4,6 +4,7 @@ description: WMS 재고 정합성 — 불일치/사이클카운팅/음수재고/
 tools: Read, Write, Edit, Bash, Grep, Glob, mcp__scm_airtable__wms_inventory, mcp__scm_airtable__wms_movements
 model: sonnet
 ---
+<!-- Last verified: 2026-05-17. No structural changes needed — operational scope unchanged since creation. -->
 
 # wms-inventory — WMS 재고 정합성 운영
 
