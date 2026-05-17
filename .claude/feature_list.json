@@ -59,33 +59,6 @@
       "notes": "N+M 순차 → 배치 fetch, Session+fields[], 병렬 recordId, rollup 직접 읽기 등 4단계 최적화 완료. 추가 병목 없음."
     },
     {
-      "id": "WMS-PHASE0-01",
-      "title": "W-NEW-01 SAP_이동유형 마스터 테이블 신설 (Phase 0 우선)",
-      "priority": "high",
-      "domain": "wms",
-      "status": "pending",
-      "created_at": "2026-04-20",
-      "notes": "TMS GAP 완료 후 WMS 착수 대기. Phase 0의 첫 항목."
-    },
-    {
-      "id": "PAPERCLIP-01",
-      "title": "Paperclip 연동 — Claude 구독토큰으로 Gemini 대체 (뉴스 분석 자동화)",
-      "priority": "medium",
-      "domain": "stock",
-      "status": "pending",
-      "created_at": "2026-04-30",
-      "notes": "STOCK_WORK 프로젝트. 다음 세션 착수 예정."
-    },
-    {
-      "id": "RAILWAY-MIG-01",
-      "title": "Railway FastAPI 무료 호스팅 마이그레이션 검토",
-      "priority": "low",
-      "domain": "infra",
-      "status": "pending",
-      "created_at": "2026-05-08",
-      "notes": "옵션: Render free (cold start), HF Spaces, 자체 호스트. 대시보드 v1과 분리 진행."
-    },
-    {
       "id": "TMS-AR-02",
       "title": "TMS AutoResearch Iter2 — 차량이용률 버그수정 + OTIF 재계산",
       "priority": "done",
