@@ -325,7 +325,9 @@
       "source": "6-layer-audit-2026-05-16",
       "finding_severity": "P1",
       "finding_dimension": "HookCoverage",
-      "completed_at": "2026-05-17"
+      "completed_at": "2026-05-17",
+      "superseded_by": "L1-restructure-2026-05-17",
+      "note": "L1 enumerate (4-row Hook Lifecycle table) -> harness/README.md Hook Lifecycle 섹션 SSOT, L1엔 1줄 reference. 의식적 supersede (drift 아님)."
     },
     {
       "id": "AUDIT-L1-GAP-01",
@@ -337,7 +339,9 @@
       "source": "6-layer-audit-2026-05-16",
       "finding_severity": "P1",
       "finding_dimension": "Gap",
-      "completed_at": "2026-05-17"
+      "completed_at": "2026-05-17",
+      "superseded_by": "L1-restructure-2026-05-17",
+      "note": "L1 6 DB enumerate -> harness/notion-mapping.yaml SSOT, L1엔 1줄 reference. 의식적 supersede (drift 아님)."
     },
     {
       "id": "AUDIT-L2-DRIFT-01",
