@@ -84,6 +84,22 @@
 > **분기 충돌 시:** "운영 집계" → SK / "TMS 개선·착수" → D-TMS1 / "carrier 평가·계약" → D-TMS2 / "전략 진단·로드맵" → D / "코드 구현" → 빌트인.
 > **복합 요청:** 메인 Claude가 Agent 툴 병렬 호출 (예: D1+SK-03 = 음수재고 패턴+전략).
 
+## 지식 파일 라우팅
+
+> 에이전트 라우팅(위)과 별개. "이 정보가 어느 파일에 있나"를 알려주는 맵.
+
+| 지식 유형 | 파일 경로 |
+|----------|---------|
+| 조직/팀 구조, KPI 목표, 주요 결정 | `Context/org.md` |
+| Airtable ID, API, 인프라, SAP 코드 | `Context/infrastructure.md` |
+| KPI 추세 테이블, SLA 기준, 이슈 트래킹 | `Context/kpi-targets.md` |
+| 세션 로그 (INSERT ONLY) | `_AutoResearch/SCM/wiki/log.md` |
+| 산출물 인덱스 | `_AutoResearch/SCM/wiki/index.md` |
+| 주간 리포트 | `_AutoResearch/SCM/outputs/` |
+| 태스크 목록 | `.claude/feature_list.json` |
+| 회의록 (주간운영) | `Intelligence/meetings/weekly-ops/` |
+| 주요 결정 기록 | `Intelligence/decisions/` |
+
 ## 태스크 관리
 `.claude/feature_list.json` — 전체 태스크 목록 (priority: critical > high > medium > low > done)
 

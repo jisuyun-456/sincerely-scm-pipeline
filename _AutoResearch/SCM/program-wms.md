@@ -1,7 +1,10 @@
 # WMS AutoResearch — Program
 
+**연관 파일:** [[Context/infrastructure.md]] | [[Context/kpi-targets.md]] | [[_AutoResearch/SCM/wiki/log.md]]
+
 > 시작: 2026-04-21 | 기반: Airtable WMS 베이스 (`appLui4ZR5HWcQRri`) 읽기 전용  
 > 목표: 스키마 변경 없이 현황 가시화 → Phase 0 착수 근거 확보
+> 상세 필드 ID는 [[Context/infrastructure.md]] 참조
 
 ---
 

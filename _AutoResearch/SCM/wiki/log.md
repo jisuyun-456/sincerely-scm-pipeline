@@ -1,5 +1,7 @@
 # SCM AutoResearch — Session Log
 
+**연관 파일:** [[Context/org.md]] | [[Context/infrastructure.md]] | [[Context/kpi-targets.md]] | [[_AutoResearch/SCM/wiki/index.md]]
+
 ---
 ## [2026-05-13] WMS | 에이원 휴면 재고 검토 + WMS 교차검증
 
@@ -23,8 +25,9 @@
 - order link 재연결 로직 개선 검토
 
 ### 산출물
-- [WMS-DormantStock-20260513.md](../outputs/WMS-DormantStock-20260513.md)
+- [[_AutoResearch/SCM/outputs/WMS-DormantStock-20260513.md|WMS-DormantStock-20260513]]
 - `scripts/dormant_candidates.csv` (36종)
+- 관련: [[Context/kpi-targets.md]] (이슈 트래킹 섹션)
 
 ---
 
