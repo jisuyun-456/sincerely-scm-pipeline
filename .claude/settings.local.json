@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m harness.tms_settlement.main*)",
+      "Bash(python scripts/tms_weekly_backfill.py*)",
+      "Bash(python scripts/wms_sap_weekly.py*)",
+      "Bash(python -m harness.virtual_sap.cli tick*)"
+    ]
+  }
+}

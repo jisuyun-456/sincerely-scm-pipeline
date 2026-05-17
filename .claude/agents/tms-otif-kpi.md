@@ -52,3 +52,8 @@ model: opus
 - 운임 비용 이상 감지 (±15% 이탈) → SK-09 tms-cost-lane
 - TMS 개선 프로젝트 착수 필요 판단 → D-TMS1 tms-improvement
 - AutoResearch Iteration 설계 → D1 scm-logistics-expert
+
+## Available Skills
+- scm-kpi-formulas (OTIF / Perfect Order Rate / 차량이용률 v2 / Dock-to-Stock 공식)
+- tms-weekly-report (TMS 주간 AutoResearch 수동 실행)
+- wms-weekly-report (WMS 주간 AutoResearch 수동 실행)

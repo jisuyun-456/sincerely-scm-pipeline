@@ -2,6 +2,45 @@
 
 ---
 
+## [2026-05-17] FEAT | Hybrid Skill+Subagent 아키텍처 도입
+
+**타입:** 아키텍처 설계 + 구현
+**상태:** 완료
+
+### 완료 항목
+- **Phase 1:** Probe Skill `.claude/skills/_probe/SKILL.md` 생성 (visibility 검증용)
+- **Phase 2 Track A:** 5개 Knowledge Skills 신규 생성
+  - `sap-movement-accounts` (+ 2 reference files: SAP movement types + K-IFRS codes)
+  - `aql-sampling` (+ ANSI/ASQ Z1.4 full table)
+  - `abc-xyz-rop-eoq` (+ formulas reference)
+  - `storno-immutable-ledger`
+  - `scm-kpi-formulas`
+- **Phase 2 Agents:** 9개 Agent에 `## Available Skills` 3-line trailing block 추가 (SK-01~07, SK-09, D2)
+- **Phase 3 Track B:** 7개 Script Skills 신규 생성 (cron parity 준수)
+  - `tms-settlement-daily` (disable-model-invocation: true)
+  - `tms-weekly-backfill` (disable-model-invocation: true)
+  - `tms-weekly-report`, `wms-weekly-report`, `pdf-from-template` (model-invocable)
+  - `wms-sap-weekly-sync`, `virtual-sap-tick` (disable-model-invocation: true)
+- **Phase 4:** CLAUDE.md Skills section + routing priority line + `.claude/settings.local.json` Bash allowlist
+- **Phase 5:** `.claude/skills/README.md` + feature_list.json golden tests + this log entry
+
+### 핵심 설계 원칙
+- Subagents 14개 완전 유지 — Skills은 ADDITIVE (교체 아님)
+- Track B Skills = 기존 Python 모듈 래퍼 (코드 수정 0, cron parity 100%)
+- Immutable Ledger 유지: destructive Skills에 disable-model-invocation: true 적용
+- CLAUDE.md +10줄 이내 유지 (Boris Cherny bloat threshold)
+
+### 검증 필수 항목
+- [ ] `git diff harness/ scripts/ pdf/ api/ .github/workflows/` → 0 modifications
+- [ ] 4개 destructive Script Skills에 disable-model-invocation: true 확인
+- [ ] 14개 Subagent 라우팅 키워드 golden queries 정상 동작
+
+### 다음 포커스
+- Phase 1 probe Skill visibility 실증 확인 후 `_probe/` 삭제
+- Golden test queries 실행 (SKILL-GOLDEN-* tasks in feature_list.json)
+
+---
+
 ## [2026-05-13] WMS | 에이원 휴면 재고 검토 + WMS 교차검증
 
 **타입:** WMS 재고 분석

@@ -31,6 +31,7 @@
 | 파이프라인 | GitHub Actions + Python |
 | 회의록 백업 | PostToolUse 훅 → Obsidian Vault + Slack 공유폴더 |
 | 대시보드 (별도 레포) | `sincerely-scm-dashboard`: React on Vercel + Supabase + GitHub Actions cron |
+| Skills | `.claude/skills/` — 도메인 지식 + 스크립트 래퍼 (Subagent 내부 및 단발 질의에서 자동 로드) |
 
 > **Supabase 정책 (2026-05-08 갱신):** SCM 운영 데이터(WMS/TMS movement·inventory)는 Airtable이 단일 진실 원천 — 절대 Supabase로 이중화 금지. 대시보드 전용 스냅샷·집계 데이터에 한해 `sincerely-scm-dashboard` 서브프로젝트에서만 Supabase free tier 허용.
 > NocoDB / Metabase / Retool 은 계속 미사용 (메모리 `project_scm_redesign` 참조).
@@ -81,8 +82,15 @@
 | 실수 기록, learn | `/learn` |
 
 > **라우팅 우선순위:** 세밀한 운영(SK-01~09) > TMS 전략(D-TMS1/D-TMS2) > 도메인 전문가(D1/D2/D3) > 빌트인.
+> **Skill vs Agent:** Subagent 라우팅이 항상 우선. Skill은 Subagent 내부에서 또는 단발 지식 질의에서만 로드.
 > **분기 충돌 시:** "운영 집계" → SK / "TMS 개선·착수" → D-TMS1 / "carrier 평가·계약" → D-TMS2 / "전략 진단·로드맵" → D / "코드 구현" → 빌트인.
 > **복합 요청:** 메인 Claude가 Agent 툴 병렬 호출 (예: D1+SK-03 = 음수재고 패턴+전략).
+
+## Skills (도메인 지식 자동 호출)
+- Knowledge Skills in `.claude/skills/` autoload by description match.
+- 5 active: sap-movement-accounts / aql-sampling / abc-xyz-rop-eoq / storno-immutable-ledger / scm-kpi-formulas.
+- Subagent에서도 동일 경로로 로드됨 — 중복 임베드 금지, Skill 참조 우선.
+- Script Skills (수동 호출 전용): tms-settlement-daily, tms-weekly-backfill, wms-sap-weekly-sync, virtual-sap-tick. 크론과 동일 코드패스 — 변경 시 .github/workflows 동시 갱신.
 
 ## 태스크 관리
 `.claude/feature_list.json` — 전체 태스크 목록 (priority: critical > high > medium > low > done)

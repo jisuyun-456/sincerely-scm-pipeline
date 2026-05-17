@@ -45,3 +45,7 @@ model: sonnet
 - 음수재고 패턴 분석·재발 방지 전략 → D1 scm-logistics-expert
 - ROP/안전재고 재산정 → SK-01 wms-master-data
 - 재고 KPI 정형 리포트 → SK-06 tms-otif-kpi
+
+## Available Skills
+- sap-movement-accounts (SAP 311/701/702 codes + K-IFRS account mapping)
+- storno-immutable-ledger (Storno 역분개 패턴 + 금지 체크리스트)

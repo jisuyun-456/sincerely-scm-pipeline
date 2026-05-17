@@ -51,3 +51,7 @@ model: sonnet
 - 반품 KPI (Return Rate) 분석 → SK-06 tms-otif-kpi
 - 반품 패턴 근본원인 분석 → D1 scm-logistics-expert
 - 공급사 품질 문제 시 SK-01 (공급사 마스터 갱신)에 보고
+
+## Available Skills
+- sap-movement-accounts (SAP 122/551 codes + K-IFRS account mapping)
+- aql-sampling (반품 검사 AQL 판정 기준)

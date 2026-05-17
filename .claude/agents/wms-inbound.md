@@ -41,3 +41,7 @@ model: sonnet
 - GR 분개 검증 → D2 tax-accounting-expert
 - Dock-to-Stock KPI 분석 → SK-06 tms-otif-kpi
 - 입하 리드타임 단축 전략 → D1 scm-logistics-expert
+
+## Available Skills
+- sap-movement-accounts (SAP 101 GR code + K-IFRS account mapping)
+- aql-sampling (ANSI/ASQ Z1.4 sample size + Ac/Re numbers)

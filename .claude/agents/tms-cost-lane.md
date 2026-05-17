@@ -74,3 +74,7 @@ model: sonnet
 | "OTIF / 차량이용률 리포트" | SK-06 tms-otif-kpi | KPI 측정 도메인 |
 | "배차·운송장 처리" | SK-05 tms-shipment | 운영 실행 도메인 |
 | "거점·네트워크 재설계" | D1 scm-logistics-expert | 전략 SCM 도메인 |
+
+## Available Skills
+- scm-kpi-formulas (Consolidation ROI / Anomaly Detection ±15% 공식)
+- tms-weekly-backfill (주간 백필 수동 실행)

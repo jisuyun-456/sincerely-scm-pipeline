@@ -52,3 +52,7 @@ model: sonnet
 - 출고 KPI (Perfect Order Rate) 분석 → SK-06 tms-otif-kpi
 - 피킹 효율 개선 전략 → D1 scm-logistics-expert
 - 운송장 발급은 SK-05 tms-shipment로 위임
+
+## Available Skills
+- sap-movement-accounts (SAP 601/261/311 codes + K-IFRS account mapping)
+- scm-kpi-formulas (Perfect Order Rate / OTIF 공식)

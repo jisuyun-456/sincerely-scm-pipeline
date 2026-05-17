@@ -76,3 +76,7 @@ model: opus
 - 분개 영향 SCM 전략 검토 → D1 scm-logistics-expert
 - 회계 시스템 자동화·스크립트 → 빌트인 Plan / feature-dev:code-architect
 - 프로젝트 회계 영향 (예: 시스템 도입 비용) → D3 consulting-pm-expert
+
+## Available Skills
+- sap-movement-accounts (SAP 전체 이동유형 분개 매핑 + K-IFRS 계정코드)
+- storno-immutable-ledger (역분개 패턴 + 금지 체크리스트)

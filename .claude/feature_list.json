@@ -1,7 +1,62 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-13",
+  "updated_at": "2026-05-17",
   "tasks": [
+    {
+      "id": "SKILL-ARCH-01",
+      "title": "Hybrid Skill+Subagent 아키텍처 구현 — 12 Skills (5 knowledge + 7 script)",
+      "priority": "done",
+      "domain": "architecture",
+      "status": "done",
+      "created_at": "2026-05-17",
+      "completed_at": "2026-05-17",
+      "notes": "Phase 1~5 완료. .claude/skills/ 12개 Skills + 9개 agent trailing blocks + CLAUDE.md Skills section. Cron parity preserved — harness/scripts/workflows 미수정."
+    },
+    {
+      "id": "SKILL-GOLDEN-SAP",
+      "title": "[Golden Test] Main Claude: 'SAP 101 정의?' → sap-movement-accounts autoload",
+      "priority": "medium",
+      "domain": "architecture",
+      "status": "pending",
+      "created_at": "2026-05-17",
+      "notes": "Expected: sap-movement-accounts Skill autoloads, no Subagent call. Dr. 재고자산 / Cr. 매입채무 + 더존 1xxx/2xxx codes returned."
+    },
+    {
+      "id": "SKILL-GOLDEN-GR",
+      "title": "[Golden Test] Main Claude: '오늘 입하 GR 처리해줘' → SK-02 wms-inbound routes",
+      "priority": "medium",
+      "domain": "architecture",
+      "status": "pending",
+      "created_at": "2026-05-17",
+      "notes": "Expected: SK-02 wms-inbound Subagent invoked (입하/GR keywords). Skill referenced inside agent, not bypassed."
+    },
+    {
+      "id": "SKILL-GOLDEN-SETTLE",
+      "title": "[Golden Test] Main Claude: 'tms settlement 돌려줘' → explicit confirm required",
+      "priority": "medium",
+      "domain": "architecture",
+      "status": "pending",
+      "created_at": "2026-05-17",
+      "notes": "Expected: tms-settlement-daily disable-model-invocation=true prevents autoload. User must explicitly invoke. Dry-run-first protocol shown."
+    },
+    {
+      "id": "SKILL-GOLDEN-CRON",
+      "title": "[Golden Test] GitHub Actions tms_settlement.yml cron — identical output to pre-Phase-1",
+      "priority": "medium",
+      "domain": "architecture",
+      "status": "pending",
+      "created_at": "2026-05-17",
+      "notes": "Expected: git diff harness/ scripts/ pdf/ api/ .github/workflows/ shows zero modifications. Cron runs unchanged."
+    },
+    {
+      "id": "SKILL-GOLDEN-OTIF",
+      "title": "[Golden Test] SK-06 internal: 'OTIF 공식' → loads scm-kpi-formulas from agent context",
+      "priority": "medium",
+      "domain": "architecture",
+      "status": "pending",
+      "created_at": "2026-05-17",
+      "notes": "Expected: scm-kpi-formulas Skill provides OTIF = On-Time × In-Full formula. No duplication in agent body needed."
+    },
     {
       "id": "CBM-VERIFIER-01",
       "title": "Harness Verifier 설계법 적용 — verifier.py (formative + summative)",

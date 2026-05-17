@@ -42,3 +42,7 @@ model: sonnet
 - 신규 품목 첫 입하 → SK-02 wms-inbound
 - ABC 재분류 전략 → D1 scm-logistics-expert
 - 단가 변경 회계 영향 → D2 tax-accounting-expert
+
+## Available Skills
+- abc-xyz-rop-eoq (ABC/XYZ 분류 공식 + ROP/EOQ 계산)
+- pdf-from-template (출고확인서 / Packing List PDF 생성)

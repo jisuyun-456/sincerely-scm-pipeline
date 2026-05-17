@@ -56,3 +56,7 @@ model: sonnet
 | 클레임 집계·KPI 분석 | SK-06 tms-otif-kpi | KPI 측정 도메인 |
 | Carrier 손해 청구·정산 | D-TMS2 tms-carrier | 계약·소싱 도메인 |
 | 사후 OTIF·차량이용률 리포트 | SK-06 tms-otif-kpi | 배차 시점 시뮬레이션만 SK-05 |
+
+## Available Skills
+- scm-kpi-formulas (차량이용률 v2 CBM-weighted 공식 / OTIF 정의)
+- tms-settlement-daily (기사님 운임 정산 수동 실행 — 확인 후만)
