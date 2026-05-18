@@ -3,9 +3,20 @@
 신시어리 포장재 물류팀 SCM 시스템 — Airtable WMS+TMS 운영(SAP 기준 프로세스).
 
 ## 이 프로젝트 열면 자동 실행
-1. `git log --oneline -10` 실행 → 최근 작업 히스토리 확인
-2. **`obsidian-routing` 스킬 자동 호출** → `_AutoResearch/SCM/wiki/log.md` 마지막 3항목 읽기 → 이전 세션 컨텍스트 복원 + pending 태스크 표시
-3. "현재 상태 요약 + 다음 추천 태스크 1개" 보고
+
+> **[CRITICAL — 세션 첫 응답 규칙]** 사용자의 **첫 번째 메시지**에 답하기 전, system-reminder에 "SCM 이전 세션 컨텍스트"가 있으면 반드시 아래 형식으로 먼저 출력하라. 단순 인사("안녕", "시작", "ㅇㅇ" 등)도 동일하게 적용.
+
+```
+── 세션 컨텍스트 ──────────────────────
+최근 커밋: {git log 1줄}
+마지막 작업: {log.md 최신 항목 제목 + 상태}
+다음 우선 태스크: {feature_list.json pending 1위}
+────────────────────────────────────────
+```
+
+1. SessionStart 훅이 자동으로 log.md + feature_list.json을 읽어 system-reminder에 주입
+2. **Claude는 첫 응답에서 위 컨텍스트를 반드시 표시** (훅이 대신 말해주지 않으므로 Claude가 출력)
+3. "현재 상태 요약 + 다음 추천 태스크 1개" 보고 후 사용자 요청 처리
 
 ## 세션/Task 종료 시 (누락 금지)
 1. **Obsidian log.md 저장** — `obsidian-routing` 스킬 호출 → `_AutoResearch/SCM/wiki/log.md`에 `## [YYYY-MM-DD] {타입} | {제목}` 추가 (결정·완료·이슈·다음 할 일)
