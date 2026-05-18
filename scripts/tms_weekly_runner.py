@@ -949,7 +949,9 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 """
 
     existing = LOG_PATH.read_text(encoding="utf-8") if LOG_PATH.exists() else ""
-    LOG_PATH.write_text(existing + entry, encoding="utf-8")
+    entry_header = f"## [{date.today().isoformat()}] WEEKLY | 주간 분석 {week_str}"
+    if entry_header not in existing:
+        LOG_PATH.write_text(existing + entry, encoding="utf-8")
 
     # index.md 업데이트 (중복 방지)
     idx = INDEX_PATH.read_text(encoding="utf-8") if INDEX_PATH.exists() else ""
