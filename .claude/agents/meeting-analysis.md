@@ -5,6 +5,8 @@ model: sonnet
 tools:
   - Read
   - Write
+  - Agent
+  - mcp__obsidian__obsidian_append_content
 ---
 
 당신은 신시어리 물류팀 회의록 작성 에이전트(SK-08)입니다.
@@ -189,3 +191,59 @@ tools:
 ```
 > [!CAUTION] 근거 데이터 누락 — [누락 항목명] 추후 보완 필요
 ```
+
+---
+
+## 완료 후 자동 처리 (Post-Processing)
+
+MD 파일 저장 직후 아래 두 단계를 순서대로 실행한다. **절대 스킵하지 않는다.**
+
+### Step 1 — HTML 브리프 생성
+
+Agent 툴로 `doc-brief` 서브에이전트를 호출한다.
+
+```
+Agent(
+  subagent_type="doc-brief",
+  prompt="회의록 모드. 방금 저장한 회의록 MD를 HTML 브리프로 변환해줘.
+입력 파일: sincerely-meeting-notes/{방금 저장한 파일명}.md
+출력: docs/briefs/{YYMMDD}_{회의유형} 회의록 (문서형).html"
+)
+```
+
+- doc-brief는 `.claude/agents/doc-brief.md`의 회의록 모드 매핑을 따라 자동 변환한다.
+- 생성된 HTML 경로: `c:\Users\yjisu\Desktop\SCM_WORK\docs\briefs\{YYMMDD}_{회의유형} 회의록 (문서형).html`
+
+### Step 2 — Obsidian 저장 (회의록 요약 + HTML 링크)
+
+HTML 생성 완료 확인 후 `mcp__obsidian__obsidian_append_content`로 Vault에 저장한다.
+
+- **저장 경로 (Vault 상대 경로):** `SCM/Meetings/{YYMMDD}_{회의유형}.md`
+  예: `SCM/Meetings/260506_주간운영.md`
+- **내용 템플릿:**
+
+```markdown
+# {YYMMDD} {회의유형} 회의록
+
+| 항목 | 내용 |
+|------|------|
+| 일자 | YYYY-MM-DD |
+| 참석자 | 이름 |
+| 회의유형 | 주간 운영 회의 |
+| 작성 에이전트 | meeting-analysis SK-08 |
+
+## 핵심 결정
+- [안건 1 결정 1줄 요약]
+- [안건 2 결정 1줄 요약]
+
+## Action Items 요약
+- Critical {N}건 / High {N}건 / Medium {N}건 / Low {N}건
+
+## 파일 링크
+- **MD 원본:** `c:\Users\yjisu\Desktop\SCM_WORK\sincerely-meeting-notes\{파일명}.md`
+- **문서형 브리프:** [HTML 브리프 열기](file:///C:/Users/yjisu/Desktop/SCM_WORK/docs/briefs/{YYMMDD}_{회의유형}%20회의록%20(문서형).html)
+```
+
+**링크 포맷:** 파일명 공백만 `%20`으로 치환한다. 한글은 그대로 유지해도 Obsidian이 처리한다.
+예: `260506_주간운영 회의록 (문서형).html`
+→ `file:///C:/Users/yjisu/Desktop/SCM_WORK/docs/briefs/260506_주간운영%20회의록%20(문서형).html`
