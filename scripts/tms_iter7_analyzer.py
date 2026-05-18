@@ -669,9 +669,10 @@ def main():
         print("[ERROR] AIRTABLE_PAT 환경변수 없음")
         sys.exit(1)
 
-    from datetime import date
+    from datetime import date, timedelta
     today = date.today()
-    iso = today.isocalendar()
+    last_week_anchor = today - timedelta(days=today.weekday() + 7)
+    iso = last_week_anchor.isocalendar()
     week_str = f"{iso[0]}-W{iso[1]:02d}"
 
     data = step_pull_data_6weeks(args.weeks)
