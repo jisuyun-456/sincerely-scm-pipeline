@@ -46,6 +46,29 @@ TBL_PARTNER = "tblI4ZXrte7WyhXyd"  # 배송파트너
 FORECAST_HIGH_THRESHOLD = 20  # 일별 건수 이 이상이면 추가 배차 권고
 BACKFILL_DATE = "2026-05-04"  # 372건 백필 기준일 (zone_classify 314 + events 42 + TRK 16)
 
+# 2026 법정 공휴일 + 대체공휴일 (신시어리 전사 휴무 기준)
+HOLIDAYS_2026: dict[date, str] = {
+    date(2026,  1,  1): "신정",
+    date(2026,  2, 16): "설날 전날",
+    date(2026,  2, 17): "설날",
+    date(2026,  2, 18): "설날 다음날",
+    date(2026,  3,  1): "삼일절",
+    date(2026,  3,  2): "대체공휴일(삼일절)",
+    date(2026,  5,  1): "노동절",
+    date(2026,  5,  5): "어린이날",
+    date(2026,  5, 25): "대체공휴일(부처님오신날)",  # 5/24 일요일
+    date(2026,  6,  3): "지방선거",
+    date(2026,  6,  6): "현충일",
+    date(2026,  7, 17): "제헌절",
+    date(2026,  8, 17): "대체공휴일(광복절)",        # 8/15 토요일
+    date(2026,  9, 24): "추석 전날",
+    date(2026,  9, 25): "추석",
+    date(2026,  9, 26): "추석 다음날",
+    date(2026, 10,  5): "대체공휴일(개천절)",        # 10/3 토요일
+    date(2026, 10,  9): "한글날",
+    date(2026, 12, 25): "크리스마스",
+}
+
 # 기사별 트럭 적재 용량 (m³) — 2026-05-12 확정
 TRUCK_CAPACITY_M3: dict[str, float] = {
     "이장훈": 7.6,
@@ -524,6 +547,18 @@ def analyze_iter5_forecast(data: dict) -> dict:
     weekdays_order = ["월", "화", "수", "목", "금"]
     day_forecast: dict[str, dict] = {}
 
+    # 다음 주 월~금 실제 날짜 계산 (공휴일 zeroing 용)
+    today = date.today()
+    days_to_next_monday = (7 - today.weekday()) % 7 or 7
+    next_monday = today + timedelta(days=days_to_next_monday)
+    next_week_dates = {
+        "월": next_monday,
+        "화": next_monday + timedelta(1),
+        "수": next_monday + timedelta(2),
+        "목": next_monday + timedelta(3),
+        "금": next_monday + timedelta(4),
+    }
+
     for day in weekdays_order:
         recent_vals = [week_day[w].get(day, 0) for w in recent_4]
         prior_vals  = [week_day[w].get(day, 0) for w in prior_8] if prior_8 else []
@@ -532,17 +567,28 @@ def analyze_iter5_forecast(data: dict) -> dict:
         avg_prior  = sum(prior_vals)  / len(prior_vals)  if prior_vals else avg_recent
 
         trend = (avg_recent - avg_prior) / avg_prior if avg_prior > 0 else 0
-        forecast = max(0, round(avg_recent * (1 + trend * 0.3)))  # 30% 추세 반영
+        base_forecast = max(0, round(avg_recent * (1 + trend * 0.15)))  # 추세 보정계수 0.15 (Iter7-C 근거)
+
+        actual_date = next_week_dates[day]
+        holiday_name = HOLIDAYS_2026.get(actual_date)
+        forecast = 0 if holiday_name else base_forecast
 
         day_forecast[day] = {
-            "forecast":   forecast,
-            "avg_recent": round(avg_recent, 1),
-            "trend_pct":  round(trend * 100, 1),
+            "forecast":     forecast,
+            "avg_recent":   round(avg_recent, 1),
+            "trend_pct":    round(trend * 100, 1),
+            "holiday":      holiday_name,
+            "actual_date":  actual_date.isoformat(),
         }
 
     total_forecast = sum(v["forecast"] for v in day_forecast.values())
     high_days = [d for d, v in day_forecast.items() if v["forecast"] >= FORECAST_HIGH_THRESHOLD]
-    peak_day = max(day_forecast, key=lambda d: day_forecast[d]["forecast"]) if day_forecast else "-"
+    peak_day = max(
+        (d for d in day_forecast if not day_forecast[d]["holiday"]),
+        key=lambda d: day_forecast[d]["forecast"],
+        default="-",
+    )
+    holiday_days = [d for d, v in day_forecast.items() if v["holiday"]]
 
     return {
         "day_forecast":     day_forecast,
@@ -550,6 +596,7 @@ def analyze_iter5_forecast(data: dict) -> dict:
         "high_volume_days": high_days,
         "data_weeks":       len(sorted_weeks),
         "peak_day":         peak_day,
+        "holiday_days":     holiday_days,
     }
 
 
@@ -797,13 +844,14 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 
 ## Iteration 5: 다음 주 배송 볼륨 예측
 
-> 기반 데이터: {r5["data_weeks"]}주치 패턴 (최근 90일) | 최근 4주 이동평균 + 추세 보정
+> 기반 데이터: {r5["data_weeks"]}주치 패턴 (최근 90일) | 최근 4주 이동평균 + 추세 보정 (계수 0.15) | 공휴일 자동 반영
 
-| 요일 | 예측 볼륨 | 최근 4주 평균 | 추세 |
-|------|----------|-------------|------|
-{chr(10).join(f"| {d} | {v['forecast']}건 | {v['avg_recent']}건 | {'+' if v['trend_pct'] >= 0 else ''}{v['trend_pct']}% |" for d, v in r5["day_forecast"].items())}
+| 요일 | 날짜 | 예측 볼륨 | 최근 4주 평균 | 추세 |
+|------|------|----------|-------------|------|
+{chr(10).join(f"| {d} | {v['actual_date']} | {'🔴 공휴일 (' + v['holiday'] + ')' if v['holiday'] else str(v['forecast']) + '건'} | {v['avg_recent']}건 | {'+' if v['trend_pct'] >= 0 else ''}{v['trend_pct']}% |" for d, v in r5["day_forecast"].items())}
 
-- **주간 예측 합계: {r5["total_forecast"]}건**
+- **주간 예측 합계: {r5["total_forecast"]}건** (공휴일 제외)
+{f"- 🔴 공휴일: **{'·'.join(r5['holiday_days'])}요일** — 출하 없음" if r5["holiday_days"] else ""}
 {f"- ⚠️ 배차 권고: **{'·'.join(r5['high_volume_days'])}요일** 볼륨 과다 → 고고엑스 사전 예약 또는 추가 기사 배정 검토" if r5["high_volume_days"] else "- 배차 이슈 없음 (전 요일 정상 범위)"}
 
 ---
