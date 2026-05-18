@@ -2,10 +2,30 @@
 
 ---
 
-## [2026-05-18] RESEARCH | Hindsight vs OMEGA vs 현재 체계 — Hindsight 1순위, OMEGA 이주 경로 추천
+## [2026-05-18] RESEARCH-v1.1 | Hindsight vs OMEGA — 공동 1순위 + PoC 자동화 스크립트로 결정 (재구성)
 
-**타입:** 리서치 / 의사결정 분석
-**상태:** 보고서 작성 완료, PoC 대기
+**타입:** 리서치 / 의사결정 분석 (v1.1 재구성)
+**상태:** 보고서 v1.1 + PoC 스크립트 완료, 사용자 랩탑 PoC 실행 대기
+
+### v1.1 재구성 사유
+v1.0 ("Hindsight 1순위 + OMEGA 이주 경로") 검토 중 사용자가 "이거 API 무료?" 질문 → 확인 결과 **Hindsight 셀프호스트 = 완전 무료** (MIT, 사용 제한 0, 텔레메트리 0). v1.0의 "이주 경로" 논리(향후 가격정책 리스크)가 약화 → 가격이 결정 요인에서 제거되어 두 후보가 거의 동률이 됨. 사용자 지시 "재구성"으로 결정 구조 변경.
+
+### v1.0 → v1.1 변경 요약
+- **결정 구조**: "Hindsight 1순위" → "공동 1순위 후보, PoC 결과로 최종 결정"
+- **3개 사실 오류 정정**:
+  1. pip 설치 변형 4종 명시 (`hindsight-all` 권장, `hindsight-api`는 서버 전용)
+  2. Hindsight 셀프호스트 완전 무료 사실 §2.4 추가
+  3. Python ≥ 3.11 요구사항 추가
+- **Use-case 매트릭스 + Go/No-Go 매트릭스** 추가 — 주관 판단 대신 PoC 적중률로 결정
+
+### PoC 실행 불가 → 자동화 스크립트로 대체
+원격 임시 컨테이너에서 `pip install hindsight-all` 시도 → PyPI 차단 (`HTTP 403 host_not_allowed`). 컨테이너 환경에서는 PoC 실행 불가 확인.
+
+대안: 사용자 랩탑용 PoC 자동화 스크립트 `scripts/poc_memory_systems.py` 작성.
+- `_AutoResearch/SCM/outputs/TMS-2026-W18.md` 1개를 양쪽 시스템에 동일 retain
+- 5개 한국어 SCM 쿼리 (에이원 OTIF / 수도권 직배송 / 내부 소화율 60% / PT2429 / 다영기획) recall × top-3
+- 키워드 포함 채점 → side-by-side 적중률 표 + Go/No-Go 자동 판정
+- 정책 준수: outputs/ 마크다운 1개만 사용 (Airtable 운영 데이터 indexing 금지 준수)
 
 ### 배경
 사용자가 `vectorize-io/hindsight` (13.6k★) GitHub 레포 발견 → 현재 메모리 체계(log.md + outputs/*.md + SessionStart 훅) 대비 우월성 평가 요청. 후속 요구: 랩탑-only (Docker / Railway / Fly 금지), 3-way 비교 (현재 / Hindsight / OMEGA).
@@ -32,8 +52,9 @@
 3. 도입 결정 후: CLAUDE.md 기술 스택 표 갱신, MCP 등록, `scripts/hindsight_index_vault.py` 작성
 
 ### 산출물
-- [Memory-Systems-Comparison-20260518.md](../outputs/Memory-Systems-Comparison-20260518.md) (~500줄)
+- [Memory-Systems-Comparison-20260518.md](../outputs/Memory-Systems-Comparison-20260518.md) v1.1 (~500+줄)
 - [outputs/index.md](../outputs/index.md) (신규 생성 — CLAUDE.md 종료 규칙)
+- `scripts/poc_memory_systems.py` (랩탑용 PoC 자동화, py_compile 통과)
 
 ---
 
