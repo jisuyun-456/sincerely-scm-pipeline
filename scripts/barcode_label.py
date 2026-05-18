@@ -188,14 +188,14 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None, bc_id_
     if project_filter:
         formula_parts.append(f"FIND('{project_filter}', ARRAYJOIN({{project}}))")
     if pks_filter:
-        formula_parts.append(f"FIND('{pks_filter}', ARRAYJOIN({{이동리스트}}))")
+        formula_parts.append(f"FIND('{pks_filter}', ARRAYJOIN({{record_id_이동리스트}}))")
 
     formula = ("AND(" + ", ".join(formula_parts) + ")") if len(formula_parts) > 1 \
               else (formula_parts[0] if formula_parts else None)
 
     params = {
         "fields[]": ["Barcode_Number", "project", "출고물품",
-                     "이동리스트", "이동수량", "임가공 예정일",
+                     "record_id_이동리스트", "출고수량", "임가공 예정일",
                      "파츠코드", "라벨 박스수량"],
         "pageSize": 100,
         "sort[0][field]": "ID",
@@ -217,8 +217,8 @@ def fetch_labels(project_filter=None, pks_filter=None, batch_filter=None, bc_id_
         else:
             project = str(proj_raw).strip()
 
-        # 이동리스트 링크에서 PT+품목명 우선 합산
-        linked_ids = f.get("이동리스트") or []
+        # 이동리스트 링크에서 PT+품목명 우선 합산 (필드명: record_id_이동리스트)
+        linked_ids = f.get("record_id_이동리스트") or []
         if batch_filter and linked_ids and set(linked_ids).issubset(excluded_il_ids):
             continue
         products_with_qty, total_qty = [], 0
