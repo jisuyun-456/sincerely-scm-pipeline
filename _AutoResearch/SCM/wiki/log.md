@@ -2,6 +2,41 @@
 
 ---
 
+## [2026-05-18] RESEARCH | Hindsight vs OMEGA vs 현재 체계 — Hindsight 1순위, OMEGA 이주 경로 추천
+
+**타입:** 리서치 / 의사결정 분석
+**상태:** 보고서 작성 완료, PoC 대기
+
+### 배경
+사용자가 `vectorize-io/hindsight` (13.6k★) GitHub 레포 발견 → 현재 메모리 체계(log.md + outputs/*.md + SessionStart 훅) 대비 우월성 평가 요청. 후속 요구: 랩탑-only (Docker / Railway / Fly 금지), 3-way 비교 (현재 / Hindsight / OMEGA).
+
+### 핵심 결론
+- **1순위 = Hindsight** (`pip install hindsight-api`)
+  - 13.6k★ + VentureBeat 보도, BEAM·LongMemEval 동시 1위, 토큰 효율 (~7,000/retrieval + budget 컨트롤)
+  - 4-병렬 retrieval (semantic + BM25 + graph + temporal) + cross-encoder rerank
+  - MCP + SDK 3종 (Python/TS/Go), embedded pg0 (별도 DB 불필요)
+- **이주 경로 = OMEGA** (`pip install omega-memory[server]`)
+  - Apache-2.0 + 네덜란드 재단 거버넌스 + Core 영구 OSS 약속 — 가격정책 리스크 0
+  - LongMemEval 95.4% (ICLR 2025), 25 memory tools, **공식 Obsidian 플러그인 보유** (Hindsight에는 없음)
+  - 발동 조건: Vectorize.io가 핵심 기능 Pro tier 게이팅 시
+- **MIT 오해 정정** — Hindsight는 MIT 대학교 작품 아님. "MIT License"라는 라이센스 양식을 채택한 Vectorize.io (Series A 스타트업) 작품.
+
+### 정책 검토 (CLAUDE.md 충돌 없음)
+- Hindsight·OMEGA 둘 다 *마크다운 문서만 indexing* 시 안전
+- Airtable 운영 데이터 (WMS movement / mat_document / TMS shipments) indexing 금지 — Airtable 단일 진실원천 정책 위반
+- 메모리 DB는 *세컨더리 검색 인덱스*로만 작동
+
+### 다음 단계 (사용자 GO 시 별도 task)
+1. **한국어 30분 PoC**: outputs/TMS-W18.md 1개 retain → 5개 쿼리 recall → 4/5 적중 → 정식 도입 GO
+2. PoC 실패 시 임베더 옵션 검토 (Anthropic / Gemini / bge-m3)
+3. 도입 결정 후: CLAUDE.md 기술 스택 표 갱신, MCP 등록, `scripts/hindsight_index_vault.py` 작성
+
+### 산출물
+- [Memory-Systems-Comparison-20260518.md](../outputs/Memory-Systems-Comparison-20260518.md) (~500줄)
+- [outputs/index.md](../outputs/index.md) (신규 생성 — CLAUDE.md 종료 규칙)
+
+---
+
 ## [2026-05-13] WMS | 에이원 휴면 재고 검토 + WMS 교차검증
 
 **타입:** WMS 재고 분석
