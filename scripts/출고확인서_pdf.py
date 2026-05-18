@@ -518,7 +518,7 @@ def build_box_rows(bc_records: list[dict], il_map: dict) -> tuple[dict, dict]:
     for bc in bc_records:
         bf      = bc["fields"]
         lable   = bf.get("Barcode_Number", "")   # "Lable-03086"
-        il_ids  = bf.get("이동리스트") or []
+        il_ids  = bf.get("record_id_이동리스트") or []
         if isinstance(il_ids, list):
             label_to_il_ids[lable]  = il_ids
             label_box_counts[lable] = int(bf.get("라벨 박스수량") or 0)
@@ -590,40 +590,46 @@ def main():
         print("  조회 결과 없음")
         return
 
-    # ── 이동리스트 + 바코드 레코드 사전 조회 ──────────────────────────────
-    all_il_ids: list[str] = []
+    # ── 바코드 우선 조회 → 바코드에서 이동리스트 ID 수집 ─────────────────────
     all_bc_ids: list[str] = []
     for rec in dc_records:
-        f = rec["fields"]
-        il_ids = f.get("이동리스트") or []
-        bc_ids = f.get("외박스 Barcode") or []
-        if isinstance(il_ids, list): all_il_ids.extend(il_ids)
+        bc_ids = rec["fields"].get("외박스 Barcode") or []
         if isinstance(bc_ids, list): all_bc_ids.extend(bc_ids)
-
-    all_il_ids = list(set(all_il_ids))
     all_bc_ids = list(set(all_bc_ids))
 
+    bc_records_all = fetch_by_ids(TBL_BC, all_bc_ids)
+    bc_map = {r["id"]: r for r in bc_records_all}
+
+    # 이동리스트 ID는 바코드 테이블의 record_id_이동리스트 필드에서 수집
+    all_il_ids: list[str] = []
+    for r in bc_records_all:
+        il_ids = r["fields"].get("record_id_이동리스트") or []
+        if isinstance(il_ids, list): all_il_ids.extend(il_ids)
+    all_il_ids = list(set(all_il_ids))
+
     print(f"  이동리스트 {len(all_il_ids)}건 + 바코드 {len(all_bc_ids)}건 병렬 조회 중…")
-    with ThreadPoolExecutor(max_workers=2) as ex:
-        f_il = ex.submit(fetch_by_ids, TBL_IL, all_il_ids)
-        f_bc = ex.submit(fetch_by_ids, TBL_BC, all_bc_ids)
-        il_records     = f_il.result()
-        bc_records_all = f_bc.result()
+    il_records = fetch_by_ids(TBL_IL, all_il_ids)
     il_map = {r["id"]: {**r["fields"], "_record_id": r["id"]} for r in il_records}
-    bc_map = {r["id"]: r for r in bc_records_all}  # id → full record
 
     # ── 문서 조립 ──────────────────────────────────────────────────────────
     docs = []
     for rec in dc_records:
         f      = rec["fields"]
-        il_ids = f.get("이동리스트") or []
         bc_ids = f.get("외박스 Barcode") or []
 
         bc_recs_for_doc = [bc_map[bid] for bid in bc_ids if bid in bc_map]
         il_to_labels, box_rows = build_box_rows(bc_recs_for_doc, il_map)
         label_to_box_cnt = {lable: cnt for lable, _, _, cnt in box_rows}
 
-        items = [il_map[rid] for rid in il_ids if rid in il_map]
+        # 이동리스트 ID를 이 문서의 바코드에서 수집
+        doc_il_ids: list[str] = []
+        for bid in bc_ids:
+            bc_r = bc_map.get(bid)
+            if bc_r:
+                ids = bc_r["fields"].get("record_id_이동리스트") or []
+                if isinstance(ids, list): doc_il_ids.extend(ids)
+        doc_il_ids = list(dict.fromkeys(doc_il_ids))  # 순서 보존 dedup
+        items = [il_map[rid] for rid in doc_il_ids if rid in il_map]
         # 라벨 번호 오름차순 → 같은 박스 PT 그룹핑, 동일 라벨 내에선 PT코드 순
         def item_sort_key(item):
             rid = item.get("_record_id", "")
