@@ -313,52 +313,51 @@ def draw_label(c: rl_canvas.Canvas, x: float, y: float,
     c.line(x + PAD, y + H - HDR_H - 10.5*mm,
            x + W - PAD, y + H - HDR_H - 10.5*mm)
 
-    # ── 품목 목록 (최대 3개, 품목별 수량 우측 표시) ─────────────────────────
+    # ── 품목 목록 (전체 표시, 수량에 따라 폰트·행간 자동 축소) ──────────────
     c.setFillColor(colors.black)
-    products = rec["products"][:3]
-    LINE_H   = 6.5 * mm
-    start_y  = y + H - HDR_H - 17*mm
-    is_mixed = len(rec["products"]) > 1   # 합포장 여부
+    products = rec["products"]
+    is_mixed = len(products) > 1
+
+    ITEM_TOP = y + H - HDR_H - 17 * mm   # 품목 영역 상단
+    ITEM_BOT = y + 27 * mm + 15 * mm + 3 * mm   # MID 섹션 바로 위
+    AVAIL_H  = ITEM_TOP - ITEM_BOT        # ≈ 26mm
+
+    n = max(len(products), 1)
+    ideal_lh = AVAIL_H / n
+    LINE_H   = max(3.5 * mm, min(6.5 * mm, ideal_lh))
+    item_fs  = max(7, int(LINE_H / mm * 1.85))   # 6.5mm→12pt, 3.5mm→6.5pt→7pt
+    qty_fs   = max(6, item_fs - 2)
+
+    start_y = ITEM_TOP
     for i, item in enumerate(products):
         prod     = item["product"] if isinstance(item, dict) else item
         item_qty = item.get("qty", 0) if isinstance(item, dict) else 0
-        # 합포장이고 개별 수량이 있으면 우측에 수량 표시
-        qty_label = f"{item_qty:,}개" if is_mixed and item_qty else ""
-        qty_label_w = c.stringWidth(qty_label, font, 9) + PAD if qty_label else 0
+        qty_label   = f"{item_qty:,}개" if is_mixed and item_qty else ""
+        qty_label_w = c.stringWidth(qty_label, font, qty_fs) + PAD if qty_label else 0
 
         dash_pos = prod.find("-")
         if dash_pos > 0:
             pt_part   = prod[:dash_pos]
             name_part = prod[dash_pos+1:]
-            pt_fs = 12
-            c.setFont(font, pt_fs)
+            c.setFont(font, item_fs)
             c.setFillColor(colors.HexColor("#555555"))
             c.drawString(x + PAD, start_y - i * LINE_H, pt_part + "  ")
-            pt_w = c.stringWidth(pt_part + " ", font, pt_fs)
-            nm_fs = 12
+            pt_w   = c.stringWidth(pt_part + " ", font, item_fs)
             nm_font = font_bold if i == 0 else font
-            c.setFont(nm_font, nm_fs)
+            c.setFont(nm_font, item_fs)
             c.setFillColor(colors.black)
             avail_w = W - 2*PAD - pt_w - qty_label_w
-            max_w = max(1, int(avail_w / c.stringWidth("가", nm_font, nm_fs)) + 2)
+            max_w = max(1, int(avail_w / max(0.1, c.stringWidth("가", nm_font, item_fs))) + 2)
             c.drawString(x + PAD + pt_w, start_y - i * LINE_H, name_part[:max_w])
         else:
-            nm_fs = 12
-            c.setFont(font_bold if i == 0 else font, nm_fs)
+            c.setFont(font_bold if i == 0 else font, item_fs)
             c.setFillColor(colors.black)
             c.drawString(x + PAD, start_y - i * LINE_H, prod[:38])
 
-        # 개별 수량 우측 정렬
         if qty_label:
-            c.setFont(font, 9)
+            c.setFont(font, qty_fs)
             c.setFillColor(colors.HexColor("#444444"))
             c.drawRightString(x + W - PAD, start_y - i * LINE_H, qty_label)
-
-    if len(rec["products"]) > 3:
-        c.setFont(font, 8)
-        c.setFillColor(colors.HexColor("#888888"))
-        c.drawString(x + PAD, start_y - 3 * LINE_H,
-                     f"외 {len(rec['products'])-3}개 품목")
 
     # ── 수량 / 박스 (2단) ──────────────────────────────────────────────────
     MID_H = 15 * mm
