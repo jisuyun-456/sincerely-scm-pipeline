@@ -514,6 +514,13 @@ def analyze_iter4_otif(data: dict) -> dict:
     }
 
 
+def _week_day_date(week_str: str, day_name: str) -> date:
+    """'2026-W18', '화' → 해당 주 그 요일의 date 반환 (공휴일 필터링용)"""
+    day_idx = {"월": 0, "화": 1, "수": 2, "목": 3, "금": 4}[day_name]
+    year, wnum = int(week_str[:4]), int(week_str[-2:])
+    return date.fromisocalendar(year, wnum, 1) + timedelta(days=day_idx)
+
+
 def analyze_iter5_forecast(data: dict) -> dict:
     """Iteration 5: 다음 주 배송 볼륨 예측 (요일 패턴 기반)"""
     from collections import defaultdict
@@ -560,8 +567,11 @@ def analyze_iter5_forecast(data: dict) -> dict:
     }
 
     for day in weekdays_order:
-        recent_vals = [week_day[w].get(day, 0) for w in recent_4]
-        prior_vals  = [week_day[w].get(day, 0) for w in prior_8] if prior_8 else []
+        # 공휴일 주간은 historical 평균에서 제외 (0값으로 평균을 하방편향 방지)
+        recent_non_hol = [w for w in recent_4 if _week_day_date(w, day) not in HOLIDAYS_2026]
+        prior_non_hol  = [w for w in prior_8  if _week_day_date(w, day) not in HOLIDAYS_2026]
+        recent_vals = [week_day[w].get(day, 0) for w in (recent_non_hol or recent_4)]
+        prior_vals  = [week_day[w].get(day, 0) for w in (prior_non_hol  or prior_8)] if prior_8 else []
 
         avg_recent = sum(recent_vals) / len(recent_vals) if recent_vals else 0
         avg_prior  = sum(prior_vals)  / len(prior_vals)  if prior_vals else avg_recent
