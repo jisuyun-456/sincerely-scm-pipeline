@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>{{DOC_TITLE}}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<link rel="stylesheet" href="doc.css" />
+</head>
+<body>
+
+<!-- 1. TOP BAR -->
+<div class="topbar">
+  <div class="mark"><div class="dot">{{LOGO_2CHAR}}</div> {{PROJECT_NAME}}</div>
+  <span class="sep">/</span>
+  <span class="doc-name">{{DOC_NAME}}</span>
+  <div class="right">
+    <span>{{DOC_ID}}</span>
+    <span class="ver">{{VERSION}} · {{DATE}}</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- 2. LEFT SIDE NAV -->
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch0">I · 서론</a></li>
+      <li><a href="#chA">II · {{CH2_TITLE}}</a></li>
+    </ul>
+    <div class="cross">
+      <a href="#">{{관련 문서}} <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <!-- 3. ARTICLE -->
+  <article>
+
+    <div class="eyebrow">{{EYEBROW · UPPER CASE}}</div>
+    <h1>{{DOC_TITLE}}</h1>
+    <p class="lede">{{이 문서가 무엇인지 한 문장 이탤릭 요약.}}</p>
+    <div class="byline">
+      <span><span class="k">작성일</span>{{DATE}}</span>
+      <span><span class="k">기준</span>{{VERSION}}</span>
+      <span><span class="k">용도</span>{{USE}}</span>
+    </div>
+
+    <!-- ─── I. 서론 ─── -->
+    <h2 id="ch0"><span class="nm">I</span>서론</h2>
+    <p class="dropcap">{{도입부 첫 단락 — dropcap 적용.}}</p>
+    <p>{{도입부 두 번째 단락.}}</p>
+
+    <div class="pullquote">
+      {{핵심 한 줄 메시지.}}
+      <cite>{{출처}}</cite>
+    </div>
+
+    <!-- ─── II. 챕터 제목 ─── -->
+    <h2 id="chA"><span class="nm">II</span>{{챕터 제목}}</h2>
+    <p>{{본문}}</p>
+
+    <!-- 정의 리스트 -->
+    <dl class="def">
+      <div>
+        <dt>{{용어}}<br><span style="color:var(--muted-2);font-size:11px">{{English}}</span></dt>
+        <dd>{{설명.}}</dd>
+      </div>
+    </dl>
+
+    <!-- 수식 박스 -->
+    <div class="formula">
+      {{수식}} = ( A + B + C ) × ( 1 + <span class="c">{{변수}}</span> )
+    </div>
+
+    <!-- 표 (c2 / c3 / c3-wide / c3-num / c4 중 선택) -->
+    <div class="tbl c3-wide">
+      <div class="r h"><div>필드</div><div>내용</div><div>비고</div></div>
+      <div class="r">
+        <div><strong>{{항목}}</strong></div>
+        <div class="mono">{{값}}</div>
+        <div>{{비고}}</div>
+      </div>
+    </div>
+
+    <div class="src"><strong>출처</strong> · {{출처 기재}}</div>
+
+    <!-- 노트 박스 (기본 / .warn / .accent) -->
+    <div class="note warn">
+      <div class="tag">{{라벨}}</div>
+      <div class="body">{{본문}} <strong>{{강조}}</strong>.</div>
+    </div>
+
+    <!-- 숫자 카드 (3개) -->
+    <div class="stats">
+      <div class="stat">
+        <div class="k">{{지표명}}</div>
+        <div class="v">{{수치}}<span class="unit">{{단위}}</span></div>
+        <div class="sub">{{설명}}</div>
+      </div>
+    </div>
+
+    <!-- 개념 카드 (3개 격자) -->
+    <div class="concepts">
+      <div class="concept">
+        <span class="n">01</span>
+        <div class="t">{{제목}}<span class="sub">{{SUB LABEL}}</span></div>
+        <p style="margin:0;font-size:13.5px">{{본문}}</p>
+      </div>
+    </div>
+
+    <!-- 흐름도 -->
+    <div class="flow">
+<strong>{{시작}}</strong>
+  <span class="arr">→</span> {{단계 1}}
+  <span class="arr">→</span> {{단계 2}}
+  <span class="arr">→</span> <strong>{{결과}}</strong>
+    </div>
+
+    <!-- 트리 다이어그램 -->
+    <div class="tree">
+<strong>{{루트}}</strong> <span class="l">→ 설명</span>
+    │
+    ├── <strong>{{자식 A}}</strong> <span class="l">→ 설명</span>
+    └── <strong>{{자식 B}}</strong> <span class="l">→ 설명</span>
+    </div>
+
+    <!-- 코드 블록 -->
+<pre class="code">{{코드 또는 계산식}}
+
+<span class="h"># 예시</span>
+결과 = 입력 × 계수 = <span class="c">결과값</span></pre>
+
+    <!-- 로드맵 -->
+    <div class="roadmap">
+      <div class="road-row">
+        <div class="v">{{단계}}</div>
+        <div class="d"><strong>{{제목}}</strong>{{설명}}</div>
+      </div>
+    </div>
+
+    <footer class="end">
+      <span>{{DOC_ID}} · {{VERSION}}</span>
+      <span>END OF DOCUMENT</span>
+    </footer>
+
+  </article>
+
+  <!-- 4. RIGHT TOC -->
+  <aside class="toc" id="toc">
+    <h5>이 문서 안에서</h5>
+    <ul>
+      <li><a href="#ch0">서론</a></li>
+      <li><a href="#chA">{{챕터 제목}}</a></li>
+      <li class="sub"><a href="#chA-1">{{소제목}}</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<script>
+  (function(){
+    const navLinks = document.querySelectorAll('#nav a[href^="#"], #toc a[href^="#"]');
+    const sections = [...document.querySelectorAll('article h2[id], article h3[id]')];
+    function setActive(){
+      const y = window.scrollY + 100;
+      let current = sections[0];
+      for(const s of sections){ if(s.offsetTop <= y) current = s; }
+      if(!current) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current.id));
+    }
+    window.addEventListener('scroll', setActive, {passive:true});
+    setActive();
+  })();
+</script>
+
+</body>
+</html>

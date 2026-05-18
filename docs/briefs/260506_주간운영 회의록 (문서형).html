@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>260506 주간운영 회의록 (문서형)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+/* ─────────────────────────────────────────────────────────
+   DOC STYLE · "문서형" 에디토리얼 레이아웃 / 가이드라인 / 레퍼런스
+   Editorial layout: left nav · article · right TOC
+   Fonts: Newsreader (serif) + Pretendard (sans) + JetBrains Mono
+   ───────────────────────────────────────────────────────── */
+
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#fbfbfa;
+  --surface-3:#f4f4f2;
+  --ink:#1a1a1a;
+  --ink-2:#3a3a38;
+  --muted:#75756f;
+  --muted-2:#a8a8a2;
+  --line:#ebebe6;
+  --line-2:#f2f2ee;
+  --accent:#3b3b6e;
+  --accent-soft:#f2f2fb;
+  --highlight:#fff7c2;
+  --warn:#8a3a00;
+  --warn-soft:#fff3e6;
+  --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;
+}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+.topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+.topbar .sep{color:var(--muted-2)}
+.topbar .doc-name{color:var(--muted);font-size:13px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+.topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+
+/* ── 3-COL LAYOUT ────────────────────────────────────── */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+
+/* ── LEFT NAV ────────────────────────────────────────── */
+aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+aside.side h4:first-child{margin-top:0}
+aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+aside.side li a{display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);border-left:1px solid transparent;transition:color .12s,border-color .12s;line-height:1.45}
+aside.side li a:hover{color:var(--ink);text-decoration:none}
+aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+
+/* ── ARTICLE ─────────────────────────────────────────── */
+article{min-width:0;max-width:720px;margin:0 auto}
+article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+article h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;color:var(--ink)}
+article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+article .byline .k{color:var(--muted-2);margin-right:4px}
+
+article h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;display:flex;align-items:baseline;gap:12px;position:relative}
+article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+
+article h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px}
+article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+
+article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+article p strong{color:var(--ink);font-weight:600}
+article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+
+article code,code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+pre.code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:14px 18px;color:var(--ink-2);line-height:1.65;overflow-x:auto;max-width:640px;margin:18px 0}
+pre.code .c{color:var(--accent);font-weight:500}
+pre.code .h{color:var(--muted);font-style:italic}
+
+article ul,article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+article ul li,article ol li{margin:6px 0;line-height:1.75}
+article ul li::marker{color:var(--muted-2)}
+article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+/* ── COMPONENTS ──────────────────────────────────────── */
+.pullquote{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;max-width:640px}
+.pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+.pullquote cite::before{content:"— "}
+
+.note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+.note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+.note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+.note .body strong{color:var(--ink)}
+.note.warn{border-top-color:var(--warn)}
+.note.warn .tag{color:var(--warn)}
+.note.accent{border-top-color:var(--accent)}
+.note.accent .tag{color:var(--accent)}
+
+dl.def{margin:0 0 24px;max-width:680px}
+dl.def > div{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+dl.def > div:first-child{border-top:1px solid var(--ink)}
+dl.def > div:last-child{border-bottom:1px solid var(--line)}
+dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+
+.formula{max-width:640px;margin:24px 0;padding:18px 22px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:13.5px;color:var(--ink);line-height:1.7;position:relative}
+.formula::before{content:"FORMULA";position:absolute;top:-10px;left:14px;background:#fff;padding:2px 8px;font-size:9.5px;letter-spacing:0.12em;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.formula .c{color:var(--accent);font-weight:500}
+.formula .em{background:var(--highlight);padding:0 4px;border-radius:2px}
+
+.tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:680px;font-size:13.5px}
+.tbl .r{display:grid;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.tbl .r:last-child{border-bottom:0}
+.tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;padding-bottom:8px}
+.tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+.tbl.c3 .r{grid-template-columns:140px 160px 1fr;gap:18px}
+.tbl.c3-wide .r{grid-template-columns:170px 1fr 1fr;gap:18px}
+.tbl.c3-num .r{grid-template-columns:1.4fr 80px 80px;gap:16px}
+.tbl.c4 .r{grid-template-columns:140px 140px 1fr 130px;gap:14px}
+.tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.tbl strong{color:var(--ink);font-weight:600}
+.tbl .num{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--ink-2)}
+.tbl .total{font-family:var(--mono);font-weight:600;color:var(--ink);border-top:1px solid var(--ink);padding-top:11px}
+
+.tag-pill{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:#fff;letter-spacing:0.03em}
+.tag-pill.solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-pill.warn{background:var(--warn-soft);color:var(--warn);border-color:#e8c8a8}
+.tag-pill.accent{background:var(--accent-soft);color:var(--accent);border-color:#d8d8ee}
+
+.concepts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:24px 0;max-width:720px}
+.concept{border:1px solid var(--line);border-radius:4px;padding:18px;background:var(--surface-2);position:relative;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.concept .n{position:absolute;top:14px;right:18px;font-family:var(--serif);font-size:36px;font-weight:600;color:var(--ink);opacity:0.1;line-height:1}
+.concept .t{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);line-height:1.3;padding-right:28px}
+.concept .t .sub{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+
+.roadmap{margin:24px 0;max-width:720px;display:grid;gap:8px}
+.road-row{display:grid;grid-template-columns:100px 1fr;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.road-row .v{background:var(--ink);color:#fff;padding:14px 16px;font-family:var(--mono);font-size:11.5px;letter-spacing:0.05em;font-weight:500;display:flex;align-items:center}
+.road-row .d{padding:14px 18px;font-size:14px;color:var(--ink-2);line-height:1.6}
+.road-row .d strong{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+
+.src{max-width:640px;margin-top:6px;padding:10px 14px;border:1px dashed var(--muted-2);border-radius:3px;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--surface-2)}
+.src strong{color:var(--ink-2)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px;margin:24px 0}
+.stat{border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:var(--surface-2)}
+.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat .v{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+.stat .v .unit{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px;font-family:var(--mono)}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+.flow{max-width:640px;margin:20px 0;padding:18px 22px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+.flow .arr{color:var(--accent);font-weight:500}
+.flow strong{color:var(--ink);font-weight:600}
+
+.tree{max-width:640px;margin:20px 0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:18px 22px}
+.tree strong{color:var(--ink);font-weight:600}
+.tree .l{color:var(--muted-2)}
+
+/* ── RIGHT TOC ────────────────────────────────────────── */
+aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+aside.toc ul{list-style:none;padding:0;margin:0}
+aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+aside.toc li a:hover{color:var(--ink);text-decoration:none}
+aside.toc li a.active{color:var(--ink)}
+aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+
+.dropcap::first-letter{font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;float:left;padding:6px 10px 0 0;color:var(--ink)}
+
+footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+@media print{
+  .topbar,aside.side,aside.toc{display:none}
+  .layout{display:block;padding:0}
+  article{max-width:100%}
+  article h2{break-after:avoid}
+  .formula,.concept,.road-row,.tbl,.stat,.flow,.tree,pre.code{break-inside:avoid}
+}
+@media (max-width:1040px){
+  .layout{grid-template-columns:220px minmax(0,1fr)}
+  aside.toc{display:none}
+}
+@media (max-width:720px){
+  .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+  aside.side{position:static;height:auto}
+  .topbar{padding:12px 20px}
+  article h1{font-size:34px}
+  article h2{font-size:24px;margin-top:48px}
+  .topbar .doc-name{display:none}
+  .concepts,.stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="mark">
+    <div class="dot">SC</div>
+    신시어리 SCM
+  </div>
+  <span class="sep">/</span>
+  <span class="doc-name">260506 주간운영 회의록</span>
+  <div class="right">
+    <span>MN-260506</span>
+    <span class="ver">v1.0 · 26.05.06</span>
+  </div>
+</div>
+
+<!-- 3-COLUMN LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT NAV -->
+  <aside class="side">
+    <h4>챕터</h4>
+    <ul>
+      <li><a href="#ch0">I. 개요 &amp; KPI</a></li>
+      <li><a href="#chA">II. 안건별 의사결정</a></li>
+      <li><a href="#chB">III. 이슈 &amp; 리스크</a></li>
+      <li><a href="#chC">IV. 실행 계획</a></li>
+      <li><a href="#chD">V. 보류 &amp; 차기 회의</a></li>
+      <li><a href="#chE">VI. PMP 요약</a></li>
+    </ul>
+  </aside>
+
+  <!-- ARTICLE -->
+  <article>
+
+    <div class="eyebrow">MEETING NOTES · WEEKLY OPERATIONS · 2026-05-06</div>
+    <h1>260506 물류파트 주간 운영 회의록</h1>
+    <p class="lede">재고관리 이슈 71건 정형화와 fly.io 문서 서버 전환 완료를 보고하고 후속 조치 체계를 확정한 주간 운영 회의 기록이다.</p>
+    <div class="byline">
+      <span><span class="k">회의일자</span>2026-05-06 (수)</span>
+      <span><span class="k">회의유형</span>주간 운영 회의</span>
+      <span><span class="k">참석자</span>윤지수</span>
+      <span><span class="k">작성자</span>윤지수 · meeting-analysis SK-08</span>
+    </div>
+
+    <!-- ─── CHAPTER I ─── -->
+    <h2 id="ch0"><span class="nm">I</span>개요 &amp; KPI</h2>
+
+    <p class="dropcap">2026년 1월부터 5월 5일까지 Slack <code class="inl">#scm_팀_재고관리</code> 채널에 누적된 재고관리 이슈 <strong>71건</strong>을 정형화하고 유형별 분류를 완료했다. 동시에 Documint 의존형 문서 출력 방식을 fly.io 서버 기반 HTTP GET 방식으로 전환하여 9종 출력 문서의 클라우드 마이그레이션을 완료했다.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">재고관리 이슈 누적</div>
+        <div class="v">71<span class="unit">건</span></div>
+        <div class="sub">2026년 1~5월 5일 기준 · 6개 유형 분류</div>
+      </div>
+      <div class="stat">
+        <div class="k">fly.io 전환 완료율</div>
+        <div class="v">100<span class="unit">%</span></div>
+        <div class="sub">9종 출력 문서 전환 · Documint 의존 제거</div>
+      </div>
+      <div class="stat">
+        <div class="k">Critical 후속 과제</div>
+        <div class="v">2<span class="unit">건</span></div>
+        <div class="sub">입고자재 공란 · 재고생산 오류 — 05-13·05-20 마감</div>
+      </div>
+    </div>
+
+    <h3 id="kpi-table">이슈 유형별 현황</h3>
+
+    <div class="tbl c4">
+      <div class="r h">
+        <div>이슈 유형</div>
+        <div>건수</div>
+        <div>비율</div>
+        <div>비고</div>
+      </div>
+      <div class="r">
+        <div><strong>입고자재 공란 / 위치 상이</strong></div>
+        <div class="mono">21건</div>
+        <div class="mono">30%</div>
+        <div>최다 — 입고 단계 입력 오류</div>
+      </div>
+      <div class="r">
+        <div>기타</div>
+        <div class="mono">14건</div>
+        <div class="mono">20%</div>
+        <div>유형 분류 추가 필요</div>
+      </div>
+      <div class="r">
+        <div>재고생산 오류<br><span style="font-size:11.5px;color:var(--muted)">Material 번호·입고자재 누락</span></div>
+        <div class="mono">13건</div>
+        <div class="mono">18%</div>
+        <div>2월 이후 반복 패턴</div>
+      </div>
+      <div class="r">
+        <div>TO 수량 미반영</div>
+        <div class="mono">12건</div>
+        <div class="mono">17%</div>
+        <div>TO 클로징 후 처리 누락</div>
+      </div>
+      <div class="r">
+        <div>임가공 차감 오류</div>
+        <div class="mono">6건</div>
+        <div class="mono">8%</div>
+        <div>가용재고 분리 관리 미비</div>
+      </div>
+      <div class="r">
+        <div>기타 소계</div>
+        <div class="mono">5건</div>
+        <div class="mono">7%</div>
+        <div>—</div>
+      </div>
+    </div>
+    <div class="src"><strong>출처</strong> · Slack #scm_팀_재고관리 채널 · 2026년 1~5월 5일 기준 집계</div>
+
+    <p>월별 추이를 보면 <strong>3월 피크 19건</strong>에서 4월 17건으로 고착되는 양상이 확인된다. 분기말 정산의 영향으로 추정되며, 단순 취합 체계만으로는 반복 억제가 어렵다는 구조적 개선 필요성이 드러났다.</p>
+
+    <!-- ─── CHAPTER II ─── -->
+    <h2 id="chA"><span class="nm">II</span>안건별 의사결정</h2>
+
+    <div class="note accent">
+      <div class="tag">안건 1 · 재고관리 이슈 정형화</div>
+      <div class="body">
+        <strong>배경.</strong> Slack <code class="inl">#scm_팀_재고관리</code> 채널에 이슈가 비정형으로 누적되어 패턴 분석 및 근본 원인 파악이 불가한 상태. 71건 중 입고자재 공란(30%) · 재고생산 오류(18%) · TO 수량 미반영(17%)이 전체 65%를 차지하며 반복 발생 중이다.<br><br>
+        <strong>결정.</strong> 월별 취합 보고 체계를 유지한다. Slack 채널 집계 결과를 정형 리포트로 변환하는 방식으로 운영한다. 구매발주팀 ↔ 물류팀 이슈 전달 RACI 및 SLA 정립은 <strong>5월 27일 재논의</strong>로 보류.<br><br>
+        <strong>근거.</strong> 현 취합 방식은 리소스 대비 즉시 실행이 가능하며, 정형 리포트를 통해 반복 이슈 패턴을 가시화하여 근본 원인 조치 우선순위 결정 근거로 활용한다.
+      </div>
+    </div>
+
+    <h4>현행 이슈 전달 흐름 (Slack 의존)</h4>
+    <div class="flow">
+<strong>구매발주팀</strong>
+  <span class="arr">→</span> Slack #scm_팀_재고관리 (비정형 메시지)
+  <span class="arr">→</span> 물류팀 (윤지수): 확인 · 분류 · 취합 (수작업)
+  <span class="arr">→</span> Slack 처리 결과 공유 (비정형 회신)
+  <span class="arr">→</span> <strong>구매발주팀</strong> 결과 인지 (알림 의존)
+<br>
+SLA 없음 — 전달 누락 · 지연 · 추적 불가 위험 존재
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 2 · fly.io HTTP GET 엔드포인트 전환 완료</div>
+      <div class="body">
+        <strong>배경.</strong> 기존 로컬 Documint 방식은 담당자 PC 의존성 · 런타임 지연 · 유지보수 부담이 존재했다. 9종 출력 문서의 서버 이전이 필요하다는 인식하에 전환을 추진했다.<br><br>
+        <strong>전환 범위.</strong> TMS 출하확인서 / 외주임가공 Barcode 3종 (피킹리스트 · 라벨지 · 출하확인서) / 임가공 3종 (패킹리스트 · 라벨지 · 쉬핑마크) / 입하팀 2종 (고객물품 라벨지 · 입하물품 라벨지)<br><br>
+        <strong>결정.</strong> fly.io 단일 인프라로 확정, Documint 의존을 완전 제거한다. <strong>SLA 모니터링 구축은 후속 필수 과제</strong>로 설정한다.<br><br>
+        <strong>근거.</strong> HTTP 요청 1회로 PDF 생성 · 런타임 단축. 로컬 의존성 제거로 운영 안정성을 향상시킨다. 단, SLA 모니터링 미구축 상태이므로 가용성 지표 설정이 필수적이다.
+      </div>
+    </div>
+
+    <!-- ─── CHAPTER III ─── -->
+    <h2 id="chB"><span class="nm">III</span>이슈 &amp; 리스크</h2>
+
+    <div class="tbl c4">
+      <div class="r h">
+        <div>이슈 · 리스크</div>
+        <div>영향도</div>
+        <div>담당</div>
+        <div>조치 계획</div>
+      </div>
+      <div class="r">
+        <div><strong>입고자재 공란 21건 반복</strong><br>입고 단계 필수값 미검증 구조</div>
+        <div><span class="tag-pill solid">High</span></div>
+        <div>윤지수</div>
+        <div>필수 필드 검증 적용<br><span class="mono">05-13까지</span></div>
+      </div>
+      <div class="r">
+        <div><strong>재고생산 오류 13건</strong><br>입고자재 · MM 번호 누락 반복 (2월~)</div>
+        <div><span class="tag-pill solid">High</span></div>
+        <div>윤지수 + 구매발주</div>
+        <div>납품 전 체크리스트 신설<br><span class="mono">05-20까지</span></div>
+      </div>
+      <div class="r">
+        <div><strong>fly.io 단일 SPOF</strong><br>서버 장애 시 전 문서 출력 불가</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>윤지수</div>
+        <div>Backup 출력 경로 설계 (중기)</div>
+      </div>
+      <div class="r">
+        <div><strong>이슈 전달 Slack 의존</strong><br>구매발주 ↔ 물류팀 SLA 없음</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>정승윤</div>
+        <div>정형 티켓 체계 전환<br><span class="mono">05-27까지</span></div>
+      </div>
+    </div>
+
+    <!-- ─── CHAPTER IV ─── -->
+    <h2 id="chC"><span class="nm">IV</span>실행 계획</h2>
+
+    <h3 id="backward">이전 Action Items 진행 현황</h3>
+
+    <div class="tbl c4">
+      <div class="r h">
+        <div>업무</div>
+        <div>담당</div>
+        <div>기한</div>
+        <div>진행현황</div>
+      </div>
+      <div class="r">
+        <div>재고관리 이슈 취합 — 26년 1~5월 71건 정형화</div>
+        <div>물류팀</div>
+        <div class="mono">05-05</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+      <div class="r">
+        <div>TMS 출하확인서 fly.io GET 전환</div>
+        <div>윤지수</div>
+        <div class="mono">05-06</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+      <div class="r">
+        <div>외주임가공 Barcode 3종 fly.io GET 전환</div>
+        <div>윤지수</div>
+        <div class="mono">05-06</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+      <div class="r">
+        <div>임가공 3종 fly.io GET 전환</div>
+        <div>윤지수</div>
+        <div class="mono">05-06</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+      <div class="r">
+        <div>입하팀 2종 fly.io GET 전환</div>
+        <div>윤지수</div>
+        <div class="mono">05-06</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+      <div class="r">
+        <div>입고자재 공란 방지 — 필수값 검증 방안 검토</div>
+        <div>물류팀</div>
+        <div class="mono">미정</div>
+        <div><span class="tag-pill">예정</span></div>
+      </div>
+      <div class="r">
+        <div>TO 처리 후 입/출고 누락 방지 프로세스 확인</div>
+        <div>물류팀</div>
+        <div class="mono">미정</div>
+        <div><span class="tag-pill">예정</span></div>
+      </div>
+    </div>
+
+    <h3 id="forward">신규 Action Items</h3>
+
+    <div class="roadmap">
+      <div class="road-row">
+        <div class="v">Critical</div>
+        <div class="d">
+          <strong>입고자재 공란 21건 — 입고 단계 필수 필드 검증 적용</strong>
+          윤지수 · 기한 <span style="font-family:var(--mono);font-size:12px">05-13</span> · SK-01
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Critical</div>
+        <div class="d">
+          <strong>재고생산 오류 13건 — MM 번호 · 입고자재 누락 체크리스트 수립</strong>
+          윤지수 + 구매발주 · 기한 <span style="font-family:var(--mono);font-size:12px">05-20</span> · SK-02
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">High</div>
+        <div class="d">
+          <strong>TO 수량 미반영 12건 — TO 클로징 후 입/출고 처리 누락 진단</strong>
+          윤지수 · 기한 <span style="font-family:var(--mono);font-size:12px">05-13</span> · SK-03
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">High</div>
+        <div class="d">
+          <strong>fly.io 9종 SLA 모니터링 구축 (응답 P95 &lt; 2s)</strong>
+          윤지수 · 기한 <span style="font-family:var(--mono);font-size:12px">05-20</span> · SK-04
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Medium</div>
+        <div class="d">
+          <strong>구매발주 ↔ 물류팀 이슈 전달 체계 정형화 (Slack 의존 탈피)</strong>
+          정승윤 · 기한 <span style="font-family:var(--mono);font-size:12px">05-27</span> · D3 <span class="tag-pill warn">Medium</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Medium</div>
+        <div class="d">
+          <strong>임가공 차감 이슈 6건 — 가용재고 별도 관리 방안 검토</strong>
+          윤지수 + 구매발주 · 기한 <span style="font-family:var(--mono);font-size:12px">06-03</span> · SK-01 <span class="tag-pill warn">Medium</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Low</div>
+        <div class="d">
+          <strong>fly.io 엔드포인트 현장 사용자 URL 공유 및 안내</strong>
+          윤지수 · 기한 <span style="font-family:var(--mono);font-size:12px">05-09</span> <span class="tag-pill accent">Low</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CHAPTER V ─── -->
+    <h2 id="chD"><span class="nm">V</span>보류 &amp; 차기 회의</h2>
+
+    <div class="note warn">
+      <div class="tag">PENDING · 보류 항목</div>
+      <div class="body">
+        <strong>구매발주 ↔ 물류팀 RACI 매트릭스 정립.</strong> 팀 간 협의 일정 미조율로 보류. 재논의 예정일: <span style="font-family:var(--mono);font-size:13px">2026-05-27</span><br><br>
+        <strong>아카이브 자재 Lifecycle 표준화 (자재 상태코드).</strong> 구매발주팀 검토 필요. 재논의 예정일: <span style="font-family:var(--mono);font-size:13px">2026-06-03</span>
+      </div>
+    </div>
+
+    <div class="note">
+      <div class="tag">NEXT MEETING · 차기 회의</div>
+      <div class="body">
+        <strong>일정:</strong> 2026-05-13 (수)<br><br>
+        <strong>예정 안건:</strong><br>
+        1. 입고자재 공란 방지 필수값 검증 적용 결과 공유<br>
+        2. 재고생산 오류 체크리스트 초안 검토<br>
+        3. fly.io SLA 모니터링 구축 현황<br>
+        4. 구매발주 ↔ 물류팀 이슈 전달 체계 정형화 방안 논의
+      </div>
+    </div>
+
+    <!-- ─── CHAPTER VI ─── -->
+    <h2 id="chE"><span class="nm">VI</span>PMP 요약</h2>
+
+    <p>이번 회의를 PMP 4대 관리 영역 관점에서 정리한다. 물류팀 업무 범위에 재고 이슈 정형화 운영이 공식 추가되었으며 복수의 Critical 일정이 확정되었다.</p>
+
+    <div class="concepts" style="grid-template-columns:1fr 1fr;">
+      <div class="concept">
+        <span class="n">01</span>
+        <div class="t">Scope<span class="sub">범위 관리</span></div>
+        <p style="margin:0;font-size:13.5px">물류팀 업무 범위에 재고 이슈 정형화 · 보고 체계 운영이 공식 추가됨. fly.io 인프라 유지관리(SLA 모니터링) 업무 신설. Documint 의존 제거 완료.</p>
+      </div>
+      <div class="concept">
+        <span class="n">02</span>
+        <div class="t">Schedule<span class="sub">일정 관리</span></div>
+        <p style="margin:0;font-size:13.5px">Critical 과제 2건 05-13 · 05-20 마감. SLA 구축 05-20. RACI 정립 05-27. 임가공 차감 검토 06-03. 모든 마감일 단기 집중.</p>
+      </div>
+      <div class="concept">
+        <span class="n">03</span>
+        <div class="t">Risk<span class="sub">리스크 관리</span></div>
+        <p style="margin:0;font-size:13.5px">입고자재 공란(<span class="tag-pill solid" style="font-size:10px">High</span>) · 재고생산 오류(<span class="tag-pill solid" style="font-size:10px">High</span>)가 3~4월 반복 패턴 — 미조치 시 분기말 재연 가능. fly.io SPOF(<span class="tag-pill warn" style="font-size:10px">Medium</span>)는 중기 대응 필요.</p>
+      </div>
+      <div class="concept">
+        <span class="n">04</span>
+        <div class="t">Financial<span class="sub">재무 영향</span></div>
+        <p style="margin:0;font-size:13.5px">재고생산 오류 · TO 수량 미반영은 재제작 · 폐기 손실 직결 가능성 있음. 입고자재 공란 방치 시 재고 장부 불일치 → K-IFRS 기말 재고자산 과대/과소 계상 리스크.</p>
+      </div>
+    </div>
+
+    <footer class="end">
+      <span>MN-260506 · 주간 운영 회의록</span>
+      <span>작성일 2026-05-06 · meeting-analysis SK-08 (PMP Standard)</span>
+    </footer>
+
+  </article>
+
+  <!-- RIGHT TOC -->
+  <aside class="toc">
+    <h5>이 문서 안에서</h5>
+    <ul>
+      <li><a href="#ch0">I. 개요 &amp; KPI</a></li>
+      <li class="sub"><a href="#kpi-table">이슈 유형 현황</a></li>
+      <li><a href="#chA">II. 안건별 의사결정</a></li>
+      <li><a href="#chB">III. 이슈 &amp; 리스크</a></li>
+      <li><a href="#chC">IV. 실행 계획</a></li>
+      <li class="sub"><a href="#backward">이전 Action Items</a></li>
+      <li class="sub"><a href="#forward">신규 Action Items</a></li>
+      <li><a href="#chD">V. 보류 &amp; 차기 회의</a></li>
+      <li><a href="#chE">VI. PMP 요약</a></li>
+    </ul>
+  </aside>
+
+</div><!-- /.layout -->
+
+<script>
+(function(){
+  const headings = document.querySelectorAll('article h2, article h3');
+  const navLinks = document.querySelectorAll('aside.side a, aside.toc a');
+  const mark = (id) => {
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+    });
+  };
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) mark(e.target.id); });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+  headings.forEach(h => { if (h.id) io.observe(h); });
+})();
+</script>
+
+</body>
+</html>
