@@ -15,11 +15,16 @@ Hindsight vs OMEGA — 한국어 SCM 도메인 30분 PoC 스크립트
   - 옵션 2) Ollama 로컬 모델 (`ollama pull nomic-embed-text`) — API 키 없이 완전 무료
 
 사용법:
-  # 환경 준비
+  ## macOS / Linux (bash)
   python3 -m venv .venv && source .venv/bin/activate
   pip install hindsight-all omega-memory[server]
 
-  # 양쪽 PoC 실행
+  ## Windows PowerShell
+  python -m venv .venv
+  .venv\Scripts\Activate.ps1
+  pip install hindsight-all omega-memory[server]
+
+  # 양쪽 PoC 동시 실행
   python scripts/poc_memory_systems.py
 
   # Hindsight만
@@ -28,7 +33,7 @@ Hindsight vs OMEGA — 한국어 SCM 도메인 30분 PoC 스크립트
   # OMEGA만
   python scripts/poc_memory_systems.py --only omega
 
-  # 결과 JSON으로
+  # 결과 JSON으로 저장
   python scripts/poc_memory_systems.py --json results.json
 
 결과 해석 (Memory-Systems-Comparison §9.4 Go/No-Go 조건):
