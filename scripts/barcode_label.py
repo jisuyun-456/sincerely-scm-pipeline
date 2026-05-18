@@ -45,8 +45,8 @@ HEADERS  = {"Authorization": f"Bearer {PAT}"}
 
 ATTACH_FIELD_ID = "fldne6JVm3tLy0hJK"   # 라벨지_python on TBL_DC
 
-LABEL_W  = 150 * mm
-LABEL_H  = 100 * mm
+LABEL_W  = 100 * mm   # 실제 인쇄 출력 크기 (10cm)
+LABEL_H  = 75 * mm    # 실제 인쇄 출력 크기 (7.5cm)
 
 if platform.system() == "Windows":
     FONT_REG = r"C:\Windows\Fonts\malgun.ttf"
@@ -280,53 +280,53 @@ def make_barcode_buf(value: str) -> BytesIO:
 def draw_label(c: rl_canvas.Canvas, x: float, y: float,
                rec: dict, box_num: int, font: str, font_bold: str):
     W, H  = LABEL_W, LABEL_H
-    PAD   = 4 * mm
+    PAD   = 3 * mm
     DARK  = colors.HexColor("#2E4057")
     GRAY  = colors.HexColor("#F0F4F8")
     LGRAY = colors.HexColor("#CCCCCC")
 
     # 테두리
     c.setStrokeColor(colors.HexColor("#333333"))
-    c.setLineWidth(0.8)
+    c.setLineWidth(0.6)
     c.rect(x, y, W, H)
 
     # ── 헤더 띠 ─────────────────────────────────────────────────────────────
-    HDR_H = 12 * mm
+    HDR_H = 9 * mm
     c.setFillColor(DARK)
     c.rect(x, y + H - HDR_H, W, HDR_H, fill=1, stroke=0)
     c.setFillColor(colors.white)
-    c.setFont(font_bold, 11)
-    c.drawString(x + PAD, y + H - HDR_H + 4*mm, "에이원지식산업센터  →  다영기획")
+    c.setFont(font_bold, 9)
+    c.drawString(x + PAD, y + H - HDR_H + 3*mm, "에이원지식산업센터  →  다영기획")
     dt = rec["move_date"] or date.today().strftime("%Y-%m-%d")
-    c.setFont(font, 9)
-    c.drawRightString(x + W - PAD, y + H - HDR_H + 4*mm, dt)
+    c.setFont(font, 7)
+    c.drawRightString(x + W - PAD, y + H - HDR_H + 3*mm, dt)
 
     # ── 프로젝트명 ─────────────────────────────────────────────────────────
     proj = (rec["project"] or "-")[:40]
     c.setFillColor(DARK)
-    c.setFont(font_bold, 13)
-    c.drawString(x + PAD, y + H - HDR_H - 8*mm, proj)
+    c.setFont(font_bold, 10)
+    c.drawString(x + PAD, y + H - HDR_H - 6*mm, proj)
 
     # 구분선
     c.setStrokeColor(LGRAY)
-    c.setLineWidth(0.5)
-    c.line(x + PAD, y + H - HDR_H - 10.5*mm,
-           x + W - PAD, y + H - HDR_H - 10.5*mm)
+    c.setLineWidth(0.4)
+    c.line(x + PAD, y + H - HDR_H - 8*mm,
+           x + W - PAD, y + H - HDR_H - 8*mm)
 
     # ── 품목 목록 (전체 표시, 수량에 따라 폰트·행간 자동 축소) ──────────────
     c.setFillColor(colors.black)
     products = rec["products"]
     is_mixed = len(products) > 1
 
-    ITEM_TOP = y + H - HDR_H - 17 * mm   # 품목 영역 상단
-    ITEM_BOT = y + 27 * mm + 15 * mm + 3 * mm   # MID 섹션 바로 위
-    AVAIL_H  = ITEM_TOP - ITEM_BOT        # ≈ 26mm
+    ITEM_TOP = y + H - HDR_H - 13 * mm   # 품목 영역 상단
+    ITEM_BOT = y + 15 * mm + 11 * mm + 2 * mm   # MID 섹션 바로 위
+    AVAIL_H  = ITEM_TOP - ITEM_BOT        # ≈ 20mm
 
     n = max(len(products), 1)
     ideal_lh = AVAIL_H / n
-    LINE_H   = max(3.5 * mm, min(6.5 * mm, ideal_lh))
-    item_fs  = max(7, int(LINE_H / mm * 1.85))   # 6.5mm→12pt, 3.5mm→6.5pt→7pt
-    qty_fs   = max(6, item_fs - 2)
+    LINE_H   = max(3.0 * mm, min(5.0 * mm, ideal_lh))
+    item_fs  = max(6, int(LINE_H / mm * 1.8))   # 5mm→9pt, 3mm→5.4pt→6pt
+    qty_fs   = max(5, item_fs - 2)
 
     start_y = ITEM_TOP
     for i, item in enumerate(products):
@@ -360,32 +360,32 @@ def draw_label(c: rl_canvas.Canvas, x: float, y: float,
             c.drawRightString(x + W - PAD, start_y - i * LINE_H, qty_label)
 
     # ── 수량 / 박스 (2단) ──────────────────────────────────────────────────
-    MID_H = 15 * mm
-    MID_Y = y + 27 * mm
+    MID_H = 11 * mm
+    MID_Y = y + 15 * mm
     c.setFillColor(GRAY)
     c.rect(x, MID_Y, W/2, MID_H, fill=1, stroke=0)
     c.rect(x + W/2, MID_Y, W/2, MID_H, fill=1, stroke=0)
 
     c.setFillColor(colors.HexColor("#666666"))
-    c.setFont(font, 9)
+    c.setFont(font, 7)
     qty_label_hdr = "합계 수량" if len(rec["products"]) > 1 else "수   량"
-    c.drawString(x + PAD,       MID_Y + MID_H - 4*mm, qty_label_hdr)
-    c.drawString(x + W/2 + PAD, MID_Y + MID_H - 4*mm, "박   스")
+    c.drawString(x + PAD,       MID_Y + MID_H - 3.5*mm, qty_label_hdr)
+    c.drawString(x + W/2 + PAD, MID_Y + MID_H - 3.5*mm, "박   스")
 
     c.setFillColor(DARK)
-    c.setFont(font_bold, 16)
+    c.setFont(font_bold, 12)
     qty_str = f"{rec['qty']:,}개" if rec["qty"] else "-"
     box_str = f"{box_num} / {rec['box_count']}"
-    c.drawString(x + PAD,       MID_Y + 2.5*mm, qty_str)
-    c.drawString(x + W/2 + PAD, MID_Y + 2.5*mm, box_str)
+    c.drawString(x + PAD,       MID_Y + 2*mm, qty_str)
+    c.drawString(x + W/2 + PAD, MID_Y + 2*mm, box_str)
 
     c.setStrokeColor(colors.HexColor("#AAAAAA"))
     c.setLineWidth(0.4)
     c.line(x + W/2, MID_Y, x + W/2, MID_Y + MID_H)
 
     # ── 바코드 ─────────────────────────────────────────────────────────────
-    BAR_H = 23 * mm
-    BAR_Y = y + 2 * mm
+    BAR_H = 13 * mm
+    BAR_Y = y + 1 * mm
     try:
         buf = make_barcode_buf(rec["bc_num"])
         img = Image.open(buf)
