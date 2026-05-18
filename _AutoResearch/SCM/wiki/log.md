@@ -695,7 +695,7 @@ oh-my-claudecode 비교 11 events. 우리 7 events. 나머지 4-5는 YAGNI.
 
 ### 산출물
 - [TMS-2026-W20.md](../outputs/TMS-2026-W20.md)
-- [TMS-2026-W21-Iter7.md](C:\Users\yjisu\Documents\ClaudeVault\SCM\_AutoResearch\outputs\TMS-2026-W21-Iter7.md)
+- [TMS-2026-W20-Iter7.md](C:\Users\yjisu\Documents\ClaudeVault\SCM\_AutoResearch\outputs\TMS-2026-W20-Iter7.md)
 
 ### 다음 주 포커스
 - 내부 소화율 개선 (고고엑스 2건 즉시 흡수 → 68.4% 달성)
