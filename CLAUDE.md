@@ -9,9 +9,10 @@
 
 ## 세션/Task 종료 시 (누락 금지)
 1. **Obsidian log.md 저장** — `obsidian-routing` 스킬 호출 → `ClaudeVault/SCM/_AutoResearch/wiki/log.md`에 `## [YYYY-MM-DD] {타입} | {제목}` 추가 (결정·완료·이슈·다음 할 일)
-2. **outputs/ 산출물** — 분석 결과·리포트는 `SCM/_AutoResearch/outputs/`에 저장 + `index.md` 링크 갱신
-3. **git commit 필수**
-4. Stop 훅이 자동으로 git status / 미커밋 경고 표시
+2. **Notion AgentOps 업데이트** — `notion-sync` 에이전트 호출 → 미션 완료·분석 완료·회의록 등 모든 완료 이벤트를 Notion에 sync (단발 태스크도 포함, 누락 시 다음 세션에서 소급 처리)
+3. **outputs/ 산출물** — 분석 결과·리포트는 `SCM/_AutoResearch/outputs/`에 저장 + `index.md` 링크 갱신
+4. **git commit 필수**
+5. Stop 훅이 자동으로 git status / 미커밋 경고 + 동기화 체크리스트 표시
 
 ## 데이터 정합성 원칙 (Immutable Ledger)
 - Airtable: 운영 입력 레이어 — API로만 읽기/쓰기, 직접 UI 수정 금지
