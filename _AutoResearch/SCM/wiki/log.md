@@ -671,3 +671,32 @@ oh-my-claudecode 비교 11 events. 우리 7 events. 나머지 4-5는 YAGNI.
 1. 남은 P1 9건 batch 단발 (~60분)
 2. 실전 검증: 4h `/mission build-pipeline` 1회 — Phase 1 FSM + 신규 훅 end-to-end
 3. SubagentStop active-task tracking 강화 (Phase 3+)
+
+## [2026-05-18] WEEKLY+ITER7 | 2026-W20 (full)
+
+**상태:** 완료
+
+### KPI 스냅샷 (W20 표준 분석)
+- 내부 소화율: **63.2%** (목표 ≥80%) ⚠️ — 70% 하한 미달, D1 검토 필요
+- 고고엑스 비중: 5.3% (2건/30일)
+- OTIF On-Time: 99.9% (목표 ≥90%) ✅
+- 차량이용률 v2 (CBM 적재율): 32.5%
+- 약속납기일 전환율: 100.0%
+- 다음 주 예측: 56건 (피크 월요일)
+
+### Iter6 갭분석
+- 흡수 가능 고고엑스: 2건 → 내부 소화율 63.2% → 68.4% 달성 예상 (+5.2pp)
+
+### Iter7 확장 분석 (6주 W14~W19)
+- 내부 소화율 (6주): 71.9% — Pearson r v1/v2: 0.9426
+- NPV: S1/S2 모두 음의 NPV → 현행 유지 (S3 단가협상 제외 확정)
+- avg MAPE: 32.84% (보정계수 0.3→0.15 재검토 권장)
+- Lane CBM 6주 총계: 270.33m³ → SK-09 인계 완료
+
+### 산출물
+- [TMS-2026-W20.md](../outputs/TMS-2026-W20.md)
+- [TMS-2026-W21-Iter7.md](C:\Users\yjisu\Documents\ClaudeVault\SCM\_AutoResearch\outputs\TMS-2026-W21-Iter7.md)
+
+### 다음 주 포커스
+- 내부 소화율 개선 (고고엑스 2건 즉시 흡수 → 68.4% 달성)
+- Iter8 착수 조건: 외주 건수 모니터링 + D1 NPV 가정 실사
