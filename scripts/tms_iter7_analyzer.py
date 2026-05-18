@@ -350,7 +350,7 @@ def analyze_iter7_internal_rate_3way_roi(data: dict, params: dict | None = None)
         "recommended": (
             "S1 (박종성 추가 운행)" if s1_npv >= s2_npv and s1_npv > 0
             else "S2 (신규 기사)" if s2_npv > 0
-            else "S3 (단가 협상)"
+            else "해당 없음 — 현행 유지 (S1/S2 모두 음의 NPV)"
         ),
     }
 
@@ -492,17 +492,13 @@ def _build_report(
 **해석:** W17 MAPE {r_c['rows'][0]['mape']}% → 단기 예측 합리적. W18/W19 MAPE 상승은 실제 배송량 감소(연휴/계절) 미반영. 보정계수를 0.3→0.15로 낮추거나 연휴 캘린더 보정 로직 추가 권장.
 """)
 
-    # 4. Iter7-A: 3-way NPV
-    s3_table = "\n".join(
-        f"| {s['rebate_pct']}% | {s['monthly_saving_krw']:,}원 | {s['npv_krw']:,}원 |"
-        for s in r_a["s3_gogox_rebate"]
-    )
+    # 4. Iter7-A: 2-way NPV (S3 단가 협상 제외 — 작년 대비 동결)
     sections.append(f"""
 ---
 
-## 4. Iter7-A: 내부 소화율 3-way NPV (12개월)
+## 4. Iter7-A: 내부 소화율 NPV 분석 (12개월)
 
-> 고고엑스 월 건수: {r_a["gogox_monthly_count"]}건 | 단가 가정: {r_a["gogox_cost_assumed_krw"]:,}원/건
+> 고고엑스 월 건수: {r_a["gogox_monthly_count"]}건 | 단가: {r_a["gogox_cost_assumed_krw"]:,}원/건 (작년 동결)
 
 ### 시나리오 1 — 박종성 추가 운행일 (+{r_a["s1_park_extra"]["extra_days"]}일/월)
 
@@ -517,15 +513,11 @@ def _build_report(
 - 월 절감(순): {r_a["s2_new_driver"]["monthly_saving_krw"]:,}원
 - **12개월 NPV: {r_a["s2_new_driver"]["npv_12m_krw"]:,}원**
 
-### 시나리오 3 — 고고엑스 단가 인하 협상
+> ~~시나리오 3 — 고고엑스 단가 인하 협상~~ **제외**: 작년 대비 단가 동결로 협상 여지 없음.
 
-| 인하율 | 월 절감 | 12개월 NPV |
-|--------|--------|-----------|
-{s3_table}
+### 결론: **{r_a["recommended"]}**
 
-### ✅ 권장안: **{r_a["recommended"]}**
-
-> *⚠️ D1 scm-logistics-expert 검토 대기 — NPV 가정값(단가·인건비) 실사 확인 필요*
+> S1/S2 모두 음의 NPV — 현재 외주 건수({r_a["gogox_monthly_count"]}건/월)가 내부화 손익분기점 미달. 외주 건수 증가 시 재검토.
 
 ### NPV 공통 가정
 
@@ -533,7 +525,7 @@ def _build_report(
 |------|-----|------|
 | 할인율 | 6%/년 (0.5%/월) | 중소물류 WACC 추정치 |
 | 분석 기간 | 12개월 | 단기 ROI 기준 |
-| 고고엑스 단가 | 15,000원/건 | 실제 계약 단가 확인 필요 |
+| 고고엑스 단가 | {r_a["gogox_cost_assumed_krw"]:,}원/건 | 작년 동결 확인 |
 | 월 평균 외주 건수 | {r_a["gogox_monthly_count"]}건 | 6주 실적 기반 추정 |
 | S1 박종성 추가일 비용 | 780,000원/월 | 일당 × +7일 가정 |
 | S2 신규 기사 인건비 | 3,800,000원/월 | 최저임금 기준 상한 추정 |
@@ -570,7 +562,7 @@ def _build_report(
 2. **Driver fatigue / 회전율** — 박종성 +7일 시나리오 채택 시 필수 선행
 3. **예측 캘린더 보정** — 연휴/계절 더미변수 추가, 추세 보정계수 0.3→0.15 재검토 (Iter7-C avg MAPE 32.84% 근거)
 
-> **Iter7 → Iter8 인계 조건:** S3 단가 협상 실제 진행 여부 + D1 NPV 가정값 실사 결과를 Iter8 착수 전 확인.
+> **Iter7 → Iter8 인계 조건:** D1 NPV 가정값 실사(S1/S2 손익분기 건수 재산출) + 외주 건수 추이 모니터링 후 착수.
 """)
 
     return "\n".join(sections)
