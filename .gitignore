@@ -14,7 +14,11 @@ __pycache__/
 .worktrees/
 
 # Generated outputs
-graphify-out/
+# graphify: transient cache only — graph.json / graph.html / obsidian/ are committed
+graphify-out/manifest.json
+graphify-out/cost.json
+graphify-out/needs_update
+graphify-out/cache/
 outputs/
 reports/
 *.pdf

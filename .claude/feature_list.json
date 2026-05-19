@@ -1,7 +1,16 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-17",
+  "updated_at": "2026-05-19",
   "tasks": [
+    {
+      "id": "GRAPHIFY-OBSIDIAN-01",
+      "title": "graphify + Obsidian vault 연동 설정",
+      "priority": "done",
+      "domain": "infra",
+      "status": "done",
+      "created_at": "2026-05-19",
+      "notes": "graphifyy[mcp] 설치. scripts/run_graphify.sh 신규. .mcp.json MCP 서버 설정. weekly-full-pipeline.yml에 Step5 graphify 단계 추가. obsidian_sync_weekly.bat에 graphify-out/obsidian → ClaudeVault/SCM/graphify 복사 추가. .gitignore에서 graphify-out/ 전체 제외 → transient 파일만 제외로 변경."
+    },
     {
       "id": "CBM-VERIFIER-01",
       "title": "Harness Verifier 설계법 적용 — verifier.py (formative + summative)",
