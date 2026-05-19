@@ -12,3 +12,4 @@
 | [TMS-2026-W19.md](../outputs/TMS-2026-W19.md) | 주간 | 2026-05-11 | 완료 |
 | [WMS-DormantStock-20260513.md](../outputs/WMS-DormantStock-20260513.md) | 분석 | 2026-05-13 | 완료 |
 | [TMS-2026-W20.md](../outputs/TMS-2026-W20.md) | 주간 | 2026-05-18 | 완료 |
+| [CLAUDE-LAYER-HYBRID-ROADMAP-2026-05-19.md](../outputs/CLAUDE-LAYER-HYBRID-ROADMAP-2026-05-19.md) | 로드맵 | 2026-05-19 | 작성중 |
