@@ -1,0 +1,18 @@
+---
+source_file: "scripts/html_to_pdf_wms_full.py"
+type: "code"
+community: "Cluster 561: html_to_pdf_wms_fu"
+location: "L1"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Cluster_561_html_to_pdf_wms_fu
+---
+
+# html_to_pdf_wms_full.py
+
+## Connections
+- [[render()]] - `contains` [EXTRACTED]
+- [[wms_issue_report_full.html → PDF 출력 CUsersyjisuDesktopwms_issue_report_ful]] - `rationale_for` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Cluster_561_html_to_pdf_wms_fu

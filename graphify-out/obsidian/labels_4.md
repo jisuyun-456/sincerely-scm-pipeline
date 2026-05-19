@@ -1,0 +1,17 @@
+---
+source_file: "history/2026-W13_review.json"
+type: "code"
+community: "Cluster 171: 신시어리 (박종성)"
+location: "L425"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Cluster_171__
+---
+
+# labels
+
+## Connections
+- [[신시어리 (조희선)_15]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Cluster_171__

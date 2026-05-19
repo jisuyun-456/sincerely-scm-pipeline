@@ -1,0 +1,17 @@
+---
+source_file: "history/2026-W13_review.json"
+type: "code"
+community: "Cluster 127: 고객물품"
+location: "L57"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Cluster_127_
+---
+
+# qty
+
+## Connections
+- [[재고이동_5]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Cluster_127_

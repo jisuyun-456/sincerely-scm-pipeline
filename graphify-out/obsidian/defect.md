@@ -1,0 +1,17 @@
+---
+source_file: "history/2026-03_monthly.json"
+type: "code"
+community: "Cluster 368: W10"
+location: "L188"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Cluster_368_W10
+---
+
+# defect
+
+## Connections
+- [[W10]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Cluster_368_W10

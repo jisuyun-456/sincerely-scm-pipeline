@@ -1,0 +1,17 @@
+---
+source_file: "history/2026-W12_forecast.json"
+type: "code"
+community: "Cluster 224: W11"
+location: "L96"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Cluster_224_W11
+---
+
+# defect_by_item
+
+## Connections
+- [[qc_3]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Cluster_224_W11

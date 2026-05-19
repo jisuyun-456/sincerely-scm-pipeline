@@ -1,0 +1,19 @@
+---
+source_file: "tests/virtual_sap/test_config.py"
+type: "code"
+community: "Cluster 162: _log_agent_event()"
+location: "L20"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Cluster_162__log_agent_event
+---
+
+# test_invalid_mode_raises()
+
+## Connections
+- [[_reset()]] - `calls` [EXTRACTED]
+- [[get_config()]] - `calls` [INFERRED]
+- [[test_config.py]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Cluster_162__log_agent_event

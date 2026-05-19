@@ -1,0 +1,17 @@
+---
+source_file: "history/2026-W15_review.json"
+type: "code"
+community: "Cluster 175: 신시어리 (박종성)"
+location: "L405"
+tags:
+  - graphify/code
+  - graphify/EXTRACTED
+  - community/Cluster_175__
+---
+
+# count
+
+## Connections
+- [[신시어리 (이장훈)_28]] - `contains` [EXTRACTED]
+
+#graphify/code #graphify/EXTRACTED #community/Cluster_175__

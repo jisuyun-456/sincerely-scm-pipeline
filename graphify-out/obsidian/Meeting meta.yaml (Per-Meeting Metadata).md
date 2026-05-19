@@ -1,0 +1,17 @@
+---
+source_file: "docs/superpowers/specs/2026-05-15-notion-meeting-agent-discussion-design.md"
+type: "document"
+community: "SCM Core Data & Analytics"
+tags:
+  - graphify/document
+  - graphify/EXTRACTED
+  - community/SCM_Core_Data__Analytics
+---
+
+# Meeting meta.yaml (Per-Meeting Metadata)
+
+## Connections
+- [[Notion Meeting Notes Multi-Agent Discussion Capture Design]] - `implements` [EXTRACTED]
+- [[notion-sync discussion_render Event (New)]] - `shares_data_with` [EXTRACTED]
+
+#graphify/document #graphify/EXTRACTED #community/SCM_Core_Data__Analytics
