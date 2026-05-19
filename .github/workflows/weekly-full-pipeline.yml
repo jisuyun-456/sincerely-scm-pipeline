@@ -54,13 +54,33 @@ jobs:
           AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
         run: python scripts/wms_weekly_runner.py
 
-      # ── Step 5: Commit & Push ─────────────────────────────────────────────
+      # ── Step 5: graphify 지식 그래프 업데이트 ───────────────────────────────
+      - name: Install graphify
+        run: pip install "graphifyy[mcp]"
+
+      - name: Run graphify (incremental update)
+        run: |
+          if [ -f graphify-out/graph.json ]; then
+            graphify . \
+              --obsidian-dir graphify-out/obsidian \
+              --wiki \
+              --update
+          else
+            graphify . \
+              --obsidian-dir graphify-out/obsidian \
+              --wiki
+          fi
+
+      # ── Step 6: Commit & Push ─────────────────────────────────────────────
       - name: Commit and push reports
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add \
             reports/ \
-            _AutoResearch/SCM/outputs/ _AutoResearch/SCM/wiki/
+            _AutoResearch/SCM/outputs/ _AutoResearch/SCM/wiki/ \
+            graphify-out/graph.json graphify-out/graph.html \
+            graphify-out/GRAPH_REPORT.md graphify-out/obsidian/ \
+            graphify-out/wiki/ 2>/dev/null || true
           git diff --cached --quiet || git commit -m "chore: 주간 파이프라인 자동 실행 $(date +'%Y-W%V')"
           git push

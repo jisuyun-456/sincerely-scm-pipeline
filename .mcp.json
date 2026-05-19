@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "graphify": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "graphify.serve", "graphify-out/graph.json"],
+      "description": "sincerely-scm-pipeline 코드베이스 지식 그래프 쿼리 서버"
+    }
+  }
+}

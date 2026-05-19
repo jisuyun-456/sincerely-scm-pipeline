@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": ["WebFetch(domain:addyosmani.com)"]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
