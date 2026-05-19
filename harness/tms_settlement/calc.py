@@ -80,12 +80,16 @@ def _parse_unload_fee(box_text: object) -> int:
 def _is_outsource(rec: dict) -> bool:
     """MM 외주임가공 → 다영기획 배송 여부.
 
-    SC id starts with 'MM' + destination contains '다영기획' + request note contains '외주임가공'.
+    'MM' identifier is in F_PROJECT_CODE (rollup) in production Airtable data.
+    F_SC_ID fallback kept for test fixtures that use sc_id="MM-..." directly.
+    Destination check: real street addresses contain '성남시', not literal '다영기획'.
     """
-    sc_id = rec["fields"].get(F_SC_ID, "") or ""
-    dest  = _str_field(rec["fields"].get(F_DEST_ADDR))
-    note  = _str_field(rec["fields"].get(F_REQUEST_NOTE))
-    return sc_id.startswith("MM") and ("다영기획" in dest or "성남시" in dest) and "외주임가공" in note
+    sc_id        = _str_field(rec["fields"].get(F_SC_ID))
+    project_code = _str_field(rec["fields"].get(F_PROJECT_CODE))
+    dest         = _str_field(rec["fields"].get(F_DEST_ADDR))
+    note         = _str_field(rec["fields"].get(F_REQUEST_NOTE))
+    is_mm = sc_id.upper().startswith("MM") or project_code.upper().startswith("MM")
+    return is_mm and ("다영기획" in dest or "성남시" in dest) and "외주임가공" in note
 
 
 def _is_pna(rec: dict) -> bool:
