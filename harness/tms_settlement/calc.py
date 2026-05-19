@@ -85,7 +85,7 @@ def _is_outsource(rec: dict) -> bool:
     sc_id = rec["fields"].get(F_SC_ID, "") or ""
     dest  = _str_field(rec["fields"].get(F_DEST_ADDR))
     note  = _str_field(rec["fields"].get(F_REQUEST_NOTE))
-    return sc_id.startswith("MM") and "다영기획" in dest and "외주임가공" in note
+    return sc_id.startswith("MM") and ("다영기획" in dest or "성남시" in dest) and "외주임가공" in note
 
 
 def _is_pna(rec: dict) -> bool:
@@ -133,9 +133,10 @@ def calc_lee(recs: list[dict], driver_id: str) -> list[SettlementItem]:
         rates = rates_for(d)
         n = len(day_recs)
         per_ship = round_up_500(rates["lee_daily"] / n)
-        for rec in day_recs:
+        for i, rec in enumerate(day_recs):
+            fare_i = per_ship if i < n - 1 else rates["lee_daily"] - per_ship * (n - 1)
             results.append(_make_item(
-                rec, driver_id, per_ship, 0,
+                rec, driver_id, fare_i, 0,
                 f"{rates['lee_daily']:,}/{n}건",
             ))
     return results
@@ -158,9 +159,10 @@ def calc_cho(recs: list[dict], driver_id: str) -> list[SettlementItem]:
         daily_total = rates["cho_base"] + surcharge
         n           = len(day_recs)
         per_ship    = round_up_500(daily_total / n)
-        for rec in day_recs:
+        for i, rec in enumerate(day_recs):
+            fare_i = per_ship if i < n - 1 else daily_total - per_ship * (n - 1)
             results.append(_make_item(
-                rec, driver_id, per_ship, 0,
+                rec, driver_id, fare_i, 0,
                 f"({rates['cho_base']:,}+{surcharge:,}={daily_total:,})/{n}건  경기={gyeonggi}",
             ))
     return results

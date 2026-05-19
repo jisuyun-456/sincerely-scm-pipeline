@@ -16,6 +16,18 @@ def today_kst() -> date:
     return datetime.now(KST).date()
 
 
+def settlement_target_kst() -> date:
+    """Date to settle: today KST, but yesterday if we've crossed midnight (cron delay guard).
+
+    GitHub Actions cron can be delayed by several hours. If the job starts after
+    midnight KST (hour < 6), the cron was late — settle for yesterday, not today.
+    """
+    now_kst = datetime.now(KST)
+    if now_kst.hour < 6:
+        return (now_kst - timedelta(days=1)).date()
+    return now_kst.date()
+
+
 def week_range(monday: date) -> tuple[date, date]:
     return monday, monday + timedelta(days=6)
 

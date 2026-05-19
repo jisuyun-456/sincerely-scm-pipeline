@@ -2,8 +2,8 @@ name: TMS Settlement — 기사님 운임 정산
 
 on:
   schedule:
-    # 매일 12:00 UTC = 21:00 KST
-    - cron: '0 12 * * *'
+    # 매일 09:00 UTC = 18:00 KST (자정까지 6시간 버퍼 — cron 지연 대응)
+    - cron: '0 9 * * *'
   workflow_dispatch:
     inputs:
       date:
@@ -67,7 +67,7 @@ jobs:
             DATE_FLAG="--date ${{ github.event.inputs.date }}"
             LABEL="${{ github.event.inputs.date }}"
           else
-            TODAY=$(python -c "from harness._core.calendar import today_kst; print(today_kst().isoformat())")
+            TODAY=$(python -c "from harness._core.calendar import settlement_target_kst; print(settlement_target_kst().isoformat())")
             DATE_FLAG="--date $TODAY"
             LABEL="$TODAY"
           fi

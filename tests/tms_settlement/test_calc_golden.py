@@ -1,6 +1,6 @@
 """Golden suite — 10 cases locking in fare calc correctness.
 
-Lee  ×2: 2-ship day (÷2=80,000) | 3-ship day (ceil→53,500)
+Lee  ×2: 2-ship day (÷2=80,000) | 3-ship day (53,500+53,500+53,000=160,000)
 Cho  ×2: 경기1+서울1 (÷2=180,000) | 경기3 (surcharge×2÷3=140,000)
 Park ×5: NO_COORD | 강남(59,500) | 부산(414,500) | 광주(354,000) | unload(+25,000)
 Out  ×1: MM외주임가공/1건 (70,000)
@@ -33,7 +33,8 @@ def test_lee_two_ships_same_day():
 
 
 def test_lee_three_ships_same_day():
-    # ceil(160,000 / 3 / 500) * 500 = ceil(106.67) * 500 = 107 * 500 = 53,500
+    # per_ship = ceil(160,000/3/500)*500 = 53,500 for first 2; last = 160,000 - 107,000 = 53,000
+    # total = 160,000 (slot fare exactly, no rounding over-run)
     recs = [
         rec("r1", "SC-001", DATE, DRIVER_LEE, "서울 강남구 테헤란로"),
         rec("r2", "SC-002", DATE, DRIVER_LEE, "서울 서초구 반포대로"),
@@ -41,7 +42,10 @@ def test_lee_three_ships_same_day():
     ]
     items = calc_lee(recs, DRIVER_LEE)
     assert len(items) == 3
-    assert all(i.fare_gross == 53_500 for i in items)
+    assert items[0].fare_gross == 53_500
+    assert items[1].fare_gross == 53_500
+    assert items[2].fare_gross == 53_000
+    assert sum(i.fare_gross for i in items) == 160_000
 
 
 # ── Cho ──────────────────────────────────────────────────────────────────────
@@ -127,12 +131,13 @@ def test_park_unload_fee():
 # ── Outsource ─────────────────────────────────────────────────────────────────
 
 def test_park_outsource_single():
-    # MM外주임가공 trigger: SC_ID starts "MM" + dest contains "다영기획" + note contains "외주임가공"
+    # MM외주임가공 trigger: SC_ID starts "MM" + dest contains "다영기획" OR "성남시" + note "외주임가공"
+    # Real Airtable dest is a street address (no literal "다영기획") — must still match.
     # 1 ship → ceil(70,000/1/500)*500 = 70,000
     recs = [
         rec(
             "r1", "MM-2026-001", DATE, DRIVER_PARK,
-            "경기 성남시 분당구 다영기획 물류센터",
+            "경기 성남시 분당구 정자동 10",
             request_note="외주임가공 1박스",
         )
     ]
