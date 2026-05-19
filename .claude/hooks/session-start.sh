@@ -12,15 +12,10 @@ if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
     echo "[session-start] WARNING: graphifyy install failed — MCP server will not be available"
 fi
 
-# knowledge graph 빌드 (로컬·remote 공통)
-if python -c "import graphify" 2>/dev/null; then
-  if [ -f graphify-out/graph.json ]; then
-    graphify . --obsidian-dir graphify-out/obsidian --wiki --update 2>/dev/null \
-      && echo "[session-start] graphify: incremental update complete" || true
-  else
-    graphify . --obsidian-dir graphify-out/obsidian --wiki 2>/dev/null \
-      && echo "[session-start] graphify: full build complete" || true
-  fi
+# knowledge graph — git post-commit hook handles code-only rebuilds automatically (free, AST-only).
+# For doc/config changes: run `/graphify . --update` in Claude Code (uses CC subscription tokens, no API key needed).
+if [ -f graphify-out/graph.json ]; then
+  echo "[session-start] graphify: graph.json ready ($(python -c "import json; g=json.load(open('graphify-out/graph.json')); print(f\"{len(g['nodes'])} nodes, {len(g['edges'])} edges\")" 2>/dev/null || echo 'size unknown'))"
 else
-  echo "[session-start] graphify not available — run: pip install 'graphifyy[mcp]'"
+  echo "[session-start] graphify: no graph.json found — run /graphify . in Claude Code to build"
 fi
