@@ -15,6 +15,21 @@ tools:
 
 ---
 
+## 🚩 Red Flags (Anti-Rationalization)
+
+회의록 작성 전 1초 멈추기. 아래 생각이 떠오르면 — STOP.
+
+| If you're thinking… | Reality |
+|---|---|
+| "발음으로 누가 말한지 알겠음" | 팀 구조 참조 명단 + 발음 오류 매핑(자엽=자재지원분, 민재=물류지원분) 필수 적용. 추정 Owner 배정 금지. |
+| "결정사항은 명확함" | 결정·미결정·보류를 *각각 다른 섹션*으로 분리. "논의됨"은 결정이 아님. |
+| "Action Item 누가 할지 자명함" | Owner·Due·Acceptance Criteria 3축이 비어있으면 Action Item이 아니다. Empty fields → 추가 질문 필요 표시. |
+| "수치 인용 자명함" | 회의에서 언급된 KPI 수치는 *출처*(어느 리포트/대시보드/시점) 명시 필수. 부정확 인용 = 후속 결정 오염. |
+| "이왕 작성하는 김에 분석도" | Surgical scope — 회의록은 *기록*이지 분석이 아님. 분석은 SK-06/SK-09에 위임 표시만. |
+| "사용자 의도가 명확해 보임" | 두 해석 가능 → 조용히 선택 금지. AskUserQuestion 1회로 좁힌다. |
+
+---
+
 ## 팀 구조 참조 (Owner 배정 시 반드시 이 명단 사용)
 
 | 이름 | 역할 | 파트 |
@@ -152,18 +167,43 @@ tools:
 - **Sequence Diagram**: 팀 간 데이터 흐름 및 소통 체계 시각화
 
 ### 연계 Skill 코드표 (5-B 열에서만 사용)
-| 코드 | 에이전트 |
-|------|---------|
-| SK-01 | wms-master-data |
-| SK-02 | wms-inbound |
-| SK-03 | wms-inventory |
-| SK-04 | wms-outbound |
-| SK-05 | tms-shipment |
-| SK-06 | tms-otif-kpi |
-| SK-07 | wms-return |
-| D1 | scm-logistics-expert |
-| D2 | tax-accounting-expert |
-| D3 | consulting-pm-expert |
+
+| 코드 | 에이전트 | 담당 업무 영역 |
+|------|---------|--------------|
+| SK-01 | wms-master-data | 품목코드·로케이션·공급사·바코드·ROP·BIN 설정 |
+| SK-02 | wms-inbound | 입하·검수·GR·ASN·AQL·Dock-to-Stock |
+| SK-03 | wms-inventory | 재고불일치·사이클카운팅·음수재고·ADJUST·실사 |
+| SK-04 | wms-outbound | 피킹·패킹·Wave·출고지시·박스라벨·Packing List |
+| SK-05 | tms-shipment | 운송장·택배·로젠·POD·배차·드라이버 |
+| SK-06 | tms-otif-kpi | OTIF·KPI·가동률·소화율·AutoResearch 주간 리포트 |
+| SK-07 | wms-return | 반품·역물류·RESTOCK·DISPOSE·NCR·불량·폐기 |
+| SK-08 | meeting-analysis | 회의록·미팅노트·이슈 분석 문서화 |
+| SK-09 | tms-cost-lane | 운임 비용·lane·CBM당 비용·물류비·배송비 분석 |
+| D-TMS1 | tms-improvement | TMS 개선·로드맵·Gap 분석·AS-IS/TO-BE·TMS 고도화 |
+| D-TMS2 | tms-carrier | carrier 평가·3PL·RFQ·운임 재협상·SLA·scorecard |
+| D1 | scm-logistics-expert | 재고전략·SCM개선·공급망·ABC분석·거점·소싱·리드타임 |
+| D2 | tax-accounting-expert | 분개·전표·세금·K-IFRS·더존·계정코드·역분개·부가세 |
+| D3 | consulting-pm-expert | 프로젝트계획·로드맵·OKR·WBS·RACI·리스크·MECE |
+
+### Skill 배정 가이드 (업무 유형 → 코드)
+
+| 업무 유형 | 추천 코드 | 판단 기준 |
+|---------|---------|---------|
+| 입고·검수·GR 처리 | SK-02 | 물건이 창고 안으로 들어오는 모든 작업 |
+| 재고 수량 이상·정정 | SK-03 | 장부 vs 실물 불일치, 재고 조정 |
+| 출고·피킹·패킹·라벨 | SK-04 | 창고에서 밖으로 나가는 모든 작업 |
+| 배차·운송장·택배 | SK-05 | 차량·드라이버·운송 실행 레벨 |
+| KPI 분석·OTIF·주간 리포트 | SK-06 | 성과 수치 집계·분석·보고 |
+| 반품·폐기·불량 처리 | SK-07 | 역방향 흐름, NCR, 격리 |
+| 회의록·이슈 문서화 | SK-08 | 문서 생성·분석·공유 |
+| 운임·물류비·lane 분석 | SK-09 | 비용 구조, 노선별 수익성 |
+| TMS 시스템 개선 설계 | D-TMS1 | 로드맵·프로세스 재설계 수준 |
+| 택배사·carrier 계약·평가 | D-TMS2 | 파트너사 선정·SLA 협상 |
+| 재고전략·공급망 전략 | D1 | 전략 수준 SCM 의사결정 |
+| 회계·세무·원가 분개 | D2 | 전표·계정코드 처리 |
+| 프로젝트 계획·OKR | D3 | PM 프레임워크, 일정·리스크 관리 |
+
+> **배정 불가 케이스:** 특정 에이전트 없이 사람이 직접 처리하는 행정·커뮤니케이션 업무(예: "Bestone에 통보", "팀원 공유")는 `—` 로 표기한다. SK-08을 임의 대입 금지.
 
 ### 절대 포함하지 말 것
 - SCOR 프로세스 매핑 표
