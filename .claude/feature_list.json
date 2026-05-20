@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-19",
+  "updated_at": "2026-05-20",
   "tasks": [
     {
       "id": "GRAPHIFY-OBSIDIAN-01",
@@ -587,6 +587,17 @@
       "created_at": "2026-05-17",
       "completed_at": "2026-05-17",
       "notes": "ClaudeVault/SCM/Meetings/synthesis_0407_0421_0428.md. 3개 회의 cross-synthesis: TO Lock 미비/레이블 지연/안전재고 미형식화/로케이션 마스터 C-01~C-04."
+    },
+    {
+      "id": "SKILL-EVO-PHASE3-01",
+      "title": "Phase 3 Roadmap — Skill Evolution Scaling (4-week strategic roadmap)",
+      "priority": "done",
+      "domain": "harness",
+      "status": "done",
+      "created_at": "2026-05-20",
+      "completed_at": "2026-05-20",
+      "source": "build-hybridization-phase2-20260520-skill-evo/sprint-4",
+      "notes": "Phase 3 roadmap document (2026-05-20 ~ 2026-06-17): agent co-evolution targets (70-90 active skills across 10 agents), corpus harvest automation (Slack incidents + AutoResearch + user feedback), retrieval accumulation strategy, success criteria C7-C12, risk mitigations. File: ~/.claude/harness/skill-evolution/docs/phase3-roadmap.md"
     }
   ]
 }

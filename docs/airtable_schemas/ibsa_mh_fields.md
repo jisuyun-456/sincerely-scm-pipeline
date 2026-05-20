@@ -12,7 +12,7 @@
 | # | 필드명 | fieldId | 타입 | 산식/입력 |
 |---|---|---|---|---|
 | 1 | `CBM` | `fldTHmNEPNhcIX5AQ` | number(6) | 제품 규격(W×H×D mm) × 입하수량 → m³ |
-| 2 | `MH_입하_표준` | `fld5ZybpbcpEaDkEt` | number(2) | CBM × 4.0 × 1.15 |
+| 2 | `MH_입하_표준` | `fld5ZybpbcpEaDkEt` | number(2) | CBM × 4.0 × 1.15 (WERC 통합 — 하차+수량확인+서류매칭+staging) |
 | 3 | `MH_검수_표준` | `fldue4gsBUJIEbGTP` | number(2) | 2.5 × 1.15 = 2.875 |
 | 4 | `MH_입고_표준` | `fldy6Z6durcP0CWFx` | number(2) | (3.0 + min(7, CBM×7)) × 1.15 |
 | 5 | `MH_합계_표준` | `fldmhIVSe5lSkfZhn` | number(2) | 2 + 3 + 4 |

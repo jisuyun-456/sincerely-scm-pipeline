@@ -46,10 +46,16 @@ TMS_PAT = os.environ.get("AIRTABLE_PAT") or os.environ.get("AIRTABLE_WMS_PAT", "
 # 자사 측정값이 도출되면 이 블록만 교체하면 됨.
 PFD_ALLOWANCE = 1.15  # 15% Personal+Fatigue+Delay
 
-# Receiving (입하) — *spec×qty → CBM* 1차 path (cbm_inbound_check.py 로직 재사용)
-# - 이동목적="생산산출" record에서 제품 규격 + 입하수량 → 정확 CBM
-# - 규격 없으면 sync_parts 룩업, 그것도 없으면 carton/pcs fallback
-RECEIVING_MIN_PER_CBM = 4.0          # 15 CBM/MH 글로벌 표준
+# Receiving (입하) — *WERC 글로벌 표준 통합 정의* (2026-05-20 결정)
+# 4.0 min/CBM × 1.15 PFD 는 receiving 활동 *전체*를 포괄:
+#   - 트럭→도크 unloading (물리 운반)
+#   - 수량 확인 (qty count vs ASN)
+#   - Invoice/서류 매칭
+#   - Staging (검수 전 위치 배치)
+# 별도 하차 라인 retired (double-counting 방지).
+# 1차 path: 제품 규격 + 입하수량 → 정확 CBM (cbm_inbound_check.py 로직 재사용)
+# 2차: 규격 없으면 sync_parts 룩업, 둘 다 실패 시 carton/pcs fallback
+RECEIVING_MIN_PER_CBM = 4.0          # 15 CBM/MH 글로벌 표준 (WERC 통합)
 RECEIVING_MIN_THICKNESS_MM = 3.0     # 2D dims(스티커 등) 두께 fallback (cbm_inbound_check 정합)
 RECEIVING_MIN_PER_CARTON = 0.6       # fallback (cartons-only record)
 RECEIVING_FALLBACK_PCS_PER_CARTON = 100
@@ -57,7 +63,7 @@ RECEIVING_FALLBACK_PCS_PER_CARTON = 100
 # Putaway (입고) — 사용자 측정 (2026-05-18): 적은 수량/부피 3분 ~ 큰 부피·파렛트·다이어리 류 max 10분
 # CBM-linear with cap. CBM 없는 fallback record는 base 3분 적용.
 PUTAWAY_BASE_MIN = 3.0
-PUTAWAY_MAX_MIN = 10.0
+PUTAWAY_MAX_MIN = 5.0
 PUTAWAY_PER_CBM_MIN = 7.0   # CBM 1.0에서 max 도달 (3 + 1.0×7 = 10)
 
 # QC (입하검수) — 사용자 측정 (2026-05-18): 프로젝트 1개당 2~3분 (표본검수). 분포 mid = 2.5
@@ -67,13 +73,6 @@ QC_MIN_PER_PROJECT = 2.5
 # (CBM 높고 2층 파렛트 지게차 내림은 3분, 작은 건 1분) — Iter1.4 mid 2.0분 균일
 # 작업 내용: WMS logistics_release 패킹리스트 + 외박스 라벨 + TMS 출하확인서 ↔ 실제 좌표·박스 수량 매칭
 OUTBOUND_QC_MIN_PER_PROJECT = 2.0
-
-# 하차 (Unloading) — 사용자 측정 (2026-05-18): 3~8분/프로젝트 (mid 5.5분)
-# CBM-weighted: base 3 + min(5, project_cbm × 5.0) cap 8
-# mid check: 0.5 m³/project → 3 + 2.5 = 5.5 ✓
-UNLOAD_BASE_MIN = 3.0
-UNLOAD_MAX_MIN = 8.0
-UNLOAD_PER_CBM_MIN = 5.0  # 1 m³/project → max 도달
 
 # 피킹 *임시 deferred* (Iter1.4 사용자 지시) — calc_picking_mh 함수 본체는 유지, 보고서 출력만 제외
 # 사용자 자사 batch_size 실측 후 Iter1.6 재활성화 예정
@@ -335,13 +334,6 @@ def calc_outbound_qc_mh_per_project():
     return OUTBOUND_QC_MIN_PER_PROJECT * PFD_ALLOWANCE
 
 
-# ── Unloading M/H — 사용자 측정 기반 (3~8 min/project, CBM-weighted) ──────────
-def calc_unloading_mh_for_project(project_cbm: float = 0.0) -> float:
-    """하차 M/H. 사용자 측정: 3~8분/프로젝트 (mid 5.5min), CBM-weighted."""
-    extra = min(UNLOAD_MAX_MIN - UNLOAD_BASE_MIN, project_cbm * UNLOAD_PER_CBM_MIN)
-    return (UNLOAD_BASE_MIN + extra) * PFD_ALLOWANCE
-
-
 # ── 유틸 ──────────────────────────────────────────────────────────────────────
 def _to_float(v):
     if v is None:
@@ -371,7 +363,6 @@ def iso_week(d):
 # ── 리포트 생성 ────────────────────────────────────────────────────────────────
 def generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
                     distinct_projects, distinct_outbound_projects,
-                    project_cbm_map,
                     since, until, out_path):
     week = iso_week(until)
 
@@ -381,14 +372,11 @@ def generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
     total_tms = sum(r["mh_std"] for r in tms_rows)
     total_qc = len(distinct_projects) * calc_qc_mh_per_project()
     total_outbound_qc = len(distinct_outbound_projects) * calc_outbound_qc_mh_per_project()
-    total_unload = sum(
-        calc_unloading_mh_for_project(project_cbm_map.get(p, 0.0))
-        for p in distinct_projects
-    )
 
     # 피킹은 Iter1.4 사용자 지시로 합계에서 제외 (INCLUDE_PICKING=False)
     pick_in_total = total_pick if INCLUDE_PICKING else 0.0
-    total_wms = total_recv + total_putaway + total_qc + total_outbound_qc + total_unload + pick_in_total
+    # 입하 (WERC 통합 정의) = 하차+수량확인+서류매칭+staging 일괄 — 2026-05-20 하차 라인 retired
+    total_wms = total_recv + total_putaway + total_qc + total_outbound_qc + pick_in_total
     total_all = total_wms + total_tms
 
     # FTE: 매니저 2명(파트장+파트원) 제외 — 실작업자만 카운트
@@ -407,11 +395,26 @@ def generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
     else:
         pick_row = "| WMS 피킹 | _deferred — 사용자 batch_size 실측 확인 중_ |"
 
+    # 인원별 가동률 (역할 기준, 1명씩 분리, 2026-05-20)
+    # - 입하 1명: 입하 (WERC 통합 — 하차+수량확인+서류매칭+staging)
+    # - 입고 1명: 입고 (putaway)
+    # - 검수 1명: 입하검수
+    # - 자재 1명: 피킹 (deferred 시 0)
+    # - 출하 1명: 출고검수 + TMS
+    per_person_window = 40 * 60 * weeks_in_window  # 1명 × 40h × 주수, 분 단위
+    role_table_rows = [
+        ("입하 1명", "입하 (WERC 통합)", total_recv),
+        ("입고 1명", "입고", total_putaway),
+        ("검수 1명", "입하검수", total_qc),
+        ("자재 1명", "피킹" + (" (deferred)" if not INCLUDE_PICKING else ""), pick_in_total),
+        ("출하 1명", "출고검수+TMS", total_outbound_qc + total_tms),
+    ]
+
     lines = [
-        f"# WMS+TMS M/H 분석 — {week}  (Global ELS Iter 1.5)",
+        f"# WMS+TMS M/H 분석 — {week}  (Global ELS Iter 1.6)",
         "",
         f"**기간**: {since.isoformat()} ~ {until.isoformat()} ({days}일)",
-        f"**범위**: WMS 입하·입고·입하검수·출고검수·**하차** + TMS Shipment dispatch+docs — *피킹·외주임가공·프리패키징 deferred*",
+        f"**범위**: WMS 입하(WERC 통합)·입고·입하검수·출고검수 + TMS Shipment dispatch+docs — *피킹·외주임가공·프리패키징 deferred*",
         f"**표준 출처**: WERC Annual Benchmark · SAP EWM/Manhattan/Blue Yonder LMS · MOST/MTM-2",
         f"**PFD allowance**: ×{PFD_ALLOWANCE} (15% Personal+Fatigue+Delay)",
         "",
@@ -419,9 +422,8 @@ def generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
         "",
         f"| 항목 | 값 |",
         f"|---|---|",
-        f"| WMS 입하 | {len(receiving_rows)} 건 / {total_recv/60:.1f} MH |",
+        f"| WMS 입하 (WERC 통합) | {len(receiving_rows)} 건 / {total_recv/60:.1f} MH |",
         f"| WMS 입고 (Putaway) | {len(putaway_rows)} 건 / {total_putaway/60:.1f} MH |",
-        f"| WMS 하차 (Unloading) | {len(distinct_projects)} 프로젝트 / {total_unload/60:.1f} MH |",
         f"| WMS 입하검수 (표본) | {len(distinct_projects)} 프로젝트 / {total_qc/60:.1f} MH |",
         f"| WMS 출고검수 (A3 박스 매칭) | {len(distinct_outbound_projects)} 프로젝트 / {total_outbound_qc/60:.1f} MH |",
         pick_row,
@@ -435,8 +437,21 @@ def generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
         f"> 매니저(파트장+파트원) {total_fte - productive_fte}명은 관리·판단 역할로 capacity 계산에서 제외. ",
         f"> 단 OKR KR-1은 {total_fte}명 기준 ×1.5 처리량 (Sprint 4 정책 그대로).",
         "",
-        "> ⚠️ 글로벌 벤치마크 기반 *추정값*. 자사 환경 보정 전엔 *상대 variance*만 신뢰. ",
-        "> 자사 실측 M/H 산출 후 상수 1줄 교체로 정확도 ↑.",
+        "> ⚠️ 입하 = WERC 글로벌 통합 정의 (트럭→도크 unloading + 수량 확인 + invoice 매칭 + staging). ",
+        "> 2026-05-20: 별도 하차 라인 retired (double-counting 방지).",
+        "",
+        "## 인원별 가동률 (역할 기준, 1명씩 분리)",
+        "",
+        "| 역할 | 공정 | MH | 가용 MH | 가동률 |",
+        "|------|------|-----|--------|------|",
+    ]
+    for role, process, mh_min in role_table_rows:
+        mh_h = mh_min / 60
+        avail_h = per_person_window / 60
+        pct = (mh_min / per_person_window * 100) if per_person_window else 0
+        lines.append(f"| {role} | {process} | {mh_h:.1f} | {avail_h:.0f} | **{pct:.1f}%** |")
+
+    lines += [
         "",
         "## 입하 (Receiving) 상세",
         "",
@@ -475,14 +490,6 @@ def generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
     avg_putaway_min = (total_putaway / len(putaway_rows)) if putaway_rows else 0
     lines += [
         "",
-        "## 하차 (Unloading) 상세",
-        "",
-        f"- 표준: base {UNLOAD_BASE_MIN}분 + min({UNLOAD_MAX_MIN - UNLOAD_BASE_MIN}, project_cbm×{UNLOAD_PER_CBM_MIN}) × PFD (cap {UNLOAD_MAX_MIN}분) — 사용자 측정",
-        f"- mid 검증: 0.5 m³/project → {UNLOAD_BASE_MIN} + {0.5*UNLOAD_PER_CBM_MIN:.1f} = {UNLOAD_BASE_MIN + 0.5*UNLOAD_PER_CBM_MIN:.1f}분 ✓",
-        f"- 단위: 프로젝트(PNA***) 별 CBM 합산 (기존 receiving records 재사용, 추가 API 호출 0)",
-        f"- distinct 프로젝트 수: {len(distinct_projects)} / CBM 보유 프로젝트: {sum(1 for p in distinct_projects if project_cbm_map.get(p, 0) > 0)}",
-        f"- 합계 **{total_unload/60:.1f} MH** ({total_unload:.0f} 분)",
-        "",
         "## 입고 (Putaway) 상세",
         "",
         f"- 표준: base {PUTAWAY_BASE_MIN}분 + min({PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN}, CBM×{PUTAWAY_PER_CBM_MIN}) × PFD (cap {PUTAWAY_MAX_MIN}분) — 사용자 측정",
@@ -506,18 +513,17 @@ def generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
         "## Deferred (사용자 입력 대기)",
         "",
         "- **피킹** — 사용자 자사 batch_size 실측(50/100/150/200 mix) 확인 중. 함수 로직(`calc_picking_mh`) 유지, 본 보고서에서만 제외",
-        "- **상차** (Loading) — TMS 도메인 영역, WMS M/H 계산 제외",
+        "- **상차/하차 라인 retired** — 하차는 입하(WERC 통합)에 포함, 상차는 TMS 도메인 영역",
         "- **외주임가공** (다영기획 prep) — 사용자 연구 결과 수령 후",
         "- **프리패키징** (MES 인쇄 prep) — 사용자 확인 후",
         "",
         "## 글로벌 표준 상수 (script L37~57)",
         "",
-        f"- 입하 **CBM 기반**: {RECEIVING_MIN_PER_CBM} min/CBM ({60/RECEIVING_MIN_PER_CBM:.0f} CBM/MH 글로벌) — spec×qty (cbm_inbound_check 로직 재사용)",
+        f"- 입하 **WERC 통합 (CBM 기반)**: {RECEIVING_MIN_PER_CBM} min/CBM ({60/RECEIVING_MIN_PER_CBM:.0f} CBM/MH 글로벌) — 하차+수량확인+서류매칭+staging 일괄",
         f"- 입하 fallback case: {RECEIVING_MIN_PER_CARTON} min/case · pcs/{RECEIVING_FALLBACK_PCS_PER_CARTON}→case",
         f"- 입고: base {PUTAWAY_BASE_MIN} + min({PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN}, CBM×{PUTAWAY_PER_CBM_MIN}) min/건 (cap {PUTAWAY_MAX_MIN}) — 사용자 측정",
         f"- 입하검수: {QC_MIN_PER_PROJECT} min/project (표본검수, mid of 2~3) — 사용자 측정",
         f"- 출고검수: {OUTBOUND_QC_MIN_PER_PROJECT} min/project (A3 박스 매칭, mid of 1~3) — 사용자 측정",
-        f"- 하차: base {UNLOAD_BASE_MIN} + min({int(UNLOAD_MAX_MIN-UNLOAD_BASE_MIN)}, project_cbm×{UNLOAD_PER_CBM_MIN}) min/project (cap {UNLOAD_MAX_MIN}) — 사용자 측정",
         f"- 피킹 **batch** (현재 *deferred*): {PICK_MIN_PER_BATCH} min/batch (batch size={PICK_BATCH_SIZE_DEFAULT}) — 자사 운영 패턴 (50~200 묶음)",
         f"- TMS shipment: dispatch {TMS_DISPATCH_MIN_PER_SHIPMENT} + docs {TMS_DOCS_MIN_PER_SHIPMENT} min",
         f"- PFD: ×{PFD_ALLOWANCE}",
@@ -574,7 +580,6 @@ def main():
     receiving_rows = []
     putaway_rows = []
     distinct_projects = set()
-    project_cbm_map = {}
     basis_ctr = {}
     for rec in mov_records:
         f = rec.get("fields", {})
@@ -594,12 +599,10 @@ def main():
         cbm = qty_or_cbm if basis.startswith("cbm-from-") else 0.0
         putaway_mh = calc_putaway_mh(rec, cbm=cbm)
         putaway_rows.append({"id": rec["id"], "cbm": cbm, "mh_std": putaway_mh})
-        # 프로젝트 추적 (QC + 하차용)
+        # 프로젝트 추적 (QC용)
         proj = _extract_project_code(f.get("이동물품"))
         if proj:
             distinct_projects.add(proj)
-            if cbm > 0:
-                project_cbm_map[proj] = project_cbm_map.get(proj, 0.0) + cbm
     print(f"[mh_calculator]   receiving basis: {basis_ctr}", flush=True)
     print(f"[mh_calculator]   distinct projects in period: {len(distinct_projects)}", flush=True)
 
@@ -672,10 +675,13 @@ def main():
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"MH-{iso_week(until)}.md"
+    # 파일명: MH-{since}_to_{until}_W{시작주차}-W{종료주차}.md
+    # 예: MH-2026-04-18_to_2026-05-18_W16-W21.md
+    ws = since.isocalendar()[1]
+    we = until.isocalendar()[1]
+    out_path = out_dir / f"MH-{since.isoformat()}_to_{until.isoformat()}_W{ws:02d}-W{we:02d}.md"
     generate_report(receiving_rows, putaway_rows, picking_rows, tms_rows,
                     distinct_projects, distinct_outbound_projects,
-                    project_cbm_map,
                     since, until, out_path)
     print(f"[mh_calculator] wrote: {out_path}", flush=True)
 

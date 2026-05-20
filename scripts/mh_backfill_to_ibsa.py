@@ -6,11 +6,16 @@ CBM-driven 표준 M/H 6개 필드를 채워넣는 백필 스크립트.
 
 대상 필드 (docs/airtable_schemas/ibsa_mh_fields.md 참조):
   - CBM                 fldTHmNEPNhcIX5AQ   m³
-  - MH_입하_표준        fld5ZybpbcpEaDkEt   분
+  - MH_입하_표준        fld5ZybpbcpEaDkEt   분 (WERC 통합 — 하차+수량확인+서류매칭+staging)
   - MH_검수_표준        fldue4gsBUJIEbGTP   분
   - MH_입고_표준        fldy6Z6durcP0CWFx   분
   - MH_합계_표준        fldmhIVSe5lSkfZhn   분
   - MH_상수버전         fld1UjVS3uM7ii7Cy   text
+
+정의 (2026-05-20):
+  입하 = WERC 글로벌 표준 15 CBM/MH (4.0 min/CBM × 1.15 PFD)
+       = receiving 활동 전체 (트럭→도크 unloading + qty 확인 + invoice 매칭 + staging)
+       → 별도 하차 라인 없음 (double-counting 방지)
 
 Idempotency:
   - MH_상수버전 == 현재 VERSION 인 record는 skip (재계산 없음)
@@ -43,13 +48,13 @@ load_dotenv()
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Constants (mh_calculator.py 와 동기 유지) ────────────────────────────────
-VERSION = "v2026-05-cal1"      # 본 버전 식별자 — calibration 갱신 시 bump
+VERSION = "v2026-05-cal2"      # 본 버전 식별자 — calibration 갱신 시 bump
 
 PFD_ALLOWANCE = 1.15
 RECEIVING_MIN_PER_CBM = 4.0
 RECEIVING_MIN_THICKNESS_MM = 3.0
 PUTAWAY_BASE_MIN = 3.0
-PUTAWAY_MAX_MIN = 10.0
+PUTAWAY_MAX_MIN = 5.0
 PUTAWAY_PER_CBM_MIN = 7.0
 QC_MIN_PER_PROJECT = 2.5
 
