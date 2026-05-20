@@ -6371,18 +6371,18 @@
       "file_type": "rationale",
       "source_file": "scripts\\analyze_cycle_time.py",
       "source_location": "L1",
-      "id": "analyze_cycle_time_rationale_1",
       "community": 99,
-      "norm_label": "analyze_cycle_time.py \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+      "norm_label": "analyze_cycle_time.py \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+      "id": "analyze_cycle_time_rationale_1"
     },
     {
       "label": "b - a in minutes. Returns None if either is None.",
       "file_type": "rationale",
       "source_file": "scripts\\analyze_cycle_time.py",
       "source_location": "L86",
-      "id": "analyze_cycle_time_rationale_86",
       "community": 99,
-      "norm_label": "b - a in minutes. returns none if either is none."
+      "norm_label": "b - a in minutes. returns none if either is none.",
+      "id": "analyze_cycle_time_rationale_86"
     },
     {
       "label": "analyze_dormant_stock.py",
