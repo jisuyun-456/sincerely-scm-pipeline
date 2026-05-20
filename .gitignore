@@ -15,6 +15,7 @@ __pycache__/
 # Local tool settings
 .playwright-mcp/
 .worktrees/
+.scratch/
 
 # Generated outputs
 # graphify: transient cache only — graph.json / graph.html / obsidian/ are committed
