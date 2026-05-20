@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>260519 물류파트 이니셔티브 회의록 (문서형)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#fbfbfa;
+  --surface-3:#f4f4f2;
+  --ink:#1a1a1a;
+  --ink-2:#3a3a38;
+  --muted:#75756f;
+  --muted-2:#a8a8a2;
+  --line:#ebebe6;
+  --line-2:#f2f2ee;
+  --accent:#3b3b6e;
+  --accent-soft:#f2f2fb;
+  --highlight:#fff7c2;
+  --warn:#8a3a00;
+  --warn-soft:#fff3e6;
+  --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);border-bottom:1px solid var(--line);padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+.topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+.topbar .sep{color:var(--muted-2)}
+.topbar .doc-name{color:var(--muted);font-size:13px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+.topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+aside.side h4:first-child{margin-top:0}
+aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+aside.side li a{display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);border-left:1px solid transparent;transition:color .12s,border-color .12s;line-height:1.45}
+aside.side li a:hover{color:var(--ink);text-decoration:none}
+aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+article{min-width:0;max-width:720px;margin:0 auto}
+article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+article h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;color:var(--ink)}
+article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+article .byline .k{color:var(--muted-2);margin-right:4px}
+article h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;display:flex;align-items:baseline;gap:12px;position:relative}
+article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+article h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px}
+article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+article p strong{color:var(--ink);font-weight:600}
+article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+article code,code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+pre.code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:14px 18px;color:var(--ink-2);line-height:1.65;overflow-x:auto;max-width:640px;margin:18px 0}
+pre.code .c{color:var(--accent);font-weight:500}
+pre.code .h{color:var(--muted);font-style:italic}
+article ul,article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+article ul li,article ol li{margin:6px 0;line-height:1.75}
+article ul li::marker{color:var(--muted-2)}
+article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.pullquote{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;max-width:640px}
+.pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+.pullquote cite::before{content:"— "}
+.note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+.note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+.note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+.note .body strong{color:var(--ink)}
+.note.warn{border-top-color:var(--warn)}
+.note.warn .tag{color:var(--warn)}
+.note.accent{border-top-color:var(--accent)}
+.note.accent .tag{color:var(--accent)}
+dl.def{margin:0 0 24px;max-width:680px}
+dl.def > div{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+dl.def > div:first-child{border-top:1px solid var(--ink)}
+dl.def > div:last-child{border-bottom:1px solid var(--line)}
+dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+.formula{max-width:640px;margin:24px 0;padding:18px 22px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:13.5px;color:var(--ink);line-height:1.7;position:relative}
+.formula::before{content:"FORMULA";position:absolute;top:-10px;left:14px;background:#fff;padding:2px 8px;font-size:9.5px;letter-spacing:0.12em;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.formula .c{color:var(--accent);font-weight:500}
+.formula .em{background:var(--highlight);padding:0 4px;border-radius:2px}
+.tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:680px;font-size:13.5px}
+.tbl .r{display:grid;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.tbl .r:last-child{border-bottom:0}
+.tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;padding-bottom:8px}
+.tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+.tbl.c3 .r{grid-template-columns:140px 160px 1fr;gap:18px}
+.tbl.c3-wide .r{grid-template-columns:170px 1fr 1fr;gap:18px}
+.tbl.c3-num .r{grid-template-columns:1.4fr 80px 80px;gap:16px}
+.tbl.c4 .r{grid-template-columns:130px 160px 1fr 120px;gap:12px}
+.tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.tbl strong{color:var(--ink);font-weight:600}
+.tbl .num{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--ink-2)}
+.tbl .total{font-family:var(--mono);font-weight:600;color:var(--ink);border-top:1px solid var(--ink);padding-top:11px}
+.tag-pill{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:#fff;letter-spacing:0.03em}
+.tag-pill.solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-pill.warn{background:var(--warn-soft);color:var(--warn);border-color:#e8c8a8}
+.tag-pill.accent{background:var(--accent-soft);color:var(--accent);border-color:#d8d8ee}
+.concepts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0;max-width:720px}
+.concept{border:1px solid var(--line);border-radius:4px;padding:18px;background:var(--surface-2);position:relative;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.concept .n{position:absolute;top:14px;right:18px;font-family:var(--serif);font-size:36px;font-weight:600;color:var(--ink);opacity:0.1;line-height:1}
+.concept .t{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);line-height:1.3;padding-right:28px}
+.concept .t .sub{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+.roadmap{margin:24px 0;max-width:720px;display:grid;gap:8px}
+.road-row{display:grid;grid-template-columns:100px 1fr;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.road-row .v{background:var(--ink);color:#fff;padding:14px 16px;font-family:var(--mono);font-size:11.5px;letter-spacing:0.05em;font-weight:500;display:flex;align-items:center}
+.road-row .d{padding:14px 18px;font-size:14px;color:var(--ink-2);line-height:1.6}
+.road-row .d strong{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+.src{max-width:640px;margin-top:6px;padding:10px 14px;border:1px dashed var(--muted-2);border-radius:3px;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--surface-2)}
+.src strong{color:var(--ink-2)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px;margin:24px 0}
+.stat{border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:var(--surface-2)}
+.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat .v{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+.stat .v .unit{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px;font-family:var(--mono)}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+.flow{max-width:640px;margin:20px 0;padding:18px 22px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+.flow .arr{color:var(--accent);font-weight:500}
+.flow strong{color:var(--ink);font-weight:600}
+.tree{max-width:640px;margin:20px 0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:18px 22px}
+.tree strong{color:var(--ink);font-weight:600}
+.tree .l{color:var(--muted-2)}
+aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+aside.toc ul{list-style:none;padding:0;margin:0}
+aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+aside.toc li a:hover{color:var(--ink);text-decoration:none}
+aside.toc li a.active{color:var(--ink)}
+aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+.dropcap::first-letter{font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;float:left;padding:6px 10px 0 0;color:var(--ink)}
+footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+@media print{
+  .topbar,aside.side,aside.toc{display:none}
+  .layout{display:block;padding:0}
+  article{max-width:100%}
+  article h2{break-after:avoid}
+  .formula,.concept,.road-row,.tbl,.stat,.flow,.tree,pre.code{break-inside:avoid}
+}
+@media (max-width:1040px){
+  .layout{grid-template-columns:220px minmax(0,1fr)}
+  aside.toc{display:none}
+}
+@media (max-width:720px){
+  .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+  aside.side{position:static;height:auto}
+  .topbar{padding:12px 20px}
+  article h1{font-size:34px}
+  article h2{font-size:24px;margin-top:48px}
+  .topbar .doc-name{display:none}
+  .concepts,.stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark"><div class="dot">MH</div> 신시어리 SCM</div>
+  <span class="sep">/</span>
+  <span class="doc-name">물류파트 이니셔티브 회의록</span>
+  <div class="right">
+    <span>SK-08 · MH-MTG-260519</span>
+    <span class="ver">v1.0 · 26.05.19</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch0">I · 개요 및 배경</a></li>
+      <li><a href="#chA">II · KPI 현황</a></li>
+      <li><a href="#chB">III · 안건별 의사결정</a></li>
+      <li><a href="#chC">IV · 이슈 및 리스크</a></li>
+      <li><a href="#chD">V · 실행 계획</a></li>
+      <li><a href="#chE">VI · 보류 항목</a></li>
+      <li><a href="#chF">VII · 차기 회의</a></li>
+      <li><a href="#chG">VIII · PMP 요약</a></li>
+    </ul>
+    <div class="cross">
+      <a href="#">M/H 계산 스크립트 <span class="arr">→</span></a>
+      <a href="#">W21 M/H 결과 <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <article>
+
+    <div class="eyebrow">LOGISTICS INITIATIVE · M/H MEASUREMENT DESIGN · 2026-05-19</div>
+    <h1>물류파트 이니셔티브 회의록</h1>
+    <p class="lede">AX 기반 생산성 50% 향상을 위한 M/H 측정 체계 설계 — Cycle time 실측 검증, WMS movement 필드 백필, 프리패키징·TMS 실측 착수 방향을 확정한 이니셔티브 킥오프 회의록.</p>
+    <div class="byline">
+      <span><span class="k">회의일자</span>2026-05-19 (월)</span>
+      <span><span class="k">참석자</span>윤지수, 문경선</span>
+      <span><span class="k">회의유형</span>물류파트 이니셔티브 논의</span>
+      <span><span class="k">작성자</span>윤지수</span>
+    </div>
+
+    <!-- I. 개요 및 배경 -->
+    <h2 id="ch0"><span class="nm">I</span>개요 및 배경</h2>
+    <p class="dropcap">물류파트는 AX (Automation Transformation) 기반 생산성 50% 향상을 목표로 설정했다. 이번 회의는 해당 목표를 달성하기 위한 M/H (Man-Hour) 측정 체계 설계 이니셔티브의 킥오프 세션으로, 에이원센터에서 윤지수(물류파트장)와 문경선(물류파트원)이 참석했다.</p>
+    <p>전 팀 회의 의사결정 원칙에 따라, 각 파트의 이니셔티브는 팀 전체의 통일된 재무 지표 기반 목표와 사전 확정된 범위(Scope) 아래에서 추진되어야 한다. 목표와 범위가 불분명한 상태에서 AX/DX를 추진할 경우 리소스 낭비 및 매몰 비용 리스크가 발생한다는 점을 전제로 한다.</p>
+
+    <div class="pullquote">
+      M/H 기준선 없이 50% 향상을 선언하는 것은 목적지 없이 속도를 높이는 것과 같다.
+      <cite>물류파트 이니셔티브 논의, 2026-05-19</cite>
+    </div>
+
+    <div class="flow">
+<strong>M/H 측정 Iter 착수</strong>
+  <span class="arr">→</span> 공정별 표준 M/H 기준선 확립
+  <span class="arr">→</span> 병목 공정 식별
+  <span class="arr">→</span> AX 투자 우선순위 결정
+  <span class="arr">→</span> <strong>+50% 달성 여부 판단</strong>
+    </div>
+
+    <dl class="def">
+      <div>
+        <dt>M/H<br><span style="color:var(--muted-2);font-size:11px">Man-Hour</span></dt>
+        <dd>특정 공정을 처리하는 데 소요된 인력 시간. 1 M/H = 1인이 1시간 작업한 투입량.</dd>
+      </div>
+      <div>
+        <dt>Cycle time<br><span style="color:var(--muted-2);font-size:11px">Wall-clock Time</span></dt>
+        <dd>공정 시작부터 끝까지의 실경과 시간. Touch time(실제 작업 시간)과 구분되며, 대기·이동을 포함한다.</dd>
+      </div>
+      <div>
+        <dt>PFD<br><span style="color:var(--muted-2);font-size:11px">Personal + Fatigue + Delay</span></dt>
+        <dd>표준 시간에 적용하는 여유율 계수. 신시어리 기준 1.15 (15% 여유).</dd>
+      </div>
+      <div>
+        <dt>ELS<br><span style="color:var(--muted-2);font-size:11px">Expected / Calculated / Actual</span></dt>
+        <dd>예상M/H · 계산M/H · 실측M/H 3-필드 구조. 생산운영팀 pkg_schedule에 선행 적용 중.</dd>
+      </div>
+    </dl>
+
+    <!-- II. KPI 현황 -->
+    <h2 id="chA"><span class="nm">II</span>KPI 현황</h2>
+    <p>W21 기준 WMS+TMS 통합 M/H는 184.6 MH로, 가용 886 MH 대비 가동률은 20.8%다. 피킹·상하차·외주임가공·프리패키징 공정이 아직 측정 범위에 미포함된 상태이므로 실제 가동률은 이보다 높을 것으로 추정된다.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">WMS+TMS 가동률</div>
+        <div class="v">20.8<span class="unit">%</span></div>
+        <div class="sub">184.6 MH / 886 MH 가용 (W21)</div>
+      </div>
+      <div class="stat">
+        <div class="k">TMS 처리 건수</div>
+        <div class="v">321<span class="unit">건</span></div>
+        <div class="sub">18.5 MH · 3.45분/건 (W21)</div>
+      </div>
+      <div class="stat">
+        <div class="k">생산성 향상 목표</div>
+        <div class="v">+50<span class="unit">%</span></div>
+        <div class="sub">기준선 미확정 — 측정 선행 필요</div>
+      </div>
+    </div>
+
+    <div class="tbl c3-num">
+      <div class="r h"><div>TMS 배송유형 (W21)</div><div style="text-align:right">건수</div><div style="text-align:right">MH</div></div>
+      <div class="r"><div>일괄 배송</div><div class="num">210건</div><div class="num">12.1</div></div>
+      <div class="r"><div>미분류</div><div class="num">90건</div><div class="num">5.2</div></div>
+      <div class="r"><div>분할 배송</div><div class="num">18건</div><div class="num">1.0</div></div>
+      <div class="r"><div>개별 배송</div><div class="num">3건</div><div class="num">0.2</div></div>
+      <div class="r"><div class="total">합계</div><div class="num total">321건</div><div class="num total">18.5</div></div>
+    </div>
+    <div class="src"><strong>출처</strong> · WMS+TMS Iter 1.5 M/H 계산 결과 (outputs/MH-2026-W21.md) · 2026-05-19 기준</div>
+
+    <!-- III. 안건별 의사결정 -->
+    <h2 id="chB"><span class="nm">III</span>안건별 의사결정</h2>
+    <p>이번 회의에서는 5개 안건을 논의했다. 안건 1~4는 의사결정 완료, 안건 5는 데이터 정합성 확보 후 재논의로 보류되었다.</p>
+
+    <div class="note accent">
+      <div class="tag">안건 1 · Cycle time 실측 데이터 수신 및 CBM 비교 검증</div>
+      <div class="body">
+        <strong>논의 배경:</strong> 현행 WMS M/H 산출은 글로벌 CBM 상수(4.0 min/CBM)에 의존하며 자사 실제 공정 시간과의 괴리가 존재한다. 문경선이 입하~입고~검수 구간을 수기 Cycle time 방식(시작~끝 wall-clock time)으로 측정 중이다.<br><br>
+        <strong>의사결정 결과:</strong> 문경선이 측정 완료 즉시 데이터를 공유하고, 윤지수/Claude가 CBM 상수 대비 비교 분석을 실행한다. 검증 완료 시 자사 실측 상수로 교체 (Iter 2.0 선행 작업).<br><br>
+        <strong>결정 근거 / 기대 효과:</strong> 글로벌 상수 대비 자사 실측 상수 교체 시 M/H 정확도 30~50% 향상 기대. 기준선 신뢰도 확보는 50% 목표 판단의 전제 조건.
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 2 · WMS movement 테이블 M/H 필드 백필 및 프리패키징 연동</div>
+      <div class="body">
+        <strong>논의 배경:</strong> 생산운영팀은 pkg_schedule 3-table ELS(예상M/H·계산M/H·실측M/H 구조)를 이미 운영 중이다. WMS 입하 베이스(appLui4ZR5HWcQRri) movement 테이블에는 M/H 필드가 아직 없어 공정별 실적 집계가 불가능하다.<br><br>
+        <strong>의사결정 결과:</strong> 입하(Receiving), 입하검수(Inbound QC), 입고(Putaway), 출고검수(Outbound QC) 4개 공정에 예상M/H·계산M/H·실측M/H 3-필드를 추가한다. 프리패키징 공정도 동일 측정 대상에 포함.<br><br>
+        <strong>결정 근거 / 기대 효과:</strong> 생산운영팀 ELS 구조와 통일하여 파트 간 M/H 집계 일관성 확보. 추후 통합 대시보드 데이터 정합성 보장.
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 3 · 프리패키징 M/H 측정 설계 착수</div>
+      <div class="body">
+        <strong>논의 배경:</strong> 프리패키징 공정은 DEFERRED 상태였다. WERC 등 글로벌 벤치마크에 해당 공정 표준이 없으며, 사내 고유 공정이므로 직접 타임 스터디 설계가 필요하다.<br><br>
+        <strong>의사결정 결과:</strong> 타임 스터디 착수. 대상 요소: MES 연동 인쇄 준비 / 박스 성형 / 라벨 부착 / 스테이징.<br><br>
+        <strong>결정 근거 / 기대 효과:</strong> 프리패키징은 현재 M/H 미계산 공정으로, 실측 완료 시 전체 가동률 기준선 상향 조정 가능. PFD (Personal + Fatigue + Delay) 1.15 적용으로 현실적 표준 시간 확보.
+      </div>
+    </div>
+
+    <div class="formula">
+      M/H = (인쇄준비 + 박스성형 × <span class="c">qty</span> + 라벨부착 × <span class="c">qty</span> + 스테이징 × <span class="c">carton_qty</span>) × <span class="em">PFD(1.15)</span>
+    </div>
+    <div class="src"><strong>참고</strong> · 출고수량·임가공 예정일 필드 기존 존재 — 실측 완료 즉시 연동 가능 (Iter 2.3 예정)</div>
+
+    <div class="note accent">
+      <div class="tag">안건 4 · TMS M/H 측정 실측 착수</div>
+      <div class="body">
+        <strong>논의 배경:</strong> 현행 TMS M/H는 글로벌 표준값(배차 1.0분 + 서류 2.0분) × PFD(1.15) = 3.45분/건을 사용 중이다. W21 기준 321건 / 18.5 MH. 상차(Loading), 외주임가공 준비(다영기획 Prep) 등 미설계 공정 존재.<br><br>
+        <strong>의사결정 결과:</strong> TMS 글로벌 상수를 자사 실측 기반으로 교체하는 Iter 착수. 상차·외주임가공 준비 공정을 단계별로 추가 설계.<br><br>
+        <strong>결정 근거 / 기대 효과:</strong> TMS M/H 정밀도 향상 및 운송비 원가 산출 신뢰도 제고. 미설계 공정 포함 시 TMS M/H 재산출 기준 확립 가능.
+      </div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">안건 5 · 통합 M/H 대시보드 — PENDING</div>
+      <div class="body">
+        <strong>논의 배경:</strong> WMS(appLui4ZR5HWcQRri)와 TMS(app4x70a8mOrIKsMf) 베이스가 현재 분리 운영 중이며, CBM 기반(WMS) vs 건수 기반(TMS) 집계 방식이 상이하다.<br><br>
+        <strong>의사결정 결과:</strong> 데이터 정합성 확보(Iter 2.x 완료) 이후 통합 뷰 형태를 결정한다. 현 시점 통합 시 오산 위험 존재 — 보류.<br><br>
+        <strong>결정 근거:</strong> 조기 통합 시 집계 기준 불일치로 인한 M/H 오산 리스크 발생. Iter 2.x 완료 후 통합 시 정확도 보장 가능.
+      </div>
+    </div>
+
+    <!-- IV. 이슈 및 리스크 -->
+    <h2 id="chC"><span class="nm">IV</span>이슈 및 리스크</h2>
+    <p>M/H 측정 체계 고도화 과정에서 4개 이슈·리스크가 식별되었다. 기준선 미확정 문제가 최우선 관리 대상이다.</p>
+
+    <div class="tbl c4">
+      <div class="r h"><div>번호</div><div>이슈 / 리스크</div><div>영향도</div><div>조치 계획</div></div>
+      <div class="r">
+        <div class="mono">R-01</div>
+        <div><strong>기준선 미확정 상태에서 50% 목표 선언</strong> — 측정 전 달성 여부 판단 불가</div>
+        <div><span class="tag-pill solid">High</span></div>
+        <div>Cycle time 실측 → CBM 검증 → 기준선 확정 순서 준수 / 윤지수</div>
+      </div>
+      <div class="r">
+        <div class="mono">R-02</div>
+        <div><strong>Lead time 혼용</strong> — 동시 다발 처리로 Touch time 분리 불가</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>Iter 3.0 근본 해결. 현재 Cycle time 방식 우회 / 윤지수</div>
+      </div>
+      <div class="r">
+        <div class="mono">R-03</div>
+        <div><strong>프리패키징 글로벌 표준 없음</strong> — WERC 벤치마크 부재</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>직접 타임 스터디 설계로 사내 표준 수립 / 문경선</div>
+      </div>
+      <div class="r">
+        <div class="mono">R-04</div>
+        <div><strong>CBM 미기재 레코드</strong> — PT코드 룩업 실패 시 carton fallback 정확도 저하</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>fallback 로직 유지, 한계 명시 후 Iter 2.0 보완 / 윤지수</div>
+      </div>
+    </div>
+
+    <!-- V. 실행 계획 -->
+    <h2 id="chD"><span class="nm">V</span>실행 계획</h2>
+
+    <h3 id="chD-prev">5-A. 이전 Action Items (Backward)</h3>
+    <div class="note">
+      <div class="tag">이전 Action Items</div>
+      <div class="body">해당 없음 — 이니셔티브 킥오프 회의</div>
+    </div>
+
+    <h3 id="chD-next">5-B. 신규 Action Items (Forward)</h3>
+    <div class="roadmap">
+      <div class="road-row">
+        <div class="v">Critical</div>
+        <div class="d">
+          <strong>입하~입고~검수 Cycle time 측정 데이터 공유</strong>
+          담당: 문경선 &nbsp;·&nbsp; 기한: 즉시 &nbsp;·&nbsp; <span class="tag-pill solid">SK-02</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Critical</div>
+        <div class="d">
+          <strong>A1 수신 후 CBM 상수 비교 분석 실행 (Iter 2.0 선행)</strong>
+          담당: 윤지수 &nbsp;·&nbsp; 기한: A1 완료 후 &nbsp;·&nbsp; <span class="tag-pill solid">SK-06</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">High</div>
+        <div class="d">
+          <strong>WMS movement 테이블 M/H 필드 설계 확정 (3-필드 × 4공정)</strong>
+          담당: 윤지수 &nbsp;·&nbsp; 기한: 05/26 &nbsp;·&nbsp; <span class="tag-pill solid">SK-01</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">High</div>
+        <div class="d">
+          <strong>프리패키징 타임 스터디 공정 요소 확정 및 측정 방법 설계</strong>
+          담당: 문경선 &nbsp;·&nbsp; 기한: 05/26 &nbsp;·&nbsp; <span class="tag-pill solid">SK-08</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Medium</div>
+        <div class="d">
+          <strong>TMS 실측 공정 범위 및 측정 방법 확정 (상차·외주임가공 준비 포함)</strong>
+          담당: 윤지수 &nbsp;·&nbsp; 기한: 05/26 &nbsp;·&nbsp; <span class="tag-pill">SK-05</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Medium</div>
+        <div class="d">
+          <strong>WMS movement M/H 필드 백필 스크립트 작성 및 실행</strong>
+          담당: 윤지수 &nbsp;·&nbsp; 기한: 06/02 &nbsp;·&nbsp; <span class="tag-pill">SK-02</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Low</div>
+        <div class="d">
+          <strong>통합 M/H 대시보드 구성 방향 사전 검토 (Iter 2.x 완료 후 본격 착수)</strong>
+          담당: 윤지수 &nbsp;·&nbsp; 기한: 추후 &nbsp;·&nbsp; <span class="tag-pill accent">SK-06</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VI. 보류 항목 -->
+    <h2 id="chE"><span class="nm">VI</span>보류 항목</h2>
+
+    <div class="note warn">
+      <div class="tag">PENDING · 통합 M/H 대시보드 구성</div>
+      <div class="body">
+        <strong>보류 사유:</strong> WMS CBM 기반 vs TMS 건수 기반 집계 방식 불일치. 현 시점 통합 시 오산 위험 존재.<br>
+        <strong>재논의 예정:</strong> Iter 2.x 완료 후 (시점 미정). WMS(appLui4ZR5HWcQRri)와 TMS(app4x70a8mOrIKsMf) 집계 기준 통일 이후 형태 결정.
+      </div>
+    </div>
+
+    <!-- VII. 차기 회의 -->
+    <h2 id="chF"><span class="nm">VII</span>차기 회의 계획</h2>
+
+    <div class="note">
+      <div class="tag">NEXT MEETING · 2026-05-26 (월)</div>
+      <div class="body">
+        <strong>예정 안건:</strong><br>
+        1. 문경선 Cycle time 실측 데이터 검토 및 CBM 비교 분석 결과 공유<br>
+        2. WMS movement M/H 필드 설계안 확정<br>
+        3. 프리패키징 타임 스터디 공정 요소 확정 결과 보고<br>
+        4. TMS 실측 공정 범위 확정 결과 보고<br><br>
+        <strong>특이 사항:</strong> 안건 1(문경선 데이터 공유)이 선행 조건 — 미완료 시 안건 2(CBM 분석)는 이월.
+      </div>
+    </div>
+
+    <!-- VIII. PMP 요약 -->
+    <h2 id="chG"><span class="nm">VIII</span>PMP 관점 요약</h2>
+
+    <div class="concepts">
+      <div class="concept">
+        <span class="n">01</span>
+        <div class="t">Scope<span class="sub">범위 관리</span></div>
+        <p style="margin:0;font-size:13.5px">WMS movement 4개 공정 + 프리패키징 + TMS(상차·외주임가공 준비)를 M/H 측정 범위에 신규 포함. 통합 대시보드는 Iter 2.x 완료 전 Out of Scope.</p>
+      </div>
+      <div class="concept">
+        <span class="n">02</span>
+        <div class="t">Schedule<span class="sub">일정 관리</span></div>
+        <p style="margin:0;font-size:13.5px">Cycle time 데이터 공유 즉시 → CBM 비교 분석 → WMS M/H 필드 설계 05/26 → 백필 스크립트 실행 06/02. 선행 작업(A1) 지연 시 전체 일정 이월.</p>
+      </div>
+      <div class="concept">
+        <span class="n">03</span>
+        <div class="t">Risk<span class="sub">리스크 관리</span></div>
+        <p style="margin:0;font-size:13.5px">Touch time 분리 불가(Iter 3.0 과제), 프리패키징 벤치마크 부재, CBM 미기재 레코드 fallback 정확도 한계, 기준선 미확정 상태의 목표 선언 리스크.</p>
+      </div>
+      <div class="concept">
+        <span class="n">04</span>
+        <div class="t">Financial Impact<span class="sub">재무 영향</span></div>
+        <p style="margin:0;font-size:13.5px">M/H 기준선 교체(글로벌 상수 → 자사 실측)로 정확도 30~50% 향상 시 공정별 원가(COGS) 산출 신뢰도 제고. 미측정 공정 포함 시 물류비 원가 과소 계상 위험 해소 가능.</p>
+      </div>
+    </div>
+
+    <footer class="end">
+      <span>SK-08 · MH-MTG-260519 · v1.0</span>
+      <span>END OF DOCUMENT</span>
+    </footer>
+
+  </article>
+
+  <aside class="toc" id="toc">
+    <h5>이 문서 안에서</h5>
+    <ul>
+      <li><a href="#ch0">I · 개요 및 배경</a></li>
+      <li><a href="#chA">II · KPI 현황</a></li>
+      <li><a href="#chB">III · 안건별 의사결정</a></li>
+      <li class="sub"><a href="#chB">안건 1: Cycle time</a></li>
+      <li class="sub"><a href="#chB">안건 2: M/H 필드 백필</a></li>
+      <li class="sub"><a href="#chB">안건 3: 프리패키징</a></li>
+      <li class="sub"><a href="#chB">안건 4: TMS 실측</a></li>
+      <li><a href="#chC">IV · 이슈 및 리스크</a></li>
+      <li><a href="#chD">V · 실행 계획</a></li>
+      <li class="sub"><a href="#chD-next">5-B 신규 Action Items</a></li>
+      <li><a href="#chE">VI · 보류 항목</a></li>
+      <li><a href="#chF">VII · 차기 회의</a></li>
+      <li><a href="#chG">VIII · PMP 요약</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<script>
+  (function(){
+    const navLinks = document.querySelectorAll('#nav a[href^="#"], #toc a[href^="#"]');
+    const sections = [...document.querySelectorAll('article h2[id], article h3[id]')];
+    function setActive(){
+      const y = window.scrollY + 100;
+      let current = sections[0];
+      for(const s of sections){ if(s.offsetTop <= y) current = s; }
+      if(!current) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current.id));
+    }
+    window.addEventListener('scroll', setActive, {passive:true});
+    setActive();
+  })();
+</script>
+
+</body>
+</html>
