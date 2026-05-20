@@ -1,0 +1,146 @@
+name: M/H Backfill — 입하검수입고 베이스 표준 M/H 자동 채움
+
+# ⚠️ 활성화 전 확인사항:
+#   1. Repository secrets 등록:
+#      - AIRTABLE_IBSA_PAT  (입하검수입고 베이스, data.records:read+write 필수)
+#      - AIRTABLE_WMS_PAT   (sync_parts fallback 용, data.records:read 필수)
+#   2. 초기 1회 full backfill 완료 (workflow_dispatch + execute=true + full=true)
+#   3. 결과 검증 후 아래 schedule cron block 주석 해제
+#
+# 현재 schedule 비활성 상태 — workflow_dispatch 수동 트리거만 가능
+on:
+  # ──────────────────────────────────────────────────
+  # daily cron @ 04:00 KST (= 19:00 UTC 전일)
+  # 활성화 시 아래 schedule 블록 주석 해제
+  # ──────────────────────────────────────────────────
+  # schedule:
+  #   - cron: '0 19 * * *'
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: '실제 PATCH (false = dry-run)'
+        type: boolean
+        required: false
+        default: false
+      full:
+        description: '전체 재계산 (MH_상수버전 무시)'
+        type: boolean
+        required: false
+        default: false
+      since:
+        description: '입하일자 시작 (YYYY-MM-DD), 비우면 전체'
+        required: false
+        default: ''
+      limit:
+        description: '처리 최대 건수 (테스트용)'
+        required: false
+        default: ''
+      version:
+        description: '상수버전 라벨 override'
+        required: false
+        default: ''
+
+env:
+  PYTHON_VERSION: '3.11'
+  REQS: harness/requirements.txt
+  TZ: Asia/Seoul
+
+jobs:
+  # ── 1. Validate ───────────────────────────────────────────────────────────────
+  validate:
+    name: '1 · Validate — env & imports'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.REQS }}
+
+      - name: Install deps
+        run: pip install -r ${{ env.REQS }}
+
+      - name: Check required secrets
+        shell: bash
+        env:
+          IBSA: ${{ secrets.AIRTABLE_IBSA_PAT }}
+          WMS:  ${{ secrets.AIRTABLE_WMS_PAT }}
+        run: |
+          [[ -n "$IBSA" ]] || { echo "::error::AIRTABLE_IBSA_PAT secret missing"; exit 1; }
+          [[ -n "$WMS"  ]] || { echo "::warning::AIRTABLE_WMS_PAT not set — sync_parts fallback disabled"; }
+
+      - name: Script syntax check
+        run: python -m py_compile scripts/mh_backfill_to_ibsa.py
+
+  # ── 2. Backfill ───────────────────────────────────────────────────────────────
+  backfill:
+    name: '2 · Backfill — calculate & PATCH'
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install deps
+        run: pip install requests python-dotenv
+
+      - name: Build args
+        id: args
+        shell: bash
+        run: |
+          ARGS=""
+          [[ "${{ github.event.inputs.execute }}" == "true" ]] && ARGS="$ARGS --execute"
+          [[ "${{ github.event.inputs.full }}"    == "true" ]] && ARGS="$ARGS --full"
+          [[ -n "${{ github.event.inputs.since }}"          ]] && ARGS="$ARGS --since ${{ github.event.inputs.since }}"
+          [[ -n "${{ github.event.inputs.limit }}"          ]] && ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+          [[ -n "${{ github.event.inputs.version }}"        ]] && ARGS="$ARGS --version ${{ github.event.inputs.version }}"
+          echo "args=$ARGS" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Run backfill
+        shell: bash
+        env:
+          AIRTABLE_IBSA_PAT: ${{ secrets.AIRTABLE_IBSA_PAT }}
+          AIRTABLE_WMS_PAT:  ${{ secrets.AIRTABLE_WMS_PAT }}
+        run: |
+          python scripts/mh_backfill_to_ibsa.py ${{ steps.args.outputs.args }} \
+            2>&1 | tee mh-backfill-log.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mh-backfill-log-${{ github.run_id }}
+          path: mh-backfill-log.txt
+          retention-days: 14
+
+  # ── 3. Summary ────────────────────────────────────────────────────────────────
+  summary:
+    name: '3 · Summary'
+    runs-on: ubuntu-latest
+    needs: [validate, backfill]
+    if: always()
+    steps:
+      - name: Write step summary
+        shell: bash
+        run: |
+          case "${{ needs.backfill.result }}" in
+            success)   STATUS="✅ 완료" ;;
+            failure)   STATUS="❌ 실패" ;;
+            cancelled) STATUS="🚫 취소" ;;
+            *)         STATUS="❓ ${{ needs.backfill.result }}" ;;
+          esac
+          MODE="${{ github.event.inputs.execute == 'true' && 'EXECUTE (PATCH)' || 'DRY-RUN' }}"
+          {
+            echo "## M/H Backfill"
+            echo "| 항목 | 값 |"
+            echo "|------|-----|"
+            echo "| 모드 | $MODE |"
+            echo "| full | ${{ github.event.inputs.full }} |"
+            echo "| since | ${{ github.event.inputs.since || '(none)' }} |"
+            echo "| 상태 | $STATUS |"
+            echo "| 실행 | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |"
+          } >> "$GITHUB_STEP_SUMMARY"
