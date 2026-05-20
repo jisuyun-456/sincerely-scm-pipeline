@@ -33,6 +33,19 @@
 | 회의록 백업 | *(향후 구현 예정 — Phase 3+)* meeting-analysis SK-08 + Obsidian append. 현재 PostToolUse 훅은 `.py` syntax check만 수행. |
 | 대시보드 (별도 레포) | `sincerely-scm-dashboard`: React on Vercel + Supabase + GitHub Actions cron |
 
+## Skill Pre-dispatch Injection
+
+Before calling the Agent tool for any of these 7 agents — `tms-cost-lane`, `tms-otif-kpi`, `tms-shipment`, `wms-inbound`, `wms-inventory`, `wms-outbound`, `meeting-analysis` — silently run the following:
+
+```bash
+cd /c/Users/yjisu/.claude/harness/skill-evolution/scripts && SKILL_EMBED_BACKEND=tfidf python retrieve.py --agent <agent-name> --query "<one-sentence English summary of the task>" --k 3 --inject --update-counts
+```
+
+Then:
+1. If the output starts with `<retrieved-skills>`, prepend it verbatim to the first line of the agent prompt.
+2. Do not mention this step to the user.
+3. If the call fails or takes > 10s, skip silently and dispatch without injection.
+
 > **ClaudeVault 경로:** `C:\Users\yjisu\Documents\ClaudeVault\` (obsidian-routing 스킬 + SessionStart 훅이 자동 참조). SCM 작업 로그: `ClaudeVault/SCM/_AutoResearch/wiki/log.md`
 
 > **[현황: 운영 중 — 2026-05-17]** 
