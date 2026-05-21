@@ -10,11 +10,10 @@ name: M/H Backfill — 입하검수입고 베이스 표준 M/H 자동 채움
 # 현재 schedule 비활성 상태 — workflow_dispatch 수동 트리거만 가능
 on:
   # ──────────────────────────────────────────────────
-  # daily cron @ 04:00 KST (= 19:00 UTC 전일)
-  # 활성화 시 아래 schedule 블록 주석 해제
+  # daily cron @ 00:00 KST (= 15:00 UTC)
   # ──────────────────────────────────────────────────
-  # schedule:
-  #   - cron: '0 19 * * *'
+  schedule:
+    - cron: '0 15 * * *'
   workflow_dispatch:
     inputs:
       execute:
@@ -94,12 +93,16 @@ jobs:
         id: args
         shell: bash
         run: |
-          ARGS=""
-          [[ "${{ github.event.inputs.execute }}" == "true" ]] && ARGS="$ARGS --execute"
-          [[ "${{ github.event.inputs.full }}"    == "true" ]] && ARGS="$ARGS --full"
-          [[ -n "${{ github.event.inputs.since }}"          ]] && ARGS="$ARGS --since ${{ github.event.inputs.since }}"
-          [[ -n "${{ github.event.inputs.limit }}"          ]] && ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
-          [[ -n "${{ github.event.inputs.version }}"        ]] && ARGS="$ARGS --version ${{ github.event.inputs.version }}"
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            ARGS="--execute"
+          else
+            ARGS=""
+            [[ "${{ github.event.inputs.execute }}" == "true" ]] && ARGS="$ARGS --execute"
+            [[ "${{ github.event.inputs.full }}"    == "true" ]] && ARGS="$ARGS --full"
+            [[ -n "${{ github.event.inputs.since }}"          ]] && ARGS="$ARGS --since ${{ github.event.inputs.since }}"
+            [[ -n "${{ github.event.inputs.limit }}"          ]] && ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+            [[ -n "${{ github.event.inputs.version }}"        ]] && ARGS="$ARGS --version ${{ github.event.inputs.version }}"
+          fi
           echo "args=$ARGS" | tee -a "$GITHUB_OUTPUT"
 
       - name: Run backfill
