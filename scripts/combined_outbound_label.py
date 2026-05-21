@@ -784,55 +784,67 @@ def draw_unified_label_v3140(c: rl_canvas.Canvas, x: float, y: float,
         c.setFont(font_bold, 7); c.setFillColor(INK2)
         c.drawString(x + PAD, C_TOP - 18.5 * mm, f"담당  {consignee_name}")
 
-    # ── Contents (18mm): 품목명 ─────────────────────────────────────────────
-    CONT_H = 18 * mm
-    CONT_Y = CONS_Y - CONT_H
-    sep(CONT_Y)
-
-    CONT_TOP = CONS_Y - 4 * mm
-    c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
-    c.drawString(x + PAD, CONT_TOP, "CONTENTS")
-
+    # ── Contents + QTY ────────────────────────────────────────────────────
+    FTR_H    = 10 * mm
     combined = _parse_combined_items(box["item"])
     if combined:
         n = len(combined)
+
+        # Dynamic 50/50 split: CONS_Y ~ footer top
+        BODY_H = CONS_Y - (y + FTR_H)
+        HALF_H = BODY_H / 2
+
+        CONT_LBL_Y  = CONS_Y - 4 * mm
+        CONT_TXT_Y0 = CONS_Y - 10 * mm
+        CONT_BOT    = CONS_Y - HALF_H
+        QTY_LBL_Y   = CONT_BOT - 4 * mm
+        QTY_TXT_Y0  = CONT_BOT - 10 * mm
+        QTY_BOT     = y + FTR_H
+
+        cont_step = (CONT_TXT_Y0 - CONT_BOT) / max(n - 1, 1) if n > 1 else 0
+        qty_step  = (QTY_TXT_Y0  - QTY_BOT)  / max(n - 1, 1) if n > 1 else 0
+
         item_fs = 18
         for sub in combined:
             while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 8:
                 item_fs -= 1
-        cont_step = (7 * mm) / max(n - 1, 1) if n > 1 else 7 * mm
         while item_fs > cont_step and item_fs > 8:
             item_fs -= 1
+
+        c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
+        c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
         c.setFont(font_bold, item_fs); c.setFillColor(INK)
         for i, sub in enumerate(combined):
-            c.drawString(x + PAD, CONT_TOP - 7 * mm - i * cont_step, sub["name"][:28])
+            c.drawString(x + PAD, CONT_TXT_Y0 - i * cont_step, sub["name"][:28])
+
+        sep(CONT_BOT)
+
+        c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
+        c.drawString(x + PAD, QTY_LBL_Y, "QTY")
+        c.setFont(font_bold, item_fs); c.setFillColor(INK)
+        for i, sub in enumerate(combined):
+            q = _format_qty(sub["qty"]) + " EA" if sub["qty"] else "1 EA"
+            c.drawString(x + PAD, QTY_TXT_Y0 - i * qty_step, q)
+
+        QTY_NUM_Y = QTY_TXT_Y0  # remainder fallback
     else:
+        CONT_H   = 18 * mm
+        CONT_Y   = CONS_Y - CONT_H
+        sep(CONT_Y)
+        CONT_TOP = CONS_Y - 4 * mm
+        c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
+        c.drawString(x + PAD, CONT_TOP, "CONTENTS")
         item_text = box["item"]
-        item_fs = 20
+        item_fs   = 20
         while c.stringWidth(item_text, font_bold, item_fs) > W - 2 * PAD and item_fs > 11:
             item_fs -= 1
         c.setFont(font_bold, item_fs); c.setFillColor(INK)
         c.drawString(x + PAD, CONT_TOP - 10 * mm, item_text)
 
-    # ── QTY + 잔여분 (나머지 공간 전부) ────────────────────────────────────
-    FTR_H     = 10 * mm
-    QTY_LBL_Y = CONT_Y - 8 * mm
-    QTY_NUM_Y = CONT_Y - 24 * mm   # 30pt 수량 baseline
-
-    c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
-    c.drawString(x + PAD, QTY_LBL_Y, "QTY")
-
-    if combined:
-        n = len(combined)
-        qty_fs = 18
-        qty_step = (10 * mm) / max(n - 1, 1) if n > 1 else 10 * mm
-        while qty_fs > qty_step and qty_fs > 8:
-            qty_fs -= 1
-        c.setFont(font_bold, qty_fs); c.setFillColor(INK)
-        for i, sub in enumerate(combined):
-            q = _format_qty(sub["qty"]) + " EA" if sub["qty"] else "EA"
-            c.drawString(x + PAD, QTY_NUM_Y + 5 * mm - i * qty_step, q)
-    else:
+        QTY_LBL_Y = CONT_Y - 8 * mm
+        QTY_NUM_Y = CONT_Y - 24 * mm
+        c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
+        c.drawString(x + PAD, QTY_LBL_Y, "QTY")
         m_qty    = re.match(r"^(\d+)(?:\+(\d+))?", box["qty"])
         main_qty = m_qty.group(1) if m_qty else box["qty"]
         extra    = m_qty.group(2) if m_qty else None
