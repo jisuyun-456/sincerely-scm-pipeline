@@ -59,6 +59,8 @@ RECEIVING_MIN_PER_CBM = 4.0          # 15 CBM/MH 글로벌 표준 (WERC 통합)
 RECEIVING_MIN_THICKNESS_MM = 3.0     # 2D dims(스티커 등) 두께 fallback (cbm_inbound_check 정합)
 RECEIVING_MIN_PER_CARTON = 0.6       # fallback (cartons-only record)
 RECEIVING_FALLBACK_PCS_PER_CARTON = 100
+RECEIVING_FLOOR_STD_MIN = 0.5        # 30초 floor — 소규모 CBM (PFD 전 표준)
+RECEIVING_CAP_STD_MIN   = 5.0        # 최대 5분 cap — 파렛트급 (PFD 전 표준)
 
 # Putaway (입고) — 사용자 측정 (2026-05-18): 적은 수량/부피 3분 ~ 큰 부피·파렛트·다이어리 류 max 10분
 # CBM-linear with cap. CBM 없는 fallback record는 base 3분 적용.
@@ -245,7 +247,8 @@ def calc_receiving_mh(rec, sync_parts_lookup=None):
     if pcs > 0 and spec_direct:
         cbm, ok = spec_to_cbm(spec_direct, pcs)
         if ok and cbm > 0:
-            mh = cbm * RECEIVING_MIN_PER_CBM * PFD_ALLOWANCE
+            raw = cbm * RECEIVING_MIN_PER_CBM
+            mh = min(RECEIVING_CAP_STD_MIN, max(RECEIVING_FLOOR_STD_MIN, raw)) * PFD_ALLOWANCE
             return mh, "cbm-from-spec", cbm
 
     # 2차: sync_parts 룩업
@@ -255,7 +258,8 @@ def calc_receiving_mh(rec, sync_parts_lookup=None):
         if spec_fallback:
             cbm, ok = spec_to_cbm(spec_fallback, pcs)
             if ok and cbm > 0:
-                mh = cbm * RECEIVING_MIN_PER_CBM * PFD_ALLOWANCE
+                raw = cbm * RECEIVING_MIN_PER_CBM
+                mh = min(RECEIVING_CAP_STD_MIN, max(RECEIVING_FLOOR_STD_MIN, raw)) * PFD_ALLOWANCE
                 return mh, "cbm-from-sync_parts", cbm
 
     # 3차: 카톤 fallback

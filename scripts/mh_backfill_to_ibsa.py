@@ -48,11 +48,13 @@ load_dotenv()
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Constants (mh_calculator.py 와 동기 유지) ────────────────────────────────
-VERSION = "v2026-05-cal2"      # 본 버전 식별자 — calibration 갱신 시 bump
+VERSION = "v2026-05-cal3"      # 본 버전 식별자 — calibration 갱신 시 bump
 
 PFD_ALLOWANCE = 1.15
 RECEIVING_MIN_PER_CBM = 4.0
 RECEIVING_MIN_THICKNESS_MM = 3.0
+RECEIVING_FLOOR_STD_MIN = 0.5   # 30초 floor (PFD 전 표준) — mh_calculator.py 동기
+RECEIVING_CAP_STD_MIN   = 5.0   # 최대 5분 cap (PFD 전 표준) — mh_calculator.py 동기
 PUTAWAY_BASE_MIN = 3.0
 PUTAWAY_MAX_MIN = 5.0
 PUTAWAY_PER_CBM_MIN = 7.0
@@ -173,8 +175,9 @@ def calc_record_mh(rec_fields, sync_parts_lookup):
         if pt and pt in sync_parts_lookup:
             cbm = spec_to_cbm(sync_parts_lookup[pt], qty)
 
-    # 표준 M/H 계산
-    mh_입하 = cbm * RECEIVING_MIN_PER_CBM * PFD_ALLOWANCE
+    # 표준 M/H 계산 (입하: floor 0.5분 ~ cap 5.0분, PFD 전 표준)
+    raw_입하 = cbm * RECEIVING_MIN_PER_CBM
+    mh_입하 = min(RECEIVING_CAP_STD_MIN, max(RECEIVING_FLOOR_STD_MIN, raw_입하)) * PFD_ALLOWANCE
     mh_검수 = QC_MIN_PER_PROJECT * PFD_ALLOWANCE
     if cbm > 0:
         extra = min(PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN, cbm * PUTAWAY_PER_CBM_MIN)
