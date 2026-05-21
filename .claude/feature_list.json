@@ -598,6 +598,117 @@
       "completed_at": "2026-05-20",
       "source": "build-hybridization-phase2-20260520-skill-evo/sprint-4",
       "notes": "Phase 3 roadmap document (2026-05-20 ~ 2026-06-17): agent co-evolution targets (70-90 active skills across 10 agents), corpus harvest automation (Slack incidents + AutoResearch + user feedback), retrieval accumulation strategy, success criteria C7-C12, risk mitigations. File: ~/.claude/harness/skill-evolution/docs/phase3-roadmap.md"
+    },
+    {
+      "id": "SCM-FIN-STRATEGY-2026-05-21",
+      "title": "2026 SCM실 재무 KPI 연계 — 물류팀 전략 프로젝트 후보 분석 (Master Spec)",
+      "priority": "done",
+      "domain": "strategy",
+      "status": "done",
+      "created_at": "2026-05-21",
+      "completed_at": "2026-05-21",
+      "source": "brainstorming-skill-2026-05-21",
+      "notes": "Master strategy spec. 16 candidates (H1:8/H2:5/H3:3), 10 KPIs (slide-5 + new-5), Top 5 priority. CRVS 영업이익률 3.27% / SCRW 자본잠식 -1.15억 기반. Top 5 = T-H1-02, X-H1-01, W-H1-04, W-H1-01, T-H1-01. File: _AutoResearch/SCM/outputs/SCM-FinanceStrategy-2026-05-21.md + docs/superpowers/specs/2026-05-21-scm-finance-linked-strategy-design.md"
+    },
+    {
+      "id": "SCM-FIN-PREACTION-01",
+      "title": "사용자 사전 액션 #1 — SCRW 단독 P/L 회계팀 요청 (가설 H1 해소)",
+      "priority": "high",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "Sprint 1 (T-H1-02) 착수 전 완료 필요. SCRW 단독 매출·영업이익·비목 구조 확보."
+    },
+    {
+      "id": "SCM-FIN-PREACTION-02",
+      "title": "사용자 사전 액션 #2 — 더존 외주 3종 계정원장 추출 (지급수수료·지급임차료·외주비)",
+      "priority": "high",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "W-H1-04 (외주임가공 lead time + 단가 SSOT) 착수 전 필요. 외주임가공/외주보관/외주풀필먼트 월간 ₩ 분포 확보."
+    },
+    {
+      "id": "SCM-FIN-PREACTION-03",
+      "title": "사용자 사전 액션 #3 — 제조노무원가 내 물류 인력 회계처리 정책 확인",
+      "priority": "medium",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "X-H1-01 (M/H × 비목 매핑) 착수 전 필요. 피킹/패킹/검수가 매출원가 vs 판관비 어디 잡히는지 확정."
+    },
+    {
+      "id": "SCM-FIN-PREACTION-04",
+      "title": "사용자 사전 액션 #4 — T-H1-02 입증 자료 양식 회계팀·CFO 합의",
+      "priority": "high",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "T-H1-02 (1달 내 납품 입증 자료 자동 패키지) 착수 전 필요. 회계 분류 enabler 양식 확정."
+    },
+    {
+      "id": "SCM-FIN-PREACTION-05",
+      "title": "사용자 사전 액션 #5 — 더존 G/L 계정맵 (movement → G/L) 회계팀 합의",
+      "priority": "medium",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "W-H1-01 (movement → G/L 자동 매핑) 착수 전 필요. SAP 이동유형 × 더존 계정코드 매핑 합의."
+    },
+    {
+      "id": "SCM-FIN-SUBSPEC-T-H1-02",
+      "title": "Sub-Spec #1 — T-H1-02 1달 내 납품 입증 자료 자동 패키지",
+      "priority": "critical",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "Sprint 1 (2~3주). 사전 액션 #4 완료 후 brainstorming → writing-plans → implementation 사이클. 자본구조 직격, 점수 25/25. 영향 파일: harness/settlement/ + Airtable TMS POD 필드. KPI: K9 선수금 비중."
+    },
+    {
+      "id": "SCM-FIN-SUBSPEC-X-H1-01",
+      "title": "Sub-Spec #2 — X-H1-01 M/H × 비목 매핑 대시보드",
+      "priority": "critical",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "Sprint 2 (2~3주). M/H Iter 2.x + 사전 액션 #3 완료 후. 4Q CAPA 재무 표현 + 4Q 비용 예측 동시 충족, 점수 24/25. 영향 파일: sincerely-scm-dashboard/ + Airtable movement M/H 필드. KPI: K3, K5."
+    },
+    {
+      "id": "SCM-FIN-SUBSPEC-W-H1-04",
+      "title": "Sub-Spec #3 — W-H1-04 외주임가공 lead time + 단가 SSOT",
+      "priority": "critical",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "Sprint 3 (2~3주). 사전 액션 #2 완료 후. 외주 마진 가이드 직접 답, 점수 24/25. 신규 harness/outsourcing/lead_time_tracker.py + Airtable 외주임가공 마스터. KPI: K8 노무원가:수수료 비율."
+    },
+    {
+      "id": "SCM-FIN-SUBSPEC-W-H1-01",
+      "title": "Sub-Spec #4 — W-H1-01 movement → G/L 자동 매핑",
+      "priority": "high",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "Sprint 4 (3~4주). 사전 액션 #5 완료 후. 마감 정합성 98% enabler, 점수 22/25. 신규 harness/accounting/gl_mapper.py + 더존 계정맵 YAML. KPI: K1, K2."
+    },
+    {
+      "id": "SCM-FIN-SUBSPEC-T-H1-01",
+      "title": "Sub-Spec #5 — T-H1-01 carrier 청구서 AI 매칭",
+      "priority": "high",
+      "domain": "strategy",
+      "status": "pending",
+      "created_at": "2026-05-21",
+      "source": "SCM-FIN-STRATEGY-2026-05-21",
+      "notes": "Sprint 5 (3~4주). OCR + LLM 솔루션 결정 필요. 시스템 오차 ≤2%, 점수 20/25. 신규 harness/billing/carrier_invoice_matcher.py. KPI: K2, K6 운반비 매출 대비."
     }
   ]
 }
