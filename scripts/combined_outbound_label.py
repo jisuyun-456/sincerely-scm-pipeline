@@ -572,29 +572,47 @@ def draw_carton_label(c: rl_canvas.Canvas, x: float, y: float,
     QTY_LBL_Y   = META_Y - 29 * mm
     QTY_TXT_Y   = META_Y - 41 * mm
 
-    c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
-    c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
     combined = _parse_combined_items(box["item"])
     if combined:
         n = len(combined)
+
+        # Dynamic 50/50 body split between CONTENTS and QTY
+        BODY_H = META_Y - (y + FTR_H)
+        HALF_H = BODY_H / 2
+
+        CONT_LBL_Y_d  = META_Y - 5 * mm
+        CONT_TXT_Y0   = META_Y - 10 * mm
+        CONT_BOT      = META_Y - HALF_H
+
+        QTY_LBL_Y_d   = CONT_BOT - 5 * mm
+        QTY_TXT_Y0    = CONT_BOT - 10 * mm
+        QTY_BOT       = y + FTR_H
+
+        cont_step = (CONT_TXT_Y0 - CONT_BOT) / max(n - 1, 1) if n > 1 else 0
+        qty_step  = (QTY_TXT_Y0  - QTY_BOT)  / max(n - 1, 1) if n > 1 else 0
+
         item_fs = 16
         for sub in combined:
             while c.stringWidth(sub["name"], font_bold, item_fs) > W - 2 * PAD and item_fs > 8:
                 item_fs -= 1
-        cont_step = (7 * mm) / max(n - 1, 1) if n > 1 else 7 * mm
         while item_fs > cont_step and item_fs > 8:
             item_fs -= 1
-        c.setFont(font_bold, item_fs); c.setFillColor(INK)
-        for i, sub in enumerate(combined):
-            c.drawString(x + PAD, CONT_TXT_Y + 4 * mm - i * cont_step, sub["name"][:20])
+
         c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
-        c.drawString(x + PAD, QTY_LBL_Y, "QTY")
-        qty_step = (8 * mm) / max(n - 1, 1) if n > 1 else 8 * mm
+        c.drawString(x + PAD, CONT_LBL_Y_d, "CONTENTS")
         c.setFont(font_bold, item_fs); c.setFillColor(INK)
         for i, sub in enumerate(combined):
-            q = _format_qty(sub["qty"]) + " EA" if sub["qty"] else "EA"
-            c.drawString(x + PAD, QTY_TXT_Y + 4 * mm - i * qty_step, q)
+            c.drawString(x + PAD, CONT_TXT_Y0 - i * cont_step, sub["name"][:20])
+
+        c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+        c.drawString(x + PAD, QTY_LBL_Y_d, "QTY")
+        c.setFont(font_bold, item_fs); c.setFillColor(INK)
+        for i, sub in enumerate(combined):
+            q = _format_qty(sub["qty"]) + " EA" if sub["qty"] else "1 EA"
+            c.drawString(x + PAD, QTY_TXT_Y0 - i * qty_step, q)
     else:
+        c.setFont(font_bold, 7.4); c.setFillColor(MUTED)
+        c.drawString(x + PAD, CONT_LBL_Y, "CONTENTS")
         c.setFont(font_bold, 25.5); c.setFillColor(INK)
         c.drawString(x + PAD, CONT_TXT_Y, box["item"][:18])
         c.setFont(font_bold, 7.4); c.setFillColor(MUTED)

@@ -682,7 +682,7 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
         combined = _parse_combined_items(grp["item"])
         if combined:
             for idx, sub in enumerate(combined):
-                qty_str = f"{_format_qty(sub['qty'])} EA" if sub["qty"] else "EA"
+                qty_str = f"{_format_qty(sub['qty'])} EA" if sub["qty"] else "1 EA"
                 row_data.append({
                     "cells": (
                         box_lbl if idx == 0 else "",
