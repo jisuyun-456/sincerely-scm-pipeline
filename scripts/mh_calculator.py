@@ -67,6 +67,10 @@ RECEIVING_CAP_STD_MIN   = 5.0        # 최대 5분 cap — 파렛트급 (PFD 전
 PUTAWAY_BASE_MIN = 3.0
 PUTAWAY_MAX_MIN = 5.0
 PUTAWAY_PER_CBM_MIN = 7.0   # CBM 1.0에서 max 도달 (3 + 1.0×7 = 10)
+PUTAWAY_FIXED_CORRECTION_MIN = 2.5  # Iter 1.9 (2026-05-22): 실측 보정 +2.5min (PFD 후 additive)
+COUNTING_FLOOR_MIN = 2.0            # Iter 2.0 (2026-05-22): 저울 수량확인 최소 (소형 제품)
+COUNTING_CAP_MIN   = 7.0            # 저울 수량확인 최대 (대형/지류 다수)
+COUNTING_PER_CBM   = 10.0           # CBM 0.5에서 cap 도달
 
 # QC (입하검수) — 사용자 측정 (2026-05-18): 프로젝트 1개당 2~3분 (표본검수). 분포 mid = 2.5
 QC_MIN_PER_PROJECT = 2.5
@@ -301,13 +305,14 @@ def calc_picking_mh(rec):
 # ── Putaway M/H — 사용자 측정 기반 (3~10 min, CBM-linear cap) ──────────────────
 def calc_putaway_mh(rec, cbm=0.0):
     """
-    입고 M/H. 사용자 표명: 적은 수량/부피 3분 ~ 큰 부피·파렛트·다이어리 류 max 10분.
-    수식: base 3 + min(7, cbm × 7), CBM 1.0+에서 max 도달. cbm 없으면 base만.
+    입고 M/H. putaway + Iter1.9 고정보정 + Iter2.0 저울수량확인.
+    저울 수량확인: max(2, min(7, 2 + 10×CBM)) — CBM 0.5에서 7분 cap.
     """
+    counting = max(COUNTING_FLOOR_MIN, min(COUNTING_CAP_MIN, COUNTING_FLOOR_MIN + COUNTING_PER_CBM * cbm))
     if cbm <= 0:
-        return PUTAWAY_BASE_MIN * PFD_ALLOWANCE
+        return PUTAWAY_BASE_MIN * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
     extra = min(PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN, cbm * PUTAWAY_PER_CBM_MIN)
-    return (PUTAWAY_BASE_MIN + extra) * PFD_ALLOWANCE
+    return (PUTAWAY_BASE_MIN + extra) * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
 
 
 # ── TMS Shipment M/H ──────────────────────────────────────────────────────────

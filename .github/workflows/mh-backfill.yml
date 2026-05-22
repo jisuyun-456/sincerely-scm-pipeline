@@ -7,7 +7,7 @@ name: M/H Backfill — 입하검수입고 베이스 표준 M/H 자동 채움
 #   2. 초기 1회 full backfill 완료 (workflow_dispatch + execute=true + full=true)
 #   3. 결과 검증 후 아래 schedule cron block 주석 해제
 #
-# 현재 schedule 비활성 상태 — workflow_dispatch 수동 트리거만 가능
+# 현재 schedule 활성 — 매일 00:00 KST (= 15:00 UTC) 자동 실행 (초기 full backfill 완료 후)
 on:
   # ──────────────────────────────────────────────────
   # daily cron @ 00:00 KST (= 15:00 UTC)

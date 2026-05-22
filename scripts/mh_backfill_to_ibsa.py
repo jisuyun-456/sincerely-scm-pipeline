@@ -48,7 +48,7 @@ load_dotenv()
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Constants (mh_calculator.py 와 동기 유지) ────────────────────────────────
-VERSION = "v2026-05-cal3"      # 본 버전 식별자 — calibration 갱신 시 bump
+VERSION = "v2026-05-iter20"     # 본 버전 식별자 — calibration 갱신 시 bump
 
 PFD_ALLOWANCE = 1.15
 RECEIVING_MIN_PER_CBM = 4.0
@@ -58,6 +58,10 @@ RECEIVING_CAP_STD_MIN   = 5.0   # 최대 5분 cap (PFD 전 표준) — mh_calcul
 PUTAWAY_BASE_MIN = 3.0
 PUTAWAY_MAX_MIN = 5.0
 PUTAWAY_PER_CBM_MIN = 7.0
+PUTAWAY_FIXED_CORRECTION_MIN = 2.5  # Iter 1.9 (2026-05-22): 실측 보정 +2.5min (PFD 후 additive)
+COUNTING_FLOOR_MIN = 2.0            # Iter 2.0 (2026-05-22): 저울 수량확인 최소 (소형 제품)
+COUNTING_CAP_MIN   = 7.0            # 저울 수량확인 최대 (대형/지류 다수)
+COUNTING_PER_CBM   = 10.0           # CBM 0.5에서 cap 도달
 QC_MIN_PER_PROJECT = 2.5
 
 # ── Airtable ─────────────────────────────────────────────────────────────────
@@ -179,11 +183,12 @@ def calc_record_mh(rec_fields, sync_parts_lookup):
     raw_입하 = cbm * RECEIVING_MIN_PER_CBM
     mh_입하 = min(RECEIVING_CAP_STD_MIN, max(RECEIVING_FLOOR_STD_MIN, raw_입하)) * PFD_ALLOWANCE
     mh_검수 = QC_MIN_PER_PROJECT * PFD_ALLOWANCE
+    counting = max(COUNTING_FLOOR_MIN, min(COUNTING_CAP_MIN, COUNTING_FLOOR_MIN + COUNTING_PER_CBM * cbm))
     if cbm > 0:
         extra = min(PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN, cbm * PUTAWAY_PER_CBM_MIN)
-        mh_입고 = (PUTAWAY_BASE_MIN + extra) * PFD_ALLOWANCE
+        mh_입고 = (PUTAWAY_BASE_MIN + extra) * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
     else:
-        mh_입고 = PUTAWAY_BASE_MIN * PFD_ALLOWANCE  # base만
+        mh_입고 = PUTAWAY_BASE_MIN * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
 
     mh_합계 = mh_입하 + mh_검수 + mh_입고
 
@@ -207,14 +212,17 @@ def fetch_target_records(since=None, full=False, limit=None):
         print("ERROR: AIRTABLE_IBSA_PAT 환경변수 미설정", file=sys.stderr)
         sys.exit(2)
 
+    # returnFieldsByFieldId=true 사용 시 formula도 field ID 참조 필요
     conditions = [
-        "{이동목적}='생산산출'",
-        "NOT({입하완료처리시간}=BLANK())",
+        f"{{{F['이동목적']}}}='생산산출'",
+        f"NOT({{{F['입하완료처리시간']}}}=BLANK())",
     ]
     if since:
-        conditions.append(f"IS_AFTER({{입하일자}},'{since}')")
+        conditions.append(f"IS_AFTER({{{F['입하일자']}}},'{since}')")
     if not full:
-        conditions.append(f"OR({{MH_상수버전}}=BLANK(),{{MH_상수버전}}!='{VERSION}')")
+        conditions.append(
+            f"OR({{{F['MH_상수버전']}}}=BLANK(),{{{F['MH_상수버전']}}}!='{VERSION}')"
+        )
     formula = "AND(" + ",".join(conditions) + ")"
 
     session = requests.Session()
