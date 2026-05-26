@@ -124,6 +124,37 @@ def _parse_qtys(raw) -> list[str]:
 
 
 
+def fetch_movement_data(mm_id: str) -> tuple:
+    """movement record에서 item과 qty 직접 조회. (item_name, qty)"""
+    try:
+        # movement 테이블에서 MM_ID로 직접 조회
+        mm_url = f"https://api.airtable.com/v0/appLui4ZR5HWcQRri/tblwq7Kj5Y9nVjlOw?filterByFormula=FIND(%27{mm_id}%27,{{movement_id}})>0"
+        mm_r = SESSION.get(mm_url, timeout=60)
+        mm_r.raise_for_status()
+        records = mm_r.json().get("records", [])
+
+        if records:
+            f = records[0].get("fields", {})
+            item_raw = f.get("이동물품/item", "")
+            qty_raw = f.get("출고수량", None)
+
+            # item 파싱
+            item_name = ""
+            if isinstance(item_raw, str):
+                item_name = item_raw.split(" || ")[0].strip()
+            elif isinstance(item_raw, list) and item_raw:
+                item_name = item_raw[0].split(" || ")[0].strip() if isinstance(item_raw[0], str) else str(item_raw[0])
+
+            # qty 처리: 있으면 그대로, 없으면 빈값
+            qty_val = str(int(qty_raw)) if qty_raw is not None and qty_raw != "" else ""
+
+            return (item_name, qty_val)
+    except Exception as e:
+        pass
+
+    return ("", "")
+
+
 def fetch_record(record_id: str) -> dict:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{TBL_PKG}/{record_id}"
     r = SESSION.get(url, timeout=60)
@@ -133,8 +164,46 @@ def fetch_record(record_id: str) -> dict:
     proj_raw = f.get(F_PROJECT, "")
     project  = (proj_raw[0] if isinstance(proj_raw, list) else proj_raw) or ""
 
-    items = _parse_items(f.get(F_ITEMS, ""))
-    qtys  = _parse_qtys(f.get(F_QTYS, ""))
+    # pkg_task의 movement 필드들 조회해서 item-qty 매칭
+    pkg_task_ids = f.get("pkg_task", []) if isinstance(f.get("pkg_task", []), list) else [f.get("pkg_task")]
+    pkg_task_ids = [t for t in pkg_task_ids if t]
+
+    items, qtys = [], []
+
+    if pkg_task_ids:
+        # pkg_task 레코드들을 순회하며 각 movement의 item과 qty 가져오기
+        for task_ref in pkg_task_ids:
+            task_id = task_ref.get("id") if isinstance(task_ref, dict) else task_ref
+            if not task_id:
+                continue
+
+            try:
+                task_url = f"https://api.airtable.com/v0/appLui4ZR5HWcQRri/tblOCs40cR4a4YY1B/{task_id}"
+                task_r = SESSION.get(task_url, timeout=60)
+                task_r.raise_for_status()
+                task_f = task_r.json().get("fields", {})
+
+                # pkg_task에서 movement ID 문자열 가져오기
+                movements = task_f.get("movement", "")  # "MM00212702, MM00212703, ..."
+
+                if movements and isinstance(movements, str):
+                    movement_list = [m.strip() for m in movements.split(",")]
+
+                    # 각 movement를 직접 조회해서 item과 qty 가져오기
+                    for mm_id in movement_list:
+                        if mm_id:
+                            item_name, qty_val = fetch_movement_data(mm_id)
+                            if item_name:
+                                items.append(item_name)
+                                qtys.append(qty_val)
+            except Exception as e:
+                print(f"  ⚠️  pkg_task {task_id} 처리 실패: {e}")
+                continue
+
+    # pkg_task가 없거나 실패한 경우 기존 방식 사용 (fallback)
+    if not items:
+        items = _parse_items(f.get(F_ITEMS, ""))
+        qtys  = _parse_qtys(f.get(F_QTYS, ""))
 
     return {"rec_id": record_id, "project": str(project), "items": items, "qtys": qtys}
 

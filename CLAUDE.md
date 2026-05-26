@@ -33,6 +33,13 @@
 | 회의록 백업 | *(향후 구현 예정 — Phase 3+)* meeting-analysis SK-08 + Obsidian append. 현재 PostToolUse 훅은 `.py` syntax check만 수행. |
 | 대시보드 (별도 레포) | `sincerely-scm-dashboard`: React on Vercel + Supabase + GitHub Actions cron |
 
+## Knowledge Graph (graphify + GitNexus cherry-pick — 2026-05-26)
+
+- **A. PreToolUse Grep injector** — 모든 Grep 호출 직전 `graphify-out/graph.json` 매칭 노드의 1-hop 이웃을 자동 주입 (`hookSpecificOutput.additionalContext`). 매 호출 ~50ms (스크립트 내부) / ~400ms (Python startup 포함). Stats: `~/.claude/state/grep-injector-stats.jsonl`
+- **B. `/impact <node>` skill** — 2-hop BFS로 변경 영향 반경 표시 (Tier 1/2/3, in-degree 정렬, `[[Obsidian link]]`). 예: `/impact api/app.py` → 36 affected nodes in 29ms
+- **C. PostToolUse incremental queue** — Edit/Write/Bash 후 SCM_WORK 파일 변경을 30s debounce로 큐잉 → `graphify --update` 백그라운드 실행. Log: `~/.claude/state/graphify-incremental.log`
+- Plan: `~/.claude/plans/https-jkf87-github-io-gitnexus-knowledge-cheeky-boot.md`
+
 ## Skill Pre-dispatch Injection
 
 Before calling the Agent tool for any of these 7 agents — `tms-cost-lane`, `tms-otif-kpi`, `tms-shipment`, `wms-inbound`, `wms-inventory`, `wms-outbound`, `meeting-analysis` — silently run the following:
