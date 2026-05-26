@@ -48,6 +48,7 @@ def main() -> None:
 
     ti = payload.get("tool_input") or {}
     agent_id = ti.get("subagent_type") or "general-purpose"
+    mission_id = os.getenv("HARNESS_MISSION_ID", "")
 
     event = {
         "source":     "hook",
@@ -56,7 +57,7 @@ def main() -> None:
         "session_id": payload.get("session_id", ""),
         "status":     "completed",
         "summary":    (ti.get("description") or "")[:200],
-        "meta":       {"model": ti.get("model", "")},
+        "meta":       {"model": ti.get("model", ""), "mission_id": mission_id},
     }
 
     body = json.dumps(event).encode()
