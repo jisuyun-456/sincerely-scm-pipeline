@@ -70,7 +70,7 @@ PUTAWAY_PER_CBM_MIN = 7.0   # CBM 1.0에서 max 도달 (3 + 1.0×7 = 10)
 PUTAWAY_FIXED_CORRECTION_MIN = 2.5  # Iter 1.9 (2026-05-22): 실측 보정 +2.5min (PFD 후 additive)
 COUNTING_FLOOR_MIN = 2.0            # Iter 2.0 (2026-05-22): 저울 수량확인 최소 (소형 제품)
 COUNTING_CAP_MIN   = 7.0            # 저울 수량확인 최대 (대형/지류 다수)
-COUNTING_PER_CBM   = 10.0           # CBM 0.5에서 cap 도달
+COUNTING_PER_QTY   = 100.0          # Iter 2.1 (2026-05-26): qty 100개당 1분 (CBM proxy → qty-driven 교체)
 
 # QC (입하검수) — 사용자 측정 (2026-05-18): 프로젝트 1개당 2~3분 (표본검수). 분포 mid = 2.5
 QC_MIN_PER_PROJECT = 2.5
@@ -303,12 +303,12 @@ def calc_picking_mh(rec):
 
 
 # ── Putaway M/H — 사용자 측정 기반 (3~10 min, CBM-linear cap) ──────────────────
-def calc_putaway_mh(rec, cbm=0.0):
+def calc_putaway_mh(rec, cbm=0.0, qty=0):
     """
-    입고 M/H. putaway + Iter1.9 고정보정 + Iter2.0 저울수량확인.
-    저울 수량확인: max(2, min(7, 2 + 10×CBM)) — CBM 0.5에서 7분 cap.
+    입고 M/H. putaway + Iter1.9 고정보정 + Iter2.1 저울수량확인(qty-driven).
+    저울 수량확인: max(2, min(7, 2 + qty/100)) — qty 500개에서 7분 cap.
     """
-    counting = max(COUNTING_FLOOR_MIN, min(COUNTING_CAP_MIN, COUNTING_FLOOR_MIN + COUNTING_PER_CBM * cbm))
+    counting = max(COUNTING_FLOOR_MIN, min(COUNTING_CAP_MIN, COUNTING_FLOOR_MIN + qty / COUNTING_PER_QTY))
     if cbm <= 0:
         return PUTAWAY_BASE_MIN * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
     extra = min(PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN, cbm * PUTAWAY_PER_CBM_MIN)
@@ -606,7 +606,7 @@ def main():
         })
         # 입고 M/H: spec→CBM 경로면 cbm 그대로 사용, 그 외엔 base 3분
         cbm = qty_or_cbm if basis.startswith("cbm-from-") else 0.0
-        putaway_mh = calc_putaway_mh(rec, cbm=cbm)
+        putaway_mh = calc_putaway_mh(rec, cbm=cbm, qty=int(_to_float(f.get("입하수량"))))
         putaway_rows.append({"id": rec["id"], "cbm": cbm, "mh_std": putaway_mh})
         # 프로젝트 추적 (QC용)
         proj = _extract_project_code(f.get("이동물품"))

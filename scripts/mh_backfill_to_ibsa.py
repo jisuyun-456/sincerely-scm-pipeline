@@ -48,7 +48,7 @@ load_dotenv()
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Constants (mh_calculator.py 와 동기 유지) ────────────────────────────────
-VERSION = "v2026-05-iter20"     # 본 버전 식별자 — calibration 갱신 시 bump
+VERSION = "v2026-05-iter21"     # 본 버전 식별자 — calibration 갱신 시 bump
 
 PFD_ALLOWANCE = 1.15
 RECEIVING_MIN_PER_CBM = 4.0
@@ -61,7 +61,7 @@ PUTAWAY_PER_CBM_MIN = 7.0
 PUTAWAY_FIXED_CORRECTION_MIN = 2.5  # Iter 1.9 (2026-05-22): 실측 보정 +2.5min (PFD 후 additive)
 COUNTING_FLOOR_MIN = 2.0            # Iter 2.0 (2026-05-22): 저울 수량확인 최소 (소형 제품)
 COUNTING_CAP_MIN   = 7.0            # 저울 수량확인 최대 (대형/지류 다수)
-COUNTING_PER_CBM   = 10.0           # CBM 0.5에서 cap 도달
+COUNTING_PER_QTY   = 100.0          # Iter 2.1 (2026-05-26): qty 100개당 1분 (CBM proxy → qty-driven 교체)
 QC_MIN_PER_PROJECT = 2.5
 
 # ── Airtable ─────────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ def calc_record_mh(rec_fields, sync_parts_lookup):
     raw_입하 = cbm * RECEIVING_MIN_PER_CBM
     mh_입하 = min(RECEIVING_CAP_STD_MIN, max(RECEIVING_FLOOR_STD_MIN, raw_입하)) * PFD_ALLOWANCE
     mh_검수 = QC_MIN_PER_PROJECT * PFD_ALLOWANCE
-    counting = max(COUNTING_FLOOR_MIN, min(COUNTING_CAP_MIN, COUNTING_FLOOR_MIN + COUNTING_PER_CBM * cbm))
+    counting = max(COUNTING_FLOOR_MIN, min(COUNTING_CAP_MIN, COUNTING_FLOOR_MIN + qty / COUNTING_PER_QTY))
     if cbm > 0:
         extra = min(PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN, cbm * PUTAWAY_PER_CBM_MIN)
         mh_입고 = (PUTAWAY_BASE_MIN + extra) * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
