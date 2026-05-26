@@ -2,44 +2,38 @@
 mh_backfill_to_ibsa.py
 ────────────────────────────────────────────────────────────────────────────────
 입하검수입고 베이스 (app6DGHCPI3Yh3IFS) sync_movement 테이블에
-CBM-driven 표준 M/H 6개 필드를 채워넣는 백필 스크립트.
+다중 요소 ELS (Multi-Element Engineered Labor Standard) M/H 6개 필드를 채움.
 
-대상 필드 (docs/airtable_schemas/ibsa_mh_fields.md 참조):
-  - CBM                 fldTHmNEPNhcIX5AQ   m³
-  - MH_입하_표준        fld5ZybpbcpEaDkEt   분 (WERC 통합 — 하차+수량확인+서류매칭+staging)
-  - MH_검수_표준        fldue4gsBUJIEbGTP   분
-  - MH_입고_표준        fldy6Z6durcP0CWFx   분
-  - MH_합계_표준        fldmhIVSe5lSkfZhn   분
-  - MH_상수버전         fld1UjVS3uM7ii7Cy   text
+ELS 구성 (Iter 2.1):
+  입하  = WERC 통합 (하차 + carton qty vs ASN + 서류매칭 + staging)  [CBM-driven]
+  검수  = 시안검수                                                    [건당 고정]
+  입고  = 이동+적치+스캔 [CBM-driven]
+         + 표본검수      [고정]
+         + 수량확인(저울) [qty-driven]
 
-정의 (2026-05-20):
-  입하 = WERC 글로벌 표준 15 CBM/MH (4.0 min/CBM × 1.15 PFD)
-       = receiving 활동 전체 (트럭→도크 unloading + qty 확인 + invoice 매칭 + staging)
-       → 별도 하차 라인 없음 (double-counting 방지)
+대상 필드 (docs/airtable_schemas/ibsa_mh_fields.md):
+  CBM, MH_입하_표준, MH_검수_표준, MH_입고_표준, MH_합계_표준, MH_상수버전
 
 Idempotency:
-  - MH_상수버전 == 현재 VERSION 인 record는 skip (재계산 없음)
-  - --full 로 강제 재계산
+  MH_상수버전 == VERSION → skip  /  --full → 전체 재계산
 
 사용법:
-  python scripts/mh_backfill_to_ibsa.py                       # dry-run, 신규/미버전 record만
-  python scripts/mh_backfill_to_ibsa.py --execute              # 실제 PATCH
-  python scripts/mh_backfill_to_ibsa.py --execute --full       # 전체 재계산
-  python scripts/mh_backfill_to_ibsa.py --since 2026-04-18 --execute
-  python scripts/mh_backfill_to_ibsa.py --limit 10            # 10건만 테스트
+  python scripts/mh_backfill_to_ibsa.py                  # dry-run
+  python scripts/mh_backfill_to_ibsa.py --execute         # PATCH
+  python scripts/mh_backfill_to_ibsa.py --execute --full  # 전체 재계산
+  python scripts/mh_backfill_to_ibsa.py --since 2026-04-01 --execute
+  python scripts/mh_backfill_to_ibsa.py --limit 10        # 테스트
 
 환경변수:
-  AIRTABLE_IBSA_PAT  — 입하검수입고 베이스 PAT (data.records:read/write 필요)
-  AIRTABLE_WMS_PAT   — WMS 베이스 PAT (sync_parts fallback 용)
+  AIRTABLE_IBSA_PAT  — 입하검수입고 베이스 PAT
+  AIRTABLE_WMS_PAT   — WMS 베이스 PAT (sync_parts 룩업용)
 """
 
 import argparse
-import math
 import os
 import re
 import sys
 import time
-from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
@@ -47,78 +41,91 @@ from dotenv import load_dotenv
 load_dotenv()
 sys.stdout.reconfigure(encoding="utf-8")
 
-# ── Constants (mh_calculator.py 와 동기 유지) ────────────────────────────────
-VERSION = "v2026-05-iter21"     # 본 버전 식별자 — calibration 갱신 시 bump
+# ── Version ───────────────────────────────────────────────────────────────────
+VERSION = "v2026-05-iter21"
 
-PFD_ALLOWANCE = 1.15
-RECEIVING_MIN_PER_CBM = 4.0
-RECEIVING_MIN_THICKNESS_MM = 3.0
-RECEIVING_FLOOR_STD_MIN = 0.5   # 30초 floor (PFD 전 표준) — mh_calculator.py 동기
-RECEIVING_CAP_STD_MIN   = 5.0   # 최대 5분 cap (PFD 전 표준) — mh_calculator.py 동기
-PUTAWAY_BASE_MIN = 3.0
-PUTAWAY_MAX_MIN = 5.0
-PUTAWAY_PER_CBM_MIN = 7.0
-PUTAWAY_FIXED_CORRECTION_MIN = 2.5  # Iter 1.9 (2026-05-22): 실측 보정 +2.5min (PFD 후 additive)
-COUNTING_FLOOR_MIN = 2.0            # Iter 2.0 (2026-05-22): 저울 수량확인 최소 (소형 제품)
-COUNTING_CAP_MIN   = 7.0            # 저울 수량확인 최대 (대형/지류 다수)
-COUNTING_PER_QTY   = 100.0          # Iter 2.1 (2026-05-26): qty 100개당 1분 (CBM proxy → qty-driven 교체)
-QC_MIN_PER_PROJECT = 2.5
+# ── ELS 상수 (mh_calculator.py 와 동기 유지) ──────────────────────────────────
+PFD = 1.15  # Personal + Fatigue + Delay allowance (15%)
 
-# ── Airtable ─────────────────────────────────────────────────────────────────
-IBSA_BASE = "app6DGHCPI3Yh3IFS"
+# 입하 (Receiving) — WERC 15 CBM/MH 글로벌 표준
+# 하차 + carton qty vs ASN + 서류매칭 + staging 일괄 포함
+RECV_MIN_PER_CBM  = 4.0   # 분/CBM
+RECV_THICKNESS_MM = 3.0   # 2D 규격 두께 fallback (스티커류)
+RECV_FLOOR_MIN    = 0.5   # 하한 (PFD 전)
+RECV_CAP_MIN      = 5.0   # 상한 (PFD 전)
+
+# 검수 (QC) — 시안검수, 건당 고정
+QC_MIN = 2.5
+
+# 입고 (Putaway) — 좌표확인 + 이동 + 적치 + 스캔
+PUTAWAY_BASE_MIN    = 3.0   # 기본 (소형)
+PUTAWAY_CAP_MIN     = 5.0   # 최대
+PUTAWAY_PER_CBM_MIN = 7.0   # CBM 당 증가 (CBM ≈ 0.286에서 cap 도달)
+
+# 입고 — 표본검수 (10개 샘플 확인)
+SAMPLE_QC_MIN = 2.5
+
+# 입고 — 수량확인 (저울)
+COUNTING_FLOOR_MIN = 2.0    # 최소 (소형 소량)
+COUNTING_CAP_MIN   = 7.0    # 최대 (지류 다량)
+COUNTING_PER_QTY   = 100.0  # 100개당 1분, qty 500개에서 cap 도달
+
+# ── Airtable ──────────────────────────────────────────────────────────────────
+IBSA_BASE  = "app6DGHCPI3Yh3IFS"
 IBSA_TABLE = "tblhzYiltSBm6vxBz"  # sync_movement
 
-WMS_BASE = "appLui4ZR5HWcQRri"
+WMS_BASE       = "appLui4ZR5HWcQRri"
 WMS_SYNC_PARTS = "tblzJh0V4hdo4Xbvx"
-WMS_SP_FLD_CODE = "fld8gjySjm4XkCpMc"
-WMS_SP_FLD_SPEC = "fldRseOMNseg15D6R"
+WMS_SP_CODE    = "fld8gjySjm4XkCpMc"
+WMS_SP_SPEC    = "fldRseOMNseg15D6R"
 
-# Field IDs (sync_movement)
+# Field IDs — sync_movement
 F = {
-    "movement_id":     "fldhcO7JFJlVpvnbY",
-    "이동목적":         "fldru408fCLHn9v3k",
-    "제품_규격":        "fldRhOJuPnE7ZRk6L",
-    "입하수량":         "fldXj3bp2ioe8awCd",
-    "입하완료처리시간": "fld5pwd5dVYqW4Bdl",
-    "입하예정물품":     "fldEMORus5VTtQRVX",
-    "입하일자":         "fldcCmgZNTKUWpL9J",
-    "project_name":    "fld8Prbt0HqtRSIWP",
+    "movement_id":      "fldhcO7JFJlVpvnbY",
+    "이동목적":          "fldru408fCLHn9v3k",
+    "제품_규격":         "fldRhOJuPnE7ZRk6L",
+    "입하수량":          "fldXj3bp2ioe8awCd",
+    "입하완료처리시간":  "fld5pwd5dVYqW4Bdl",
+    "입하예정물품":      "fldEMORus5VTtQRVX",
+    "입하일자":          "fldcCmgZNTKUWpL9J",
     # backfill targets
-    "CBM":             "fldTHmNEPNhcIX5AQ",
-    "MH_입하":         "fld5ZybpbcpEaDkEt",
-    "MH_검수":         "fldue4gsBUJIEbGTP",
-    "MH_입고":         "fldy6Z6durcP0CWFx",
-    "MH_합계":         "fldmhIVSe5lSkfZhn",
-    "MH_상수버전":     "fld1UjVS3uM7ii7Cy",
+    "CBM":              "fldTHmNEPNhcIX5AQ",
+    "MH_입하":          "fld5ZybpbcpEaDkEt",
+    "MH_검수":          "fldue4gsBUJIEbGTP",
+    "MH_입고":          "fldy6Z6durcP0CWFx",
+    "MH_합계":          "fldmhIVSe5lSkfZhn",
+    "MH_상수버전":      "fld1UjVS3uM7ii7Cy",
 }
 
 IBSA_PAT = os.environ.get("AIRTABLE_IBSA_PAT", "")
-WMS_PAT = os.environ.get("AIRTABLE_WMS_PAT") or os.environ.get("AIRTABLE_PAT", "")
+WMS_PAT  = os.environ.get("AIRTABLE_WMS_PAT") or os.environ.get("AIRTABLE_PAT", "")
 
 
-# ── CBM helpers (mh_calculator.py 와 정합) ───────────────────────────────────
-def parse_dims_mm(raw):
+# ── CBM 계산 헬퍼 ─────────────────────────────────────────────────────────────
+def _parse_dims_mm(raw) -> tuple | None:
+    """'88x88x163', '248*190*33', '200x300mm 펼침...' → (W, H, D) mm."""
     if not raw:
         return None
     cleaned = re.split(r"펼침", str(raw))[0]
     cleaned = re.sub(r"mm", "", cleaned, flags=re.IGNORECASE)
     nums = [float(n) for n in re.findall(r"[\d.]+", cleaned) if float(n) > 0]
     if len(nums) >= 3:
-        return (nums[0], nums[1], nums[2])
+        return nums[0], nums[1], nums[2]
     if len(nums) == 2:
-        return (nums[0], nums[1], RECEIVING_MIN_THICKNESS_MM)
+        return nums[0], nums[1], RECV_THICKNESS_MM
     return None
 
 
-def spec_to_cbm(spec, qty):
-    dims = parse_dims_mm(spec)
+def _spec_to_cbm(spec: str, qty: int) -> float:
+    dims = _parse_dims_mm(spec)
     if dims is None or qty <= 0:
         return 0.0
     w, h, d = dims
     return (w / 1000) * (h / 1000) * (d / 1000) * qty
 
 
-def extract_pt_code(이동물품):
+def _pt_code(이동물품) -> str:
+    """'PT3137-스티커 || PNA...' → 'PT3137'."""
     if not 이동물품:
         return ""
     first = str(이동물품).split("||")[0].strip()
@@ -126,21 +133,17 @@ def extract_pt_code(이동물품):
     return first[:dash] if dash != -1 else first
 
 
-def load_sync_parts_lookup():
-    """sync_parts → {PT_code: 규격} dict 1회 사전 로드."""
+def load_sync_parts_lookup() -> dict:
+    """sync_parts → {PT_code: 규격} 1회 로드."""
     if not WMS_PAT:
         print("[WARN] AIRTABLE_WMS_PAT 미설정 → sync_parts fallback 비활성", file=sys.stderr)
         return {}
-    lookup = {}
     session = requests.Session()
     session.headers.update({"Authorization": f"Bearer {WMS_PAT}"})
-    offset = None
+    lookup, offset = {}, None
     while True:
-        params = {
-            "pageSize": 100,
-            "returnFieldsByFieldId": "true",
-            "fields[]": [WMS_SP_FLD_CODE, WMS_SP_FLD_SPEC],
-        }
+        params = {"pageSize": 100, "returnFieldsByFieldId": "true",
+                  "fields[]": [WMS_SP_CODE, WMS_SP_SPEC]}
         if offset:
             params["offset"] = offset
         resp = session.get(f"https://api.airtable.com/v0/{WMS_BASE}/{WMS_SYNC_PARTS}",
@@ -148,9 +151,9 @@ def load_sync_parts_lookup():
         resp.raise_for_status()
         data = resp.json()
         for r in data.get("records", []):
-            f = r.get("fields", {})
-            code = str(f.get(WMS_SP_FLD_CODE) or "").strip()
-            spec = str(f.get(WMS_SP_FLD_SPEC) or "").strip()
+            flds = r.get("fields", {})
+            code = str(flds.get(WMS_SP_CODE) or "").strip()
+            spec = str(flds.get(WMS_SP_SPEC) or "").strip()
             if code:
                 lookup[code] = spec
         offset = data.get("offset")
@@ -160,59 +163,61 @@ def load_sync_parts_lookup():
     return lookup
 
 
-# ── M/H 계산 ─────────────────────────────────────────────────────────────────
-def calc_record_mh(rec_fields, sync_parts_lookup):
-    """
-    record fields(by_field_id) → {CBM, MH_입하, MH_검수, MH_입고, MH_합계}
-    return None 이면 skip 권장 (필수값 부재)
-    """
-    qty = rec_fields.get(F["입하수량"]) or 0
-    spec = (rec_fields.get(F["제품_규격"]) or "").strip()
-
-    cbm = 0.0
-    if qty > 0 and spec:
-        cbm = spec_to_cbm(spec, qty)
-
-    # fallback: sync_parts 룩업
+def resolve_cbm(fields: dict, lookup: dict) -> tuple[float, int]:
+    """fields → (cbm, qty). 우선순위: 제품규격 > sync_parts > 0."""
+    qty = int(fields.get(F["입하수량"]) or 0)
+    spec = (fields.get(F["제품_규격"]) or "").strip()
+    cbm = _spec_to_cbm(spec, qty) if qty > 0 and spec else 0.0
     if cbm <= 0 and qty > 0:
-        pt = extract_pt_code(rec_fields.get(F["입하예정물품"]))
-        if pt and pt in sync_parts_lookup:
-            cbm = spec_to_cbm(sync_parts_lookup[pt], qty)
+        pt = _pt_code(fields.get(F["입하예정물품"]))
+        if pt and pt in lookup:
+            cbm = _spec_to_cbm(lookup[pt], qty)
+    return cbm, qty
 
-    # 표준 M/H 계산 (입하: floor 0.5분 ~ cap 5.0분, PFD 전 표준)
-    raw_입하 = cbm * RECEIVING_MIN_PER_CBM
-    mh_입하 = min(RECEIVING_CAP_STD_MIN, max(RECEIVING_FLOOR_STD_MIN, raw_입하)) * PFD_ALLOWANCE
-    mh_검수 = QC_MIN_PER_PROJECT * PFD_ALLOWANCE
+
+# ── ELS M/H 계산 ──────────────────────────────────────────────────────────────
+def calc_receiving(cbm: float) -> float:
+    """입하 M/H — WERC 통합 (하차+qty확인+서류+staging), CBM-driven."""
+    raw = cbm * RECV_MIN_PER_CBM
+    return min(RECV_CAP_MIN, max(RECV_FLOOR_MIN, raw)) * PFD
+
+
+def calc_qc() -> float:
+    """검수 M/H — 시안검수, 건당 고정."""
+    return QC_MIN * PFD
+
+
+def calc_putaway(cbm: float, qty: int) -> float:
+    """입고 M/H — 이동+적치+스캔(CBM) + 표본검수(고정) + 수량확인(qty)."""
+    extra    = min(PUTAWAY_CAP_MIN - PUTAWAY_BASE_MIN, cbm * PUTAWAY_PER_CBM_MIN) if cbm > 0 else 0.0
+    movement = (PUTAWAY_BASE_MIN + extra) * PFD
+    sample   = SAMPLE_QC_MIN
     counting = max(COUNTING_FLOOR_MIN, min(COUNTING_CAP_MIN, COUNTING_FLOOR_MIN + qty / COUNTING_PER_QTY))
-    if cbm > 0:
-        extra = min(PUTAWAY_MAX_MIN - PUTAWAY_BASE_MIN, cbm * PUTAWAY_PER_CBM_MIN)
-        mh_입고 = (PUTAWAY_BASE_MIN + extra) * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
-    else:
-        mh_입고 = PUTAWAY_BASE_MIN * PFD_ALLOWANCE + PUTAWAY_FIXED_CORRECTION_MIN + counting
+    return movement + sample + counting
 
-    mh_합계 = mh_입하 + mh_검수 + mh_입고
 
+def calc_record_mh(fields: dict, lookup: dict) -> dict:
+    """fields(by_field_id) → 백필 대상 6개 필드 dict."""
+    cbm, qty   = resolve_cbm(fields, lookup)
+    mh_recv    = calc_receiving(cbm)
+    mh_qc      = calc_qc()
+    mh_putaway = calc_putaway(cbm, qty)
     return {
-        F["CBM"]: round(cbm, 6),
-        F["MH_입하"]: round(mh_입하, 2),
-        F["MH_검수"]: round(mh_검수, 2),
-        F["MH_입고"]: round(mh_입고, 2),
-        F["MH_합계"]: round(mh_합계, 2),
+        F["CBM"]:         round(cbm, 6),
+        F["MH_입하"]:     round(mh_recv, 2),
+        F["MH_검수"]:     round(mh_qc, 2),
+        F["MH_입고"]:     round(mh_putaway, 2),
+        F["MH_합계"]:     round(mh_recv + mh_qc + mh_putaway, 2),
         F["MH_상수버전"]: VERSION,
     }
 
 
-# ── Backfill 메인 ────────────────────────────────────────────────────────────
-def fetch_target_records(since=None, full=False, limit=None):
-    """
-    대상: 이동목적=생산산출 + 입하완료처리시간 채워진 record
-    Idempotency: full=False 이면 MH_상수버전 != VERSION 만 가져옴
-    """
+# ── Airtable I/O ──────────────────────────────────────────────────────────────
+def fetch_target_records(since=None, full=False, limit=None) -> list:
+    """이동목적=생산산출 + 입하완료처리시간 있는 record 조회."""
     if not IBSA_PAT:
-        print("ERROR: AIRTABLE_IBSA_PAT 환경변수 미설정", file=sys.stderr)
-        sys.exit(2)
+        sys.exit("ERROR: AIRTABLE_IBSA_PAT 미설정")
 
-    # returnFieldsByFieldId=true 사용 시 formula도 field ID 참조 필요
     conditions = [
         f"{{{F['이동목적']}}}='생산산출'",
         f"NOT({{{F['입하완료처리시간']}}}=BLANK())",
@@ -223,17 +228,15 @@ def fetch_target_records(since=None, full=False, limit=None):
         conditions.append(
             f"OR({{{F['MH_상수버전']}}}=BLANK(),{{{F['MH_상수버전']}}}!='{VERSION}')"
         )
-    formula = "AND(" + ",".join(conditions) + ")"
 
     session = requests.Session()
     session.headers.update({"Authorization": f"Bearer {IBSA_PAT}"})
-
     records, offset = [], None
     while True:
         params = {
             "pageSize": 100,
             "returnFieldsByFieldId": "true",
-            "filterByFormula": formula,
+            "filterByFormula": "AND(" + ",".join(conditions) + ")",
             "fields[]": [
                 F["movement_id"], F["입하수량"], F["제품_규격"],
                 F["입하예정물품"], F["입하일자"], F["MH_상수버전"],
@@ -241,10 +244,8 @@ def fetch_target_records(since=None, full=False, limit=None):
         }
         if offset:
             params["offset"] = offset
-        resp = session.get(
-            f"https://api.airtable.com/v0/{IBSA_BASE}/{IBSA_TABLE}",
-            params=params, timeout=90,
-        )
+        resp = session.get(f"https://api.airtable.com/v0/{IBSA_BASE}/{IBSA_TABLE}",
+                           params=params, timeout=90)
         resp.raise_for_status()
         data = resp.json()
         records.extend(data.get("records", []))
@@ -258,28 +259,18 @@ def fetch_target_records(since=None, full=False, limit=None):
     return records
 
 
-def batch_patch(updates, execute=False):
-    """updates: [{"id": recId, "fields": {fldXxx: val, ...}}, ...]
-    return: (patched_count, error_count)
-    """
-    if not updates:
+def batch_patch(updates: list, execute: bool) -> tuple[int, int]:
+    """10건씩 PATCH. dry-run 시 (0, 0) 반환."""
+    if not updates or not execute:
         return 0, 0
-    if not execute:
-        return 0, 0  # dry-run: nothing to do
-
     session = requests.Session()
-    session.headers.update({
-        "Authorization": f"Bearer {IBSA_PAT}",
-        "Content-Type": "application/json",
-    })
+    session.headers.update({"Authorization": f"Bearer {IBSA_PAT}",
+                             "Content-Type": "application/json"})
     patched, errors = 0, 0
     for i in range(0, len(updates), 10):
         chunk = updates[i:i + 10]
-        body = {"records": chunk, "typecast": False}
-        resp = session.patch(
-            f"https://api.airtable.com/v0/{IBSA_BASE}/{IBSA_TABLE}",
-            json=body, timeout=90,
-        )
+        resp = session.patch(f"https://api.airtable.com/v0/{IBSA_BASE}/{IBSA_TABLE}",
+                             json={"records": chunk, "typecast": False}, timeout=90)
         if resp.status_code != 200:
             print(f"  PATCH error {resp.status_code}: {resp.text[:200]}", file=sys.stderr)
             errors += len(chunk)
@@ -289,22 +280,16 @@ def batch_patch(updates, execute=False):
     return patched, errors
 
 
+# ── 메인 ──────────────────────────────────────────────────────────────────────
 def main():
-    global VERSION
     ap = argparse.ArgumentParser()
-    ap.add_argument("--execute", action="store_true",
-                    help="실제 PATCH (기본은 dry-run)")
-    ap.add_argument("--full", action="store_true",
-                    help="MH_상수버전 무시하고 전체 재계산")
-    ap.add_argument("--since", help="입하일자 시작 (YYYY-MM-DD)")
-    ap.add_argument("--limit", type=int, help="처리 최대 건수 (테스트용)")
-    ap.add_argument("--version", help=f"상수버전 라벨 override (기본 {VERSION})")
+    ap.add_argument("--execute", action="store_true", help="실제 PATCH (기본 dry-run)")
+    ap.add_argument("--full",    action="store_true", help="전체 재계산 (버전 무시)")
+    ap.add_argument("--since",   help="입하일자 시작 YYYY-MM-DD")
+    ap.add_argument("--limit",   type=int, help="최대 건수 (테스트용)")
     args = ap.parse_args()
 
-    if args.version:
-        VERSION = args.version
-
-    print(f"=== mh_backfill_to_ibsa.py ===")
+    print("=== mh_backfill_to_ibsa.py ===")
     print(f"  VERSION:    {VERSION}")
     print(f"  dry-run:    {not args.execute}")
     print(f"  full:       {args.full}")
@@ -312,41 +297,29 @@ def main():
     print(f"  limit:      {args.limit or '(none)'}")
     print()
 
-    # 1. sync_parts 로드
     print("[1/4] sync_parts lookup 로드...")
     lookup = load_sync_parts_lookup()
     print(f"      loaded {len(lookup)} parts")
 
-    # 2. 대상 record 조회
-    print(f"[2/4] 대상 record 조회...")
+    print("[2/4] 대상 record 조회...")
     records = fetch_target_records(since=args.since, full=args.full, limit=args.limit)
     print(f"      {len(records)} records to process")
-
     if not records:
         print("처리할 record 없음 — 종료")
         return
 
-    # 3. M/H 계산
-    print(f"[3/4] M/H 계산...")
-    updates, skipped = [], 0
-    for r in records:
-        mh = calc_record_mh(r.get("fields", {}), lookup)
-        if mh is None:
-            skipped += 1
-            continue
-        updates.append({"id": r["id"], "fields": mh})
-    print(f"      computed {len(updates)} / skipped {skipped}")
+    print("[3/4] M/H 계산...")
+    updates = [{"id": r["id"], "fields": calc_record_mh(r.get("fields", {}), lookup)}
+               for r in records]
+    print(f"      computed {len(updates)} / skipped 0")
 
-    # Preview first 3
     print("\n  [preview] first 3 records:")
     for u in updates[:3]:
-        print(f"    {u['id']}: CBM={u['fields'][F['CBM']]:.6f} "
-              f"입하={u['fields'][F['MH_입하']]:.2f} "
-              f"검수={u['fields'][F['MH_검수']]:.2f} "
-              f"입고={u['fields'][F['MH_입고']]:.2f} "
-              f"합계={u['fields'][F['MH_합계']]:.2f}")
+        flds = u["fields"]
+        print(f"    {u['id']}: CBM={flds[F['CBM']]:.6f} "
+              f"입하={flds[F['MH_입하']]:.2f} 검수={flds[F['MH_검수']]:.2f} "
+              f"입고={flds[F['MH_입고']]:.2f} 합계={flds[F['MH_합계']]:.2f}")
 
-    # 4. Batch PATCH
     print(f"\n[4/4] {'PATCH 실행' if args.execute else 'PATCH dry-run (실행 X)'}")
     patched, errors = batch_patch(updates, execute=args.execute)
     if args.execute:
