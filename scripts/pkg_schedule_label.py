@@ -171,48 +171,46 @@ def fetch_record(record_id: str) -> dict:
     proj_raw = f.get(F_PROJECT, "")
     project  = (proj_raw[0] if isinstance(proj_raw, list) else proj_raw) or ""
 
-    # pkg_task의 movement 필드들 조회해서 item-qty 매칭
+    # Items: always from rollup field (already filtered to 재고자재 only)
+    items = _parse_items(f.get(F_ITEMS, ""))
+
+    # Qtys: build item→qty map from movement records, then match by item name
     pkg_task_ids = f.get("pkg_task", []) if isinstance(f.get("pkg_task", []), list) else [f.get("pkg_task")]
     pkg_task_ids = [t for t in pkg_task_ids if t]
 
-    items, qtys = [], []
+    item_qty_map: dict[str, str] = {}
 
     if pkg_task_ids:
-        # pkg_task 레코드들을 순회하며 각 movement의 item과 qty 가져오기
         for task_ref in pkg_task_ids:
             task_id = task_ref.get("id") if isinstance(task_ref, dict) else task_ref
             if not task_id:
                 continue
-
             try:
                 task_url = f"https://api.airtable.com/v0/{BASE_ID}/tblZvnacaeyCd8q2u/{task_id}"
                 task_r = SESSION.get(task_url, timeout=60)
                 task_r.raise_for_status()
                 task_f = task_r.json().get("fields", {})
 
-                # movement 필드: 텍스트(MM IDs) or 링크드레코드(rec IDs) 모두 처리
                 movements_raw = task_f.get("movement", "")
-
                 movement_refs: list[str] = []
                 if isinstance(movements_raw, str) and movements_raw:
                     movement_refs = [m.strip() for m in movements_raw.split(",") if m.strip()]
                 elif isinstance(movements_raw, list):
                     movement_refs = [str(m).strip() for m in movements_raw if m]
 
-                # 각 movement를 직접 조회해서 item과 qty 가져오기
                 for mm_ref in movement_refs:
                     item_name, qty_val = fetch_movement_data(mm_ref)
-                    if item_name:
-                        items.append(item_name)
-                        qtys.append(qty_val)
+                    if item_name and qty_val:
+                        item_qty_map[item_name] = qty_val
             except Exception as e:
                 print(f"  ⚠️  pkg_task {task_id} 처리 실패: {e}")
                 continue
 
-    # pkg_task가 없거나 실패한 경우 기존 방식 사용 (fallback)
-    if not items:
-        items = _parse_items(f.get(F_ITEMS, ""))
-        qtys  = _parse_qtys(f.get(F_QTYS, ""))
+    # Map qtys to items by name; fallback to rollup field if movement fetch failed
+    if item_qty_map:
+        qtys = [item_qty_map.get(item, "") for item in items]
+    else:
+        qtys = _parse_qtys(f.get(F_QTYS, ""))
 
     return {"rec_id": record_id, "project": str(project), "items": items, "qtys": qtys}
 
