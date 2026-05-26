@@ -145,7 +145,7 @@ def fetch_movement_data(mm_ref: str) -> tuple:
 
         if records:
             f = records[0].get("fields", {})
-            item_raw = f.get("이동물품/item", "")
+            item_raw = f.get("이동물품", "")
             qty_raw  = f.get("출고수량", None)
 
             item_name = ""
