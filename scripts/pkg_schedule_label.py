@@ -108,7 +108,7 @@ def _parse_items(raw) -> list[str]:
 
 
 def _parse_qtys(raw) -> list[str]:
-    """'210; 201; 210;' or [210, 201] → ['210', '201', '210']"""
+    """'210; 201; 210;' or [210, 201] → ['210', '201', '210'] — empty slots preserved for positional alignment"""
     if not raw:
         return []
     if isinstance(raw, list):
@@ -117,41 +117,48 @@ def _parse_qtys(raw) -> list[str]:
         return [str(int(raw))]
     result = []
     for part in str(raw).rstrip(";").split(";"):
-        part = part.strip()
-        if part:
-            result.append(part)
+        result.append(part.strip())  # preserve empty strings — positional match with items
+    while result and result[-1] == "":
+        result.pop()
     return result
 
 
 
-def fetch_movement_data(mm_id: str) -> tuple:
-    """movement record에서 item과 qty 직접 조회. (item_name, qty)"""
+def fetch_movement_data(mm_ref: str) -> tuple:
+    """movement 레코드에서 item과 qty 조회. Airtable rec ID(recXXX) 또는 MM_ID 모두 처리."""
+    BASE_URL = f"https://api.airtable.com/v0/{BASE_ID}/tblsG3x3gCSZGPVB9"
     try:
-        # SERPA 3.0 movement 테이블에서 MM_ID로 직접 조회
-        mm_url = f"https://api.airtable.com/v0/{BASE_ID}/tblsG3x3gCSZGPVB9?filterByFormula=FIND(%27{mm_id}%27,{{movement_id}})>0"
-        mm_r = SESSION.get(mm_url, timeout=60)
-        mm_r.raise_for_status()
-        records = mm_r.json().get("records", [])
+        if mm_ref.startswith("rec"):
+            # Airtable linked record ID → 직접 GET
+            mm_r = SESSION.get(f"{BASE_URL}/{mm_ref}", timeout=60)
+            mm_r.raise_for_status()
+            data = mm_r.json()
+            records = [data] if "fields" in data else []
+        else:
+            # MM00XXXXXX human-readable ID → FIND 쿼리
+            mm_r = SESSION.get(
+                f"{BASE_URL}?filterByFormula=FIND(%27{mm_ref}%27,{{movement_id}})>0",
+                timeout=60,
+            )
+            mm_r.raise_for_status()
+            records = mm_r.json().get("records", [])
 
         if records:
             f = records[0].get("fields", {})
             item_raw = f.get("이동물품/item", "")
-            qty_raw = f.get("출고수량", None)
+            qty_raw  = f.get("출고수량", None)
 
-            # item 파싱
             item_name = ""
             if isinstance(item_raw, str):
                 item_name = item_raw.split(" || ")[0].strip()
             elif isinstance(item_raw, list) and item_raw:
-                item_name = item_raw[0].split(" || ")[0].strip() if isinstance(item_raw[0], str) else str(item_raw[0])
+                first = item_raw[0]
+                item_name = first.split(" || ")[0].strip() if isinstance(first, str) else str(first)
 
-            # qty 처리: 있으면 그대로, 없으면 빈값
             qty_val = str(int(qty_raw)) if qty_raw is not None and qty_raw != "" else ""
-
             return (item_name, qty_val)
-    except Exception as e:
+    except Exception:
         pass
-
     return ("", "")
 
 
@@ -183,19 +190,21 @@ def fetch_record(record_id: str) -> dict:
                 task_r.raise_for_status()
                 task_f = task_r.json().get("fields", {})
 
-                # pkg_task에서 movement ID 문자열 가져오기
-                movements = task_f.get("movement", "")  # "MM00212702, MM00212703, ..."
+                # movement 필드: 텍스트(MM IDs) or 링크드레코드(rec IDs) 모두 처리
+                movements_raw = task_f.get("movement", "")
 
-                if movements and isinstance(movements, str):
-                    movement_list = [m.strip() for m in movements.split(",")]
+                movement_refs: list[str] = []
+                if isinstance(movements_raw, str) and movements_raw:
+                    movement_refs = [m.strip() for m in movements_raw.split(",") if m.strip()]
+                elif isinstance(movements_raw, list):
+                    movement_refs = [str(m).strip() for m in movements_raw if m]
 
-                    # 각 movement를 직접 조회해서 item과 qty 가져오기
-                    for mm_id in movement_list:
-                        if mm_id:
-                            item_name, qty_val = fetch_movement_data(mm_id)
-                            if item_name:
-                                items.append(item_name)
-                                qtys.append(qty_val)
+                # 각 movement를 직접 조회해서 item과 qty 가져오기
+                for mm_ref in movement_refs:
+                    item_name, qty_val = fetch_movement_data(mm_ref)
+                    if item_name:
+                        items.append(item_name)
+                        qtys.append(qty_val)
             except Exception as e:
                 print(f"  ⚠️  pkg_task {task_id} 처리 실패: {e}")
                 continue
