@@ -127,8 +127,8 @@ def _parse_qtys(raw) -> list[str]:
 def fetch_movement_data(mm_id: str) -> tuple:
     """movement record에서 item과 qty 직접 조회. (item_name, qty)"""
     try:
-        # movement 테이블에서 MM_ID로 직접 조회
-        mm_url = f"https://api.airtable.com/v0/appLui4ZR5HWcQRri/tblwq7Kj5Y9nVjlOw?filterByFormula=FIND(%27{mm_id}%27,{{movement_id}})>0"
+        # SERPA 3.0 movement 테이블에서 MM_ID로 직접 조회
+        mm_url = f"https://api.airtable.com/v0/{BASE_ID}/tblsG3x3gCSZGPVB9?filterByFormula=FIND(%27{mm_id}%27,{{movement_id}})>0"
         mm_r = SESSION.get(mm_url, timeout=60)
         mm_r.raise_for_status()
         records = mm_r.json().get("records", [])
@@ -178,7 +178,7 @@ def fetch_record(record_id: str) -> dict:
                 continue
 
             try:
-                task_url = f"https://api.airtable.com/v0/appLui4ZR5HWcQRri/tblOCs40cR4a4YY1B/{task_id}"
+                task_url = f"https://api.airtable.com/v0/{BASE_ID}/tblZvnacaeyCd8q2u/{task_id}"
                 task_r = SESSION.get(task_url, timeout=60)
                 task_r.raise_for_status()
                 task_f = task_r.json().get("fields", {})
