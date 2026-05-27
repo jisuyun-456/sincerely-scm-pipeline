@@ -299,3 +299,59 @@
 ---
 
 > **다음 단계:** `superpowers:writing-plans` 스킬로 Sub-Spec 1 (자원 매핑 SSOT)의 implementation plan 작성 → Validation Contract 포함.
+
+---
+
+## 12. Addendum v3 (2026-05-27 후반) — 자동 시스템 결정 + Backtest 통합 + 새 조건
+
+본 design doc 작성 후 *추가 brainstorm + Backtest + 사용자 결정*으로 다음 사항 확정. 상세는 **Master Roadmap v3** (`docs/superpowers/plans/2026-05-27-lane-strategy-master-roadmap-v3.md`) 참조.
+
+### 12.1 사용자 결정 사항 (2026-05-27)
+
+| # | 결정 | 사유 |
+|---|-----|------|
+| 1 | **자동 시스템 (옵션 C) 진행** — DSS 하이브리드 모델 | 사용자 수동 강점 인정 + 시스템 보조 |
+| 2 | **자동 대상 = project + 이동목적 ∈ {고객납품, 생산샘플}** | 재고이동·기타는 수동 (100% 자동 불가 인정) |
+| 3 | **CBM 추정 시점 분기** — 임가공 전(`최종 출하 품목`) / 후(`최종 출고 품목 및 수량`) | 사용자 운영 현실 반영 |
+| 4 | **Product 테이블(344 records) 매칭으로 예상 CBM** | 매칭률 80%+ 추정 — sample 검증 완료 |
+| 5 | **가정 기반 OTIF** — 퀵·자체기사 = 출하완료=OTIF / 택배 = +3일 추정 | POD 입력 불가능, 운영 가정 코드화 |
+| 6 | **에스에스아이팩 제거** (Status=inactive) | 운영 종료, 과거 record link 보존 |
+| 7 | **Airtable polling 3회/일** (09·14·17시) + 7일 rolling | webhook은 over-engineering |
+| 8 | **자동화 목표 70~80%** (100% 시도 X) | SAP 글로벌 표준도 프로젝트 기반은 60~80% |
+
+### 12.2 Backtest 결과 (2026-05-27, 26년 1,640건 sample 100건)
+
+- 자체 기사 50% 가동 = 베스트 프랙티스 정착
+- 멀티 파트너 0건 = wave 충돌 거의 없음
+- POD 100% NULL → 가정 모델로 우회 (사용자 결정 5)
+- CBM 44% NULL → Product 매칭 엔진으로 우회 (Sub-Spec 2)
+- 구간유형 97% 채워짐 = 양호
+- 상세: `_AutoResearch/SCM/outputs/2026-05-27-lane-strategy-backtest-2026.md`
+
+### 12.3 ROI 재추정 (이전 보수 → v3 개선)
+
+- 이전 (Backtest 후): 회수 2~3년
+- v3 (CBM 매칭 가능성 + 자동 대상 필터): **회수 0.5~1년** (연 0.25~0.49억 절감)
+
+### 12.4 Sub-Spec 5개 구조 (v3 최종)
+
+1. **Sub-Spec 1** (Plan v2 commit 0363050) — 자원 매핑 SSOT
+2. **Sub-Spec 2** — CBM 추정 엔진 (Product 매칭) — *다음 즉시*
+3. **Sub-Spec 3** — Wave 추천 엔진 (자동 대상 + 분할 배송 + 7일 rolling)
+4. **Sub-Spec 4** — Change Detection + 가정 OTIF (polling 3회/일)
+5. **Sub-Spec 5** — Scorecard + KPI + 6개월 ROI 리뷰
+
+### 12.5 SAP 글로벌 표준 비교 (사용자 질문 답)
+
+- SAP 100% 자동화 = *대량 표준 출하* (Amazon FBA·쿠팡 풀필먼트)에서만
+- 프로젝트형 제조 (신시어리 같은 굿즈·임가공 협력) = SAP도 60~80%
+- *Airtable 기반 70% = SAP 70%와 기능적 동등* + 도입 비용 0원 vs 수십억
+
+→ **신시어리 규모에서는 Airtable 기반이 SAP보다 합리적**
+
+---
+
+> **v3 산출:**
+> - Master Roadmap: `docs/superpowers/plans/2026-05-27-lane-strategy-master-roadmap-v3.md`
+> - Sub-Spec 1 plan: `docs/superpowers/plans/2026-05-27-sub-spec-1-resource-mapping-ssot.md` (commit 0363050, 그대로 유지)
+> - Sub-Spec 2~5 plan: 진입 시점에 별도 작성
