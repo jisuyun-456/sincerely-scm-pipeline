@@ -47,3 +47,7 @@ scripts/backfill/__pycache__/
 pages_v*.json
 scripts/validation_*.json
 docs/인사평가*.md
+
+# Sub-Spec 2 runtime state (transitions, anomalies, polling snapshot)
+audit_log/
+state/cbm_last_snapshot.json

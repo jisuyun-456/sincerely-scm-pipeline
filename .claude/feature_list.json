@@ -731,12 +731,22 @@
     },
     {
       "id": "SCM-LANE-SUBSPEC-2",
-      "title": "Sub-Spec 2 — 비수기 흡수 룰 + 시즌 모드 (harness/dispatch/seasonal_mode.py + idle_capacity_calc.py)",
+      "title": "Sub-Spec 2 — CBM 추정 엔진 (harness/dispatch/cbm_estimator.py + product_loader.py + polling + audit)",
       "priority": "high",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-05-27",
+      "completed_at": "2026-05-27",
+      "notes": "2026-05-27 Task 0~10 완료. parse_v2 (천단위 콤마·여분·공백없는 수량·[N] 정규화·multi-product 분할), estimate_shipment_cbm (시점 분기 실측/임가공_후/전), product_loader.py (24h TTL), polling cron, audit jsonl. Validation Contract C1~C4 ALL PASS — Product 캐시 382 unique·cbm>0 97.95%, parse_v2 33/33 pytest, line match rate 89.80% (64.15→73.47→89.80), polling dry-run OK. Product backfill 41 records (high-conf match_ratio ∈ [0.95,1.05]). Airtable Shipment +3 필드 (estimated_cbm/estimation_confidence/estimation_updated_at). plan: docs/superpowers/plans/2026-05-27-sub-spec-2-cbm-engine.md, design: _AutoResearch/SCM/outputs/2026-05-27-sub-spec-2-cbm-engine-design.md."
+    },
+    {
+      "id": "SCM-LANE-SEASONAL-MODE",
+      "title": "비수기 흡수 룰 + 시즌 모드 (harness/dispatch/seasonal_mode.py + idle_capacity_calc.py)",
+      "priority": "medium",
       "domain": "tms",
       "status": "pending",
       "created_at": "2026-05-27",
-      "notes": "11월~2월(성수기) vs 3월~10월(비수기) 자동 전환. 자체기사 idle capacity 산출 + 외주임가공·재고이동 자동 매칭. 2~3주."
+      "notes": "Originally SCM-LANE-SUBSPEC-2 in v1; renamed when Sub-Spec 2 scope pivoted to CBM Engine per Master Roadmap v3. 11월~2월(성수기) vs 3월~10월(비수기) 자동 전환. 자체기사 idle capacity 산출 + 외주임가공·재고이동 자동 매칭. 2~3주."
     },
     {
       "id": "SCM-LANE-SUBSPEC-3",
