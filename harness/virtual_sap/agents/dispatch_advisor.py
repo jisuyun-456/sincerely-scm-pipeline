@@ -47,10 +47,14 @@ logger = logging.getLogger(__name__)
 AGENT_NAME = "배차추천"
 
 # In-house driver config: (carrier_id, display_name, max_cbm_per_run)
+# Source of truth: Airtable 배송파트너 (tblI4ZXrte7WyhXyd, contract_type ∈ {계약직, 개인사업자})
+# 동적 조회는 harness.dispatch.resource_loader.load_drivers() 참조
+# 2026-05-27 (Sub-Spec 1 v2): CA-0004 김민준 탈퇴 → 조희선 (recPkgE4o3cs0krnR) 교체
+#                              이장훈 max_cbm 7.6 → 4.5 (스타리아 화물칸 추정, Open Decision)
 INHOUSE_DRIVERS = [
-    ("CA-0002", "이장훈", 7.6),
-    ("CA-0003", "박종성", 7.6),
-    ("CA-0004", "김민준", 7.6),
+    ("CA-0002", "이장훈", 4.5),    # 현대 스타리아 화물칸 (추정)
+    ("CA-NEW-1", "조희선", 7.616), # 콘솔 6건 (기존 Airtable record CBM 사용)
+    ("CA-0003", "박종성", 9.486),  # 변동비, 큰 차량 (기존 Airtable record CBM 사용)
 ]
 
 QUICK_CARRIER = ("CA-0005", "퀵(바로고)", 0.3)   # max CBM for quick

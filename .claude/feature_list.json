@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-27",
+  "updated_at": "2026-05-27T18:00:00+09:00",
   "tasks": [
     {
       "id": "GRAPHIFY-OBSIDIAN-01",
@@ -721,12 +721,13 @@
     },
     {
       "id": "SCM-LANE-SUBSPEC-1",
-      "title": "Sub-Spec 1 — 자원 매핑 SSOT (tms_drivers + tms_3pl_partners + dispatch_advisor.py 갱신)",
+      "title": "Sub-Spec 1 — 자원 매핑 SSOT (배송파트너 테이블 9 필드 확장 + dispatch_advisor.py 갱신)",
       "priority": "high",
       "domain": "tms",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-05-27",
-      "notes": "다음 단계: superpowers:writing-plans. Airtable 신규 테이블 2개 + dispatch_advisor.py line 50~54 CA-0004 김민준 → 조희선 교체. 1~2주."
+      "completed_at": "2026-05-27",
+      "notes": "2026-05-27 v2 완료 — 신규 테이블 X (over-engineering 제거), 기존 배송파트너 테이블에 9 필드 추가 + 19 record 분류 (internal 4/autonomous 4/partial 2/locked-in 9) + dispatch_advisor.py 갱신 + resource_loader.py + 9 pytest 통과. Validation Contract C1~C6 PASS."
     },
     {
       "id": "SCM-LANE-SUBSPEC-2",

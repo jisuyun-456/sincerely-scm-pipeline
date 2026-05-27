@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-13T00:00:00+09:00",
+  "generated_at": "2026-05-27T00:00:00+09:00",
   "base_id": "app4x70a8mOrIKsMf",
   "tables": {
     "tblfIEiPJaEF0DVoM": {
@@ -363,7 +363,16 @@
         "fldZBbYiRHemrnQBm": {"name": "파손건수", "type": "number"},
         "fld49ZEJHpnrLFtZg": {"name": "배송클레임", "type": "multipleRecordLinks"},
         "fldQThc5ZKUnNtRsn": {"name": "월간_지연건수", "type": "number"},
-        "fldJStg6RWNdBJeMA": {"name": "평균배송시간_hours", "type": "number"}
+        "fldJStg6RWNdBJeMA": {"name": "평균배송시간_hours", "type": "number"},
+        "fldg1qjPy6qaCwmHI": {"name": "residence", "type": "singleLineText"},
+        "fldLionzxcHEGvmUy": {"name": "work_hours_start", "type": "singleLineText"},
+        "fldB7Mc3iGg239uxY": {"name": "work_hours_end", "type": "singleLineText"},
+        "fld6CCPyJ4t5HOd3M": {"name": "daily_fixed_cost", "type": "currency"},
+        "fldEfEZHWQBx2FO7C": {"name": "max_daily_orders", "type": "number"},
+        "fldRtFqltkqLna38k": {"name": "contract_type", "type": "singleSelect"},
+        "fldyzx3zA5xhB4XG1": {"name": "wave_pattern", "type": "singleSelect"},
+        "fldxPZYD3OpwLtqdP": {"name": "autonomy_level", "type": "singleSelect"},
+        "fldLrL3gIVwPSYfEE": {"name": "lock_in_reason", "type": "singleSelect"}
       }
     },
     "tblSObcLUA5iO1TTx": {
