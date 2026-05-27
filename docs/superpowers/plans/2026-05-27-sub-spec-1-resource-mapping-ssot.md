@@ -465,9 +465,9 @@ PARTNER_UPDATES = [
     {"record_id": "recDvqCerTWX6bCin", "fields": {"contract_type": "외주_carrier", "wave_pattern": "N-A", "autonomy_level": "autonomous", "lock_in_reason": "none"}},  # 신시어리 (항공/특송)
     {"record_id": "recdD4leXvLNazDPO", "fields": {"contract_type": "계약직", "wave_pattern": "N-A", "autonomy_level": "internal", "lock_in_reason": "none"}},  # 신시어리 (물류팀)
     {"record_id": "reclDM1WJuZJTD257", "fields": {"contract_type": "외주_carrier", "wave_pattern": "N-A", "autonomy_level": "autonomous", "lock_in_reason": "none"}},  # KTX
-    # 에스에스아이팩 (퀵·택배) — brainstorm 누락된 6번째 협력사
-    {"record_id": "recrmvfz58msNDfNN", "fields": {"contract_type": "외주_3PL", "wave_pattern": "N-A", "autonomy_level": "partial", "lock_in_reason": "imga_gong-mapping"}},  # 에스에스아이팩 (퀵)
-    {"record_id": "rec7QF1ioERDdogIu", "fields": {"contract_type": "외주_3PL", "wave_pattern": "N-A", "autonomy_level": "locked-in", "lock_in_reason": "customer-designated"}},  # 에스에스아이팩 (택배)
+    # 에스에스아이팩 (퀵·택배) — 2026-05-27 사용자 결정: 제거. Status='inactive' 처리 (과거 Shipment link 보존).
+    {"record_id": "recrmvfz58msNDfNN", "fields": {"Status": "inactive", "contract_type": "외주_3PL", "wave_pattern": "N-A", "autonomy_level": "locked-in", "lock_in_reason": "none", "Notes": "2026-05-27 운영 종료. 과거 record 보존용."}},  # 에스에스아이팩 (퀵)
+    {"record_id": "rec7QF1ioERDdogIu", "fields": {"Status": "inactive", "contract_type": "외주_3PL", "wave_pattern": "N-A", "autonomy_level": "locked-in", "lock_in_reason": "none", "Notes": "2026-05-27 운영 종료. 과거 record 보존용."}},  # 에스에스아이팩 (택배)
     # 제작협력사 (퀵·택배)
     {"record_id": "recr48f91VOWjYN3Z", "fields": {"contract_type": "외주_3PL", "wave_pattern": "N-A", "autonomy_level": "partial", "lock_in_reason": "imga_gong-mapping"}},  # 제작협력사 (퀵)
     {"record_id": "recx9DjW1StCQeJRS", "fields": {"contract_type": "외주_3PL", "wave_pattern": "N-A", "autonomy_level": "locked-in", "lock_in_reason": "customer-designated"}},  # 제작협력사 (택배)
@@ -533,7 +533,7 @@ python scripts/seed/update_배송파트너_정책필드.py
 }
 ```
 
-Expected: 19개 record 모두 contract_type 분류 완료. autonomous(로젠·고고엑스·항공·KTX) 4건 / partial(다영퀵·에스에스퀵·제작협력사퀵) 3건 / locked-in(택배·고객 등) 9건 / internal(자체 기사 3 + 물류팀) 4건 — *총 19건 분류 확인*.
+Expected: 19개 record 모두 contract_type 분류 완료. autonomous(로젠·고고엑스·항공·KTX) 4건 / partial(다영퀵·제작협력사퀵) 2건 / locked-in(택배·고객 등) 9건 / internal(자체 기사 3 + 물류팀) 4건 — *총 19건 (에스에스아이팩 2건은 Status=inactive로 비활성화)*.
 
 - [ ] **Step 4: Commit**
 
