@@ -21,6 +21,7 @@ from harness.settlement.cbm_calc import (
     match_product,
     parse_product_lines,
 )
+from harness.dispatch.cbm_estimator import parse_product_lines_v2
 
 PAT = os.environ.get("AIRTABLE_PAT")
 if not PAT:
@@ -68,6 +69,15 @@ def main():
             break
     print(f"  Sampled shipments: {len(ships)}", file=sys.stderr)
 
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--parser", choices=["v1", "v2"], default="v1",
+                        help="Which parser to use for dry-run")
+    args = parser.parse_args()
+    use_v2 = args.parser == "v2"
+    print(f"  Parser: {'v2 (parse_product_lines_v2)' if use_v2 else 'v1 (parse_product_lines)'}",
+          file=sys.stderr)
+
     total_lines = 0
     matched_lines = 0
     confidences = []
@@ -79,7 +89,11 @@ def main():
         pre_text = (f.get(FLD_FINAL_OUT_TEXT) or "").strip()
         text = post_text or pre_text
         mode = "임가공_후" if post_text else "임가공_전"
-        lines = parse_product_lines(text)
+        if use_v2:
+            v2_lines = parse_product_lines_v2(text)
+            lines = [(name, qty) for name, qty, _extra in v2_lines]
+        else:
+            lines = parse_product_lines(text)
         n_lines = len(lines)
         n_matched = 0
         n_qty_zero = 0
