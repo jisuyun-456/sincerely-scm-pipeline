@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-20",
+  "updated_at": "2026-05-27",
   "tasks": [
     {
       "id": "GRAPHIFY-OBSIDIAN-01",
@@ -709,6 +709,69 @@
       "created_at": "2026-05-21",
       "source": "SCM-FIN-STRATEGY-2026-05-21",
       "notes": "Sprint 5 (3~4주). OCR + LLM 솔루션 결정 필요. 시스템 오차 ≤2%, 점수 20/25. 신규 harness/billing/carrier_invoice_matcher.py. KPI: K2, K6 운반비 매출 대비."
+    },
+    {
+      "id": "SCM-LANE-STRATEGY-2026-05-27",
+      "title": "자체기사 + 외주 5개사 Lane 분담 + 통합 적재 wave 전략 (Option B)",
+      "priority": "high",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-05-27",
+      "notes": "superpowers:brainstorming 결과. outputs/2026-05-27-driver-lane-consolidation-strategy.md + git mirror docs/superpowers/specs/. 자체기사 3명(이장훈/조희선/박종성, 고정비 1.37억/년) + 외주 5개사(다영·베스트원·로지비·로젠·고고엑스) 매트릭스 v2. 3축 전략: 비수기 흡수 + 통합 적재 wave + 자율 carrier RFQ. 예상 연 0.3~0.7억 절감, 4~6주."
+    },
+    {
+      "id": "SCM-LANE-SUBSPEC-1",
+      "title": "Sub-Spec 1 — 자원 매핑 SSOT (tms_drivers + tms_3pl_partners + dispatch_advisor.py 갱신)",
+      "priority": "high",
+      "domain": "tms",
+      "status": "pending",
+      "created_at": "2026-05-27",
+      "notes": "다음 단계: superpowers:writing-plans. Airtable 신규 테이블 2개 + dispatch_advisor.py line 50~54 CA-0004 김민준 → 조희선 교체. 1~2주."
+    },
+    {
+      "id": "SCM-LANE-SUBSPEC-2",
+      "title": "Sub-Spec 2 — 비수기 흡수 룰 + 시즌 모드 (harness/dispatch/seasonal_mode.py + idle_capacity_calc.py)",
+      "priority": "high",
+      "domain": "tms",
+      "status": "pending",
+      "created_at": "2026-05-27",
+      "notes": "11월~2월(성수기) vs 3월~10월(비수기) 자동 전환. 자체기사 idle capacity 산출 + 외주임가공·재고이동 자동 매칭. 2~3주."
+    },
+    {
+      "id": "SCM-LANE-SUBSPEC-3",
+      "title": "Sub-Spec 3 — 통합 적재 Wave 알고리즘 (harness/dispatch/wave_planner.py + Shipment.wave_group 필드)",
+      "priority": "high",
+      "domain": "tms",
+      "status": "pending",
+      "created_at": "2026-05-27",
+      "notes": "W1-AM 이장훈(09시) + W2-AM 조희선(09시) + W3-PM 조희선(14시) + W4-Day 박종성. 출하확정일 + 지역 + CBM 기반 wave 그룹화. 3~4주."
+    },
+    {
+      "id": "SCM-LANE-SUBSPEC-4",
+      "title": "Sub-Spec 4 — Carrier × 자체기사 통합 Scorecard 대시보드",
+      "priority": "medium",
+      "domain": "tms",
+      "status": "pending",
+      "created_at": "2026-05-27",
+      "notes": "5축 평가 (Cost 25% / OTIF 30% / Capacity 15% / Damage 15% / Flexibility 15%). 월 측정, 분기 리뷰. 자율 carrier(로젠·고고엑스) 분기 RFQ 양식 포함. 2~3주."
+    },
+    {
+      "id": "SCM-LANE-SUBSPEC-5",
+      "title": "Sub-Spec 5 — KPI 측정 (K-LC-1~5) + 6개월 ROI 리뷰",
+      "priority": "medium",
+      "domain": "tms",
+      "status": "pending",
+      "created_at": "2026-05-27",
+      "notes": "K-LC-1 비수기 활용도 / K-LC-2 wave 비중 / K-LC-3 spillover 비용 / K-LC-4 자율 carrier 단가 / K-LC-5 scorecard. 6개월 후 실측 ₩ vs 가설 0.3~0.7억 비교."
+    },
+    {
+      "id": "SCM-LANE-OPEN-DECISIONS",
+      "title": "Lane 전략 Open Decisions 6건 (스타리아 CBM, 조희선/박종성 spec, 베스트원 협의 등)",
+      "priority": "medium",
+      "domain": "tms",
+      "status": "pending",
+      "created_at": "2026-05-27",
+      "notes": "1.이장훈 스타리아 정확 CBM 2.조희선/박종성 차량 spec 3.베스트원 비수기 흡수 협의 4.다영 퀵 90%→100% 협의 5.통합 적재 wave 시간창 CX팀 협의 6.Sub-Spec 1~5 진행 순서·병렬화 결정."
     }
   ]
 }
