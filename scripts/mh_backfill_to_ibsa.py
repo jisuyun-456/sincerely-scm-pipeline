@@ -4,9 +4,9 @@ mh_backfill_to_ibsa.py
 입하검수입고 베이스 (app6DGHCPI3Yh3IFS) sync_movement 테이블에
 다중 요소 ELS (Multi-Element Engineered Labor Standard) M/H 6개 필드를 채움.
 
-ELS 구성 (Iter 2.1):
+ELS 구성 (Iter 2.2):
   입하  = WERC 통합 (하차 + carton qty vs ASN + 서류매칭 + staging)  [CBM-driven]
-  검수  = 시안검수                                                    [건당 고정]
+  검수  = 시안검수 + 서류매칭·GR입력                                  [건당 고정]
   입고  = 이동+적치+스캔 [CBM-driven]
          + 표본검수      [고정]
          + 수량확인(저울) [qty-driven]
@@ -42,7 +42,7 @@ load_dotenv()
 sys.stdout.reconfigure(encoding="utf-8")
 
 # ── Version ───────────────────────────────────────────────────────────────────
-VERSION = "v2026-05-iter21"
+VERSION = "v2026-05-iter22"
 
 # ── ELS 상수 (mh_calculator.py 와 동기 유지) ──────────────────────────────────
 PFD = 1.15  # Personal + Fatigue + Delay allowance (15%)
@@ -54,8 +54,9 @@ RECV_THICKNESS_MM = 3.0   # 2D 규격 두께 fallback (스티커류)
 RECV_FLOOR_MIN    = 0.5   # 하한 (PFD 전)
 RECV_CAP_MIN      = 5.0   # 상한 (PFD 전)
 
-# 검수 (QC) — 시안검수, 건당 고정
-QC_MIN = 2.5
+# 검수 (QC) — 시안검수 + 서류매칭·GR입력, 건당 고정
+QC_MIN     = 2.5   # 시안검수
+QC_DOC_MIN = 1.5   # 서류매칭 + GR입력 (Iter 2.2)
 
 # 입고 (Putaway) — 좌표확인 + 이동 + 적치 + 스캔
 PUTAWAY_BASE_MIN    = 3.0   # 기본 (소형)
@@ -183,8 +184,8 @@ def calc_receiving(cbm: float) -> float:
 
 
 def calc_qc() -> float:
-    """검수 M/H — 시안검수, 건당 고정."""
-    return QC_MIN * PFD
+    """검수 M/H — 시안검수 + 서류매칭·GR입력, 건당 고정. (2.5+1.5)×1.15=4.60분"""
+    return (QC_MIN + QC_DOC_MIN) * PFD
 
 
 def calc_putaway(cbm: float, qty: int) -> float:
