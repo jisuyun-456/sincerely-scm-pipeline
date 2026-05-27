@@ -538,8 +538,10 @@ def main():
         dc_rec = fetch_dc_record(record_id)
         if not dc_rec:
             print("  레코드 없음"); return
-        proj_code = dc_rec["fields"].get("프로젝트명", "")
-        batch     = dc_rec["fields"].get("차수", "")
+        _pv       = dc_rec["fields"].get("프로젝트명", "")
+        proj_code = (_pv[0] if _pv else "") if isinstance(_pv, list) else str(_pv).strip()
+        _bv       = dc_rec["fields"].get("차수", "")
+        batch     = (_bv[0] if _bv else "") if isinstance(_bv, list) else str(_bv or "").strip()
         args.project = proj_code
         dlabel = proj_code or record_id
         sd = ed = None
