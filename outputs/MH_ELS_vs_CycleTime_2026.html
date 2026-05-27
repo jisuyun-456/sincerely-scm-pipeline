@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBM-driven ELS vs Cycle-Time M/H 비교 — 신시어리 물류팀 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    background: #f4f6f9;
+    color: #1e2a3b;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── 헤더 ── */
+  .page-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
+    color: #fff;
+    padding: 32px 40px 24px;
+  }
+  .page-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .page-header .subtitle {
+    margin-top: 6px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+  }
+  .badge-row { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    color: #fff;
+  }
+
+  /* ── 공식 카드 ── */
+  .formula-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 24px 40px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  @media (max-width: 800px) { .formula-section { grid-template-columns: 1fr; } }
+  .formula-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .formula-card-header {
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+  }
+  .formula-card.els .formula-card-header { background: #1e6fb5; }
+  .formula-card.ct  .formula-card-header { background: #2e7d54; }
+  .formula-card-body { padding: 14px 16px; background: #f8fafc; }
+  .formula-item {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #dde3ea;
+  }
+  .formula-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .formula-label {
+    font-weight: 700;
+    font-size: 12px;
+    color: #4a5568;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .tag-cbm   { background: #dbeafe; color: #1e40af; }
+  .tag-fixed { background: #ede9fe; color: #5b21b6; }
+  .tag-qty   { background: #dcfce7; color: #15803d; }
+  .formula-text {
+    font-size: 12.5px;
+    color: #374151;
+    font-family: 'Menlo', 'Consolas', monospace;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-top: 4px;
+    line-height: 1.7;
+  }
+  .formula-note { font-size: 11px; color: #6b7280; margin-top: 4px; font-style: italic; }
+
+  /* ── 표 섹션 ── */
+  .table-section { padding: 20px 40px 40px; }
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e2a3b;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #1e6fb5;
+  }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  thead tr:first-child { background: #1e3a5f; color: #fff; }
+  thead tr:last-child  { background: #2d5280; color: rgba(255,255,255,0.9); }
+  th { padding: 9px 10px; text-align: center; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  th.left { text-align: left; }
+  th.group-els  { background: #1a5fa0; }
+  th.group-ct   { background: #1e6b49; }
+  th.group-recv { background: #2a4a7a; }
+
+  tbody tr { border-bottom: 1px solid #eef1f6; }
+  tbody tr:hover { background: #f0f7ff; }
+  tbody tr.partial { background: #fffbeb; }
+  tbody tr.anomaly { background: #fff7f7; }
+
+  td { padding: 8px 10px; text-align: center; font-size: 13px; }
+  td.week-cell { text-align: left; font-weight: 600; white-space: nowrap; min-width: 210px; }
+  td.count-cell { color: #6b7280; font-size: 12px; }
+  td.els-val { color: #1e5fa0; font-weight: 600; }
+  td.ct-val  { color: #1e6b49; font-weight: 600; }
+  td.no-data { color: #9ca3af; font-style: italic; font-size: 12px; }
+
+  /* 효율 색상 */
+  .eff { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+  .eff-great  { background: #dcfce7; color: #15803d; }   /* ≥90% */
+  .eff-good   { background: #fef9c3; color: #854d0e; }   /* 70–89% */
+  .eff-warn   { background: #ffedd5; color: #9a3412; }   /* 50–69% */
+  .eff-poor   { background: #fee2e2; color: #b91c1c; }   /* <50% */
+  .eff-na     { background: #f3f4f6; color: #9ca3af; font-size: 11px; font-weight: 400; }
+
+  tfoot td {
+    padding: 9px 10px;
+    font-weight: 700;
+    background: #1e3a5f;
+    color: #fff;
+    font-size: 13px;
+    border-top: 2px solid #1e6fb5;
+  }
+  tfoot td.els-val { color: #93c5fd; }
+  tfoot td.ct-val  { color: #6ee7b7; }
+
+  /* 범례 */
+  .legend {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 12px;
+    color: #4a5568;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+
+  .footnotes {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #4a5568;
+    line-height: 1.8;
+  }
+  .footnotes p { margin-bottom: 2px; }
+
+  .highlight-box {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .highlight-box strong { color: #1e40af; }
+</style>
+</head>
+<body>
+
+<!-- ── 헤더 ── -->
+<div class="page-header">
+  <h1>CBM-driven ELS vs Cycle-Time M/H 비교표</h1>
+  <div class="subtitle">신시어리 물류팀 — 입하·검수·입고 실측 효율 분석 | 2026년</div>
+  <div class="badge-row">
+    <span class="badge">ELS Iter 2.2 (v2026-05-iter22)</span>
+    <span class="badge">기간 W11 ~ W22 (2026.03.09 ~ 05.29)</span>
+    <span class="badge">총 2,432건</span>
+    <span class="badge">생성일 2026-05-27</span>
+  </div>
+</div>
+
+<!-- ── 계산식 설명 ── -->
+<div class="formula-section">
+
+  <!-- CBM-driven ELS -->
+  <div class="formula-card els">
+    <div class="formula-card-header">📐 CBM-driven ELS (Engineered Labor Standard) — Iter 2.2</div>
+    <div class="formula-card-body">
+
+      <div class="formula-item">
+        <div class="formula-label">
+          🟦 입하 M/H <span class="tag tag-cbm">CBM-driven</span>
+        </div>
+        <div class="formula-text">
+          CBM = W(mm) × H(mm) × D(mm) × 수량 ÷ 10⁹<br>
+          입하분/건 = max(0.5, min(5.0, CBM × 4.0)) × 1.15<br>
+          입하 M/H = Σ(입하분/건) ÷ 60
+        </div>
+        <div class="formula-note">WERC 통합 표준 4.0분/CBM — 하차+carton 수량확인+서류+staging 일괄 포함</div>
+      </div>
+
+      <div class="formula-item">
+        <div class="formula-label">
+          🟪 검수 M/H <span class="tag tag-fixed">건당 고정</span>
+        </div>
+        <div class="formula-text">
+          검수분/건 = (2.5 + 1.5) × 1.15 = <strong>4.60분/건</strong><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;└ 시안검수 2.5분 + 서류매칭·GR입력 1.5분 (Iter 2.2 신규)<br>
+          검수 M/H = Σ(4.60분) ÷ 60 = 건수 × 0.0767 M/H
+        </div>
+        <div class="formula-note">PFD 1.15× = Personal여유 5% + Fatigue여유 5% + Delay여유 5%</div>
+      </div>
+
+      <div class="formula-item">
+        <div class="formula-label">
+          🟩 입고 M/H <span class="tag tag-cbm">CBM+</span><span class="tag tag-fixed" style="margin-left:3px">고정+</span><span class="tag tag-qty" style="margin-left:3px">qty</span>
+        </div>
+        <div class="formula-text">
+          이동·적치·스캔 = max(3.0, min(5.0, 3.0 + CBM×7.0)) × 1.15<br>
+          표본검수 = 2.5분 (고정)<br>
+          수량확인 = max(2.0, min(7.0, 2.0 + 수량÷100))<br>
+          입고 M/H = Σ(세 요소 합) ÷ 60
+        </div>
+        <div class="formula-note">이동·적치에만 PFD 적용 | 수량 500개 이상에서 7.0분 cap 도달</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Cycle-Time 실측 -->
+  <div class="formula-card ct">
+    <div class="formula-card-header">⏱ Cycle-Time 실측 — IBSA 타임스탬프 기반</div>
+    <div class="formula-card-body">
+
+      <div class="formula-item">
+        <div class="formula-label">🟦 입하 실측</div>
+        <div class="formula-text" style="color:#9ca3af;">
+          시작 timestamp 미기록 → 산출 불가<br>
+          (입하완료처리시간만 존재, 시작시간 없음)
+        </div>
+        <div class="formula-note">ELS 표준값만 표시</div>
+      </div>
+
+      <div class="formula-item">
+        <div class="formula-label">🟪 검수 실측</div>
+        <div class="formula-text">
+          검수_interval = 시안검수완료시간 − 입하완료처리시간<br>
+          필터: 1분 ≤ interval ≤ 60분 (outlier 제거)<br>
+          검수 실측 M/H = Σ(유효 interval) ÷ 60
+        </div>
+        <div class="formula-note">음수(병렬처리) 및 60분 초과(idle 대기) 제외 — 전체의 약 15% 해당</div>
+      </div>
+
+      <div class="formula-item">
+        <div class="formula-label">🟩 입고 실측</div>
+        <div class="formula-text">
+          입고_interval = 입고좌표입력시간 − 시안검수완료시간<br>
+          필터: 1분 ≤ interval ≤ 120분 (outlier 제거)<br>
+          입고 실측 M/H = Σ(유효 interval) ÷ 60
+        </div>
+        <div class="formula-note">입고좌표입력 = WMS putaway 완료 기준점 | 음수 521건 제외</div>
+      </div>
+
+      <div class="formula-item" style="background:#f0fdf4; border-radius:6px; padding:8px 10px; margin-top:8px;">
+        <div class="formula-label" style="margin-bottom:2px;">효율 해석</div>
+        <div style="font-size:12px; color:#374151;">
+          <strong>효율 = ELS ÷ 실측 × 100%</strong><br>
+          100% → ELS = 실측 (완벽 일치)<br>
+          &lt;100% → ELS가 실제보다 짧게 산정 (under-standard)<br>
+          &gt;100% → ELS가 실제보다 길게 산정 (over-standard)
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ── 메인 테이블 ── -->
+<div class="table-section">
+  <div class="section-title">주차별 M/H 비교 (단위: Man-Hour / 주간 합계 / 담당자 1인 기준)</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2" class="left" style="min-width:210px;">주차</th>
+        <th rowspan="2">건수</th>
+        <!-- 입하 -->
+        <th colspan="2" class="group-recv">🟦 입하</th>
+        <!-- 검수 -->
+        <th colspan="3" class="group-els" style="background:#1a5fa0;">🟪 검수</th>
+        <!-- 입고 -->
+        <th colspan="3" class="group-ct" style="background:#1e5f4a;">🟩 입고</th>
+      </tr>
+      <tr>
+        <!-- 입하 -->
+        <th class="group-recv">ELS</th>
+        <th class="group-recv">실측</th>
+        <!-- 검수 -->
+        <th class="group-els" style="background:#1a5fa0;">ELS</th>
+        <th class="group-els" style="background:#1a5fa0;">실측</th>
+        <th class="group-els" style="background:#1a5fa0;">효율</th>
+        <!-- 입고 -->
+        <th class="group-ct" style="background:#1e5f4a;">ELS</th>
+        <th class="group-ct" style="background:#1e5f4a;">실측</th>
+        <th class="group-ct" style="background:#1e5f4a;">효율</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- W11 — QC anomaly -->
+      <tr class="anomaly">
+        <td class="week-cell">W11 (3월 9일 ~ 3월 13일)</td>
+        <td class="count-cell">220</td>
+        <td class="els-val">2.58</td>
+        <td class="no-data">—</td>
+        <!-- 검수 -->
+        <td class="els-val">15.18</td>
+        <td class="no-data">— <sup>*1</sup></td>
+        <td><span class="eff eff-na">측정불가</span></td>
+        <!-- 입고 -->
+        <td class="els-val">34.20</td>
+        <td class="ct-val">28.15</td>
+        <td><span class="eff eff-great">122%</span></td>
+      </tr>
+
+      <!-- W12 -->
+      <tr>
+        <td class="week-cell">W12 (3월 16일 ~ 3월 20일)</td>
+        <td class="count-cell">203</td>
+        <td class="els-val">2.83</td>
+        <td class="no-data">—</td>
+        <td class="els-val">14.57</td>
+        <td class="ct-val">17.26</td>
+        <td><span class="eff eff-good">84%</span></td>
+        <td class="els-val">32.62</td>
+        <td class="ct-val">22.84</td>
+        <td><span class="eff eff-great">143%</span></td>
+      </tr>
+
+      <!-- W13 -->
+      <tr>
+        <td class="week-cell">W13 (3월 23일 ~ 3월 27일)</td>
+        <td class="count-cell">172</td>
+        <td class="els-val">2.17</td>
+        <td class="no-data">—</td>
+        <td class="els-val">11.73</td>
+        <td class="ct-val">15.87</td>
+        <td><span class="eff eff-good">74%</span></td>
+        <td class="els-val">26.12</td>
+        <td class="ct-val">45.60</td>
+        <td><span class="eff eff-warn">57%</span></td>
+      </tr>
+
+      <!-- W14 -->
+      <tr>
+        <td class="week-cell">W14 (3월 30일 ~ 4월 3일)</td>
+        <td class="count-cell">215</td>
+        <td class="els-val">2.89</td>
+        <td class="no-data">—</td>
+        <td class="els-val">14.64</td>
+        <td class="ct-val">15.81</td>
+        <td><span class="eff eff-great">93%</span></td>
+        <td class="els-val">33.54</td>
+        <td class="ct-val">36.95</td>
+        <td><span class="eff eff-great">91%</span></td>
+      </tr>
+
+      <!-- W15 -->
+      <tr>
+        <td class="week-cell">W15 (4월 6일 ~ 4월 10일)</td>
+        <td class="count-cell">256</td>
+        <td class="els-val">3.31</td>
+        <td class="no-data">—</td>
+        <td class="els-val">17.79</td>
+        <td class="ct-val">32.48</td>
+        <td><span class="eff eff-warn">55%</span></td>
+        <td class="els-val">40.93</td>
+        <td class="ct-val">35.53</td>
+        <td><span class="eff eff-great">115%</span></td>
+      </tr>
+
+      <!-- W16 -->
+      <tr>
+        <td class="week-cell">W16 (4월 13일 ~ 4월 17일)</td>
+        <td class="count-cell">219</td>
+        <td class="els-val">2.95</td>
+        <td class="no-data">—</td>
+        <td class="els-val">15.95</td>
+        <td class="ct-val">25.94</td>
+        <td><span class="eff eff-warn">61%</span></td>
+        <td class="els-val">34.68</td>
+        <td class="ct-val">23.10</td>
+        <td><span class="eff eff-great">150%</span></td>
+      </tr>
+
+      <!-- W17 -->
+      <tr>
+        <td class="week-cell">W17 (4월 20일 ~ 4월 24일)</td>
+        <td class="count-cell">215</td>
+        <td class="els-val">3.41</td>
+        <td class="no-data">—</td>
+        <td class="els-val">15.72</td>
+        <td class="ct-val">26.87</td>
+        <td><span class="eff eff-warn">58%</span></td>
+        <td class="els-val">34.40</td>
+        <td class="ct-val">35.66</td>
+        <td><span class="eff eff-great">96%</span></td>
+      </tr>
+
+      <!-- W18 -->
+      <tr>
+        <td class="week-cell">W18 (4월 27일 ~ 5월 1일)</td>
+        <td class="count-cell">161</td>
+        <td class="els-val">2.38</td>
+        <td class="no-data">—</td>
+        <td class="els-val">12.04</td>
+        <td class="ct-val">19.42</td>
+        <td><span class="eff eff-warn">62%</span></td>
+        <td class="els-val">26.40</td>
+        <td class="ct-val">15.55</td>
+        <td><span class="eff eff-great">170%</span></td>
+      </tr>
+
+      <!-- W19 -->
+      <tr>
+        <td class="week-cell">W19 (5월 4일 ~ 5월 8일)</td>
+        <td class="count-cell">129</td>
+        <td class="els-val">1.61</td>
+        <td class="no-data">—</td>
+        <td class="els-val">9.43</td>
+        <td class="ct-val">10.76</td>
+        <td><span class="eff eff-good">88%</span></td>
+        <td class="els-val">20.56</td>
+        <td class="ct-val">20.98</td>
+        <td><span class="eff eff-great">98%</span></td>
+      </tr>
+
+      <!-- W20 -->
+      <tr>
+        <td class="week-cell">W20 (5월 11일 ~ 5월 15일)</td>
+        <td class="count-cell">247</td>
+        <td class="els-val">3.43</td>
+        <td class="no-data">—</td>
+        <td class="els-val">17.86</td>
+        <td class="ct-val">27.15</td>
+        <td><span class="eff eff-warn">66%</span></td>
+        <td class="els-val">39.29</td>
+        <td class="ct-val">50.93</td>
+        <td><span class="eff eff-good">77%</span></td>
+      </tr>
+
+      <!-- W21 -->
+      <tr>
+        <td class="week-cell">W21 (5월 18일 ~ 5월 22일)</td>
+        <td class="count-cell">199</td>
+        <td class="els-val">2.60</td>
+        <td class="no-data">—</td>
+        <td class="els-val">14.72</td>
+        <td class="ct-val">20.26</td>
+        <td><span class="eff eff-good">73%</span></td>
+        <td class="els-val">32.28</td>
+        <td class="ct-val">56.85</td>
+        <td><span class="eff eff-warn">57%</span></td>
+      </tr>
+
+      <!-- W22 partial -->
+      <tr class="partial">
+        <td class="week-cell">W22 (5월 25일 ~ 5월 29일) <sup>*2</sup></td>
+        <td class="count-cell">51</td>
+        <td class="els-val">0.74</td>
+        <td class="no-data">—</td>
+        <td class="els-val">3.91</td>
+        <td class="ct-val">5.36</td>
+        <td><span class="eff eff-good">73%</span></td>
+        <td class="els-val">8.44</td>
+        <td class="ct-val">12.10</td>
+        <td><span class="eff eff-good">70%</span></td>
+      </tr>
+
+    </tbody>
+    <tfoot>
+      <tr>
+        <td class="left" style="font-size:12px; color:rgba(255,255,255,0.8);">합계 (W12~W21)</td>
+        <td>2,016</td>
+        <!-- 입하 -->
+        <td class="els-val">27.58</td>
+        <td>—</td>
+        <!-- 검수 -->
+        <td class="els-val">144.45</td>
+        <td class="ct-val">211.82</td>
+        <td style="color:#fcd34d; font-size:12px;">평균 68%</td>
+        <!-- 입고 -->
+        <td class="els-val">320.82</td>
+        <td class="ct-val">343.99</td>
+        <td style="color:#fcd34d; font-size:12px;">평균 93%</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- 범례 -->
+  <div class="legend">
+    <strong style="color:#4a5568;">효율 범례:</strong>
+    <span class="legend-item"><span class="eff eff-great">≥90%</span> 근접 일치</span>
+    <span class="legend-item"><span class="eff eff-good">70–89%</span> 소폭 과소산정</span>
+    <span class="legend-item"><span class="eff eff-warn">50–69%</span> 중폭 과소산정</span>
+    <span class="legend-item"><span class="eff eff-poor">&lt;50%</span> 대폭 과소산정</span>
+  </div>
+
+  <!-- 주석 -->
+  <div class="footnotes">
+    <p><sup>*1</sup> <strong>W11 검수 실측 측정불가</strong>: 해당 주 타임스탬프가 일괄입력(batch entry) 되어 interval &lt; 1분인 건이 대부분 → 필터 통과 건수 부족, 통계적 의미 없음.</p>
+    <p><sup>*2</sup> <strong>W22 진행중</strong>: 2026-05-27 기준 월~화 데이터만 포함 (3일치 미측정).</p>
+    <p>▸ 입하 실측: 입하완료처리시간만 기록되고 시작시간 미기록 → interval 산출 불가, ELS 표준만 표시.</p>
+    <p>▸ 실측 필터: 검수 1~60분, 입고 1~120분 범위 외 제외 (음수 = 병렬처리, 초과 = idle 대기 포함).</p>
+    <p>▸ ELS 버전: <code>v2026-05-iter22</code> — Iter 2.2에서 검수에 서류매칭·GR입력 1.5분 추가 (이전 Iter 2.1: 2.875분/건 → 4.60분/건).</p>
+  </div>
+
+  <!-- 인사이트 박스 -->
+  <div class="highlight-box">
+    <strong>📊 핵심 인사이트 (Iter 2.2 기준)</strong><br>
+    <table style="margin-top:10px; box-shadow:none; background:transparent; width:auto;">
+      <tr>
+        <td style="padding:4px 12px 4px 0; font-weight:700; color:#1e40af;">입하</td>
+        <td style="padding:4px 0; color:#374151;">ELS만 산출 가능 (시작 timestamp 미기록). 건당 0.5~5.75분 CBM 구간 내 산정.</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 12px 4px 0; font-weight:700; color:#7e22ce;">검수</td>
+        <td style="padding:4px 0; color:#374151;">Iter 2.2 후 평균 효율 <strong>68%</strong> (이전 Iter 2.1: 40~55%). 잔여 갭은 SKU 복잡도·불량처리 변동분.</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 12px 4px 0; font-weight:700; color:#15803d;">입고</td>
+        <td style="padding:4px 0; color:#374151;">평균 효율 <strong>93%</strong> — CBM+qty 복합 모델이 실측과 근사. 주차별 편차는 제품 CBM mix 차이에 기인.</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+</body>
+</html>
