@@ -137,7 +137,7 @@ def run(headers, start: date, end: date, dry_run: bool, force: bool = False) -> 
         verify = requests.get(
             f"{url_disp}/{rec['id']}",
             headers=headers,
-            params={"fields[]": [FLD_DISP_FARE_SUM], "returnFieldsByFieldId": "true"},
+            params={"returnFieldsByFieldId": "true"},
             timeout=15,
         )
         verify.raise_for_status()

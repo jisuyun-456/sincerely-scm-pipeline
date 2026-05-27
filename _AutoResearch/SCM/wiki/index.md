@@ -13,3 +13,4 @@
 | [WMS-DormantStock-20260513.md](../outputs/WMS-DormantStock-20260513.md) | 분석 | 2026-05-13 | 완료 |
 | [TMS-2026-W20.md](../outputs/TMS-2026-W20.md) | 주간 | 2026-05-18 | 완료 |
 | [SCM-FinanceStrategy-2026-05-21.md](../outputs/SCM-FinanceStrategy-2026-05-21.md) | 전략 | 2026-05-21 | 완료 — Top 5 우선과제 + KPI 10개 + Sub-Spec 로드맵 |
+| [TMS-2026-W21.md](../outputs/TMS-2026-W21.md) | 주간 | 2026-05-27 | 완료 |

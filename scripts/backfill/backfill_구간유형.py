@@ -88,7 +88,7 @@ def run(headers, start: date, end: date, dry_run: bool) -> dict:
         verify = requests.get(
             f"{url}/{rec['id']}",
             headers=headers,
-            params={"fields[]": [F_ZONE], "returnFieldsByFieldId": "true"},
+            params={"returnFieldsByFieldId": "true"},
             timeout=15,
         )
         verify.raise_for_status()
