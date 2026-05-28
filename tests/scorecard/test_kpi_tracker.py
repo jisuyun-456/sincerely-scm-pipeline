@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from harness.scorecard.calc import FLD_WAVE_REC, FLD_TRANSPORT_COST
 from harness.scorecard.kpi_tracker import (
     calc_kpi,
     load_history,
@@ -33,8 +34,8 @@ def _make_shipments(
         for _ in range(count):
             ships.append({
                 "fields": {
-                    "wave_recommendation": wave,
-                    "운송비용": 50000.0 if wave in {"spillover_고고엑스", "spillover_로젠"} else 0.0,
+                    FLD_WAVE_REC: wave,
+                    FLD_TRANSPORT_COST: 50000.0 if wave in {"spillover_고고엑스", "spillover_로젠"} else 0.0,
                 }
             })
     return ships

@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from typing import Optional
 
+from harness.scorecard.calc import FLD_WAVE_REC, FLD_TRANSPORT_COST
+
 SELF_EMPLOYED_WAVES = {"W1", "W2", "W3"}
 SPILLOVER_WAVES = {"spillover_고고엑스", "spillover_로젠"}
 MANUAL_WAVE = "수동"
@@ -26,8 +28,8 @@ def calc_kpi(shipments: list[dict]) -> dict:
 
     for rec in shipments:
         f = rec.get("fields", {})
-        wave = f.get("wave_recommendation") or ""
-        cost = float(f.get("운송비용") or 0.0)
+        wave = f.get(FLD_WAVE_REC) or ""
+        cost = float(f.get(FLD_TRANSPORT_COST) or 0.0)
 
         if wave in SELF_EMPLOYED_WAVES:
             self_employed_count += 1
