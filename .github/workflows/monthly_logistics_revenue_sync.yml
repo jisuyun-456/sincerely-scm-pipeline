@@ -1,0 +1,150 @@
+name: 물류매출 자동화 — 월간 견적서 운임 싱크
+
+on:
+  schedule:
+    # 매월 1일 00:00 UTC = 09:00 KST
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+    inputs:
+      target_month:
+        description: '처리 월 YYYY-MM (기본: 전월)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry-run — Airtable 실제 쓰기 없이 미리보기'
+        type: boolean
+        required: false
+        default: false
+
+env:
+  PYTHON_VERSION: '3.11'
+  REQS: harness/requirements.txt
+  TZ: Asia/Seoul
+
+jobs:
+  # ── 1. Dry-run preview ────────────────────────────────────────────────────
+  preview:
+    name: '1 · Preview — 견적서 파싱 & 금액 확인'
+    runs-on: ubuntu-latest
+    outputs:
+      month_label: ${{ steps.resolve.outputs.month_label }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.REQS }}
+
+      - run: pip install -r ${{ env.REQS }}
+
+      - name: Check required secrets
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
+        run: |
+          [[ -n "$AIRTABLE_PAT" ]] || { echo "::error::AIRTABLE_API_KEY_TMS secret is not set"; exit 1; }
+
+      - name: Resolve target month
+        id: resolve
+        shell: bash
+        run: |
+          if [[ -n "${{ github.event.inputs.target_month }}" ]]; then
+            LABEL="${{ github.event.inputs.target_month }}"
+          else
+            LABEL=$(python -c "
+from datetime import date
+t = date.today()
+mo = t.month - 1 or 12
+yr = t.year if t.month > 1 else t.year - 1
+print(f'{yr:04d}-{mo:02d}')
+")
+          fi
+          echo "month_label=$LABEL" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Run PDF parser unit tests
+        shell: bash
+        run: |
+          python scripts/monthly_logistics_revenue_sync.py --test
+
+      - name: Dry-run sync
+        id: dryrun
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
+        run: |
+          MONTH="${{ steps.resolve.outputs.month_label }}"
+          python scripts/monthly_logistics_revenue_sync.py \
+            --month "$MONTH" \
+            --dry-run \
+            --verbose \
+            2>&1 | tee preview.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: logistics-revenue-preview-${{ steps.resolve.outputs.month_label }}
+          path: preview.txt
+          retention-days: 30
+
+  # ── 2. Write (skip if dry_run=true) ──────────────────────────────────────
+  write:
+    name: '2 · Write — 물류매출 Airtable 업데이트'
+    runs-on: ubuntu-latest
+    needs: preview
+    if: ${{ github.event.inputs.dry_run != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: ${{ env.REQS }}
+
+      - run: pip install -r ${{ env.REQS }}
+
+      - name: Run sync
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
+        run: |
+          MONTH="${{ needs.preview.outputs.month_label }}"
+          python scripts/monthly_logistics_revenue_sync.py \
+            --month "$MONTH" \
+            --verbose \
+            2>&1 | tee result.txt
+          cat result.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: logistics-revenue-result-${{ needs.preview.outputs.month_label }}
+          path: result.txt
+          retention-days: 90
+
+  # ── 3. Summary ───────────────────────────────────────────────────────────
+  summary:
+    name: '3 · Summary'
+    runs-on: ubuntu-latest
+    needs: [preview, write]
+    if: always()
+    steps:
+      - name: Write job summary
+        shell: bash
+        run: |
+          MONTH="${{ needs.preview.outputs.month_label }}"
+          case "${{ needs.write.result }}" in
+            success)   STATUS="✅ 업데이트 완료" ;;
+            skipped)   STATUS="⏭️ dry-run 모드 (미리보기만)" ;;
+            failure)   STATUS="❌ 업데이트 실패" ;;
+            cancelled) STATUS="🚫 취소" ;;
+            *)         STATUS="❓ ${{ needs.write.result }}" ;;
+          esac
+          {
+            echo "## 물류매출 자동화 — $MONTH"
+            echo "| 항목 | 값 |"
+            echo "|------|-----|"
+            echo "| 처리 월 | \`$MONTH\` |"
+            echo "| 상태 | $STATUS |"
+            echo "| 실행 | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |"
+          } >> "$GITHUB_STEP_SUMMARY"
