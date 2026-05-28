@@ -46,3 +46,13 @@ def rolling_window_end(today: date, days: int = 7,
                       holidays: Iterable[str] = KR_HOLIDAYS_2026) -> date:
     """today 기준 영업일 n일 후 (마지막 영업일)."""
     return business_days_forward(today, days, holidays)[-1]
+
+
+def add_logen_days(start: date, days: int) -> date:
+    """출하확정일 + N일 (일요일만 skip). 로젠 SLA 기준 — 월~토 배송."""
+    d, remaining = start, days
+    while remaining > 0:
+        d += timedelta(days=1)
+        if d.weekday() != 6:  # 6 = Sunday
+            remaining -= 1
+    return d
