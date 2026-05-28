@@ -130,3 +130,206 @@ def working_days_in_month(year: int, month: int) -> int:
         for d in range(1, days + 1)
         if datetime.date(year, month, d).weekday() < 5
     )
+
+
+# ── Airtable fetch helpers ──────────────────────────────────────────────────
+
+def _airtable_headers() -> dict:
+    pat = os.environ.get("AIRTABLE_PAT") or os.environ.get("AIRTABLE_API_KEY")
+    if not pat:
+        raise EnvironmentError("AIRTABLE_PAT 환경변수 필요")
+    return {"Authorization": f"Bearer {pat}"}
+
+
+def _fetch_all(url: str, headers: dict, params: dict | None = None) -> list[dict]:
+    """페이지네이션 처리해 전체 레코드 반환."""
+    records: list[dict] = []
+    offset = None
+    while True:
+        p = dict(params or {})
+        if offset:
+            p["offset"] = offset
+        resp = requests.get(url, headers=headers, params=p, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        records.extend(data.get("records", []))
+        offset = data.get("offset")
+        if not offset:
+            break
+    return records
+
+
+def fetch_partners(headers: dict) -> list[dict]:
+    """배송파트너 전원 조회 (name, max_daily_orders, autonomy_level)."""
+    url = f"https://api.airtable.com/v0/{TMS_BASE}/{TBL_PARTNER}"
+    return _fetch_all(url, headers, {
+        "fields[]": [FLD_P_NAME, FLD_P_MAX_DAILY, FLD_P_AUTONOMY],
+    })
+
+
+def fetch_prev_month_shipments(headers: dict, year: int, month: int) -> list[dict]:
+    """전월 출하확정일 기준 Shipment 조회."""
+    import calendar as _cal
+    _, last_day = _cal.monthrange(year, month)
+    formula = (
+        f"AND("
+        f"IS_AFTER({{출하확정일}}, '{datetime.date(year, month, 1) - datetime.timedelta(days=1)}'),"
+        f"IS_BEFORE({{출하확정일}}, '{datetime.date(year, month, last_day) + datetime.timedelta(days=1)}')"
+        f")"
+    )
+    url = f"https://api.airtable.com/v0/{TMS_BASE}/{TBL_SHIP}"
+    return _fetch_all(url, headers, {
+        "filterByFormula": formula,
+        "fields[]": [
+            FLD_SHIP_DATE, FLD_EST_CBM, FLD_WAVE_REC,
+            FLD_TRANSPORT_COST, FLD_PARTNER_LINK, FLD_STATUS,
+        ],
+    })
+
+
+def fetch_otif_all(headers: dict) -> list[dict]:
+    """OTIF 테이블 전체 조회 (Shipment 링크 + On_Time 필드만)."""
+    url = f"https://api.airtable.com/v0/{TMS_BASE}/{TBL_OTIF}"
+    return _fetch_all(url, headers, {
+        "fields[]": [FLD_OTIF_SHIP, FLD_ON_TIME],
+    })
+
+
+def fetch_prev_month_claims(headers: dict, year: int, month: int) -> list[dict]:
+    """전월 발생일 기준 배송클레임 조회."""
+    import calendar as _cal
+    _, last_day = _cal.monthrange(year, month)
+    formula = (
+        f"AND("
+        f"IS_AFTER({{발생일}}, '{datetime.date(year, month, 1) - datetime.timedelta(days=1)}'),"
+        f"IS_BEFORE({{발생일}}, '{datetime.date(year, month, last_day) + datetime.timedelta(days=1)}')"
+        f")"
+    )
+    url = f"https://api.airtable.com/v0/{TMS_BASE}/{TBL_CLAIM}"
+    return _fetch_all(url, headers, {
+        "filterByFormula": formula,
+        "fields[]": [FLD_CLAIM_DATE, FLD_CLAIM_PARTNER],
+    })
+
+
+def fetch_rate_card(headers: dict) -> dict[str, float]:
+    """운임단가 테이블 → {partner_record_id: target_rate(₩/CBM)}.
+
+    target_rate = 기본운임 / ((CBM_최소+CBM_최대)/2) + CBM당_추가운임.
+    동일 파트너 여러 행 존재 시 마지막 유효 단가 사용.
+    """
+    url = f"https://api.airtable.com/v0/{TMS_BASE}/{TBL_RATE}"
+    rows = _fetch_all(url, headers, {
+        "fields[]": [FLD_RATE_PARTNER, FLD_RATE_BASE, FLD_RATE_PER_CBM,
+                     FLD_RATE_CBM_MIN, FLD_RATE_CBM_MAX],
+    })
+    rate_map: dict[str, float] = {}
+    for row in rows:
+        f = row.get("fields", {})
+        partner_ids: list[str] = f.get(FLD_RATE_PARTNER, [])
+        base = float(f.get(FLD_RATE_BASE) or 0)
+        per_cbm = float(f.get(FLD_RATE_PER_CBM) or 0)
+        cbm_min = float(f.get(FLD_RATE_CBM_MIN) or 1)
+        cbm_max = float(f.get(FLD_RATE_CBM_MAX) or 1)
+        mid_cbm = (cbm_min + cbm_max) / 2 if cbm_max > 0 else 1
+        target = (base / mid_cbm) + per_cbm if mid_cbm > 0 else per_cbm
+        for pid in partner_ids:
+            rate_map[pid] = target
+    return rate_map
+
+
+def calc_all_carriers(
+    year: int,
+    month: int,
+    prev_month_counts: dict[str, int] | None = None,
+) -> tuple[list, list[dict]]:
+    """전체 carrier 점수 계산. (list[CarrierScore], list[dict] shipments_for_kpi) 반환."""
+    from harness.scorecard import CarrierScore
+
+    headers = _airtable_headers()
+    partners = fetch_partners(headers)
+    shipments = fetch_prev_month_shipments(headers, year, month)
+    otif_all = fetch_otif_all(headers)
+    claims = fetch_prev_month_claims(headers, year, month)
+    rate_card = fetch_rate_card(headers)
+    wdays = working_days_in_month(year, month)
+
+    # 인덱스: shipment_id → partner_id
+    ship_to_partner: dict[str, str] = {}
+    for rec in shipments:
+        f = rec.get("fields", {})
+        partner_links: list[str] = f.get(FLD_PARTNER_LINK, [])
+        if partner_links:
+            ship_to_partner[rec["id"]] = partner_links[0]
+
+    # 인덱스: partner_id → On_Time 건수
+    partner_otif_total: dict[str, int] = {}
+    partner_otif_on_time: dict[str, int] = {}
+    for otif in otif_all:
+        f = otif.get("fields", {})
+        ship_links: list[str] = f.get(FLD_OTIF_SHIP, [])
+        on_time = int(f.get(FLD_ON_TIME) or 0)
+        for sid in ship_links:
+            pid = ship_to_partner.get(sid)
+            if pid:
+                partner_otif_total[pid] = partner_otif_total.get(pid, 0) + 1
+                partner_otif_on_time[pid] = partner_otif_on_time.get(pid, 0) + on_time
+
+    # 인덱스: partner_id → claim 건수
+    partner_claims: dict[str, int] = {}
+    for claim in claims:
+        f = claim.get("fields", {})
+        for pid in f.get(FLD_CLAIM_PARTNER, []):
+            partner_claims[pid] = partner_claims.get(pid, 0) + 1
+
+    # 인덱스: partner_id → shipment 건수·총운임·총CBM
+    partner_ship_count: dict[str, int] = {}
+    partner_cost: dict[str, float] = {}
+    partner_cbm: dict[str, float] = {}
+    for rec in shipments:
+        f = rec.get("fields", {})
+        plinks: list[str] = f.get(FLD_PARTNER_LINK, [])
+        if not plinks:
+            continue
+        pid = plinks[0]
+        partner_ship_count[pid] = partner_ship_count.get(pid, 0) + 1
+        partner_cost[pid] = partner_cost.get(pid, 0.0) + float(f.get(FLD_TRANSPORT_COST) or 0)
+        partner_cbm[pid] = partner_cbm.get(pid, 0.0) + float(f.get(FLD_EST_CBM) or 0)
+
+    scores: list[CarrierScore] = []
+    for p in partners:
+        pid = p["id"]
+        f = p.get("fields", {})
+        name = f.get(FLD_P_NAME, pid)
+        is_self = name in SELF_EMPLOYED_NAMES
+        max_daily = int(f.get(FLD_P_MAX_DAILY) or 0)
+        ship_count = partner_ship_count.get(pid, 0)
+
+        cost_score = score_cost(
+            partner_cost.get(pid, 0.0),
+            partner_cbm.get(pid, 0.0),
+            rate_card.get(pid),
+        )
+        rel_score = score_reliability(
+            partner_otif_on_time.get(pid, 0),
+            partner_otif_total.get(pid, 0),
+        )
+        cap_score = score_capacity(
+            ship_count, max_daily, wdays, is_self,
+            (prev_month_counts or {}).get(name),
+        )
+        dmg_score = score_damage(partner_claims.get(pid, 0), ship_count)
+        total = aggregate_score(cost_score, rel_score, cap_score, dmg_score)
+
+        scores.append(CarrierScore(
+            carrier_id=pid,
+            carrier_name=name,
+            cost=cost_score,
+            reliability=rel_score,
+            capacity=cap_score,
+            damage=dmg_score,
+            total=total,
+            shipment_count=ship_count,
+        ))
+
+    return scores, shipments
