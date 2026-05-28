@@ -85,7 +85,7 @@ def format_slack_message(
     k2_pct = f"{k2['value']*100:.1f}%"
     k2_delta_str = f"({k2['delta']*100:+.1f}%p)" if k2.get("delta") is not None else ""
     k2_ok = "✅" if k2["value"] >= 0.70 else "❌"
-    lines.append(f"K-LC-2 Wave 자동화 비중 {k2_pct} {k2_delta_str} {k2_ok}  [목표: 70%]")
+    lines.append(f"K-LC-2 Wave 자동화 비중 {k2_pct} {k2_delta_str} {_arrow(k2['delta'])} {k2_ok}  [목표: 70%]")
 
     k3_val = f"₩{k3['value']:,.0f}"
     k3_delta_str = f"({k3['delta_pct']*100:+.1f}%)" if k3.get("delta_pct") is not None else ""
