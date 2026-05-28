@@ -201,6 +201,17 @@ def main() -> None:
     summary = "\n".join(lines)
     _log.info("settlement complete", written=result.written, failed=result.failed)
     notifier.notify(summary, severity="INFO", domain=DOMAIN)
+
+    # ── 9b. Driver notice (기사님 사전안내용 메시지) ──────────────────────────────
+    if result.driver_totals:
+        notice_lines = [f"📋 *기사님 정산 안내* — {period}"]
+        for drv, t in result.driver_totals.items():
+            u_str = f" (상하차 ₩{t['unload']:,} 별도)" if t["unload"] else ""
+            notice_lines.append(f"  • {drv} 기사님: ₩{t['fare']:,} ({t['count']}건){u_str}")
+        if args.dry_run:
+            notice_lines.append("_(미리보기 — 아직 확정 전)_")
+        notifier.notify("\n".join(notice_lines), severity="INFO", domain="driver_notice")
+
     if sink:
         sink.log_event(
             source="harness", agent_id=DOMAIN, domain="TMS", week=start,

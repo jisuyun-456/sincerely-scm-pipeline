@@ -32,12 +32,18 @@ def week_range(monday: date) -> tuple[date, date]:
     return monday, monday + timedelta(days=6)
 
 
-def assert_week_in_window(monday: date, max_days_past: int = 60) -> None:
+def assert_week_in_window(
+    monday: date, max_days_past: int = 60, max_days_future: int = 1
+) -> None:
+    """Raise ConfigError if `monday` is outside the allowed settlement window.
+
+    max_days_future=1 allows pre-settlement runs the day before (기사님 사전안내 용도).
+    """
     today = today_kst()
     delta = (today - monday).days
-    if delta < 0:
+    if delta < -max_days_future:
         raise ConfigError(
-            f"Week starting {monday} is in the future "
+            f"Date {monday} is more than {max_days_future} day(s) in the future "
             f"(today KST: {today})"
         )
     if delta > max_days_past:
