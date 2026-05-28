@@ -20,6 +20,8 @@ from typing import Optional
 
 from harness.dispatch.audit_log import log_event
 from harness.dispatch.cbm_estimator import estimate_shipment_cbm
+from harness.dispatch.change_detector import ChangeReport, detect
+from harness.dispatch.otif_estimator import OtifResult, estimate_all, otif_summary_by_wave
 from harness.dispatch.region_classifier import classify_region
 from harness.dispatch.resource_loader import load_drivers, load_partners
 from harness.dispatch.scheduling import is_quiet_hour, rolling_window_end
@@ -51,6 +53,24 @@ FLD_WAVE_UPDATED = "fld9YtjtpiOiZHJKu"      # dateTime (wave_updated_at)
 SHIPPED_STATUSES = frozenset({"발송완료", "취소", "반품", "회수", "배달완료"})
 
 DRY_RUN = os.environ.get("DRY_RUN", "").lower() in {"true", "1", "yes"}
+
+SNAPSHOT_PATH = os.environ.get("SNAPSHOT_PATH", "")
+
+
+def _load_snapshot() -> dict:
+    if not SNAPSHOT_PATH or not os.path.exists(SNAPSHOT_PATH):
+        return {}
+    with open(SNAPSHOT_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _save_snapshot(snapshot: dict) -> None:
+    if not SNAPSHOT_PATH:
+        return
+    import pathlib
+    pathlib.Path(SNAPSHOT_PATH).parent.mkdir(parents=True, exist_ok=True)
+    with open(SNAPSHOT_PATH, "w", encoding="utf-8") as f:
+        json.dump(snapshot, f, ensure_ascii=False)
 
 
 # ─── Airtable helpers ─────────────────────────────────────────────────────────
@@ -254,13 +274,37 @@ def _slack_post(text: str) -> None:
         r.read()
 
 
-def _format_digest(plans: dict[str, WavePlan], diff: list[dict], today_iso: str) -> str:
+def _format_digest(
+    plans: dict[str, WavePlan],
+    diff: list[dict],
+    today_iso: str,
+    change_report: "ChangeReport | None" = None,
+    otif_summary: "dict | None" = None,
+) -> str:
     util = compute_utilization(plans)
     lines = [f"*Wave 추천 엔진 다이제스트 — {today_iso}*"]
+
+    if change_report and (change_report.added or change_report.removed or change_report.critical_modified):
+        parts = []
+        if change_report.added:
+            parts.append(f"🆕 신규 {len(change_report.added)}건")
+        if change_report.removed:
+            parts.append(f"🚫 완료/취소 {len(change_report.removed)}건")
+        if change_report.critical_modified:
+            parts.append(f"⚠️ 변경 {len(change_report.critical_modified)}건")
+        lines.append("  " + " | ".join(parts))
+
     for wid in ("W1", "W2", "W3"):
         plan = plans[wid]
         u = util.get(wid, 0.0)
-        lines.append(f"  {wid}: {plan.count}건 / {plan.total_cbm:.2f} CBM ({u:.0%})")
+        line = f"  {wid}: {plan.count}건 / {plan.total_cbm:.2f} CBM ({u:.0%})"
+        if otif_summary and wid in otif_summary:
+            s = otif_summary[wid]
+            line += f" — 납기 {s['on_time']}/{s['total']}건 ✅"
+            if s["at_risk"]:
+                line += f" / {s['at_risk']}건 ⚠️"
+        lines.append(line)
+
     for wid in ("spillover_고고엑스", "spillover_로젠", "수동"):
         cnt = plans[wid].count
         if cnt:
@@ -269,21 +313,36 @@ def _format_digest(plans: dict[str, WavePlan], diff: list[dict], today_iso: str)
     return "\n".join(lines)
 
 
-def save_pending_digest(plans: dict[str, WavePlan], diff: list[dict], today_iso: str) -> None:
+def save_pending_digest(
+    plans: dict[str, WavePlan],
+    diff: list[dict],
+    today_iso: str,
+    change_report=None,
+    otif_summary=None,
+) -> None:
     import pathlib
     pathlib.Path(PENDING_DIGEST_PATH).parent.mkdir(parents=True, exist_ok=True)
     with open(PENDING_DIGEST_PATH, "w", encoding="utf-8") as f:
-        json.dump({"date": today_iso, "text": _format_digest(plans, diff, today_iso)}, f)
+        json.dump(
+            {"date": today_iso,
+             "text": _format_digest(plans, diff, today_iso, change_report, otif_summary)},
+            f,
+        )
 
 
-def send_or_queue_digest(plans: dict[str, WavePlan], diff: list[dict], today_iso: str) -> None:
+def send_or_queue_digest(
+    plans: dict[str, WavePlan],
+    diff: list[dict],
+    today_iso: str,
+    change_report=None,
+    otif_summary=None,
+) -> None:
     now = datetime.now()
     if is_quiet_hour(now):
-        save_pending_digest(plans, diff, today_iso)
+        save_pending_digest(plans, diff, today_iso, change_report, otif_summary)
         print(f"[INFO] quiet hours — digest queued for next cycle")
         return
 
-    # Flush pending digest if any
     import pathlib
     pending = pathlib.Path(PENDING_DIGEST_PATH)
     if pending.exists():
@@ -292,7 +351,7 @@ def send_or_queue_digest(plans: dict[str, WavePlan], diff: list[dict], today_iso
         _slack_post(old.get("text", ""))
         pending.unlink()
 
-    _slack_post(_format_digest(plans, diff, today_iso))
+    _slack_post(_format_digest(plans, diff, today_iso, change_report, otif_summary))
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -303,6 +362,10 @@ def main() -> None:
     now_iso = today.isoformat()
 
     print(f"[wave_recommender] {today_iso} {'DRY_RUN' if DRY_RUN else 'LIVE'}")
+
+    # Step 1: 스냅샷 로드
+    snapshot = _load_snapshot()
+    print(f"  snapshot loaded: {len(snapshot)} records")
 
     # Load partner autonomy map
     partners = load_partners()
@@ -315,6 +378,10 @@ def main() -> None:
     # Stage 0: fetch auto targets
     raw_records = fetch_auto_targets(today_iso)
     print(f"  auto_targets fetched: {len(raw_records)}")
+
+    # Step 2: Change Detection
+    change_report, new_snapshot = detect(snapshot, raw_records)
+    print(f"  changes: +{len(change_report.added)} ~{len(change_report.critical_modified)} -{len(change_report.removed)}")
 
     # Stage A: slot + region classification
     shipments: list[Shipment] = []
@@ -346,10 +413,24 @@ def main() -> None:
     shipment_map = {s.id: s for s in shipments}
     diff = patch_airtable(plans, shipment_map, now_iso)
 
-    if diff:
-        send_or_queue_digest(plans, diff, today_iso)
+    # Step 3: 가정 OTIF 추정
+    otif_results = estimate_all(raw_records)
+    otif_summary = otif_summary_by_wave(otif_results, plans)
+
+    # Step 4: Slack 다이제스트 (변경 또는 wave 변동 시)
+    has_changes = (
+        change_report.added
+        or change_report.removed
+        or change_report.critical_modified
+    )
+    if diff or has_changes:
+        send_or_queue_digest(plans, diff, today_iso, change_report, otif_summary)
     else:
         print("  no changes to report")
+
+    # Step 5: 스냅샷 저장
+    _save_snapshot(new_snapshot)
+    print(f"  snapshot saved: {len(new_snapshot)} records")
 
 
 if __name__ == "__main__":
