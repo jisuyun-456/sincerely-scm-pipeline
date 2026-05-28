@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-27T18:00:00+09:00",
+  "updated_at": "2026-05-28T00:00:00+09:00",
   "tasks": [
     {
       "id": "GRAPHIFY-OBSIDIAN-01",
@@ -750,12 +750,13 @@
     },
     {
       "id": "SCM-LANE-SUBSPEC-3",
-      "title": "Sub-Spec 3 — 통합 적재 Wave 알고리즘 (harness/dispatch/wave_planner.py + Shipment.wave_group 필드)",
+      "title": "Sub-Spec 3 — 통합 적재 Wave 추천 엔진 (wave_recommender.py + 4-Stage Pipeline + Contract C1~C8)",
       "priority": "high",
       "domain": "tms",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-05-27",
-      "notes": "W1-AM 이장훈(09시) + W2-AM 조희선(09시) + W3-PM 조희선(14시) + W4-Day 박종성. 출하확정일 + 지역 + CBM 기반 wave 그룹화. 3~4주."
+      "notes": "2026-05-28 Task 0~13 완료. Stage A(slot_decider) + Stage B(wave_assigner Greedy+SA) + Stage C(spillover) + Stage D(override). 신규 Shipment 4필드(wave_recommendation/confidence/locked/updated_at). region_classifier 5-tier, slot_decider 3단계(택배→퀵파싱→오전 default), assign_waves(BFD+SA 500iter). 137 pytest PASS. DRY_RUN smoke test OK (W1:2건/W2:1건/W3:1건/수동:1건 80% automation). GitHub Actions cron 3x/day. audit_log JSONL(override/low_conf/consolidation_failed). verify_c1/c2/c5 scripts. plan: docs/superpowers/plans/2026-05-27-sub-spec-3-wave-recommender.md.",
+      "completed_at": "2026-05-28"
     },
     {
       "id": "SCM-LANE-SUBSPEC-4",
