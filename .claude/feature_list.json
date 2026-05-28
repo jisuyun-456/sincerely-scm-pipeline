@@ -759,6 +759,16 @@
       "completed_at": "2026-05-28"
     },
     {
+      "id": "SCM-LANE-P4.5-CHANGE-DETECT",
+      "title": "Sub-Spec 4 — Change Detection + 가정 OTIF (P4.5 implementation)",
+      "priority": "high",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-05-28",
+      "completed_at": "2026-05-28",
+      "notes": "change_detector.py(C1/C2 snapshot diff), otif_estimator.py(C4/C5 가정OTIF+JSONL), add_logen_days(C3 로젠SLA), wave_recommender.py orchestration 통합, GitHub Actions artifact(90일TTL). 161 pytest PASS, Contract 5/5 PASS. 신규6개/수정3개 파일, Airtable 스키마 변경 0건."
+    },
+    {
       "id": "SCM-LANE-SUBSPEC-4",
       "title": "Sub-Spec 4 — Carrier × 자체기사 통합 Scorecard 대시보드",
       "priority": "medium",
