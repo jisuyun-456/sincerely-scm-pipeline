@@ -250,7 +250,8 @@ def draw_confirmation(c: rl_canvas.Canvas, doc: dict, page_num: int, total_pages
                       font: str, font_bold: str) -> int:
     """출고확인서 1건 그리기. 페이지 넘김 발생 시 실제 사용된 마지막 page_num 반환."""
     f          = doc["fields"]
-    project    = f.get("프로젝트명", "")
+    _pv     = f.get("프로젝트명", "")
+    project = (_pv[0] if _pv else "") if isinstance(_pv, list) else str(_pv).strip()
     move_date  = parse_date_rollup(f.get("임가공 예정일"))
     total_box  = parse_total_boxes(f)
     sample_box = f.get("샘플박스수량") or ""
@@ -696,7 +697,8 @@ def main():
 
     ok_count = 0
     for doc in docs:
-        proj_code = doc["fields"].get("프로젝트명", doc["id"])
+        _pv       = doc["fields"].get("프로젝트명", doc["id"])
+        proj_code = (_pv[0] if _pv else doc["id"]) if isinstance(_pv, list) else str(_pv).strip()
         filename  = f"출고확인서_{proj_code}_{today_stamp}.pdf"
         out_path  = OUT_DIR / filename
 
