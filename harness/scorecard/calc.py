@@ -293,8 +293,14 @@ def calc_all_carriers(
             continue
         pid = plinks[0]
         partner_ship_count[pid] = partner_ship_count.get(pid, 0) + 1
-        partner_cost[pid] = partner_cost.get(pid, 0.0) + float(f.get(FLD_TRANSPORT_COST) or 0)
-        partner_cbm[pid] = partner_cbm.get(pid, 0.0) + float(f.get(FLD_EST_CBM) or 0)
+        try:
+            partner_cost[pid] = partner_cost.get(pid, 0.0) + float(f.get(FLD_TRANSPORT_COST) or 0)
+        except (ValueError, TypeError):
+            partner_cost[pid] = partner_cost.get(pid, 0.0)
+        try:
+            partner_cbm[pid] = partner_cbm.get(pid, 0.0) + float(f.get(FLD_EST_CBM) or 0)
+        except (ValueError, TypeError):
+            partner_cbm[pid] = partner_cbm.get(pid, 0.0)
 
     scores: list[CarrierScore] = []
     for p in partners:
@@ -302,7 +308,10 @@ def calc_all_carriers(
         f = p.get("fields", {})
         name = f.get(FLD_P_NAME, pid)
         is_self = name in SELF_EMPLOYED_NAMES
-        max_daily = int(f.get(FLD_P_MAX_DAILY) or 0)
+        try:
+            max_daily = int(f.get(FLD_P_MAX_DAILY) or 0)
+        except (ValueError, TypeError):
+            max_daily = 0
         ship_count = partner_ship_count.get(pid, 0)
 
         cost_score = score_cost(
