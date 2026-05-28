@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-28T12:44:25.773259",
+  "generated_at": "2026-05-27 (sub-spec-2 Task 1)",
   "base_id": "app4x70a8mOrIKsMf",
   "tables": {
     "tblfIEiPJaEF0DVoM": {
@@ -1316,22 +1316,6 @@
         },
         "fld7St3rZilF8WOYs": {
           "name": "estimation_updated_at",
-          "type": "dateTime"
-        },
-        "fld9hlDfnTS4frfR4": {
-          "name": "wave_recommendation",
-          "type": "singleSelect"
-        },
-        "fldkjKK1Fk1xsXj9Q": {
-          "name": "wave_confidence",
-          "type": "number"
-        },
-        "fldfY2d54mffSHBEA": {
-          "name": "wave_locked",
-          "type": "checkbox"
-        },
-        "fld9YtjtpiOiZHJKu": {
-          "name": "wave_updated_at",
           "type": "dateTime"
         }
       }
