@@ -1,0 +1,54 @@
+name: Monthly Scorecard
+
+on:
+  schedule:
+    # 매월 1일 00:01 UTC = 09:01 KST
+    - cron: "1 0 1 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "dry-run (Slack 미발송)"
+        required: false
+        default: "false"
+      month:
+        description: "대상 월 YYYY-MM (기본: 직전 달)"
+        required: false
+        default: ""
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Run scorecard
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+          MONTH_FLAG=""
+          if [ -n "${{ github.event.inputs.month }}" ]; then
+            MONTH_FLAG="--month ${{ github.event.inputs.month }}"
+          fi
+          python scripts/scorecard/run_monthly.py $DRY_RUN_FLAG $MONTH_FLAG
+
+      - name: Commit scorecard_history update
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add scripts/scorecard/scorecard_history.jsonl || true
+          git diff --cached --quiet || git commit -m "chore(scorecard): monthly snapshot $(date +%Y-%m)"
+          git push || true
