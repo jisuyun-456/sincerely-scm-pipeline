@@ -200,7 +200,7 @@ def fetch_record(record_id: str) -> dict:
 
                 for mm_ref in movement_refs:
                     item_name, qty_val = fetch_movement_data(mm_ref)
-                    if item_name and qty_val:
+                    if item_name and qty_val and item_name not in item_qty_map:
                         item_qty_map[item_name] = qty_val
             except Exception as e:
                 print(f"  ⚠️  pkg_task {task_id} 처리 실패: {e}")
@@ -208,6 +208,14 @@ def fetch_record(record_id: str) -> dict:
 
     # Map qtys to items by name; fallback to rollup field if movement fetch failed
     if item_qty_map:
+        # Deduplicate items (rollup lists each item once per pkg_task)
+        seen: set[str] = set()
+        deduped: list[str] = []
+        for item in items:
+            if item not in seen:
+                deduped.append(item)
+                seen.add(item)
+        items = deduped
         qtys = [item_qty_map.get(item, "") for item in items]
     else:
         qtys = _parse_qtys(f.get(F_QTYS, ""))
