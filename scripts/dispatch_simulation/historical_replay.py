@@ -58,23 +58,44 @@ AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
 HEADERS = {"Authorization": f"Bearer {AIRTABLE_PAT}", "Content-Type": "application/json"}
 
 # ── 필드 ID ───────────────────────────────────────────────────────────────────
-F_DATE        = "fldQvmEwwzvQW95h9"   # 출하확정일
-F_CBM         = "fldJ9DHjwoRyeUEqE"   # Total_CBM (backfilled)
-F_CBM_EST     = "fldaP8D9AM8CHEZ2o"   # estimated_cbm (cbm_estimator fallback)
-F_ZONE        = "fldp6haTDFzzF5C74"   # 구간유형
-F_FARE        = "fldRT95SC88KSBATT"   # 운송비용 (실제)
-F_UNLOAD      = "fldxmAZrBGqS7sQoL"  # 상하차비용 (실제)
-F_PARTNER     = "fldM2u6RwLRrO7ymW"  # 배송파트너 (multipleRecordLinks)
-F_PARTNER_NAME = "fldHZ7yMT3KEu2gSj" # 배송파트너명 (lookup)
-F_SLOT        = "fldcSrlxCngYQHtSV"  # 배송슬롯
-F_DEST_ADDR   = "fldyJHUh9gN44Ggnh"  # 수령인(주소)
-F_ORIGIN_ADDR = "fldb24I9EQ2KPXv6S"  # 출고지 주소
-F_BOX_TEXT    = "fldTjLDmw5sNGszeD"  # 최종 외박스 수량 값 (박종성 상하차비)
+F_DATE           = "fldQvmEwwzvQW95h9"   # 출하확정일
+F_CBM            = "fldJ9DHjwoRyeUEqE"   # Total_CBM (backfilled)
+F_CBM_EST        = "fldaP8D9AM8CHEZ2o"   # estimated_cbm (cbm_estimator fallback)
+F_ZONE           = "fldp6haTDFzzF5C74"   # 구간유형
+F_FARE           = "fldRT95SC88KSBATT"   # 운송비용 (실제)
+F_UNLOAD         = "fldxmAZrBGqS7sQoL"  # 상하차비용 (실제)
+F_PARTNER        = "fldM2u6RwLRrO7ymW"  # 배송파트너 (multipleRecordLinks)
+F_PARTNER_NAME   = "fldHZ7yMT3KEu2gSj"  # 배송파트너명 (lookup)
+F_DELIVERY_MODE  = "flduzH5tS7orqGG3o"  # 배송방식 (택배/퀵/자체기사)
+F_SLOT           = "fldcSrlxCngYQHtSV"  # 배송슬롯
+F_DEST_ADDR      = "fldyJHUh9gN44Ggnh"  # 수령인(주소)
+F_ORIGIN_ADDR    = "fldb24I9EQ2KPXv6S"  # 출고지 주소
+F_BOX_TEXT       = "fldTjLDmw5sNGszeD"  # 최종 외박스 수량 값 (박종성 상하차비)
 
 FETCH_FIELDS = [
     F_DATE, F_CBM, F_CBM_EST, F_ZONE, F_FARE, F_UNLOAD, F_PARTNER, F_PARTNER_NAME,
-    F_SLOT, F_DEST_ADDR, F_ORIGIN_ADDR, F_BOX_TEXT,
+    F_DELIVERY_MODE, F_SLOT, F_DEST_ADDR, F_ORIGIN_ADDR, F_BOX_TEXT,
 ]
+
+# ── 배송방식 → 외부운송수단 매핑 (비즈니스 룰) ───────────────────────────────
+# 에이원지식산업센터 출하 기준:
+#   택배 → 로젠택배 (CBM × ₩12,000)
+#   퀵   → 고고엑스 (건당 ₩15,000)
+#   자체기사 / 기타 → wave_assigner 대상
+def delivery_mode_label(fields: dict) -> str | None:
+    """
+    Returns 'logen' | 'gogox' | None (=wave 대상).
+    배송방식(rollup) 값에서 택배/퀵 여부 판단.
+    """
+    raw = fields.get(F_DELIVERY_MODE)
+    if isinstance(raw, list):
+        raw = raw[0] if raw else ""
+    mode = str(raw or "").strip()
+    if "택배" in mode:
+        return "logen"
+    if "퀵" in mode:
+        return "gogox"
+    return None  # 자체기사 or 미분류 → wave
 
 # ── 시뮬레이션 파라미터 ────────────────────────────────────────────────────────
 DATE_FROM = "2025-01-01"
@@ -154,37 +175,43 @@ def zone_to_tier(zone: str) -> str:
 # ── 실제 파트너 분류 ──────────────────────────────────────────────────────────
 def classify_actual_partner(fields: dict) -> str | None:
     """
-    배송파트너 record ID 목록에서 실제 담당자를 판별한다.
+    배송파트너 record ID → 담당자 분류.
     반환: 'lee' | 'cho' | 'park' | 'logen' | 'gogox' | 'external' | None(미지정)
+
+    우선순위: 파트너 ID > 파트너명 > 배송방식(비즈니스 룰 fallback)
+    비즈니스 룰: 택배→로젠, 퀵→고고엑스
     """
     partners = fields.get(F_PARTNER) or []
-    if not partners:
-        # 이름 필드로 fallback
-        name = _str_field(fields.get(F_PARTNER_NAME))
-        if "이장훈" in name:
-            return "lee"
-        if "조희선" in name:
-            return "cho"
-        if "박종성" in name:
-            return "park"
-        if "로젠" in name:
-            return "logen"
-        if "고고엑스" in name or "고고" in name:
-            return "gogox"
-        return None
-    pid = partners[0]
+    pid = partners[0] if partners else None
+
     if pid == DRIVER_LEE:
         return "lee"
     if pid == DRIVER_CHO:
         return "cho"
     if pid == DRIVER_PARK:
         return "park"
+
+    # 파트너명으로 판별
     name = _str_field(fields.get(F_PARTNER_NAME))
+    if "이장훈" in name:
+        return "lee"
+    if "조희선" in name:
+        return "cho"
+    if "박종성" in name:
+        return "park"
     if "로젠" in name:
         return "logen"
     if "고고엑스" in name or "고고" in name:
         return "gogox"
-    return "external"
+
+    # 배송방식 비즈니스 룰 fallback (파트너 미지정 시)
+    mode_label = delivery_mode_label(fields)
+    if mode_label:
+        return mode_label  # 'logen' or 'gogox'
+
+    if pid:
+        return "external"  # 알 수 없는 외부 파트너
+    return None  # 완전 미지정
 
 
 # ── 박종성 거리 계산 ──────────────────────────────────────────────────────────
@@ -379,11 +406,14 @@ def run_simulation(records: list[dict], dry_run: bool = False) -> dict:
     print(f"  스킵: {skipped_total}건 (날짜없음={skipped_no_date}, CBM없음={skipped_no_cbm}, Zone없음={skipped_no_zone})")
 
     if dry_run:
-        # 날짜 범위 확인
         dates = sorted({rec["fields"][F_DATE] for rec in valid_records if rec["fields"].get(F_DATE)})
+        n_logen = sum(1 for r in valid_records if delivery_mode_label(r["fields"]) == "logen")
+        n_gogox = sum(1 for r in valid_records if delivery_mode_label(r["fields"]) == "gogox")
+        n_wave  = len(valid_records) - n_logen - n_gogox
         print(f"\n--dry-run: 시뮬레이션 미실행")
         print(f"  날짜 범위: {dates[0] if dates else 'N/A'} ~ {dates[-1] if dates else 'N/A'}")
         print(f"  처리 예정 날짜 수: {len(dates)}일")
+        print(f"  배송방식 분류: 택배(로젠)={n_logen}건 / 퀵(고고엑스)={n_gogox}건 / wave 대상={n_wave}건")
         return {}
 
     # 날짜별 그룹화
@@ -399,9 +429,34 @@ def run_simulation(records: list[dict], dry_run: bool = False) -> dict:
     for date_iso in sorted(by_date.keys()):
         day_recs = by_date[date_iso]
 
-        # Shipment 객체 생성
-        shipments: list[Shipment] = []
+        # ── pre-routing: 실제 파트너 우선, 배송방식은 파트너 미지정 시 fallback ──
+        # 내부기사(lee/cho/park) → wave 최적화 대상
+        # 로젠/고고엑스/외부 → 고정 외부 운송
+        # 파트너 미지정 + 배송방식=택배 → 로젠 고정 / 퀵 → 고고엑스 고정 (비즈니스 룰)
+        wave_recs:   list[dict] = []
+        fixed_logen: list[dict] = []
+        fixed_gogox: list[dict] = []
         for rec in day_recs:
+            actual_p = classify_actual_partner(rec["fields"])
+            if actual_p in ("lee", "cho", "park"):
+                wave_recs.append(rec)
+            elif actual_p == "logen":
+                fixed_logen.append(rec)
+            elif actual_p in ("gogox", "external"):
+                fixed_gogox.append(rec)
+            else:
+                # 파트너 미지정 → 배송방식 비즈니스 룰 적용
+                label = delivery_mode_label(rec["fields"])
+                if label == "logen":
+                    fixed_logen.append(rec)
+                elif label == "gogox":
+                    fixed_gogox.append(rec)
+                else:
+                    wave_recs.append(rec)  # 자체기사 or 완전 미지정
+
+        # Shipment 객체 생성 (wave 대상만)
+        shipments: list[Shipment] = []
+        for rec in wave_recs:
             f = rec["fields"]
             zone = f.get(F_ZONE, "")
             tier = zone_to_tier(zone)
@@ -420,16 +475,42 @@ def run_simulation(records: list[dict], dry_run: bool = False) -> dict:
                 wave_locked=False,
             ))
 
-        # 시뮬레이션 실행
-        try:
-            wave_plans = assign_waves(shipments, PARTNER_AUTONOMY, date_iso, use_sa=True, sa_seed=42)
-        except Exception as e:
-            print(f"  {date_iso}: assign_waves error — {e}")
-            continue
+        # 시뮬레이션 실행 (wave 대상이 있을 때만)
+        rates = _rates_for_sim(date_iso)
+        if shipments:
+            try:
+                wave_plans = assign_waves(shipments, PARTNER_AUTONOMY, date_iso, use_sa=True, sa_seed=42)
+            except Exception as e:
+                print(f"  {date_iso}: assign_waves error — {e}")
+                continue
+        else:
+            from harness.dispatch.wave_assigner import WAVE_IDS, WavePlan
+            wave_plans = {wid: WavePlan(wid) for wid in WAVE_IDS}
+
+        # 고정 외부운송 비용 — 배송방식 룰로 고정된 택배/퀵 건
+        # 실제 운송비용(F_FARE)이 있으면 그대로 사용, 없으면 추정치 fallback
+        # 시뮬도 동일 운송사 사용이므로 실제 비용 = 시뮬 비용 (캐리어 변경 없음)
+        def _fixed_cost(recs: list[dict], per_cbm: int, per_ship: int) -> int:
+            total = 0
+            for rec in recs:
+                actual = rec["fields"].get(F_FARE) or 0
+                if actual:
+                    total += int(actual)
+                else:
+                    cbm = rec["fields"].get(F_CBM) or rec["fields"].get(F_CBM_EST) or 0
+                    total += int(cbm * per_cbm) if cbm else per_ship
+            return total
+
+        fixed_logen_cost = _fixed_cost(fixed_logen, LOGEN_PER_CBM, LOGEN_PER_CBM)
+        fixed_gogox_cost = _fixed_cost(fixed_gogox, 0, GOGOX_PER_SHIP)
 
         # 비용 계산
         actual_cost, actual_breakdown   = calc_actual_cost_for_day(day_recs, date_iso)
-        sim_cost, sim_breakdown         = calc_simulated_cost_for_day(wave_plans, rec_by_id, date_iso)
+        sim_cost_wave, sim_breakdown    = calc_simulated_cost_for_day(wave_plans, rec_by_id, date_iso)
+        # 시뮬 총비용 = wave 비용 + 고정 외부운송 비용
+        sim_cost = sim_cost_wave + fixed_logen_cost + fixed_gogox_cost
+        sim_breakdown["logen"] = sim_breakdown.get("logen", 0) + fixed_logen_cost
+        sim_breakdown["gogox"] = sim_breakdown.get("gogox", 0) + fixed_gogox_cost
         delta = actual_cost - sim_cost
 
         # 시뮬레이션 배정 수 집계
@@ -437,6 +518,8 @@ def run_simulation(records: list[dict], dry_run: bool = False) -> dict:
             wid: wave_plans[wid].count if wid in wave_plans else 0
             for wid in ("W1", "W2", "W3", "spillover_로젠", "spillover_고고엑스", "수동")
         }
+        sim_counts["fixed_logen"] = len(fixed_logen)
+        sim_counts["fixed_gogox"] = len(fixed_gogox)
 
         daily_results.append({
             "date":             date_iso,
