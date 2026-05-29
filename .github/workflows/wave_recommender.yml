@@ -2,10 +2,11 @@ name: Wave Recommender
 
 on:
   schedule:
-    # KST 09:00 / 14:00 / 17:00 영업일 (UTC 00:00 / 05:00 / 08:00)
-    - cron: '0 0 * * 1-5'
-    - cron: '0 5 * * 1-5'
-    - cron: '0 8 * * 1-5'
+    # KST 09:07 / 14:07 / 17:07 영업일 (UTC 00:07 / 05:07 / 08:07)
+    # 정시(:00)는 GitHub cron 혼잡으로 드롭되기 쉬워 :07로 오프셋.
+    - cron: '7 0 * * 1-5'
+    - cron: '7 5 * * 1-5'
+    - cron: '7 8 * * 1-5'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -37,17 +38,20 @@ jobs:
       - name: Run wave recommender
         run: python -m harness.dispatch.wave_recommender
         env:
+          TZ: Asia/Seoul
           AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
           SNAPSHOT_PATH: /tmp/snapshot/dispatch_snapshot.json
+          PENDING_DIGEST_PATH: /tmp/snapshot/pending_digest.json
 
       - name: Upload snapshot
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dispatch-snapshot
-          path: /tmp/snapshot/dispatch_snapshot.json
+          # 디렉토리 전체 업로드 → snapshot + pending_digest 동반 보존 (큐 소실 방지)
+          path: /tmp/snapshot/
           retention-days: 90
           overwrite: true

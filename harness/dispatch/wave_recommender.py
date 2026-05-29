@@ -17,6 +17,7 @@ import sys
 import urllib.request
 from datetime import date, datetime
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from harness.dispatch.audit_log import log_event
 from harness.dispatch.cbm_estimator import estimate_shipment_cbm
@@ -55,6 +56,15 @@ SHIPPED_STATUSES = frozenset({"발송완료", "취소", "반품", "회수", "배
 DRY_RUN = os.environ.get("DRY_RUN", "").lower() in {"true", "1", "yes"}
 
 SNAPSHOT_PATH = os.environ.get("SNAPSHOT_PATH", "")
+
+# GitHub Actions 러너는 UTC로 동작하므로, KST 기준인 quiet-hour / rolling-window
+# 판정을 위해 항상 KST tz-aware 현재시각을 사용한다. (naive datetime.now() 금지)
+_KST = ZoneInfo("Asia/Seoul")
+
+
+def _now_kst() -> datetime:
+    """현재 시각을 KST(Asia/Seoul) tz-aware datetime으로 반환."""
+    return datetime.now(_KST)
 
 
 def _load_snapshot() -> dict:
@@ -251,7 +261,12 @@ def patch_airtable(
 
 # ─── Slack digest ─────────────────────────────────────────────────────────────
 
-PENDING_DIGEST_PATH = "_AutoResearch/SCM/outputs/audit_log/pending_digest.json"
+# CI에서는 env로 아티팩트 디렉토리(스냅샷과 동일)를 지정해 런 간 큐를 보존한다.
+# 미지정 시 로컬 기본 경로 사용.
+PENDING_DIGEST_PATH = (
+    os.environ.get("PENDING_DIGEST_PATH", "")
+    or "_AutoResearch/SCM/outputs/audit_log/pending_digest.json"
+)
 
 
 def _slack_post(text: str) -> None:
@@ -337,7 +352,7 @@ def send_or_queue_digest(
     change_report=None,
     otif_summary=None,
 ) -> None:
-    now = datetime.now()
+    now = _now_kst()
     if is_quiet_hour(now):
         save_pending_digest(plans, diff, today_iso, change_report, otif_summary)
         print(f"[INFO] quiet hours — digest queued for next cycle")
@@ -357,7 +372,7 @@ def send_or_queue_digest(
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    today = datetime.now()
+    today = _now_kst()
     today_iso = today.isoformat()[:10]
     now_iso = today.isoformat()
 
