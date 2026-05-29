@@ -146,7 +146,10 @@ def fetch_movement_data(mm_ref: str) -> tuple:
         if records:
             f = records[0].get("fields", {})
             item_raw = f.get("이동물품", "")
-            qty_raw  = f.get("출고수량", None)
+            # '출고수량' 필드는 SERPA movement table에 없음 — '이동수량_예정'이 실제 필드
+            qty_raw = (f.get("이동수량_예정")
+                       or f.get("반출수량")
+                       or f.get("출고수량"))
 
             item_name = ""
             if isinstance(item_raw, str):
@@ -155,7 +158,7 @@ def fetch_movement_data(mm_ref: str) -> tuple:
                 first = item_raw[0]
                 item_name = first.split(" || ")[0].strip() if isinstance(first, str) else str(first)
 
-            qty_val = str(int(qty_raw)) if qty_raw is not None and qty_raw != "" else ""
+            qty_val = str(int(float(qty_raw))) if qty_raw is not None and qty_raw != "" else ""
             return (item_name, qty_val)
     except Exception:
         pass
