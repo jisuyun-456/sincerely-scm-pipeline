@@ -37,7 +37,7 @@ jobs:
       - name: Run wave recommender
         run: python -m harness.dispatch.wave_recommender
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
           DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
