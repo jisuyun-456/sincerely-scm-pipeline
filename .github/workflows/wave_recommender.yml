@@ -32,7 +32,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r harness/requirements.txt
 
       - name: Run wave recommender
         run: python -m harness.dispatch.wave_recommender
