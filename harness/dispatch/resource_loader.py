@@ -22,7 +22,7 @@ def _fetch_records(table_id: str = TABLE_ID) -> list[dict[str, Any]]:
     pat = os.environ.get("AIRTABLE_PAT")
     if not pat:
         raise RuntimeError("AIRTABLE_PAT 환경변수 필요")
-    headers = {"Authorization": f"Bearer {pat}"}
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
     url = f"https://api.airtable.com/v0/{BASE_ID}/{table_id}"
     params: dict[str, Any] = {"pageSize": 100}
     out: list[dict[str, Any]] = []
