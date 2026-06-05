@@ -15,7 +15,9 @@ import json
 import os
 import sys
 import urllib.request
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
+
+KST = timezone(timedelta(hours=9))
 from typing import Optional
 
 from harness.dispatch.audit_log import log_event
@@ -337,7 +339,7 @@ def send_or_queue_digest(
     change_report=None,
     otif_summary=None,
 ) -> None:
-    now = datetime.now()
+    now = datetime.now(KST)
     if is_quiet_hour(now):
         save_pending_digest(plans, diff, today_iso, change_report, otif_summary)
         print(f"[INFO] quiet hours — digest queued for next cycle")
@@ -357,7 +359,7 @@ def send_or_queue_digest(
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    today = datetime.now()
+    today = datetime.now(KST)
     today_iso = today.isoformat()[:10]
     now_iso = today.isoformat()
 
