@@ -64,7 +64,10 @@ def write_batch(
     result = WriteResult()
 
     # ── Batch verify ─────────────────────────────────────────────────────────
-    batch = verifier.verify_batch(items, week=week, fetched_count=fetched_count)
+    # Exclude fare_existing items from batch verify — they are graceful skips,
+    # not anomalies, and would inflate the blocked ratio on mid-week runs.
+    items_to_verify = [i for i in items if not i.fare_existing or force]
+    batch = verifier.verify_batch(items_to_verify, week=week, fetched_count=len(items_to_verify))
     _log.info("batch verify", passed=batch.passed, blocked=batch.blocked_count, total=batch.total)
 
     if not batch.passed:
