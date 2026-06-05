@@ -128,7 +128,7 @@ def fetch_auto_targets(today_iso: str, rolling_days: int = 7) -> list[dict]:
     offset = None
 
     while True:
-        params: dict = {"pageSize": 100, "filterByFormula": formula}
+        params: dict = {"pageSize": 100, "filterByFormula": formula, "returnFieldsByFieldId": "true"}
         if offset:
             params["offset"] = offset
         data = _get(url, params)
@@ -376,7 +376,7 @@ def main() -> None:
     }
 
     # Stage 0: fetch auto targets
-    raw_records = fetch_auto_targets(today_iso)
+    raw_records = fetch_auto_targets(today_iso, rolling_days=10)
     print(f"  auto_targets fetched: {len(raw_records)}")
 
     # Step 2: Change Detection
