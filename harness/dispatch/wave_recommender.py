@@ -15,6 +15,7 @@ import json
 import os
 import sys
 import urllib.request
+from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
 KST = timezone(timedelta(hours=9))
@@ -28,7 +29,7 @@ from harness.dispatch.region_classifier import classify_region
 from harness.dispatch.resource_loader import load_drivers, load_partners
 from harness.dispatch.scheduling import is_quiet_hour, rolling_window_end
 from harness.dispatch.slot_decider import decide_slot
-from harness.dispatch.wave_assigner import Shipment, WavePlan, assign_waves, compute_utilization
+from harness.dispatch.wave_assigner import WAVE_IDS, Shipment, WavePlan, assign_waves, compute_utilization
 
 # ─── Airtable config ──────────────────────────────────────────────────────────
 BASE_ID = "app4x70a8mOrIKsMf"
@@ -385,17 +386,26 @@ def main() -> None:
     change_report, new_snapshot = detect(snapshot, raw_records)
     print(f"  changes: +{len(change_report.added)} ~{len(change_report.critical_modified)} -{len(change_report.removed)}")
 
-    # Stage A: slot + region classification
-    shipments: list[Shipment] = []
+    # Stage A: slot + region classification — group by ship_date
+    date_to_shipments: dict[str, list[Shipment]] = defaultdict(list)
     for rec in raw_records:
         s = _build_shipment(rec)
-        if s:
-            shipments.append(s)
+        if not s:
+            continue
+        f = rec.get("fields", {})
+        ship_date_raw = _first(f.get(FLD_SHIP_DATE)) or f.get(FLD_SHIP_DATE) or ""
+        ship_date = ship_date_raw[:10]
+        date_to_shipments[ship_date].append(s)
 
-    print(f"  shipments built: {len(shipments)}")
+    shipments = [s for sl in date_to_shipments.values() for s in sl]
+    print(f"  shipments built: {len(shipments)} across {len(date_to_shipments)} dates")
 
-    # Stage B+C+D: wave assignment
-    plans = assign_waves(shipments, partner_autonomy, today_iso)
+    # Stage B+C+D: wave assignment PER DATE (각 날짜 독립적으로 기사 용량 배정)
+    plans: dict[str, WavePlan] = {wid: WavePlan(wid) for wid in WAVE_IDS}
+    for ship_date in sorted(date_to_shipments):
+        date_plans = assign_waves(date_to_shipments[ship_date], partner_autonomy, ship_date)
+        for wid, plan in date_plans.items():
+            plans[wid].shipments.extend(plan.shipments)
 
     # Summary
     util = compute_utilization(plans)
