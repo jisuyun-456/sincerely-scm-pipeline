@@ -295,10 +295,47 @@ def refine_with_sa(plans: Dict[str, WavePlan], *, max_iter: int = 500,
     return best
 
 
+def _ensure_minimum_load(plans: Dict[str, WavePlan]) -> Dict[str, WavePlan]:
+    """W1(이장훈)·W2(조희선) 영업일 최소 1건 보장.
+
+    active shipments ≥ 2건일 때 W1·W2 중 0건인 wave가 있으면
+    donor(W3 → spillover_로젠 → spillover_고고엑스)에서 적합한 건을 이동.
+    W1은 slot='오전' + 호환 region 조건 준수, W2는 region만 확인.
+    """
+    active_total = sum(
+        plans[w].count for w in ("W1", "W2", "W3", "spillover_로젠", "spillover_고고엑스")
+    )
+    if active_total < 2:
+        return plans
+
+    donor_priority = ("W3", "spillover_로젠", "spillover_고고엑스")
+
+    for gw in ("W1", "W2"):
+        if plans[gw].count > 0:
+            continue
+        for donor in donor_priority:
+            if plans[donor].count == 0:
+                continue
+            for i, ship in enumerate(plans[donor].shipments):
+                if not _region_ok(gw, ship.region):
+                    continue
+                if not _can_fit(gw, ship.cbm, 1, plans[gw]):
+                    continue
+                if gw == "W1" and ship.slot not in ("오전", "무관", None):
+                    continue
+                plans[donor].shipments.pop(i)
+                plans[gw].shipments.append(ship)
+                break
+            if plans[gw].count > 0:
+                break
+
+    return plans
+
+
 def assign_waves(shipments: List[Shipment], partner_autonomy: Dict[str, str],
                 today_iso: str, *, use_sa: bool = True,
                 sa_iter: int = 500, sa_seed: int = 42) -> Dict[str, WavePlan]:
-    """메인 entry — Greedy → (optional) SA refinement.
+    """메인 entry — Greedy → (optional) SA refinement → minimum load 보장.
 
     Args:
         use_sa: False 면 Greedy 결과만 반환 (smoke test·baseline 비교용)
@@ -306,6 +343,7 @@ def assign_waves(shipments: List[Shipment], partner_autonomy: Dict[str, str],
     plans = assign_waves_greedy(shipments, partner_autonomy, today_iso)
     if use_sa:
         plans = refine_with_sa(plans, max_iter=sa_iter, seed=sa_seed)
+    plans = _ensure_minimum_load(plans)
     return plans
 
 
