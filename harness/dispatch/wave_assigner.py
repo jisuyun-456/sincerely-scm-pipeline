@@ -110,8 +110,8 @@ def _region_ok(wave_id: str, region: str) -> bool:
 
 
 def _slot_filter_w1(candidates: List[str], slot: Optional[str]) -> List[str]:
-    """W1 이장훈은 '오전' 슬롯만 적재 (09:00 고정 패턴)."""
-    if 'W1' in candidates and slot != '오전':
+    """W1 이장훈은 오전/무관 슬롯만 적재. 무관은 오전 시간대 포함이므로 허용."""
+    if 'W1' in candidates and slot not in ('오전', '무관', None):
         return [c for c in candidates if c != 'W1']
     return candidates
 
@@ -193,6 +193,9 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
                     best_wave = wid
             if best_wave:
                 plans[best_wave].shipments.append(ship)
+            elif ship.cbm > DRIVER_LIMITS['W3']['max_cbm']:
+                # 단건 CBM이 최대 기사 한도 초과 → 용차/특수배송 필요, 수동 분류
+                plans['수동'].shipments.append(ship)
             else:
                 target = _spillover_target(region, [ship.cbm], mode, ship.method)
                 plans[target].shipments.append(ship)
@@ -223,7 +226,7 @@ def _score(plans: Dict[str, WavePlan]) -> float:
             for s in plan.shipments:
                 if not _region_ok(wid, s.region):
                     score -= REGION_VIOLATION_PENALTY
-                if wid == 'W1' and s.slot != '오전':
+                if wid == 'W1' and s.slot not in ('오전', '무관', None):
                     score -= REGION_VIOLATION_PENALTY
     return score
 
