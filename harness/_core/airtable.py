@@ -148,6 +148,18 @@ class AirtableClient:
         self._check_response(data)
         return data
 
+    def create_records(self, records: list[dict]) -> list[dict]:
+        """10건씩 batch POST. records=[{'fields': {...}}, ...]."""
+        out: list[dict] = []
+        for i in range(0, len(records), 10):
+            chunk = records[i:i + 10]
+            _global_limiter.acquire()
+            resp = self._session.post("", json={"records": chunk, "typecast": True})
+            data = resp.json()
+            self._check_response(data)
+            out.extend(data.get("records", []))
+        return out
+
     def assert_audit_table_exists(self, audit_table_id: str) -> None:
         try:
             _global_limiter.acquire()
