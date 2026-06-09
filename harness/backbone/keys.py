@@ -52,3 +52,15 @@ def compute_soyoryang(order_qty, goods_qty) -> float | None:
         return round(float(order_qty) / gq, 4)
     except (TypeError, ValueError, ZeroDivisionError):
         return None
+
+
+def resolve_goods_code(row: dict) -> tuple[str | None, str]:
+    """order/shipment row → (견적코드, 출처). 우선순위: order.굿즈코드 → (향후 pkg_schedule/crosswalk) → None.
+    Returns (code_upper, 'direct'|'none'). Airtable lookup 필드는 list로 올 수 있어 언랩."""
+    raw = row.get("굿즈코드 (from sync_itemdb)")
+    if isinstance(raw, list):
+        raw = raw[0] if raw else ""
+    code = str(raw or "").strip().upper()
+    if code:
+        return code, "direct"
+    return None, "none"

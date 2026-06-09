@@ -1,6 +1,7 @@
 """키 추출·정규화 순수 함수 테스트."""
 from harness.backbone.keys import (
     extract_pt, parse_goods, normalize_goods, is_service, compute_soyoryang,
+    resolve_goods_code,
 )
 
 
@@ -63,3 +64,21 @@ class TestComputeSoyoryang:
 
     def test_bad_input(self):
         assert compute_soyoryang(None, 125) is None
+
+
+class TestResolveGoodsCode:
+    def test_direct_code(self):
+        assert resolve_goods_code({"굿즈코드 (from sync_itemdb)": "SSSV"}) == ("SSSV", "direct")
+
+    def test_blank_returns_none(self):
+        assert resolve_goods_code({}) == (None, "none")
+
+    def test_strips_and_uppercases(self):
+        assert resolve_goods_code({"굿즈코드 (from sync_itemdb)": " sssv "}) == ("SSSV", "direct")
+
+    def test_list_value_unwrapped(self):
+        # Airtable lookup 필드는 list로 올 수 있음
+        assert resolve_goods_code({"굿즈코드 (from sync_itemdb)": ["SBAT"]}) == ("SBAT", "direct")
+
+    def test_empty_list_returns_none(self):
+        assert resolve_goods_code({"굿즈코드 (from sync_itemdb)": []}) == (None, "none")
