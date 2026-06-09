@@ -50,11 +50,22 @@ BOX_TYPE_TO_SIZE_STR: dict[str, str] = {
 }
 
 
+def _resolve_dup(a: dict, b: dict) -> dict:
+    """중복 견적코드 결정론 해소: formula CBM>0 우선 → 큰 qty_per_box → rec_id 사전순."""
+    for x, y in [(a, b), (b, a)]:
+        if x["cbm_per_box"] > 0 and y["cbm_per_box"] <= 0:
+            return x
+    if a["qty_per_box"] != b["qty_per_box"]:
+        return a if a["qty_per_box"] > b["qty_per_box"] else b
+    return a if a["rec_id"] <= b["rec_id"] else b
+
+
 def load_product_lookup(headers: dict) -> dict[str, dict]:
     """
     Product 테이블 전체 조회 → 품목명(lower)/견적코드(lower) → entry dict.
     entry: {rec_id, name, code, box_type, qty_per_box, cbm_per_box}
     동일 entry가 name/code 두 키로 참조될 수 있음.
+    중복 견적코드는 _resolve_dup로 결정론 해소 (formula CBM>0 우선).
     """
     url = f"https://api.airtable.com/v0/{TMS_BASE}/{TBL_PRODUCT}"
     entries: list[dict] = []
@@ -98,7 +109,8 @@ def load_product_lookup(headers: dict) -> dict[str, dict]:
         if e["name"]:
             lookup[e["name"].lower()] = e
         if e["code"]:
-            lookup[e["code"].lower()] = e
+            ck = e["code"].lower()
+            lookup[ck] = _resolve_dup(lookup[ck], e) if ck in lookup else e
     return lookup
 
 
