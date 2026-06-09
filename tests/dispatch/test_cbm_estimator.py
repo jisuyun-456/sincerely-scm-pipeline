@@ -13,8 +13,55 @@ import pytest
 
 from harness.dispatch.cbm_estimator import (
     estimate_shipment_cbm,
+    estimate_shipment_cbm_deterministic,
     parse_product_lines_v2,
 )
+
+
+# ──────────────────────── estimate_shipment_cbm_deterministic ────────────────
+
+_DET_LOOKUP = {
+    "sbat": {"rec_id": "r", "name": "심볼", "code": "SBAT",
+             "box_type": "", "qty_per_box": 19, "cbm_per_box": 0.0201},
+}
+
+
+class TestEstimateDeterministic:
+    def test_single_shipment_deterministic(self):
+        # 1출하 프로젝트, order=SBAT×38 → ceil(38/19)*0.0201 = 2*0.0201 = 0.0402
+        r = estimate_shipment_cbm_deterministic(
+            "PNA1", {"PNA1": [("SBAT", 38)]}, _DET_LOOKUP, {"PNA1": 1})
+        assert abs(r["estimated_cbm"] - 0.0402) < 1e-6
+        assert r["confidence"] == 1.0
+        assert r["mode"] == "deterministic"
+        assert r["matched"] == ["SBAT"] and r["unmatched"] == []
+
+    def test_multi_shipment_partial_skip(self):
+        r = estimate_shipment_cbm_deterministic(
+            "PNA2", {"PNA2": [("SBAT", 38)]}, _DET_LOOKUP, {"PNA2": 3})
+        assert r["mode"] == "partial_skip"
+        assert r["confidence"] == 0.0
+        assert r["estimated_cbm"] == 0.0
+
+    def test_missing_code_reports_unmatched(self):
+        r = estimate_shipment_cbm_deterministic(
+            "PNA3", {"PNA3": [("NOPE", 10)]}, _DET_LOOKUP, {"PNA3": 1})
+        assert "NOPE" in r["unmatched"]
+        assert r["confidence"] == 0.0
+
+    def test_no_order_lines(self):
+        r = estimate_shipment_cbm_deterministic(
+            "PNA4", {}, _DET_LOOKUP, {"PNA4": 1})
+        assert r["mode"] == "no_order"
+        assert r["estimated_cbm"] == 0.0
+
+    def test_partial_match_confidence_0_7(self):
+        # 한 코드 매칭, 한 코드 누락 → conf 0.7
+        r = estimate_shipment_cbm_deterministic(
+            "PNA5", {"PNA5": [("SBAT", 19), ("NOPE", 5)]}, _DET_LOOKUP, {"PNA5": 1})
+        assert r["confidence"] == 0.7
+        assert r["matched"] == ["SBAT"] and r["unmatched"] == ["NOPE"]
+        assert abs(r["estimated_cbm"] - 0.0201) < 1e-6  # ceil(19/19)*0.0201
 
 
 # ────────────────────────── parse_product_lines_v2 ──────────────────────────

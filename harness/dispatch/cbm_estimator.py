@@ -195,3 +195,37 @@ def estimate_shipment_cbm(shipment: dict, lookup: dict) -> dict:
         "matched": matched,
         "unmatched": unmatched,
     }
+
+
+def estimate_shipment_cbm_deterministic(
+    project_code: str,
+    order_by_project: dict[str, list[tuple[str, float]]],
+    lookup: dict,
+    shipment_count: dict[str, int],
+) -> dict:
+    """결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.
+
+    다차 출하 프로젝트(95% 예외)는 partial_skip(중복합산 방지) — 1출하 프로젝트만 기록.
+    blank project_code/no order는 호출측에서 기존 퍼지 estimate_shipment_cbm 폴백.
+    Returns dict: {estimated_cbm, confidence, mode, matched(codes), unmatched(codes)}.
+    """
+    if shipment_count.get(project_code, 0) > 1:
+        return {"estimated_cbm": 0.0, "confidence": 0.0, "mode": "partial_skip",
+                "matched": [], "unmatched": []}
+    lines = order_by_project.get(project_code)
+    if not lines:
+        return {"estimated_cbm": 0.0, "confidence": 0.0, "mode": "no_order",
+                "matched": [], "unmatched": []}
+    total = 0.0
+    matched: list[str] = []
+    unmatched: list[str] = []
+    for code, qty in lines:
+        e = lookup.get(str(code).lower())
+        if e and e["cbm_per_box"] > 0 and qty > 0:
+            total += math.ceil(qty / e["qty_per_box"]) * e["cbm_per_box"]
+            matched.append(code)
+        else:
+            unmatched.append(code)
+    conf = 1.0 if matched and not unmatched else (0.7 if matched else 0.0)
+    return {"estimated_cbm": round(total, 4), "confidence": conf,
+            "mode": "deterministic", "matched": matched, "unmatched": unmatched}
