@@ -104,7 +104,16 @@ def _patch_batch(url: str, headers: dict, batch: list[dict]) -> tuple[int, int]:
     return 0, len(batch)
 
 
-def run(headers: dict, start: str, end: str, dry_run: bool) -> None:
+def run(headers: dict, start: str, end: str, dry_run: bool, override: bool = False) -> None:
+    if not dry_run and not override:
+        print(
+            "FROZEN: backfill_total_cbm_safe는 추정치를 실측 Total_CBM에 씁니다 (오염).\n"
+            "        → 추정 CBM은 P1 scripts/backbone/replay_outbound_cbm.py(estimated_cbm)를 사용하세요.\n"
+            "        Total_CBM은 실측 전용 레인입니다. 부득이 실행하려면 "
+            "--i-understand-total-cbm-is-measured-only 플래그 필요.",
+            flush=True,
+        )
+        return
     print("Product 룩업 로딩 중...", flush=True)
     lookup = load_product_lookup(headers)
     print(f"  {len(lookup) // 2}개 품목 로드 완료\n", flush=True)
@@ -167,6 +176,9 @@ def main():
     parser.add_argument("--start",   default="2024-01-01")
     parser.add_argument("--end",     default=date.today().isoformat())
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--i-understand-total-cbm-is-measured-only", action="store_true",
+        help="FROZEN override: 추정치를 실측 Total_CBM에 씀(오염). P1 결정론 estimator로 대체됨.")
     args = parser.parse_args()
 
     if not PAT:
@@ -177,7 +189,8 @@ def main():
         "Authorization": f"Bearer {PAT}",
         "Content-Type": "application/json",
     }
-    run(headers, args.start, args.end, args.dry_run)
+    run(headers, args.start, args.end, args.dry_run,
+        args.i_understand_total_cbm_is_measured_only)
 
 
 if __name__ == "__main__":
