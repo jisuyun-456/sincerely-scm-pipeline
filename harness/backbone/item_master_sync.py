@@ -27,8 +27,11 @@ def build_item_rows() -> list[dict]:
     for gn in sorted(goods):
         _, e, _ = match_product(gn, tms_lookup)
         if e:
+            # cbm_per_box는 박스 단위 CBM. 개당 = 박스CBM / 박스당제품수.
+            qpb = max(int(e["qty_per_box"]), 1)
+            per_item = round(e["cbm_per_box"] / qpb, 6)
             rows.append({"품목키": gn, "품목명": gn, "품목유형": "완제품",
-                         "CBM_개당_m3": e["cbm_per_box"],
+                         "CBM_개당_m3": per_item,
                          "박스당_제품수": e["qty_per_box"],
                          "박스당_CBM_m3": e["cbm_per_box"], "출처": "TMS_Product"})
         else:
