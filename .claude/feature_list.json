@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-05-29T00:00:00+09:00",
+  "updated_at": "2026-06-09T00:00:00+09:00",
   "tasks": [
     {
       "id": "SCM-WAVE-COST-GATE",
@@ -813,6 +813,24 @@
       "status": "pending",
       "created_at": "2026-05-28",
       "notes": "Zapier trigger + pdfplumber + PNA→Shipment 매칭. Sub-Spec 5 이후 착수."
+    },
+    {
+      "id": "BOM-CBM-BACKBONE-P1",
+      "title": "BOM·CBM 수량전파 백본 Phase-1 (4 네이티브 테이블 + 부트스트랩 + CBM 정규화 + Ledger v0)",
+      "priority": "high",
+      "domain": "wms",
+      "status": "done",
+      "created_at": "2026-06-09",
+      "notes": "WMS_KeyCrosswalk/ItemMaster/BOM/PropagationLedger 생성. WMS_BOM 1702행(order그룹핑 status=이송)·WMS_ItemMaster 1309행 적재. 검증: PT추출 100%/BOM적용 93.7%/굿즈CBM매칭 46.2%. PNA50702 전파 시연(자재고리 ✓, CBM/shipment 끊김). spec: docs/superpowers/specs/2026-06-09-bom-cbm-backbone-design.md / plan: docs/superpowers/plans/2026-06-09-bom-cbm-backbone-phase1.md"
+    },
+    {
+      "id": "BOM-CBM-BACKBONE-P2",
+      "title": "BOM·CBM 백본 Phase-2 (CBM 마스터 확장 + shipment 조인 + Crosswalk/Ledger 적재 + 포장BOM)",
+      "priority": "high",
+      "domain": "wms",
+      "status": "pending",
+      "created_at": "2026-06-09",
+      "notes": "Phase-1 미해결: ①굿즈 CBM 커버리지 46%→85%(미등록 254종, MES 내부인쇄_제품DB 치수/수기 소싱, 올바른 단위) ②PropagationLedger shipment_id 조인(TMS Shipment project code) ③WMS_KeyCrosswalk·Ledger 실적재 ④BOM 구성유형 포장재 자동분류 ⑤noise 필터(시안/키트포장) ⑥대시보드 스냅샷 계약"
     }
   ]
 }
