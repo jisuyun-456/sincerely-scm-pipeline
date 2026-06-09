@@ -47,6 +47,12 @@ END   = "2026-06-19"
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() in {"true", "1", "yes"}
 KST = timezone(timedelta(hours=9))
 
+WAVE_DISPLAY = {
+    "W1": "이장훈 기사님",
+    "W2": "조희선 기사님",
+    "W3": "박종성 기사님",
+}
+
 
 def _headers():
     pat = os.environ.get("AIRTABLE_PAT", "")
@@ -62,6 +68,9 @@ def _get(url, params):
         return json.loads(r.read())
 
 
+VALID_SLOTS = frozenset({"무관", "오전", "오후 1 (오후 2시 - 4시)", "오후 2 (오후 4시 - 6시)"})
+
+
 def _patch_batch(records: list[dict]) -> None:
     if DRY_RUN:
         for r in records:
@@ -70,8 +79,13 @@ def _patch_batch(records: list[dict]) -> None:
     url = f"https://api.airtable.com/v0/{BASE_ID}/{SHIP_TABLE}"
     data = json.dumps({"records": records}, ensure_ascii=False).encode()
     req = urllib.request.Request(url, data=data, headers=_headers(), method="PATCH")
-    with urllib.request.urlopen(req, timeout=30) as r:
-        r.read()
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            r.read()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode(errors="replace")
+        print(f"\n  [ERROR] HTTP {e.code}: {body}")
+        raise
     time.sleep(0.22)  # Airtable rate limit
 
 
@@ -128,6 +142,7 @@ def build(rec: dict):
         slot=slot, region=region, cbm=cbm,
         cbm_confidence=cbm_conf, slot_confidence=slot_conf,
         assigned_partner=partner, wave_locked=locked,
+        method=method,
     ), ship_date
 
 
@@ -182,12 +197,13 @@ def main():
             if wid is None:
                 continue  # autonomous — skip
             fields = {
-                FLD_WAVE_REC: wid,
+                FLD_WAVE_REC: WAVE_DISPLAY.get(wid, wid),
                 FLD_WAVE_CONF: round(s.slot_confidence * s.cbm_confidence, 2),
                 FLD_WAVE_UPD: now_iso,
             }
-            if slot_of.get(s.id):
-                fields[FLD_SLOT] = slot_of[s.id]
+            slot_val = slot_of.get(s.id)
+            if slot_val and slot_val in VALID_SLOTS:
+                fields[FLD_SLOT] = slot_val
             patch_queue.append({"id": rid, "fields": fields})
 
         row_counts = {wid: plans[wid].count for wid in WAVE_IDS}

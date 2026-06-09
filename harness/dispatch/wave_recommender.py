@@ -57,6 +57,12 @@ SHIPPED_STATUSES = frozenset({"발송완료", "취소", "반품", "회수", "배
 
 DRY_RUN = os.environ.get("DRY_RUN", "").lower() in {"true", "1", "yes"}
 
+WAVE_DISPLAY = {
+    "W1": "이장훈 기사님",
+    "W2": "조희선 기사님",
+    "W3": "박종성 기사님",
+}
+
 SNAPSHOT_PATH = os.environ.get("SNAPSHOT_PATH", "")
 
 
@@ -199,6 +205,7 @@ def _build_shipment(rec: dict) -> Optional[Shipment]:
         slot_confidence=slot_conf,
         assigned_partner=partner,
         wave_locked=wave_locked,
+        method=method,
     )
 
 
@@ -227,7 +234,7 @@ def patch_airtable(
             rec = {
                 "id": s.id,
                 "fields": {
-                    FLD_WAVE_REC: wave_id,
+                    FLD_WAVE_REC: WAVE_DISPLAY.get(wave_id, wave_id),
                     FLD_WAVE_CONF: round(s.slot_confidence * s.cbm_confidence, 2),
                     FLD_WAVE_LOCKED: s.wave_locked,
                     FLD_WAVE_UPDATED: now_iso,

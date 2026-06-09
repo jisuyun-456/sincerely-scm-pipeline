@@ -52,6 +52,12 @@ TIER_TO_CANDIDATES: Dict[str, List[str]] = {
 WAVE_IDS = ('W1', 'W2', 'W3', 'spillover_고고엑스', 'spillover_로젠', 'locked-in', '수동')
 
 
+QUICK_METHODS = frozenset({
+    '퀵(수도권)', '퀵(지방)', '자체기사',
+    '바로고', '고객직접퀵배차', '신시어리퀵',
+})
+
+
 @dataclass
 class Shipment:
     id: str
@@ -63,6 +69,7 @@ class Shipment:
     slot_confidence: float = 0.8
     assigned_partner: Optional[str] = None
     wave_locked: bool = False
+    method: Optional[str] = None
 
 
 @dataclass
@@ -109,10 +116,9 @@ def _slot_filter_w1(candidates: List[str], slot: Optional[str]) -> List[str]:
     return candidates
 
 
-def _spillover_target(region: str, group_cbms: List[float], mode: str) -> str:
-    if region == 'tier5_provincial':
-        return 'spillover_로젠'
-    if mode == 'peak' and any(c < 3 for c in group_cbms):
+def _spillover_target(region: str, group_cbms: List[float], mode: str,
+                      method: Optional[str] = None) -> str:
+    if method in QUICK_METHODS:
         return 'spillover_고고엑스'
     return 'spillover_로젠'
 
@@ -188,8 +194,7 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
             if best_wave:
                 plans[best_wave].shipments.append(ship)
             else:
-                # Spillover
-                target = _spillover_target(region, [ship.cbm], mode)
+                target = _spillover_target(region, [ship.cbm], mode, ship.method)
                 plans[target].shipments.append(ship)
 
     return plans
