@@ -46,10 +46,14 @@
 | 트랙 | 단위·키 | CBM 소스 | 용도 | 상태 |
 |---|---|---|---|---|
 | **출고** | 굿즈 `견적코드` | TMS Product(243) + sync_goods 백필 + 박스유도 | shipment CBM → 배차/Capa/wave/운임/차량이용률 | 인프라 **이미 배선**, CBM만 주입 |
-| **입하** | 파츠 `PT####` | material parts-stock 치수 79.5% + QC버킷 폴백 | movement→입하 적재율·다음주 입하. M/H는 **이미 pkg_task/MES에 존재(재구축 금지)** | 용량 분모 신설 필요 |
+| **입하** | 파츠 `PT####` (**`movement` 테이블 = 주인**: 이동물품/이동목적/입하수량/실제입하일) | movement 입하수량 × part CBM (material 79.5% / IBSA `제품규격` / QC버킷) | **movement**→입하 적재율·다음주 입하. M/H는 **IBSA가 movement 위 cycle-time 측정(이미 live)** | Max_CBM 분모 신설 + IBSA M/H 연결 |
 | **보관** | 파츠 `PT####` | 파츠 CBM × `WMS_InventoryLedger`(301 PT) | 창고 적재율 | 용량 분모 신설 필요 |
 
 미래 예측 = CBM × 날짜. 신뢰 가능 날짜: 출고 `출하일자/확정출하일`, 입하 `입하예정일`·`GoodsReceipt.Expected_Arrival`, 생산 `MES 납기일`(100%). (movement 미래날짜·인쇄완료예정일은 sparse → 사용 금지.)
+
+> **트랙 주인 (사용자 확정):** INBOUND SSOT = **`movement`** (입하·입고·자재차감 ledger). **IBSA**(`app6DGHCPI3Yh3IFS`/`sync_movement`)는 movement 위 **WMS M/H(cycle-time) 측정 인프라일 뿐** — 입하 트랙 주인 아님. CBM-driven M/H는 `scripts/mh_backfill_to_ibsa.py`로 이미 백필 live(시뮬 13/20 확인). 입하 CBM/적재율은 movement 기반, M/H만 IBSA.
+
+> **시뮬 검증 (20 프로젝트, 실데이터 2026-06-09):** order∩ship 1,088p 중 20p end-to-end 추적 → 체인(order→parts→movement→IBSA→shipment)이 PNA+PT+견적코드로 **실연결 확증**. 5대 자동화 달성: ⑤배차CBM 16/20(결정론 출고 실값 4.98~32.59m³, est_cbm 전부 0=P1 즉효)·②생산 19/20·④M/H 13/20(IBSA live)·①자재차감 14/20·③입하부피 9/20(IBSA `CBM_지수` 사용, 즉석 dims 파싱 금지). 멀티출하 실재(PNA51145=9건)→부분출하 게이트 재확증.
 
 ---
 
@@ -105,7 +109,7 @@ Shipment.project_code(PNA) → 사전그룹된 order rows → order.굿즈코드
 | **P0 안전** | `backfill_total_cbm_safe.py` auto freeze; allowlist 가드; 2,553행 ruling | 추정치 Total_CBM 미기입(테스트); allowlist ⚡쓰기 거부 | 2,553행 재분류 방식 |
 | **P1 출고(★)** | `estimate_shipment_cbm_deterministic`; `resolve_goods_code`; `crosswalk --write`; sync_goods→Product 누락코드 백필; 부분출하 게이트; wave 신뢰도 floor; `CBM_유효`+롤업 재연결 | **shipment CBM resolvable 15.8→≥70%**(dry-run); partial_skip; 차량이용률 다차레인 미인플레; 배차/wave 자동점등 | qty 필드 확정 |
 | **P2 보관** | `WMS_Location.Max_CBM` 시드; occupied=Σ(Current_Stock×part CBM); 창고-total 우선 | 창고-total 적재율 + 커버리지% | **Max_CBM 실측치** |
-| **P3 입하/용량** | `Occupancy_Rate` formula; inbound subset 필터; 입하 CBM; 다음주 forecast; `WMS_BOM.구성유형` 백필 | 입하 적재율 + 미해결PT율; phantom 제외 | **이동목적 외부입하 분류** |
+| **P3 입하/용량(movement 기반)** | movement 입하 subset→입하 CBM(입하수량×part CBM)→입하 적재율; `WMS_Location.Max_CBM`/`Occupancy_Rate`; 다음주 forecast(`입하예정일`); IBSA M/H 백필 완주(측정 연결); `WMS_BOM.구성유형` 백필 | 입하 적재율(movement 기반) + M/H 커버리지; 미해결PT율 | **이동목적 외부입하 분류** + IBSA backfill 승인 |
 | **P4 대시보드** | `capacity_series.json` GHA cron; 트랙별 event-boundary 태깅 | 1주문 트랙간 중복0; forward curve | 예측 horizon |
 | **P5 백로그** | 6 중복코드·소요량 정합·128/95 비교차·blank-code 19% 실측성 | (deferrable) | — |
 
