@@ -26,6 +26,30 @@ class AuditTableMissingError(Exception):
     pass
 
 
+class WriteForbiddenError(Exception):
+    pass
+
+
+# 쓰기 허용 table_id (WMS_* 네이티브 + TMS Shipment). ⚡미러/MES/SERPA는 미포함 → 거부.
+# ⚡미러는 WMS 네이티브와 같은 base라 base가 아닌 table_id 단위로 가드한다.
+_WRITE_ALLOWLIST: frozenset[str] = frozenset({
+    "tbl5ZGY373D5SCONV",  # WMS_ItemMaster
+    "tblJK5eyQGGx5X1oH",  # WMS_KeyCrosswalk
+    "tblopHqepkx6mNEHL",  # WMS_BOM
+    "tblkQmontWGSjo8c5",  # WMS_PropagationLedger
+    "tblRwUTP5kWnHFt5P",  # WMS_Location
+    "tblvkbRU1GfgI6Bul",  # WMS_StockBatch
+    "tbl4DcXQRHJj921MN",  # WMS_InventoryLedger
+    "tblmNiQDYzcq1A6vp",  # WMS_InventoryTransaction
+    "tblFFrpYeHt58T59u",  # WMS_GoodsReceipt
+    "tblZucobzQu3CFCrR",  # WMS_Wave
+    "tblJpQcCJfIyB9Xf5",  # WMS_PickingTask
+    "tblMODxFEWpkKWG4Y",  # WMS_NCR
+    "tblgaJqIlu8hBiGFE",  # WMS_InspectionCriteria
+    "tbllg1JoHclGYer7m",  # TMS Shipment (estimated_cbm/wave 자동화 필드)
+})
+
+
 class _RateLimiter:
     """In-process 3 req/s sliding-window limiter (thread-safe).
 
@@ -83,6 +107,17 @@ class AirtableClient:
             cls._instances[key] = cls(base_id, table_id, pat)
         return cls._instances[key]
 
+    def _write_allowed(self) -> bool:
+        return self.table_id in _WRITE_ALLOWLIST
+
+    def _guard_write(self) -> None:
+        if not self._write_allowed():
+            raise WriteForbiddenError(
+                f"쓰기 금지 테이블 {self.table_id} (base {self.base_id}). "
+                "⚡미러/MES/SERPA 소스는 read-only. "
+                "허용하려면 _WRITE_ALLOWLIST에 명시적 추가 필요."
+            )
+
     def _check_response(self, data: dict) -> None:
         if "error" in data:
             err = data["error"]
@@ -129,6 +164,7 @@ class AirtableClient:
         fields: dict,
         idempotency_key: str | None = None,
     ) -> dict:
+        self._guard_write()
         if idempotency_key is None:
             raw = (
                 self.base_id
@@ -150,6 +186,7 @@ class AirtableClient:
 
     def create_records(self, records: list[dict]) -> list[dict]:
         """10건씩 batch POST. records=[{'fields': {...}}, ...]."""
+        self._guard_write()
         out: list[dict] = []
         for i in range(0, len(records), 10):
             chunk = records[i:i + 10]
