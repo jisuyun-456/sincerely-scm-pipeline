@@ -51,6 +51,10 @@ TIER_TO_CANDIDATES: Dict[str, List[str]] = {
 
 WAVE_IDS = ('W1', 'W2', 'W3', 'spillover_고고엑스', 'spillover_로젠', 'locked-in', '수동')
 
+# 자동배차 신뢰도 floor (P1 Task 1.7): slot_confidence * cbm_confidence < floor → '수동'.
+# 결정론 CBM(conf 1.0) shipment만 자동 점등, 저신뢰(퍼지·기본값)는 사용자 검토.
+CONFIDENCE_FLOOR = 0.8
+
 
 QUICK_METHODS = frozenset({
     '퀵(수도권)', '퀵(지방)', '자체기사',
@@ -139,8 +143,12 @@ def _split_by_autonomy(shipments: List[Shipment], partner_autonomy: Dict[str, st
 
 
 def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, str],
-                        today_iso: str) -> Dict[str, WavePlan]:
-    """Best-Fit Decreasing per (slot, region) group + PNA cluster."""
+                        today_iso: str, confidence_floor: float = 0.0) -> Dict[str, WavePlan]:
+    """Best-Fit Decreasing per (slot, region) group + PNA cluster.
+
+    confidence_floor>0 (프로덕션): slot_confidence*cbm_confidence < floor 인 shipment를
+    자동배차 전에 '수동'으로 분리 (P1 Task 1.7). 기본 0.0 = 미적용(단위테스트·baseline용).
+    """
     plans = _empty_plans()
 
     # Stage D: override
@@ -151,6 +159,17 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
 
     # Stage C 보조: autonomy filter
     active = _split_by_autonomy(active, partner_autonomy, plans)
+
+    # 신뢰도 floor → 수동 (P1 Task 1.7): BFD 배차 진입 전 저신뢰 shipment 분리.
+    # floor>0(프로덕션)일 때만 적용 — 자동배차는 고신뢰(결정론 CBM)만 점등.
+    if confidence_floor > 0:
+        confident = []
+        for s in active:
+            if s.slot_confidence * s.cbm_confidence < confidence_floor:
+                plans['수동'].shipments.append(s)  # 사용자 검토 대상
+            else:
+                confident.append(s)
+        active = confident
 
     # NULL slot → 수동
     active_with_slot = []
@@ -342,13 +361,16 @@ def _ensure_minimum_load(plans: Dict[str, WavePlan]) -> Dict[str, WavePlan]:
 
 def assign_waves(shipments: List[Shipment], partner_autonomy: Dict[str, str],
                 today_iso: str, *, use_sa: bool = True,
-                sa_iter: int = 500, sa_seed: int = 42) -> Dict[str, WavePlan]:
+                sa_iter: int = 500, sa_seed: int = 42,
+                confidence_floor: float = 0.0) -> Dict[str, WavePlan]:
     """메인 entry — Greedy → (optional) SA refinement → minimum load 보장.
 
     Args:
         use_sa: False 면 Greedy 결과만 반환 (smoke test·baseline 비교용)
+        confidence_floor: >0 이면 저신뢰 shipment 자동배차 제외(수동). 프로덕션은 CONFIDENCE_FLOOR.
     """
-    plans = assign_waves_greedy(shipments, partner_autonomy, today_iso)
+    plans = assign_waves_greedy(shipments, partner_autonomy, today_iso,
+                                confidence_floor=confidence_floor)
     if use_sa:
         plans = refine_with_sa(plans, max_iter=sa_iter, seed=sa_seed)
     plans = _ensure_minimum_load(plans)
