@@ -11,9 +11,9 @@
 |---|---|---|---|
 | **bom-cbm-backbone** (Phase-1) | ✅ DONE (2026-06-09, merge `ea09e51`) | WMS 네이티브 4테이블 + `harness/backbone/` 9모듈 + TDD | BOM 수량전파 배선 |
 | **bom-cbm-phase2** | 🚫 SUPERSEDED | (계획만) | gap분석으로 재스코프됨 |
-| **cbm-capacity-backbone** | 🔄 진행 중 | P0 ✅ · **P1 ✅(코드+데이터)** · P2~P5 📝 | 현재 활성 체인 |
+| **cbm-capacity-backbone** | 🔄 진행 중 | P0 ✅ · **P1 ✅(완료)** · P2~P5 📝 | 현재 활성 체인 |
 
-**현재 결론(2026-06-10):** P1 결정론 출고 CBM 완료 — **856건 정밀 CBM을 `Shipment.estimated_cbm`에 기록**(실측 `Total_CBM` 미터치). **forward(최근 90일·order 존재) shipment 기준 CBM 커버리지 75.1%**로 ≥70% gate 통과. 단, 전수 16k는 과거 order 데이터 부재로 28.7%가 상한 — 이는 코드가 아니라 **데이터 가용성** 한계.
+**현재 결론(2026-06-10):** P1 결정론 출고 CBM **완료** — **856건 정밀 CBM을 `Shipment.estimated_cbm`에 기록**(실측 `Total_CBM` 미터치) + **Task 1.6 rollup 재연결 완료**(배차일지·배송파트너 rollup이 `CBM_유효` 소스로 전환) → 배차일지 `차량이용률(%)`이 estimated_cbm까지 반영하며 **출고 트랙 실점등**. **forward(최근 90일·order 존재) shipment 기준 CBM 커버리지 75.1%**로 ≥70% gate 통과. 단, 전수 16k는 과거 order 데이터 부재로 28.7%가 상한 — 이는 코드가 아니라 **데이터 가용성** 한계.
 
 ---
 
@@ -168,16 +168,18 @@ CBM 마스터 확장 계획이었으나, 3-base 전수조사 + 7-critic gap분�
 
 | 항목 | 소유 | 상태 | 영향 |
 |---|---|---|---|
-| **Task 1.6 — `CBM_유효` formula + 롤업 재연결** | 👤 사용자 (Airtable UI) | 📝 대기 | **이게 돼야** 856 estimated_cbm이 배차일지/Capa 차량이용률에 실제 반영됨 |
+| **Task 1.6 — rollup 소스 `CBM_유효` 재연결** | 👤 사용자 (Airtable UI) | ✅ 완료 (2026-06-10) | 배차일지·배송파트너 rollup → `CBM_유효`, 차량이용률이 estimated_cbm 반영 → **출고 트랙 실점등** |
 | Task 1.4 — 누락 굿즈코드(SSSV 등 ~20) sync_goods→Product | (deferred) | 보류 | 전수 0.2%만 영향 → gate에 무의미, 후순위 |
 | **P2 보관 적재율** | 차기 | 📝 | `WMS_Location.Max_CBM` 실측치(사용자 데이터) 필요 |
 | **P3 입하/M/H** | 차기 | 📝 | 이동목적 '외부입하' 분류 + IBSA backfill 승인 필요 |
 | P4 대시보드 / P5 백로그 | 차기 | 📝 | capacity_series.json / 과거 order 소스 확보 |
 
-### Task 1.6 절차 (사용자)
-1. TMS Shipment에 formula 필드 `CBM_유효 = IF({Total_CBM}>0, {Total_CBM}, {estimated_cbm})` 생성
-2. 배차일지 `Total_CBM`(rollup)·Capa·배송파트너 `월간_총CBM` 롤업 소스를 `CBM_유효`로 재지정
-3. 샘플 1건(estimated_cbm만 있는 shipment)의 배차일지 차량이용률 반영 확인
+### Task 1.6 — 실제 작업 내역 (대부분 기존재, rollup 2개 토글만 필요했음)
+**이미 존재**했던 것: Shipment `CBM_유효` formula(`IF({Total_CBM}>0,{Total_CBM},{estimated_cbm})`) · 배차일지↔Shipment 링크(`배정물량_합계` = Shipment 링크, 새 link 불필요) · Capa `CBM_유효` rollup.
+**실제 변경(완료):**
+1. 배차 일지 `Total_CBM` rollup 소스: Shipment.`Total_CBM` → **`CBM_유효`** (→ `차량이용률(%)`=이 rollup÷배송파트너_CBM 이므로 자동 반영, 공식 수정 불필요)
+2. 배송파트너 `월간_총CBM` rollup 소스: Shipment.`Total_CBM` → **`CBM_유효`**
+- 참고: Shipment `CBM_유효` 표시 소수점 0자리(계산 무영향, 가독성 위해 2자리 권장) · 배차일지 레코드에 shipment가 실제 링크돼야 rollup 값 잡힘.
 
 ---
 
