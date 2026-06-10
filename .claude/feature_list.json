@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-06-10T00:00:00+09:00",
+  "updated_at": "2026-06-10T18:00:00+09:00",
   "tasks": [
     {
       "id": "SCM-WAVE-COST-GATE",
@@ -850,6 +850,24 @@
       "status": "done",
       "created_at": "2026-06-10",
       "notes": "2026-06-10 완료. 크로스워크 67행 INSERT(출처='mes_crosswalk', 파츠 hop 66.7%·굿즈 hop 91.2%) / BOM 117행 검증완료 승급(6.9%, INSERT 0) / kit-CBM tier 배선 완료但 dormant(ItemMaster part CBM 218/1309 — P3' part_cbm이 채우면 자동 점등, '46→85%' 전제 불성립: direct 단독 86.7%≥85% PASS) / forward 90d 75.0% 유지 / ride-along: wave cron 422 fix(배송슬롯 후행공백). reviewer 3건 수정·validator PASS 7/7. push는 수동 필요."
+    },
+    {
+      "id": "CBM-CAP-P3PRIME",
+      "title": "CBM 백본 P3' — part_cbm + 보관·입하 통합 (PT CBM 0→42.5%·kit 자동점등 108엔트리·occupied 306m³·외부입하 79.9%·구성유형 630행·MES forecast)",
+      "priority": "critical",
+      "status": "done",
+      "domain": "backbone",
+      "created_at": "2026-06-10",
+      "notes": "CP①②③ 승인 write(ItemMaster 351·BOM 630, err 0). 굿즈 CBM 커버리지 86.7→89.2%(kit). 잔여: Max_CBM 실측(P4 이월)·name-bridge 960/1319(측정만)·PT_미등록 635(P5)·수동 push. 기록: docs/superpowers/plans/2026-06-10-cbm-p3prime-implementation.md"
+    },
+    {
+      "id": "CBM-CAP-P4",
+      "title": "CBM 백본 P4 — 대시보드 (capacity_snapshot.py + capacity_series.json GHA cron + event-boundary 태깅)",
+      "priority": "high",
+      "status": "pending",
+      "domain": "backbone",
+      "created_at": "2026-06-10",
+      "notes": "READY_TO_START. handoff: ~/.claude/plans/cbm-capacity-backbone-p4-handoff.md. 체크포인트: 예측 horizon + (이월) Max_CBM 실측치. Supabase는 대시보드 스냅샷 한정(2026-05-08 정책)"
     }
   ]
 }
