@@ -1,7 +1,7 @@
 """키 추출·정규화 순수 함수 테스트."""
 from harness.backbone.keys import (
     extract_pt, parse_goods, normalize_goods, is_service, compute_soyoryang,
-    resolve_goods_code,
+    resolve_goods_code, build_pkg_goods_map,
 )
 
 
@@ -82,3 +82,54 @@ class TestResolveGoodsCode:
 
     def test_empty_list_returns_none(self):
         assert resolve_goods_code({"굿즈코드 (from sync_itemdb)": []}) == (None, "none")
+
+
+class TestResolveGoodsCodePkgFallback:
+    PKG = {"PNA50702": "SBAT"}
+
+    def test_direct_wins_over_pkg(self):
+        row = {"굿즈코드 (from sync_itemdb)": "SSSV", "project_code": "PNA50702_심볼"}
+        assert resolve_goods_code(row, self.PKG) == ("SSSV", "direct")
+
+    def test_blank_falls_back_to_pkg(self):
+        assert resolve_goods_code({"project_code": "PNA50702_심볼"}, self.PKG) == ("SBAT", "pkg")
+
+    def test_blank_and_unknown_project_none(self):
+        assert resolve_goods_code({"project_code": "PNA99999_없음"}, self.PKG) == (None, "none")
+
+    def test_blank_no_pna_none(self):
+        assert resolve_goods_code({"project_code": "기타"}, self.PKG) == (None, "none")
+
+    def test_no_map_backward_compat(self):
+        assert resolve_goods_code({}) == (None, "none")
+
+
+class TestBuildPkgGoodsMap:
+    N2C = {"심볼아크릴트로피": "SSSV", "시그니처보조배터리": "SBAT"}
+
+    def test_single_code_project_mapped(self):
+        rows = [{"프로젝트 코드 (PK) (from project)": "PNA50702_심볼",
+                 "주문 굿즈 리스트 (자동) (from project)": "심볼아크릴트로피 125"}]
+        assert build_pkg_goods_map(rows, self.N2C) == {"PNA50702": "SSSV"}
+
+    def test_multi_code_project_excluded(self):
+        rows = [{"프로젝트 코드 (PK) (from project)": "PNA1_x",
+                 "주문 굿즈 리스트 (자동) (from project)": "심볼아크릴트로피 125, 시그니처보조배터리 30"}]
+        assert build_pkg_goods_map(rows, self.N2C) == {}
+
+    def test_service_and_unknown_names_skipped(self):
+        rows = [{"프로젝트 코드 (PK) (from project)": "PNA2_y",
+                 "주문 굿즈 리스트 (자동) (from project)": "배송 다마스 1, 미지의굿즈 10"}]
+        assert build_pkg_goods_map(rows, self.N2C) == {}
+
+    def test_second_source_also_read(self):
+        rows = [{"프로젝트 코드 (PK) (from project)": "PNA3_z",
+                 "단품 굿즈 품목 및 수량": "심볼아크릴트로피 10"}]
+        assert build_pkg_goods_map(rows, self.N2C) == {"PNA3": "SSSV"}
+
+    def test_same_code_multiple_rows_merged(self):
+        rows = [{"프로젝트 코드 (PK) (from project)": "PNA4_a",
+                 "주문 굿즈 리스트 (자동) (from project)": "심볼아크릴트로피 5"},
+                {"프로젝트 코드 (PK) (from project)": "PNA4_a",
+                 "주문 굿즈 리스트 (자동) (from project)": "심볼아크릴트로피 5"}]
+        assert build_pkg_goods_map(rows, self.N2C) == {"PNA4": "SSSV"}

@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 
 PT_RE = re.compile(r"\b(PT\d{3,6})\b")
+PNA_RE = re.compile(r"PNA\d+")  # replay_outbound_cbm.py와 동일 패턴 (PNA뒤 '_'는 \b 미매칭)
 _TRAIL_QTY = re.compile(r"\s+(\d[\d,]*)\s*$")
 _SERVICE_KW = ("배송", "하차", "퀵", "다마스", "택배", "설치", "용차", "탑차")
 
@@ -54,13 +55,37 @@ def compute_soyoryang(order_qty, goods_qty) -> float | None:
         return None
 
 
-def resolve_goods_code(row: dict) -> tuple[str | None, str]:
-    """order/shipment row → (견적코드, 출처). 우선순위: order.굿즈코드 → (향후 pkg_schedule/crosswalk) → None.
-    Returns (code_upper, 'direct'|'none'). Airtable lookup 필드는 list로 올 수 있어 언랩."""
+def resolve_goods_code(
+    row: dict, pkg_goods_by_project: dict[str, str] | None = None
+) -> tuple[str | None, str]:
+    """order/shipment row → (견적코드, 출처). 우선순위: order.굿즈코드 → pkg_schedule 폴백 → None.
+    Returns (code_upper, 'direct'|'pkg'|'none'). Airtable lookup 필드는 list로 올 수 있어 언랩."""
     raw = row.get("굿즈코드 (from sync_itemdb)")
     if isinstance(raw, list):
         raw = raw[0] if raw else ""
     code = str(raw or "").strip().upper()
     if code:
         return code, "direct"
+    if pkg_goods_by_project:
+        m = PNA_RE.search(str(row.get("project_code") or ""))
+        if m and m.group(0) in pkg_goods_by_project:
+            return pkg_goods_by_project[m.group(0)].strip().upper(), "pkg"
     return None, "none"
+
+
+def build_pkg_goods_map(pkg_rows, name_to_code: dict[str, str]) -> dict[str, str]:
+    """pkg_schedule fields-dict 목록 + sync_item 굿즈명→굿즈코드 → {PNA: 견적코드}.
+    pkg_schedule에는 굿즈코드 필드가 없어 굿즈명을 sync_item으로 브릿지.
+    다중 코드 프로젝트는 order行 귀속 불가 → 제외(단일 코드만)."""
+    by_pna: dict[str, set[str]] = {}
+    for f in pkg_rows:
+        m = PNA_RE.search(str(f.get("프로젝트 코드 (PK) (from project)") or ""))
+        if not m:
+            continue
+        codes = by_pna.setdefault(m.group(0), set())
+        for src in ("주문 굿즈 리스트 (자동) (from project)", "단품 굿즈 품목 및 수량"):
+            for part in re.split(r"[,\n/]+", str(f.get(src) or "")):
+                name = normalize_goods(parse_goods(part.strip())[0])
+                if name and not is_service(name) and name in name_to_code:
+                    codes.add(name_to_code[name])
+    return {pna: next(iter(c)) for pna, c in by_pna.items() if len(c) == 1}
