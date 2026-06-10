@@ -11,9 +11,11 @@
 |---|---|---|---|
 | **bom-cbm-backbone** (Phase-1) | ✅ DONE (2026-06-09, merge `ea09e51`) | WMS 네이티브 4테이블 + `harness/backbone/` 9모듈 + TDD | BOM 수량전파 배선 |
 | **bom-cbm-phase2** | 🚫 SUPERSEDED | (계획만) | gap분석으로 재스코프됨 |
-| **cbm-capacity-backbone** | 🔄 진행 중 | P0 ✅ · **P1 ✅(완료)** · P2~P5 📝 | 현재 활성 체인 |
+| **cbm-capacity-backbone** | 🔄 진행 중 | P0 ✅ · **P1 ✅** · **P2a ⏸ READY**(connectivity-first 재배열) · P2b/P3'/P4/P5 📝 | 현재 활성 체인 |
 
 **현재 결론(2026-06-10):** P1 결정론 출고 CBM **완료** — **856건 정밀 CBM을 `Shipment.estimated_cbm`에 기록**(실측 `Total_CBM` 미터치) + **Task 1.6 rollup 재연결 완료**(배차일지·배송파트너 rollup이 `CBM_유효` 소스로 전환) → 배차일지 `차량이용률(%)`이 estimated_cbm까지 반영하며 **출고 트랙 실점등**. **forward(최근 90일·order 존재) shipment 기준 CBM 커버리지 75.1%**로 ≥70% gate 통과. 단, 전수 16k는 과거 order 데이터 부재로 28.7%가 상한 — 이는 코드가 아니라 **데이터 가용성** 한계.
+
+**2026-06-10 deep review(8-agent 적대검증) → connectivity-first 재배열:** 🔴 결정론 estimator가 라이브 파이프라인 미편입(replay 1회성뿐 — 신규 shipment는 estimated_cbm 미기록, **75.1% 방치 시 감쇠**) + 미점등 hop 4개(pkg폴백 0%·MES 0%·task→BOM 無·WMS_BOM 1,702행 런타임 미소비) 확정. 사용자 결정: **연결성 전부 먼저** — 구 P2/P3을 뒤로 물리고 **P2a(출고 상시화+pkg hop, 코드만)** → **P2b(MES·task·BOM hop 점등, kit-CBM 46→85%)** → **P3'(part_cbm+보관·입하 통합, Max_CBM은 도착 시 주입)** 순서로 재스코프. Spec: `docs/superpowers/specs/2026-06-10-cbm-connectivity-first-rescope-design.md`.
 
 ---
 
@@ -30,6 +32,9 @@ TMS Shipment 16,200건 중 **CBM(부피) 보유가 15.8%뿐**(나머지 84% 공�
 - **`견적코드` = `굿즈코드` = `sync_goods.Goods Code 2`** (동일 4자리 체계, 243개 일치)
 - 그런데 기존 estimator는 `최종 출하 품목` free-text 이름 **퍼지매칭**만 함 → 84% 실패
 - 게다가 과거 backfill이 추정치를 실측 `Total_CBM`에 써 2,553행 오염
+
+### 북극성 (2026-06-10 사용자 명시) — Order-Driven Forward Planning
+> **"고객 주문수량이 project에 등록되는 순간 order→task→pkg_schedule→movement→sync_parts/material→MES→TMS가 전부 연결되어, MRP·입하 CBM·WMS M/H·창고 CBM·기사 배정·운임까지 — 물건이 고객에게 가기 전에 입하부터 자재·생산·출하까지 이미 다 셋팅돼 있는 상태."** P2a~P4가 각 hop·트랙을 점등하고, **P6이 주문 등록 1 이벤트 → 전체 사전 셋팅 단일 캐스케이드로 통합** (spec `2026-06-10-cbm-connectivity-first-rescope-design.md` §0.5).
 
 ### 궁극 목표 = "얼어붙은 3개 운영 레버를 푼다"
 | 레버 | AS-IS | TO-BE | 필요 입력 |
@@ -164,15 +169,16 @@ CBM 마스터 확장 계획이었으나, 3-base 전수조사 + 7-critic gap분�
 
 ---
 
-## 7. 남은 일
+## 7. 남은 일 (2026-06-10 connectivity-first 재배열 반영)
 
 | 항목 | 소유 | 상태 | 영향 |
 |---|---|---|---|
 | **Task 1.6 — rollup 소스 `CBM_유효` 재연결** | 👤 사용자 (Airtable UI) | ✅ 완료 (2026-06-10) | 배차일지·배송파트너 rollup → `CBM_유효`, 차량이용률이 estimated_cbm 반영 → **출고 트랙 실점등** |
+| **P2a 출고 상시화 + pkg hop** | 차기 (코드만, 사용자 데이터 불필요) | ⏸ READY | 🔴 wave cron에 replay step → 신규 shipment estimated_cbm 자동 persist(75.1% 감쇠 차단) + pkg_schedule tier-2 폴백(blank ~24% 회수) + schema_pin `CBM_유효` 핀 |
+| **P2b MES·task·BOM hop 점등** | 차기 | 📝 | MES↔PT/굿즈코드 크로스워크(리포트만) + task→BOM 검증·승급 + **kit-CBM 폴백(굿즈 커버리지 46→85%)** — WMS_BOM 1,702행 첫 런타임 소비 |
+| **P3' part_cbm + 보관·입하 통합** (구 P2+P3) | 차기 | 📝 | part_cbm.py → occupied 분자 먼저, `Max_CBM` 실측치(사용자)는 gate 시점에만 + 이동목적 '외부입하' 분류 + 구성유형 백필 + MES 납기일 forecast |
+| P4 대시보드 / P5 백로그 | 차기 | 📝 | capacity_snapshot.py·capacity_series.json / 과거 order 소스(no_order 39.6%)·W1 테스트·6 중복코드 |
 | Task 1.4 — 누락 굿즈코드(SSSV 등 ~20) sync_goods→Product | (deferred) | 보류 | 전수 0.2%만 영향 → gate에 무의미, 후순위 |
-| **P2 보관 적재율** | 차기 | 📝 | `WMS_Location.Max_CBM` 실측치(사용자 데이터) 필요 |
-| **P3 입하/M/H** | 차기 | 📝 | 이동목적 '외부입하' 분류 + IBSA backfill 승인 필요 |
-| P4 대시보드 / P5 백로그 | 차기 | 📝 | capacity_series.json / 과거 order 소스 확보 |
 
 ### Task 1.6 — 실제 작업 내역 (대부분 기존재, rollup 2개 토글만 필요했음)
 **이미 존재**했던 것: Shipment `CBM_유효` formula(`IF({Total_CBM}>0,{Total_CBM},{estimated_cbm})`) · 배차일지↔Shipment 링크(`배정물량_합계` = Shipment 링크, 새 link 불필요) · Capa `CBM_유효` rollup.
@@ -191,9 +197,11 @@ CBM 마스터 확장 계획이었으나, 3-base 전수조사 + 7-critic gap분�
 - `chain-glimmering-gem.md` — **P1 재스코프 + 실측(최신)**
 
 **설계·구현계획** (`SCM_WORK/docs/superpowers/`)
-- `specs/2026-06-09-cbm-capacity-backbone-design.md` — 전체 3트랙 설계
+- `specs/2026-06-10-cbm-connectivity-first-rescope-design.md` — **P2a/P2b/P3' 재배열 (§7 Phase Plan 대체, 최신)**
+- `specs/2026-06-09-cbm-capacity-backbone-design.md` — 전체 3트랙 설계 (§1~§6 유효)
 - `specs/2026-06-09-bom-cbm-backbone-design.md` — Phase-1 설계
 - `plans/2026-06-09-cbm-p0-p1.md` — P0+P1 TDD 상세
+- `~/.claude/plans/cbm-capacity-backbone-p2a-handoff.md` — **P2a cold-start brief**
 
 **코드**
 - Phase-1: `harness/backbone/` (keys·crosswalk·cbm_master·bom_bootstrap·ledger…)

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBM·BOM 데이터 기반 물류운영 고도화 — 7월 이니셔티브</title>
+<style>
+  :root{
+    --ink:#11161d; --sub:#5b6573; --line:#e3e7ec; --bg:#f4f6f8;
+    --navy:#0f2740; --accent:#1769aa; --teal:#0d8a7a; --amber:#c98a16; --red:#b54a3a;
+    --green:#1f9d57;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--bg);font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .slide{
+    width:1280px;height:720px;margin:24px auto;background:#fff;position:relative;
+    box-shadow:0 12px 40px rgba(15,39,64,.16);overflow:hidden;display:flex;flex-direction:column;
+  }
+  /* header */
+  .hd{background:linear-gradient(100deg,#0f2740 0%,#163a5c 100%);color:#fff;padding:22px 38px 18px;position:relative;}
+  .hd .kick{font-size:12.5px;letter-spacing:3px;color:#9fc4e3;font-weight:600;}
+  .hd h1{font-size:30px;font-weight:800;margin-top:5px;letter-spacing:-.5px;}
+  .hd .meta{position:absolute;top:24px;right:38px;text-align:right;font-size:11.5px;color:#bcd3e6;line-height:1.6;}
+  .hd .meta b{color:#fff;font-weight:700;}
+  /* stats band */
+  .stats{display:flex;gap:0;border-bottom:1px solid var(--line);}
+  .stats .s{flex:1;padding:13px 20px;border-right:1px solid var(--line);}
+  .stats .s:last-child{border-right:none;}
+  .stats .v{font-size:23px;font-weight:800;color:var(--navy);letter-spacing:-.5px;}
+  .stats .v small{font-size:13px;font-weight:700;color:var(--sub);}
+  .stats .l{font-size:11px;color:var(--sub);margin-top:2px;}
+  .stats .s.warn .v{color:var(--amber);}
+  /* body */
+  .body{flex:1;display:grid;grid-template-columns:1fr 360px;gap:0;}
+  .left{padding:16px 20px 14px 38px;}
+  .secttl{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.5px;margin-bottom:9px;text-transform:uppercase;}
+  .matrix{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;}
+  .cat{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:7px;padding:9px 12px;background:#fcfdfe;}
+  .cat.tms{border-left-color:var(--accent);}
+  .cat.wms{border-left-color:var(--teal);}
+  .cat.bom{border-left-color:#7a51c0;}
+  .cat.intg{border-left-color:var(--navy);}
+  .cat.biz{border-left-color:var(--amber);}
+  .cat h3{font-size:13px;font-weight:800;display:flex;align-items:center;gap:7px;}
+  .cat h3 .cnt{font-size:10.5px;font-weight:700;color:#fff;background:var(--accent);border-radius:10px;padding:1px 7px;}
+  .cat.wms h3 .cnt{background:var(--teal);}
+  .cat.bom h3 .cnt{background:#7a51c0;}
+  .cat.intg h3 .cnt{background:var(--navy);}
+  .cat.biz h3 .cnt{background:var(--amber);}
+  .cat ul{list-style:none;margin-top:6px;}
+  .cat li{font-size:11.3px;color:#36404c;line-height:1.62;display:flex;align-items:flex-start;gap:6px;}
+  .cat li .d{flex:none;width:7px;height:7px;border-radius:50%;margin-top:5px;}
+  .d.g{background:var(--green);} .d.y{background:var(--amber);} .d.r{background:#c7ccd2;}
+  .cat li b{font-weight:700;color:var(--ink);}
+  /* right rail */
+  .right{background:var(--navy);color:#eaf1f7;padding:16px 24px 16px;display:flex;flex-direction:column;}
+  .right .secttl{color:#7fb6e0;}
+  .action{background:rgba(255,255,255,.07);border:1px solid rgba(127,182,224,.3);border-radius:9px;padding:13px 14px;margin-bottom:12px;}
+  .action .big{font-size:15px;font-weight:800;color:#fff;line-height:1.35;}
+  .action .arc{display:flex;align-items:center;gap:9px;margin:10px 0 4px;}
+  .action .pct{font-size:27px;font-weight:800;color:#ffd36b;}
+  .action .ar{color:#7fb6e0;font-size:18px;}
+  .action .pct2{font-size:27px;font-weight:800;color:#7ee0a6;}
+  .action .cap{font-size:10.5px;color:#b9cde0;line-height:1.5;margin-top:2px;}
+  .qw{margin-top:2px;}
+  .qw .t{font-size:11px;font-weight:800;color:#7fb6e0;letter-spacing:.5px;margin-bottom:7px;}
+  .qw .row{display:flex;gap:8px;align-items:flex-start;font-size:11.3px;line-height:1.5;color:#dde8f2;margin-bottom:7px;}
+  .qw .row .k{flex:none;background:#7ee0a6;color:#0f2740;font-weight:800;font-size:9.5px;border-radius:4px;padding:1px 6px;margin-top:1px;}
+  .legend{margin-top:auto;display:flex;gap:13px;font-size:10px;color:#b9cde0;padding-top:10px;border-top:1px solid rgba(127,182,224,.2);}
+  .legend span{display:flex;align-items:center;gap:5px;}
+  /* footer */
+  .ft{background:#0b1f33;color:#9fc4e3;font-size:10.5px;padding:8px 38px;display:flex;justify-content:space-between;}
+  .ft b{color:#fff;}
+  @media print{
+    @page{size:A4 landscape;margin:0;}
+    html,body{background:#fff;}
+    .slide{box-shadow:none;margin:0;width:100%;height:100vh;}
+  }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="hd">
+    <div class="kick">2026년 7월 · 물류팀 이니셔티브 제안</div>
+    <h1>CBM·BOM 데이터 기반 물류운영 고도화</h1>
+    <div class="meta">신시어리 SCM 물류팀<br><b>BOM·CBM 수량전파 백본</b> 활용</div>
+  </div>
+
+  <div class="stats">
+    <div class="s"><div class="v">4<small> 개</small></div><div class="l">WMS 네이티브 백본 테이블 구축</div></div>
+    <div class="s"><div class="v">1,702<small> 행</small></div><div class="l">BOM 자동 부트스트랩 (자재명세)</div></div>
+    <div class="s"><div class="v">1,309<small> 행</small></div><div class="l">CBM 품목 마스터 적재</div></div>
+    <div class="s warn"><div class="v">46<small> %</small></div><div class="l">굿즈 CBM 커버리지 (확장 대상)</div></div>
+  </div>
+
+  <div class="body">
+    <div class="left">
+      <div class="secttl">CBM·BOM 데이터가 푸는 물류운영 업무 — 18개 / 5개 영역</div>
+      <div class="matrix">
+        <div class="cat tms">
+          <h3>A. 출고·배송 (TMS) <span class="cnt">CBM · 5</span></h3>
+          <ul>
+            <li><span class="d g"></span><b>배차 최적화(Wave)</b> — 적재 bin-packing, 차량이용률↑</li>
+            <li><span class="d y"></span><b>이송단가 정산</b> — CBM 구간 단가 자동, 청구누락 방지</li>
+            <li><span class="d y"></span>적재율 KPI · 발송모드 분기(자체/외주) · <span style="color:#8a94a0">Lane 수익성</span></li>
+          </ul>
+        </div>
+        <div class="cat wms">
+          <h3>B. 보관·재고 (WMS) <span class="cnt">CBM · 3</span></h3>
+          <ul>
+            <li><span class="d r"></span><b>Location·Capa 가동률</b> — 점유부피 기반 적치</li>
+            <li><span class="d r"></span>보관료 정산 · 입하 부피 예측(Dock-to-Stock)</li>
+          </ul>
+        </div>
+        <div class="cat bom">
+          <h3>C. 자재·생산 소요 <span class="cnt">BOM · 5</span></h3>
+          <ul>
+            <li><span class="d g"></span><b>자재소요계획(MRP)</b> — 주문×소요량 자동산출</li>
+            <li><span class="d y"></span><b>패키징 자재 소요·재고</b> — 박스·완충재 결품방지</li>
+            <li><span class="d y"></span>자재차감 정합성 · Kitting 지시 · <span style="color:#8a94a0">견적↔실투입 편차</span></li>
+          </ul>
+        </div>
+        <div class="cat intg">
+          <h3>D. 통합·전파 (핵심) <span class="cnt">B+C · 3</span></h3>
+          <ul>
+            <li><span class="d y"></span><b>주문→출고 부피 사전예측</b> — 생산시점 CBM</li>
+            <li><span class="d r"></span>완전주문(OTIF×BOM) · 생산-물류 리드타임</li>
+          </ul>
+        </div>
+        <div class="cat biz" style="grid-column:1 / -1;">
+          <h3>E. 경영·원가 <span class="cnt">분석 · 2</span></h3>
+          <ul>
+            <li style="display:inline-flex;margin-right:22px;"><span class="d r"></span><b>제조원가 대비 물류비</b> — 품목 수익성·적자품목 식별</li>
+            <li style="display:inline-flex;"><span class="d r"></span><b>물류 ABC 분석</b> — CBM·회전 기반 보관·배차 우선순위</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="secttl">7월 핵심 액션 (P0)</div>
+      <div class="action">
+        <div class="big">CBM 마스터 확장</div>
+        <div class="arc"><span class="pct">46%</span><span class="ar">→</span><span class="pct2">80%+</span></div>
+        <div class="cap">미등록 굿즈 224종에 CBM 부여. 풀리면 <b style="color:#fff">A1~A4·B1~B3·D1</b>이 동시 가동 — 데이터 하나로 7개 업무 활성화.</div>
+      </div>
+      <div class="qw">
+        <div class="t">QUICK WIN — 즉시 KPI화</div>
+        <div class="row"><span class="k">NOW</span><div><b style="color:#fff">C1 자재소요(MRP)</b> — BOM 1,702행 이미 적재, 발주 자동화 즉시</div></div>
+        <div class="row"><span class="k">NOW</span><div><b style="color:#fff">A2 이송단가 정산</b> — CBM 구간 데이터 보유, 청구 정확화 즉시</div></div>
+      </div>
+      <div class="legend">
+        <span><span class="d g"></span>가동중</span>
+        <span><span class="d y"></span>데이터 정착시</span>
+        <span><span class="d r"></span>확장 후</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ft">
+    <span>핵심 메시지 — 끊겨 있던 6개 모듈을 <b>수량·부피 차원으로 결선</b>. "무엇이 더 필요한가"가 추측이 아닌 <b>측정값(46%)</b>으로 정의됨.</span>
+    <span>BOM·CBM 수량전파 백본 · Phase-1 완료 / Phase-2 착수</span>
+  </div>
+</div>
+</body>
+</html>

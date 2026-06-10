@@ -1,6 +1,8 @@
 .env
 __pycache__/
 *.pyc
+*.bak
+*.bak.*
 .DS_Store
 
 # Local Claude Code settings (agents/는 팀 공유 자산이라 추적)
@@ -11,6 +13,8 @@ __pycache__/
 !.claude/settings.json
 !.claude/hooks
 !.claude/hooks/**
+# negation(!hooks/**)이 전역 __pycache__/를 다시 포함시키므로 재차 제외
+.claude/hooks/__pycache__/
 
 # Local tool settings
 .playwright-mcp/
