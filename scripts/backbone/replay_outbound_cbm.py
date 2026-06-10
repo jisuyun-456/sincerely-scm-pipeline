@@ -27,7 +27,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 from harness.dispatch.cbm_estimator import (  # noqa: E402
-    estimate_shipment_cbm_deterministic, estimate_shipment_cbm,
+    estimate_shipment_cbm_deterministic, estimate_shipment_cbm, build_kit_cbm_lookup,
 )
 from harness.backbone.keys import (  # noqa: E402
     resolve_goods_code, build_pkg_goods_map, normalize_goods,
@@ -42,6 +42,8 @@ SHIP = "tbllg1JoHclGYer7m"
 ORDER = "tblJslWg8sYEdCkXw"
 PKG_SCHED = "tblae2NqJaexwjN9R"   # WMS ⚡pkg_schedule mirror (굿즈코드 필드 없음 — 굿즈명만)
 SYNC_ITEM = "tblwnNgHQxZ0WhDBh"   # WMS ⚡sync_item (굿즈명→굿즈코드 브릿지)
+BOM_TBL = "tblopHqepkx6mNEHL"     # WMS_BOM (kit-CBM 폴백 소스)
+ITEM_TBL = "tbl5ZGY373D5SCONV"    # WMS_ItemMaster
 PNA = re.compile(r"PNA\d+")
 WRITE_TOL = 1e-4  # idempotency: 기존 estimated_cbm와 이 이내면 skip
 
@@ -111,7 +113,23 @@ def build_pkg_fallback():
     ])
     pkg_map = build_pkg_goods_map((r["fields"] for r in pkgs), name2code)
     print(f"  pkg 폴백 맵: {len(pkg_map)} 프로젝트 (sync_item 매핑 {len(name2code)}건)", flush=True)
-    return pkg_map
+    return pkg_map, name2code
+
+
+def build_kit_lookup(name2code):
+    """WMS_BOM × ItemMaster → {(PNA, 견적코드): (kit_cbm, conf)} (P2b kit-CBM 폴백)."""
+    print("WMS_BOM·ItemMaster 로딩 (kit-CBM 폴백)...", flush=True)
+    bom = fetch(WMS, BOM_TBL, WP, ["프로젝트코드", "모품목_굿즈명", "소품목_PT", "소요량_개당"])
+    items = fetch(WMS, ITEM_TBL, WP, ["품목키", "CBM_개당_m3", "출처"])
+    item_master = {}
+    for r in items:
+        f = r["fields"]
+        k = str(f.get("품목키") or "").strip()
+        if k:
+            item_master[k] = (n(f.get("CBM_개당_m3")), str(f.get("출처") or ""))
+    kit = build_kit_cbm_lookup((r["fields"] for r in bom), item_master, name2code)
+    print(f"  kit 폴백: {len(kit)} (프로젝트,굿즈코드) 엔트리 (BOM {len(bom)}행)", flush=True)
+    return kit
 
 
 def build_inputs():
@@ -120,7 +138,8 @@ def build_inputs():
     lk = load_product_lookup({"Authorization": f"Bearer {TP}"})
     print("order 로딩...", flush=True)
     orders = fetch(WMS, ORDER, WP, ["project_code", "굿즈코드 (from sync_itemdb)", "주문수량"])
-    pkg_map = build_pkg_fallback()
+    pkg_map, name2code = build_pkg_fallback()
+    kit = build_kit_lookup(name2code)
     opg = collections.defaultdict(collections.Counter)
     src_count = collections.Counter()
     for r in orders:
@@ -137,6 +156,15 @@ def build_inputs():
     print(f"  굿즈코드 리졸브: direct={src_count['direct']} pkg폴백={src_count['pkg']} "
           f"미회수={src_count['none']} (blank-code 회수율 {rate:.1f}%)", flush=True)
     order_by_project = {pna: list(c.items()) for pna, c in opg.items()}
+    # 굿즈 CBM 커버리지 (P2b gate ≥85%): order 등장 고유 굿즈코드 기준
+    codes = {c for lines in order_by_project.values() for c, _ in lines}
+    direct = {c for c in codes
+              if (lk.get(str(c).lower()) or {}).get("cbm_per_box", 0) > 0}
+    covered = direct | ({c for _, c in kit} & codes)
+    print(f"  굿즈 CBM 커버리지: direct {len(direct)}/{len(codes)} "
+          f"({len(direct)/max(len(codes),1)*100:.1f}%) → +kit "
+          f"{len(covered)}/{len(codes)} ({len(covered)/max(len(codes),1)*100:.1f}%) "
+          f"[Gate ≥85%]", flush=True)
     print("shipment 로딩...", flush=True)
     ships = fetch(TMS, SHIP, TP, ["project code", "Total_CBM", "estimated_cbm",
                                   "최종 출고 품목 및 수량", "최종 출하 품목"])
@@ -145,7 +173,7 @@ def build_inputs():
         m = PNA.search(str(r["fields"].get("project code") or ""))
         if m:
             shipment_count[m.group(0)] += 1
-    return lk, order_by_project, dict(shipment_count), ships
+    return lk, order_by_project, dict(shipment_count), ships, kit
 
 
 def main():
@@ -155,7 +183,7 @@ def main():
                     help="최근 N일 shipment만 측정 (createdTime 기준; order 미러 커버리지 window forward-coverage 측정용)")
     args = ap.parse_args()
 
-    lk, obp, scount, ships = build_inputs()
+    lk, obp, scount, ships, kit = build_inputs()
     full = len(ships)
     if args.recent:
         from datetime import timedelta
@@ -165,7 +193,7 @@ def main():
     total = len(ships)
     print(f"\n=== Shipment {total}건 결정론 replay ===", flush=True)
 
-    measured = newly = partial = no_order = blank = unmatched_only = 0
+    measured = newly = partial = no_order = blank = unmatched_only = kit_adds = 0
     have_est_now = cbm_valid_now = 0   # P0 이후 현재 상태
     cbm_valid_after = 0                 # replay 반영 후 (deterministic only)
     cbm_valid_hybrid = 0                # deterministic + 퍼지 폴백 합산 (achievable ceiling)
@@ -187,7 +215,8 @@ def main():
         if not m:
             blank += 1
         else:
-            res = estimate_shipment_cbm_deterministic(m.group(0), obp, lk, scount)
+            res = estimate_shipment_cbm_deterministic(m.group(0), obp, lk, scount,
+                                                      kit_lookup=kit)
             mode = res["mode"]
             if mode == "partial_skip":
                 partial += 1
@@ -195,6 +224,8 @@ def main():
                 no_order += 1
             elif res["estimated_cbm"] > 0:
                 det_est = res["estimated_cbm"]
+                if res["kit_used"]:
+                    kit_adds += 1
                 if tot <= 0:
                     newly += 1
                 if res["confidence"] >= 0.7:
@@ -224,6 +255,7 @@ def main():
     print(f"  퍼지 폴백 추가(free-text)       : {fuzzy_only_adds:>6} ({fuzzy_only_adds/total*100:5.1f}%)")
     print(f"  → CBM_유효>0 (결정론+퍼지 ceiling): {cbm_valid_hybrid:>5} ({cbm_valid_hybrid/total*100:5.1f}%)  [Gate ≥70%]")
     print("  " + "─" * 56)
+    print(f"  kit-CBM 폴백 적용(결정론 내)    : {kit_adds:>6} ({kit_adds/total*100:5.1f}%)")
     print(f"  partial_skip(다차 출하)         : {partial:>6} ({partial/total*100:5.1f}%)")
     print(f"  no_order(PNA 매칭無 order)      : {no_order:>6} ({no_order/total*100:5.1f}%)  ← order 미러 커버리지 한계")
     print(f"  unmatched_only(코드/CBM 부재)   : {unmatched_only:>6} ({unmatched_only/total*100:5.1f}%)  ← Task 1.4 대상")
