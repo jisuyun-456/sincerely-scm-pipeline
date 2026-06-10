@@ -22,7 +22,9 @@ from harness.backbone.keys import extract_pts, build_mes_crosswalk_rows  # noqa:
 from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 
 load_dotenv()
-MP = os.environ["AIRTABLE_MES_PAT"]   # MES read-only
+# MES read-only. cron 편입 시 GH secret AIRTABLE_MES_PAT 추가 필요 (현재 .env 전용)
+MP = os.environ.get("AIRTABLE_MES_PAT") or sys.exit(
+    "ERROR: AIRTABLE_MES_PAT 미설정 — .env 추가 필요 (memory reference_airtable_mes_pat)")
 WP = os.environ["AIRTABLE_WMS_PAT"]
 TP = os.environ["AIRTABLE_PAT"]
 MES = "appNSAPadsHbfaSHv"

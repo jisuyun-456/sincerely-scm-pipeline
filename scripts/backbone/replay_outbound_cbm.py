@@ -191,6 +191,9 @@ def main():
         ships = [r for r in ships if r.get("createdTime", "") >= cutoff]
         print(f"\n[--recent {args.recent}d] {full} → {len(ships)}건 (createdTime ≥ {cutoff[:10]})", flush=True)
     total = len(ships)
+    if total == 0:
+        print("[INFO] 대상 shipment 0건 — replay 스킵 (--recent window 내 신규 없음).", flush=True)
+        return
     print(f"\n=== Shipment {total}건 결정론 replay ===", flush=True)
 
     measured = newly = partial = no_order = blank = unmatched_only = kit_adds = 0

@@ -169,6 +169,8 @@ class TestBuildMesCrosswalkRows:
             {"PT1234"}, {"굿즈A": "AB-1"}, {"PT1234", "굿즈A"}, {"PT1234"}, {"ab-1"})
         assert rows == []
         assert stats["parts_already"] == 1 and stats["goods_already"] == 1
+        # 해소율은 INSERT 여부와 무관 — 기존 crosswalk 키도 WMS 해소로 집계 (재실행 시 rate 안정)
+        assert stats["parts_in_wms"] == 1
 
     def test_goods_code_in_tms(self):
         rows, stats = build_mes_crosswalk_rows(

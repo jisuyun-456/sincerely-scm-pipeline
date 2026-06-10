@@ -97,12 +97,12 @@ def build_mes_crosswalk_rows(
              "parts_new": 0, "goods_total": len(mes_goods), "goods_already": 0,
              "goods_no_code": 0, "goods_code_in_tms": 0, "goods_new": 0}
     for pt in sorted(mes_parts):
+        in_wms = pt in wms_item_keys
+        if in_wms:
+            stats["parts_in_wms"] += 1  # 해소율 집계는 INSERT 여부와 무관 (재실행 안정)
         if pt in existing_keys:
             stats["parts_already"] += 1
             continue
-        in_wms = pt in wms_item_keys
-        if in_wms:
-            stats["parts_in_wms"] += 1
         stats["parts_new"] += 1
         rows.append({
             "표준키": pt, "키유형": "파츠", "TMS_견적코드": "",
