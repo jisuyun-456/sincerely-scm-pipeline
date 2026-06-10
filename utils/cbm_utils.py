@@ -7,7 +7,6 @@ cbm_inbound_check.py, wms_cbm_ledger.py, wms_weekly_runner.py에서 공용 impor
 """
 
 import os
-import re
 import time
 from datetime import date
 
@@ -35,8 +34,13 @@ FLD_MOV_SUPPLIER = "fldqGAjPo0SHxx2qW"   # (파트너)발주협력사명
 FLD_SP_CODE = "fld8gjySjm4XkCpMc"
 FLD_SP_SPEC = "fldRseOMNseg15D6R"
 
-# CBM 산출 상수
-MIN_THICKNESS_MM = 3.0   # 2D 규격(스티커 등) 기본 두께
+# CBM 파싱·계산은 harness/backbone/part_cbm.py가 단일 소스 (P3' 통합).
+# 기존 호출자(cbm_inbound_check·wms_cbm_ledger·wms_weekly_runner) 호환 re-export.
+from harness.backbone.part_cbm import (  # noqa: F401,E402
+    MIN_THICKNESS_MM,
+    calc_cbm,
+    parse_dims_mm,
+)
 
 AIRTABLE_PAT = os.environ.get("AIRTABLE_WMS_PAT", os.environ.get("AIRTABLE_PAT", ""))
 
@@ -96,32 +100,6 @@ def load_sync_parts_lookup() -> dict[str, str]:
         if code:
             lookup[code] = spec
     return lookup
-
-
-# ── 치수 파싱 + CBM 계산 ──────────────────────────────────────────────────────
-def parse_dims_mm(raw: str) -> tuple[float, float, float] | None:
-    """
-    '88x88x163', '248*190*33', '200x300', '55x160mm 펼침...' 파싱.
-    Returns (W, H, D) mm, or None.
-    """
-    cleaned = re.split(r"펼침", raw)[0]
-    cleaned = re.sub(r"mm", "", cleaned, flags=re.IGNORECASE)
-    nums = [float(n) for n in re.findall(r"[\d.]+", cleaned) if float(n) > 0]
-    if len(nums) >= 3:
-        return (nums[0], nums[1], nums[2])
-    if len(nums) == 2:
-        return (nums[0], nums[1], MIN_THICKNESS_MM)
-    return None
-
-
-def calc_cbm(spec: str, qty: float) -> tuple[float, bool]:
-    """치수 문자열 × 수량 → CBM (m³). Returns (cbm, ok)."""
-    dims = parse_dims_mm(spec)
-    if dims is None or qty <= 0:
-        return 0.0, False
-    w, h, d = dims
-    unit_cbm = (w / 1000) * (h / 1000) * (d / 1000)
-    return round(unit_cbm * qty, 6), True
 
 
 # ── 이동물품 파싱 ─────────────────────────────────────────────────────────────

@@ -18,7 +18,6 @@ import argparse
 import csv
 import math
 import os
-import re
 import sys
 import time
 from collections import defaultdict
@@ -27,6 +26,14 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from utils.cbm_utils import (  # noqa: E402
+    calc_cbm,
+    load_sync_parts_lookup,
+    parse_date,
+    parse_inbound_item,
+)
 
 load_dotenv()
 
@@ -49,7 +56,6 @@ FLD_SP_CODE = "fld8gjySjm4XkCpMc"   # 파츠 코드
 FLD_SP_SPEC = "fldRseOMNseg15D6R"   # 규격
 
 PURPOSE_FILTER  = '"생산산출"'
-MIN_THICKNESS_MM = 3.0  # 2D 규격(스티커 등) 기본 두께
 
 AIRTABLE_PAT = os.environ.get("AIRTABLE_WMS_PAT", os.environ.get("AIRTABLE_PAT", ""))
 HEADERS = {
@@ -97,103 +103,12 @@ def get_all_records(
     return records
 
 
-# ── sync_parts 규격 룩업 ──────────────────────────────────────────────────────
-def load_sync_parts_lookup() -> dict[str, str]:
-    """PT코드 → 규격 문자열 매핑."""
-    records = get_all_records(TBL_SP, [FLD_SP_CODE, FLD_SP_SPEC])
-    lookup: dict[str, str] = {}
-    for rec in records:
-        f = rec.get("fields", {})
-        code = str(f.get(FLD_SP_CODE) or "").strip()
-        spec = str(f.get(FLD_SP_SPEC) or "").strip()
-        if code:
-            lookup[code] = spec
-    return lookup
-
-
-# ── 치수 파싱 + CBM 계산 ──────────────────────────────────────────────────────
-def parse_dims_mm(raw: str) -> tuple[float, float, float] | None:
-    """
-    '88x88x163', '248*190*33', '200x300', '55x160mm 펼침...' 등 파싱.
-    Returns (W, H, D) in mm, or None if unparseable.
-    """
-    # 펼침/주석 이후 제거
-    cleaned = re.split(r"펼침", raw)[0]
-    # mm 단위 표기 제거
-    cleaned = re.sub(r"mm", "", cleaned, flags=re.IGNORECASE)
-    # 숫자 추출
-    nums = [float(n) for n in re.findall(r"[\d.]+", cleaned) if float(n) > 0]
-    if len(nums) >= 3:
-        return (nums[0], nums[1], nums[2])
-    if len(nums) == 2:
-        return (nums[0], nums[1], MIN_THICKNESS_MM)
-    return None
-
-
-def calc_cbm(spec: str, qty: float) -> tuple[float, bool]:
-    """
-    치수 문자열 × 수량 → CBM (m³).
-    Returns: (cbm, parsed_ok)
-    """
-    dims = parse_dims_mm(spec)
-    if dims is None or qty <= 0:
-        return 0.0, False
-    w, h, d = dims
-    unit_cbm = (w / 1000) * (h / 1000) * (d / 1000)
-    return round(unit_cbm * qty, 6), True
-
-
 # ── 파싱 헬퍼 ────────────────────────────────────────────────────────────────
-def parse_date(val: str | None) -> date | None:
-    if not val:
-        return None
-    try:
-        return date.fromisoformat(val[:10])
-    except ValueError:
-        return None
-
-
 def parse_week(week_str: str) -> tuple[date, date]:
     year, week = week_str.split("-W")
     monday = datetime.strptime(f"{year}-W{int(week):02d}-1", "%G-W%V-%u").date()
     sunday = monday + timedelta(days=6)
     return monday, sunday
-
-
-def parse_inbound_item(raw: str | None) -> dict:
-    """
-    이동물품 파싱.
-    형식: "PT3137-사각스티커_화이트 || PNA35889_어텐션스포츠보틀 || 에이원지식산업센터"
-    """
-    if not raw:
-        return {"parts_code": "", "parts_name": "", "project_code": "", "project_name": "", "center": ""}
-
-    parts = [p.strip() for p in raw.split(" || ")]
-    parts_full = parts[0] if parts else ""
-    dash_idx = parts_full.find("-")
-    if dash_idx != -1:
-        parts_code = parts_full[:dash_idx]
-        parts_name = parts_full[dash_idx + 1:]
-    else:
-        parts_code = parts_full
-        parts_name = ""
-
-    project_full = parts[1] if len(parts) > 1 else ""
-    under_idx = project_full.find("_")
-    if under_idx != -1:
-        project_code = project_full[:under_idx]
-        project_name = project_full[under_idx + 1:]
-    else:
-        project_code = project_full
-        project_name = ""
-
-    return {
-        "parts_code":   parts_code,
-        "parts_name":   parts_name,
-        "project_code": project_code,
-        "project_name": project_full[under_idx + 1:] if under_idx != -1 else project_full,
-        "center":       parts[2] if len(parts) > 2 else "",
-    }
 
 
 # ── 메인 ────────────────────────────────────────────────────────────────────
