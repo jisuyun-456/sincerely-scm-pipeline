@@ -80,6 +80,9 @@ def patch_batch(url, headers, batch):
             time.sleep(0.25)
             if r.ok:
                 return len(batch), 0
+            if r.status_code in (429, 500, 502, 503) and attempt < 2:
+                time.sleep(30 * (attempt + 1))
+                continue
             print(f"  ERROR {r.status_code}: {r.text[:120]}", flush=True)
             return 0, len(batch)
         except requests.exceptions.ConnectionError:
