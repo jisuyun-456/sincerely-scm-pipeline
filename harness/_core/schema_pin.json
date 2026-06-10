@@ -1333,6 +1333,10 @@
         "fld9YtjtpiOiZHJKu": {
           "name": "wave_updated_at",
           "type": "dateTime"
+        },
+        "fldRQxI4HOWydlwEh": {
+          "name": "CBM_유효",
+          "type": "formula"
         }
       }
     },
