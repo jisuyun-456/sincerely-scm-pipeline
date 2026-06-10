@@ -14,7 +14,12 @@ from __future__ import annotations
 import math
 import re
 
+from harness.backbone.keys import PNA_RE, normalize_goods
 from harness.settlement.cbm_calc import match_product
+
+# kit-CBM 폴백 (P2b Task 2b.3): ItemMaster.출처 → 자식 part CBM 신뢰도
+_KIT_SRC_CONF = {"TMS_Product": 1.0, "박스유도": 0.9, "MES_제품DB": 0.8, "수기": 0.7, "미등록": 0.0}
+KIT_CONF_CAP = 0.8  # Product 직접조인(0.9~1.0)보다 항상 낮게 — 신뢰도 사다리 정렬 (spec §6-2)
 
 # Thousand-separator: '1,000' → '1000' (digit-comma-three-digits, not in larger run)
 _THOUSANDS_COMMA = re.compile(r"(\d),(?=\d{3}(?!\d))")
@@ -197,35 +202,92 @@ def estimate_shipment_cbm(shipment: dict, lookup: dict) -> dict:
     }
 
 
+def build_kit_cbm_lookup(
+    bom_fields, item_master: dict, name_to_code: dict
+) -> dict[tuple[str, str], tuple[float, float]]:
+    """{(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.
+
+    bom_fields: WMS_BOM fields dicts. item_master: {PT: (CBM_개당_m3, 출처)}.
+    name_to_code: normalize_goods(굿즈명) → 견적코드 (sync_item 브릿지).
+    완전 키트만(전 소품목 CBM>0·소요량>0). conf = min(출처 신뢰도)*0.9, 상한 0.8.
+    """
+    groups: dict[tuple[str, str], list] = {}
+    for f in bom_fields:
+        m = PNA_RE.search(str(f.get("프로젝트코드") or ""))
+        gname = str(f.get("모품목_굿즈명") or "").strip()
+        pt = str(f.get("소품목_PT") or "").strip()
+        if not m or not gname or not pt:
+            continue
+        groups.setdefault((m.group(0), gname), []).append((pt, f.get("소요량_개당")))
+    out: dict[tuple[str, str], tuple[float, float]] = {}
+    for (pna, gname) in sorted(groups):
+        code = name_to_code.get(normalize_goods(gname))
+        if not code:
+            continue
+        key = (pna, str(code).strip().upper())
+        if key in out:
+            continue
+        total, confs, complete = 0.0, [], True
+        for pt, soyo in groups[(pna, gname)]:
+            entry = item_master.get(pt)
+            try:
+                s = float(soyo)
+            except (TypeError, ValueError):
+                s = 0.0
+            if not entry or entry[0] <= 0 or s <= 0:
+                complete = False
+                break
+            total += s * entry[0]
+            confs.append(_KIT_SRC_CONF.get(entry[1], 0.7))
+        if complete and total > 0:
+            out[key] = (round(total, 6), round(min(min(confs) * 0.9, KIT_CONF_CAP), 2))
+    return out
+
+
 def estimate_shipment_cbm_deterministic(
     project_code: str,
     order_by_project: dict[str, list[tuple[str, float]]],
     lookup: dict,
     shipment_count: dict[str, int],
+    kit_lookup: dict | None = None,
 ) -> dict:
     """결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.
 
     다차 출하 프로젝트(95% 예외)는 partial_skip(중복합산 방지) — 1출하 프로젝트만 기록.
     blank project_code/no order는 호출측에서 기존 퍼지 estimate_shipment_cbm 폴백.
-    Returns dict: {estimated_cbm, confidence, mode, matched(codes), unmatched(codes)}.
+    kit_lookup: {(PNA, 견적코드): (kit_cbm_per_unit, conf)} — Product CBM 부재 시만 적용
+    (이중계상 가드: direct 우선). kit 사용 시 confidence ≤ 0.8.
+    Returns dict: {estimated_cbm, confidence, mode, matched, unmatched, kit_used}.
     """
     if shipment_count.get(project_code, 0) > 1:
         return {"estimated_cbm": 0.0, "confidence": 0.0, "mode": "partial_skip",
-                "matched": [], "unmatched": []}
+                "matched": [], "unmatched": [], "kit_used": []}
     lines = order_by_project.get(project_code)
     if not lines:
         return {"estimated_cbm": 0.0, "confidence": 0.0, "mode": "no_order",
-                "matched": [], "unmatched": []}
+                "matched": [], "unmatched": [], "kit_used": []}
     total = 0.0
     matched: list[str] = []
     unmatched: list[str] = []
+    kit_used: list[str] = []
+    kit_confs: list[float] = []
     for code, qty in lines:
         e = lookup.get(str(code).lower())
         if e and e["cbm_per_box"] > 0 and qty > 0:
             total += math.ceil(qty / e["qty_per_box"]) * e["cbm_per_box"]
             matched.append(code)
+            continue
+        k = (kit_lookup or {}).get((project_code, str(code).upper()))
+        if k and qty > 0:
+            total += qty * k[0]
+            matched.append(code)
+            kit_used.append(code)
+            kit_confs.append(k[1])
         else:
             unmatched.append(code)
     conf = 1.0 if matched and not unmatched else (0.7 if matched else 0.0)
+    if kit_confs:
+        conf = min(conf, min(kit_confs))
     return {"estimated_cbm": round(total, 4), "confidence": conf,
-            "mode": "deterministic", "matched": matched, "unmatched": unmatched}
+            "mode": "deterministic", "matched": matched, "unmatched": unmatched,
+            "kit_used": kit_used}

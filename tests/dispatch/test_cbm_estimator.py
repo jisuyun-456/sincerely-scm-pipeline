@@ -12,6 +12,7 @@ from __future__ import annotations
 import pytest
 
 from harness.dispatch.cbm_estimator import (
+    build_kit_cbm_lookup,
     estimate_shipment_cbm,
     estimate_shipment_cbm_deterministic,
     parse_product_lines_v2,
@@ -62,6 +63,68 @@ class TestEstimateDeterministic:
         assert r["confidence"] == 0.7
         assert r["matched"] == ["SBAT"] and r["unmatched"] == ["NOPE"]
         assert abs(r["estimated_cbm"] - 0.0201) < 1e-6  # ceil(19/19)*0.0201
+
+
+# ──────────────────────────── kit-CBM 폴백 (P2b) ─────────────────────────────
+
+_BOM_FIELDS = [
+    {"프로젝트코드": "PNA100_x", "모품목_굿즈명": "키트A", "소품목_PT": "PT1111", "소요량_개당": 2},
+    {"프로젝트코드": "PNA100_x", "모품목_굿즈명": "키트A", "소품목_PT": "PT2222", "소요량_개당": 1},
+    {"프로젝트코드": "PNA100_x", "모품목_굿즈명": "불완전", "소품목_PT": "PT3333", "소요량_개당": 1},
+    {"프로젝트코드": "PNA100_x", "모품목_굿즈명": "소요량없음", "소품목_PT": "PT1111", "소요량_개당": None},
+]
+_ITEM_MASTER = {
+    "PT1111": (0.001, "TMS_Product"),
+    "PT2222": (0.002, "박스유도"),
+    # PT3333: CBM 없음 → '불완전' 그룹 제외
+}
+_NAME2CODE = {"키트A": "KIT-A", "불완전": "X-1", "소요량없음": "X-2"}
+
+
+class TestBuildKitCbmLookup:
+    def test_complete_kit_only(self):
+        kit = build_kit_cbm_lookup(_BOM_FIELDS, _ITEM_MASTER, _NAME2CODE)
+        assert set(kit) == {("PNA100", "KIT-A")}
+        cbm, conf = kit[("PNA100", "KIT-A")]
+        assert abs(cbm - (2 * 0.001 + 1 * 0.002)) < 1e-9
+        # min(1.0, 0.9) * 0.9 = 0.81 → 상한 0.8
+        assert conf == 0.8
+
+    def test_confidence_below_cap(self):
+        bom = [{"프로젝트코드": "PNA200", "모품목_굿즈명": "g", "소품목_PT": "PT1", "소요량_개당": 1}]
+        kit = build_kit_cbm_lookup(bom, {"PT1": (0.005, "수기")}, {"g": "G-1"})
+        assert kit[("PNA200", "G-1")][1] == 0.63  # 0.7 * 0.9
+
+    def test_unknown_goods_code_skipped(self):
+        bom = [{"프로젝트코드": "PNA300", "모품목_굿즈명": "미등록굿즈", "소품목_PT": "PT1", "소요량_개당": 1}]
+        assert build_kit_cbm_lookup(bom, {"PT1": (0.005, "TMS_Product")}, {}) == {}
+
+
+_DET_KIT_LOOKUP = {("PNA100", "KIT-A"): (0.004, 0.8)}
+
+
+class TestDeterministicKitFallback:
+    def test_kit_fallback_applied_when_product_missing(self):
+        res = estimate_shipment_cbm_deterministic(
+            "PNA100", {"PNA100": [("KIT-A", 10)]}, {}, {"PNA100": 1},
+            kit_lookup=_DET_KIT_LOOKUP)
+        assert res["estimated_cbm"] == 0.04   # 10 * 0.004 (박스 패킹 없음)
+        assert res["confidence"] == 0.8
+        assert res["kit_used"] == ["KIT-A"]
+
+    def test_product_direct_wins_over_kit(self):
+        lookup = {"kit-a": {"rec_id": "r", "name": "키트A", "code": "KIT-A",
+                            "box_type": "", "qty_per_box": 10, "cbm_per_box": 0.05}}
+        res = estimate_shipment_cbm_deterministic(
+            "PNA100", {"PNA100": [("KIT-A", 10)]}, lookup, {"PNA100": 1},
+            kit_lookup=_DET_KIT_LOOKUP)
+        assert res["estimated_cbm"] == 0.05   # 이중계상 가드: direct 우선
+        assert res["kit_used"] == [] and res["confidence"] == 1.0
+
+    def test_backward_compat_without_kit_lookup(self):
+        res = estimate_shipment_cbm_deterministic(
+            "PNA100", {"PNA100": [("KIT-A", 10)]}, {}, {"PNA100": 1})
+        assert res["estimated_cbm"] == 0.0 and res["unmatched"] == ["KIT-A"]
 
 
 # ────────────────────────── parse_product_lines_v2 ──────────────────────────
