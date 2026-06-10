@@ -21,6 +21,8 @@ TABLES: dict[str, list[dict]] = {
         {"name": "매칭신뢰도", "type": "number", "options": {"precision": 2}},
         {"name": "검증상태", "type": "singleSelect",
          "options": {"choices": [{"name": "미검증"}, {"name": "확정"}, {"name": "보류"}]}},
+        {"name": "출처", "type": "singleSelect",
+         "options": {"choices": [{"name": "mes_crosswalk"}]}},  # blank = P1 bootstrap
     ],
     "WMS_ItemMaster": [
         {"name": "품목키", "type": "singleLineText"},           # primary (PT#### or 굿즈명)
