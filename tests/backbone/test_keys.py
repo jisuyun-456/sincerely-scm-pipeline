@@ -1,7 +1,7 @@
 """키 추출·정규화 순수 함수 테스트."""
 from harness.backbone.keys import (
     extract_pt, parse_goods, normalize_goods, is_service, compute_soyoryang,
-    resolve_goods_code, build_pkg_goods_map,
+    resolve_goods_code, build_pkg_goods_map, extract_pts, build_mes_crosswalk_rows,
 )
 
 
@@ -133,3 +133,54 @@ class TestBuildPkgGoodsMap:
                 {"프로젝트 코드 (PK) (from project)": "PNA4_a",
                  "주문 굿즈 리스트 (자동) (from project)": "심볼아크릴트로피 5"}]
         assert build_pkg_goods_map(rows, self.N2C) == {"PNA4": "SSSV"}
+
+
+class TestExtractPts:
+    def test_multiple_unique_order_preserved(self):
+        assert extract_pts("PT1234 외 PT5678, PT1234 재투입") == ["PT1234", "PT5678"]
+
+    def test_empty_and_none(self):
+        assert extract_pts("") == []
+        assert extract_pts(None) == []
+
+    def test_short_digits_not_matched(self):
+        assert extract_pts("PT99 PT123456") == ["PT123456"]
+
+
+class TestBuildMesCrosswalkRows:
+    def test_part_in_wms(self):
+        rows, stats = build_mes_crosswalk_rows(
+            {"PT1234"}, {}, set(), {"PT1234"}, set())
+        assert rows == [{
+            "표준키": "PT1234", "키유형": "파츠", "TMS_견적코드": "",
+            "WMS_아이템코드": "PT1234", "MES_파츠코드": "PT1234",
+            "매칭방식": "정확", "매칭신뢰도": 1.0, "검증상태": "확정",
+            "출처": "mes_crosswalk",
+        }]
+        assert stats["parts_in_wms"] == 1 and stats["parts_new"] == 1
+
+    def test_part_not_in_wms_unverified(self):
+        rows, _ = build_mes_crosswalk_rows({"PT777777"}, {}, set(), set(), set())
+        assert rows[0]["WMS_아이템코드"] == "" and rows[0]["검증상태"] == "미검증"
+        assert rows[0]["매칭신뢰도"] == 0.5
+
+    def test_existing_key_skipped(self):
+        rows, stats = build_mes_crosswalk_rows(
+            {"PT1234"}, {"굿즈A": "AB-1"}, {"PT1234", "굿즈A"}, {"PT1234"}, {"ab-1"})
+        assert rows == []
+        assert stats["parts_already"] == 1 and stats["goods_already"] == 1
+
+    def test_goods_code_in_tms(self):
+        rows, stats = build_mes_crosswalk_rows(
+            set(), {"굿즈A": "ab-1 "}, set(), set(), {"ab-1"})
+        assert rows[0]["TMS_견적코드"] == "AB-1"
+        assert rows[0]["검증상태"] == "확정" and rows[0]["매칭신뢰도"] == 1.0
+        assert stats["goods_code_in_tms"] == 1
+
+    def test_goods_code_not_in_tms_held(self):
+        rows, _ = build_mes_crosswalk_rows(set(), {"굿즈B": "ZZ-9"}, set(), set(), set())
+        assert rows[0]["검증상태"] == "보류" and rows[0]["매칭방식"] == "수기"
+
+    def test_goods_without_code_skipped(self):
+        rows, stats = build_mes_crosswalk_rows(set(), {"굿즈C": ""}, set(), set(), set())
+        assert rows == [] and stats["goods_no_code"] == 1

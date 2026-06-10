@@ -73,6 +73,65 @@ def resolve_goods_code(
     return None, "none"
 
 
+def extract_pts(text) -> list[str]:
+    """텍스트 내 모든 PT#### 코드 (중복 제거, 등장 순서 유지)."""
+    if not text:
+        return []
+    return list(dict.fromkeys(PT_RE.findall(str(text))))
+
+
+def build_mes_crosswalk_rows(
+    mes_parts: set[str],
+    mes_goods: dict[str, str],
+    existing_keys: set[str],
+    wms_item_keys: set[str],
+    product_codes: set[str],
+) -> tuple[list[dict], dict]:
+    """MES 키 → WMS_KeyCrosswalk 신규행 + 매칭 stats. INSERT-only(기존 표준키 스킵).
+
+    mes_goods: MES 제품명 → 굿즈코드(by DB). product_codes: TMS 견적코드(lower).
+    행 출처='mes_crosswalk' 태깅 (rollback 식별 마커).
+    """
+    rows: list[dict] = []
+    stats = {"parts_total": len(mes_parts), "parts_already": 0, "parts_in_wms": 0,
+             "parts_new": 0, "goods_total": len(mes_goods), "goods_already": 0,
+             "goods_no_code": 0, "goods_code_in_tms": 0, "goods_new": 0}
+    for pt in sorted(mes_parts):
+        if pt in existing_keys:
+            stats["parts_already"] += 1
+            continue
+        in_wms = pt in wms_item_keys
+        if in_wms:
+            stats["parts_in_wms"] += 1
+        stats["parts_new"] += 1
+        rows.append({
+            "표준키": pt, "키유형": "파츠", "TMS_견적코드": "",
+            "WMS_아이템코드": pt if in_wms else "", "MES_파츠코드": pt,
+            "매칭방식": "정확", "매칭신뢰도": 1.0 if in_wms else 0.5,
+            "검증상태": "확정" if in_wms else "미검증", "출처": "mes_crosswalk",
+        })
+    for name in sorted(mes_goods):
+        code = str(mes_goods[name] or "").strip().upper()
+        if name in existing_keys:
+            stats["goods_already"] += 1
+            continue
+        if not code:
+            stats["goods_no_code"] += 1
+            continue
+        in_tms = code.lower() in product_codes
+        if in_tms:
+            stats["goods_code_in_tms"] += 1
+        stats["goods_new"] += 1
+        rows.append({
+            "표준키": name, "키유형": "굿즈", "TMS_견적코드": code,
+            "WMS_아이템코드": "", "MES_파츠코드": "",
+            "매칭방식": "정확" if in_tms else "수기",
+            "매칭신뢰도": 1.0 if in_tms else 0.5,
+            "검증상태": "확정" if in_tms else "보류", "출처": "mes_crosswalk",
+        })
+    return rows, stats
+
+
 def build_pkg_goods_map(pkg_rows, name_to_code: dict[str, str]) -> dict[str, str]:
     """pkg_schedule fields-dict 목록 + sync_item 굿즈명→굿즈코드 → {PNA: 견적코드}.
     pkg_schedule에는 굿즈코드 필드가 없어 굿즈명을 sync_item으로 브릿지.
