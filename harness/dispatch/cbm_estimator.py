@@ -18,7 +18,8 @@ from harness.backbone.keys import PNA_RE, normalize_goods
 from harness.settlement.cbm_calc import match_product
 
 # kit-CBM 폴백 (P2b Task 2b.3): ItemMaster.출처 → 자식 part CBM 신뢰도
-_KIT_SRC_CONF = {"TMS_Product": 1.0, "박스유도": 0.9, "MES_제품DB": 0.8, "수기": 0.7, "미등록": 0.0}
+_KIT_SRC_CONF = {"TMS_Product": 1.0, "박스유도": 0.9, "MES_제품DB": 0.8, "수기": 0.7, "미등록": 0.0,
+                 "치수파싱": 0.55, "QC버킷": 0.40}  # P3' part_cbm 백필 출처 (spec §6 2축치수·QC버킷)
 KIT_CONF_CAP = 0.8  # Product 직접조인(0.9~1.0)보다 항상 낮게 — 신뢰도 사다리 정렬 (spec §6-2)
 
 # Thousand-separator: '1,000' → '1000' (digit-comma-three-digits, not in larger run)

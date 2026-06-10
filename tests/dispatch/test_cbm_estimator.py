@@ -99,6 +99,14 @@ class TestBuildKitCbmLookup:
         bom = [{"프로젝트코드": "PNA300", "모품목_굿즈명": "미등록굿즈", "소품목_PT": "PT1", "소요량_개당": 1}]
         assert build_kit_cbm_lookup(bom, {"PT1": (0.005, "TMS_Product")}, {}) == {}
 
+    def test_part_cbm_backfill_sources_conf(self):
+        # P3' part_cbm 백필 출처 — 치수파싱 0.55·QC버킷 0.40이 kit conf에 반영
+        bom = [{"프로젝트코드": "PNA400", "모품목_굿즈명": "g", "소품목_PT": "PT1", "소요량_개당": 1}]
+        kit = build_kit_cbm_lookup(bom, {"PT1": (0.005, "치수파싱")}, {"g": "G-1"})
+        assert kit[("PNA400", "G-1")][1] == 0.5   # 0.55 * 0.9
+        kit = build_kit_cbm_lookup(bom, {"PT1": (0.005, "QC버킷")}, {"g": "G-1"})
+        assert kit[("PNA400", "G-1")][1] == 0.36  # 0.40 * 0.9
+
 
 _DET_KIT_LOOKUP = {("PNA100", "KIT-A"): (0.004, 0.8)}
 

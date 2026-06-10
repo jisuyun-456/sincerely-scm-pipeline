@@ -36,7 +36,8 @@ TABLES: dict[str, list[dict]] = {
         {"name": "박스당_CBM_m3", "type": "number", "options": {"precision": 4}},
         {"name": "출처", "type": "singleSelect",
          "options": {"choices": [{"name": "TMS_Product"}, {"name": "박스유도"},
-                                 {"name": "MES_제품DB"}, {"name": "수기"}]}},
+                                 {"name": "MES_제품DB"}, {"name": "수기"},
+                                 {"name": "치수파싱"}, {"name": "QC버킷"}]}},  # P3' part_cbm 백필
     ],
     "WMS_BOM": [
         {"name": "BOM_ID", "type": "singleLineText"},          # primary (project_굿즈_PT)
