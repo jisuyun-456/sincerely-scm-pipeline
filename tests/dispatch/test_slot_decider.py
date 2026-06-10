@@ -54,6 +54,8 @@ class TestMapWindowToSlot:
         (TimeWindow(18.0, 22.0), '야간'),
         (TimeWindow(9.0, 18.0), '무관'),  # span >= 6
         (TimeWindow(10.0, 19.0, is_split=True), '무관'),
+        # Airtable 배송슬롯 선택지는 후행 공백 포함 — 불일치 시 PATCH 422 (2026-06-09~10 cron 3연속 실패 원인)
+        (TimeWindow(12.0, 13.0), '특정시간 (희망수령시간 확인) '),
     ])
     def test_window_to_slot(self, w, expected):
         assert map_window_to_slot(w) == expected

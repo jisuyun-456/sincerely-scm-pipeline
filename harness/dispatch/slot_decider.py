@@ -69,7 +69,8 @@ def map_window_to_slot(w: TimeWindow) -> str:
     if w.start_h >= 18:
         return '야간'
     if span < 2:
-        return '특정시간 (희망수령시간 확인)'
+        # Airtable Shipment.배송슬롯 선택지가 후행 공백 포함 — 문자열 불일치 시 PATCH 422
+        return '특정시간 (희망수령시간 확인) '
     return '무관'
 
 
