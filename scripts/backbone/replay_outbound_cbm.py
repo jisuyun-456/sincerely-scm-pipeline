@@ -115,9 +115,17 @@ def build_inputs():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--write", action="store_true", help="live PATCH estimated_cbm (CHECKPOINT 후)")
+    ap.add_argument("--recent", type=int, default=0,
+                    help="최근 N일 shipment만 측정 (createdTime 기준; order 미러 커버리지 window forward-coverage 측정용)")
     args = ap.parse_args()
 
     lk, obp, scount, ships = build_inputs()
+    full = len(ships)
+    if args.recent:
+        from datetime import timedelta
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=args.recent)).isoformat()
+        ships = [r for r in ships if r.get("createdTime", "") >= cutoff]
+        print(f"\n[--recent {args.recent}d] {full} → {len(ships)}건 (createdTime ≥ {cutoff[:10]})", flush=True)
     total = len(ships)
     print(f"\n=== Shipment {total}건 결정론 replay ===", flush=True)
 
