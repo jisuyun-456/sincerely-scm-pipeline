@@ -29,6 +29,9 @@ from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 from harness.dispatch.cbm_estimator import (  # noqa: E402
     estimate_shipment_cbm_deterministic, estimate_shipment_cbm,
 )
+from harness.backbone.keys import (  # noqa: E402
+    resolve_goods_code, build_pkg_goods_map, normalize_goods,
+)
 
 load_dotenv()
 TP = os.environ["AIRTABLE_PAT"]
@@ -37,6 +40,8 @@ TMS = "app4x70a8mOrIKsMf"
 WMS = "appLui4ZR5HWcQRri"
 SHIP = "tbllg1JoHclGYer7m"
 ORDER = "tblJslWg8sYEdCkXw"
+PKG_SCHED = "tblae2NqJaexwjN9R"   # WMS ⚡pkg_schedule mirror (굿즈코드 필드 없음 — 굿즈명만)
+SYNC_ITEM = "tblwnNgHQxZ0WhDBh"   # WMS ⚡sync_item (굿즈명→굿즈코드 브릿지)
 PNA = re.compile(r"PNA\d+")
 WRITE_TOL = 1e-4  # idempotency: 기존 estimated_cbm와 이 이내면 skip
 
@@ -85,21 +90,49 @@ def patch_batch(url, headers, batch):
     return 0, len(batch)
 
 
+def build_pkg_fallback():
+    """sync_item 굿즈명→굿즈코드 + pkg_schedule → {PNA: 견적코드} (단일 코드 프로젝트만)."""
+    print("pkg_schedule 폴백 맵 로딩...", flush=True)
+    items = fetch(WMS, SYNC_ITEM, WP, ["굿즈명", "굿즈코드"])
+    name2code = {}
+    for r in items:
+        f = r["fields"]
+        nm = normalize_goods(str(f.get("굿즈명") or ""))
+        cd = str(f.get("굿즈코드") or "").strip().upper()
+        if nm and cd:
+            name2code[nm] = cd
+    pkgs = fetch(WMS, PKG_SCHED, WP, [
+        "프로젝트 코드 (PK) (from project)",
+        "주문 굿즈 리스트 (자동) (from project)",
+        "단품 굿즈 품목 및 수량",
+    ])
+    pkg_map = build_pkg_goods_map((r["fields"] for r in pkgs), name2code)
+    print(f"  pkg 폴백 맵: {len(pkg_map)} 프로젝트 (sync_item 매핑 {len(name2code)}건)", flush=True)
+    return pkg_map
+
+
 def build_inputs():
     """order_by_project[PNA]=[(code,qty)], shipment_count[PNA]=N, + Product lookup."""
     print("Product 룩업 로딩...", flush=True)
     lk = load_product_lookup({"Authorization": f"Bearer {TP}"})
     print("order 로딩...", flush=True)
     orders = fetch(WMS, ORDER, WP, ["project_code", "굿즈코드 (from sync_itemdb)", "주문수량"])
+    pkg_map = build_pkg_fallback()
     opg = collections.defaultdict(collections.Counter)
+    src_count = collections.Counter()
     for r in orders:
         f = r["fields"]
         m = PNA.search(str(f.get("project_code") or ""))
-        code = f.get("굿즈코드 (from sync_itemdb)")
-        if isinstance(code, list):
-            code = code[0] if code else ""
-        if m and code:
-            opg[m.group(0)][str(code).upper()] += n(f.get("주문수량"))
+        if not m:
+            continue
+        code, src = resolve_goods_code(f, pkg_map)
+        src_count[src] += 1
+        if code:
+            opg[m.group(0)][code] += n(f.get("주문수량"))
+    blank_total = src_count["pkg"] + src_count["none"]
+    rate = src_count["pkg"] / blank_total * 100 if blank_total else 0.0
+    print(f"  굿즈코드 리졸브: direct={src_count['direct']} pkg폴백={src_count['pkg']} "
+          f"미회수={src_count['none']} (blank-code 회수율 {rate:.1f}%)", flush=True)
     order_by_project = {pna: list(c.items()) for pna, c in opg.items()}
     print("shipment 로딩...", flush=True)
     ships = fetch(TMS, SHIP, TP, ["project code", "Total_CBM", "estimated_cbm",
