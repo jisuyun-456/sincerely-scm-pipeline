@@ -29,6 +29,19 @@ def _first(v):
     return v[0] if isinstance(v, list) and v else ("" if isinstance(v, list) else v)
 
 
+# sync_parts.파츠 유형 → WMS_BOM.구성유형 (P3' T5). Phantom = 물리 구성품 아님,
+# '키트'는 모품목 구조 속성이라 파츠유형에서 파생 불가 — 미매핑(None) 리포트.
+_PARTTYPE_TO_COMPONENT = {
+    "Product Parts": "원부자재",
+    "Package Parts": "포장재",
+    "Printing Parts": "임가공",
+}
+
+
+def map_parttype_to_component(parttype: str | None) -> str | None:
+    return _PARTTYPE_TO_COMPONENT.get(parttype or "")
+
+
 def build_bom_rows(order_records: list[dict]) -> list[BomRow]:
     rows: list[BomRow] = []
     for rec in order_records:

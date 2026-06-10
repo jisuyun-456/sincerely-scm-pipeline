@@ -37,3 +37,15 @@ class TestBuildBomRows:
         recs = [_rec("PNA2", "키트 50", "PT100-볼트", 100)]
         rows = build_bom_rows(recs)
         assert rows[0].bom_id == "PNA2_키트_PT100"
+
+
+# ── 구성유형 매핑 (P3' T5) ───────────────────────────────────────────────────
+def test_map_parttype_to_component():
+    from harness.backbone.bom_bootstrap import map_parttype_to_component
+    assert map_parttype_to_component("Product Parts") == "원부자재"
+    assert map_parttype_to_component("Package Parts") == "포장재"
+    assert map_parttype_to_component("Printing Parts") == "임가공"
+    # Phantom = 물리 구성품 아님, 키트는 파생 불가 — 추측 금지
+    assert map_parttype_to_component("Phantom Parts") is None
+    assert map_parttype_to_component("") is None
+    assert map_parttype_to_component(None) is None
