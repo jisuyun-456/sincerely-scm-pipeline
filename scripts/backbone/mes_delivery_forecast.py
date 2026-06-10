@@ -26,8 +26,8 @@ MP = os.environ.get("AIRTABLE_MES_PAT") or sys.exit(
 WP = os.environ["AIRTABLE_WMS_PAT"]
 TP = os.environ["AIRTABLE_PAT"]
 MES = "appNSAPadsHbfaSHv"
-MES_V2 = "tblg96ys2vfPdyxHq"    # MES ver.2.0 (primary)
-MES_V1 = "tbljL0OqDoRW0Y5aD"    # MES 구버전 (cross-check)
+MES_V2 = "tblg96ys2vfPdyxHq"    # MES ver.2.0 (primary — 2026 현행. 구버전 tbljL0OqDoRW0Y5aD는
+                                # 2025 이전 이력 2,283행, 실사 2026-06-10 — forecast 미사용)
 WMS = "appLui4ZR5HWcQRri"
 SYNC_ITEM = "tblwnNgHQxZ0WhDBh"   # sync_item (read-only ⚡미러, 굿즈명→굿즈코드 브릿지)
 
@@ -52,7 +52,6 @@ def fetch(base, tid, pat, fields):
 def main():
     print("로딩: MES ver2.0 / sync_item 브릿지 / TMS Product...")
     mes = fetch(MES, MES_V2, MP, ["굿즈", "계획수량", "납기일", "작업 상태"])
-    mes_v1 = fetch(MES, MES_V1, MP, ["납기일"])
     items = fetch(WMS, SYNC_ITEM, WP, ["굿즈명", "굿즈코드"])
     name2code = {}
     for r in items:
@@ -67,15 +66,15 @@ def main():
         code = str(e.get("code") or "").strip().upper()
         if code and e.get("cbm_per_box", 0) > 0:
             product_by_code[code] = (e.get("qty_per_box") or 1, e["cbm_per_box"])
-    print(f"  MES v2 {len(mes)}행 (구버전 {len(mes_v1)}행 참고) / "
-          f"브릿지 {len(name2code)}건 / Product 코드 {len(product_by_code)}건")
+    print(f"  MES v2 {len(mes)}행 / 브릿지 {len(name2code)}건 / "
+          f"Product 코드 {len(product_by_code)}건")
 
     out = build_inbound_forecast(
         [r["fields"] for r in mes], name2code, product_by_code, date.today())
 
     print("\n=== MES 납기일 입하 CBM forecast ===")
     print(f"대상 {out['n_total']}행 | 완료 제외 {out['n_excluded_status']} | "
-          f"join 성공 {out['n_joined']} | 코드 미매칭 {out['n_unmatched_code']} | "
+          f"join 성공(horizon 무관) {out['n_joined']} | 코드 미매칭 {out['n_unmatched_code']} | "
           f"납기일 없음 {out['n_no_date']} | 과거 납기 {out['n_past_due']} | "
           f"CBM 부재 {out['n_no_cbm']}")
     for h, cbm in sorted(out["by_horizon"].items()):

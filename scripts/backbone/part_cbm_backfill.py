@@ -164,14 +164,15 @@ def main():
 
     resolved = stats["치수파싱_sp"] + stats["치수파싱_mov"] + stats["QC버킷"]
     n_pt = len(pt_rows)
+    scope_rate = resolved / len(scope) * 100 if scope else 0.0
+    cov_rate = (n_pt - len(scope) + resolved) / n_pt * 100 if n_pt else 0.0
     print("\n=== ItemMaster 파츠 CBM 백필 (PT행 기준) ===")
     print(f"PT행 {n_pt} | 스코프 {len(scope)} (기존 실측 불가침 {untouchable})")
-    print(f"해소: {resolved}/{len(scope)} ({resolved / len(scope) * 100:.1f}%)"
+    print(f"해소: {resolved}/{len(scope)} ({scope_rate:.1f}%)"
           f" — 치수파싱 sp {stats['치수파싱_sp']} + mov {stats['치수파싱_mov']}"
           f" / QC버킷 {stats['QC버킷']} (분류 소스 부재 — dormant)")
     print(f"미산출: 규격없음 {stats['미산출_규격없음']} / 파싱실패 {stats['미산출_파싱실패']}")
-    print(f"PT CBM 커버리지: {n_pt - len(scope) + resolved}/{n_pt}"
-          f" ({(n_pt - len(scope) + resolved) / n_pt * 100:.1f}%)")
+    print(f"PT CBM 커버리지: {n_pt - len(scope) + resolved}/{n_pt} ({cov_rate:.1f}%)")
     print(f"해소분 QC버킷 분포(참고): 소 {bucket_dist['소']} / 중 {bucket_dist['중']} / 대 {bucket_dist['대']}")
     if reject_samples:
         print("파싱실패 샘플:", "; ".join(f"{p}:'{s}'" for p, s in reject_samples))
