@@ -845,11 +845,11 @@
     {
       "id": "CBM-CAP-P2B",
       "title": "CBM 백본 P2b — MES·task·BOM hop 점등 (크로스워크·task검증·kit-CBM 폴백 46→85%)",
-      "priority": "high",
+      "priority": "done",
       "domain": "wms",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-06-10",
-      "notes": "MES↔PT/굿즈코드 → WMS_KeyCrosswalk + 매칭률 리포트(YAGNI: 크로스워크만) / task 투입자재 vs WMS_BOM 검증·승급(신규 INSERT 금지) / kit-CBM 폴백 Σ(BOM소요량×ItemMaster CBM_개당_m3) — WMS_BOM 1,702행 첫 런타임 소비. P2a 종료 후 착수."
+      "notes": "2026-06-10 완료. 크로스워크 67행 INSERT(출처='mes_crosswalk', 파츠 hop 66.7%·굿즈 hop 91.2%) / BOM 117행 검증완료 승급(6.9%, INSERT 0) / kit-CBM tier 배선 완료但 dormant(ItemMaster part CBM 218/1309 — P3' part_cbm이 채우면 자동 점등, '46→85%' 전제 불성립: direct 단독 86.7%≥85% PASS) / forward 90d 75.0% 유지 / ride-along: wave cron 422 fix(배송슬롯 후행공백). reviewer 3건 수정·validator PASS 7/7. push는 수동 필요."
     }
   ]
 }
