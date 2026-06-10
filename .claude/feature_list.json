@@ -837,9 +837,10 @@
       "title": "CBM 백본 P2a — 출고 상시화 + pkg hop (replay cron 편입·pkg_schedule tier-2 폴백·schema_pin CBM_유효)",
       "priority": "critical",
       "domain": "wms",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-06-10",
-      "notes": "🔴 deep review: 결정론 estimator 라이브 미편입 → forward 75.1% 즉시 감쇠. wave_recommender.yml에 replay --recent 7 --write step(3×/day) + resolve_goods_code tier-2(blank ~24% 회수 측정) + CBM_유효 핀. 사용자 데이터 불필요. handoff: ~/.claude/plans/cbm-capacity-backbone-p2a-handoff.md"
+      "notes": "🔴 deep review: 결정론 estimator 라이브 미편입 → forward 75.1% 즉시 감쇠. wave_recommender.yml에 replay --recent 7 --write step(3×/day) + resolve_goods_code tier-2(blank ~24% 회수 측정) + CBM_유효 핀. 사용자 데이터 불필요. handoff: ~/.claude/plans/cbm-capacity-backbone-p2a-handoff.md | 2026-06-10 완료: 5커밋(c333724~59f6abd). cron replay --recent 7 --write 편입(+artifact, 429/5xx 재시도). pkg_schedule 굿즈코드 필드 없음 → sync_item 브릿지. 회수 7/33(21.2%); '~24%' 전제 불성립(order blank 0.2%, forward delta +0.0%p). 잔여갭=partial_skip 32.3%·blank project 12.5%(P5/P3'). CBM_유효 fldRQxI4HOWydlwEh 핀. reviewer/validator PASS.",
+      "completed_at": "2026-06-10"
     },
     {
       "id": "CBM-CAP-P2B",
