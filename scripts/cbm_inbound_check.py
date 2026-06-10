@@ -3,8 +3,8 @@ cbm_inbound_check.py
 ─────────────────────────────────────────────────────────────────────────────
 WMS 입하 CBM 산출 스크립트
 
-movement (이동목적=생산산출) 레코드의 제품 규격 × 입하수량으로 CBM 계산.
-제품 규격 없는 경우 sync_parts.규격으로 fallback.
+movement (이동목적 ∈ 외부입하 — 생산산출·재고생산·고객물품, CP② 승인 2026-06-10)
+레코드의 제품 규격 × 입하수량으로 CBM 계산. 제품 규격 없는 경우 sync_parts.규격 fallback.
 
 CBM = 단위 부피(m³) × 입하수량  [근삿값, 포장 오버헤드 미포함]
 
@@ -29,6 +29,8 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from utils.cbm_utils import (  # noqa: E402
+    EXTERNAL_INBOUND_PURPOSES,
+    build_inbound_formula,
     calc_cbm,
     load_sync_parts_lookup,
     parse_date,
@@ -54,8 +56,6 @@ FLD_MOV_SPEC    = "fldiYU7b6Ogf0zm2D"   # 제품 규격 (치수 문자열)
 # sync_parts 필드 ID
 FLD_SP_CODE = "fld8gjySjm4XkCpMc"   # 파츠 코드
 FLD_SP_SPEC = "fldRseOMNseg15D6R"   # 규격
-
-PURPOSE_FILTER  = '"생산산출"'
 
 AIRTABLE_PAT = os.environ.get("AIRTABLE_WMS_PAT", os.environ.get("AIRTABLE_PAT", ""))
 HEADERS = {
@@ -144,13 +144,13 @@ def main():
             print(f"ERROR: 잘못된 주 형식 '{args.week}'. 예: 2026-W21", file=sys.stderr)
             sys.exit(1)
 
-    formula = f"{{{FLD_MOV_PURPOSE}}}={PURPOSE_FILTER}"
+    formula = build_inbound_formula(EXTERNAL_INBOUND_PURPOSES)
     if week_filter:
         formula = f"AND({formula}, {week_filter})"
 
     max_records = 10 if args.dry_run else None
 
-    print(f"조회 중: 이동목적=생산산출, 입하예정일={week_label}")
+    print(f"조회 중: 이동목적={sorted(EXTERNAL_INBOUND_PURPOSES)}, 입하예정일={week_label}")
     if args.dry_run:
         print("  [dry-run] 최대 10건")
 

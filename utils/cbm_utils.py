@@ -42,6 +42,20 @@ from harness.backbone.part_cbm import (  # noqa: F401,E402
     parse_dims_mm,
 )
 
+# 외부입하 이동목적 (CP② 사용자 승인 2026-06-10 — movement 26,051행 프로파일 근거:
+# 실제입하일·입하수량 보유율 생산산출 94.8%/94.7% · 재고생산 93.4%/86.7% · 고객물품 93.1%/96.6%.
+# 재고이동(20.4%)·생산샘플(24.4%)은 내부이동·소수로 제외)
+EXTERNAL_INBOUND_PURPOSES = {"생산산출", "재고생산", "고객물품"}
+
+
+def build_inbound_formula(purposes: set[str], require_actual_date: bool = False) -> str:
+    """이동목적 subset → Airtable filterByFormula (정렬 결정론)."""
+    terms = [f'{{이동목적}}="{p}"' for p in sorted(purposes)]
+    formula = terms[0] if len(terms) == 1 else f"OR({', '.join(terms)})"
+    if require_actual_date:
+        formula = f'AND({formula}, {{실제입하일}}!="")'
+    return formula
+
 AIRTABLE_PAT = os.environ.get("AIRTABLE_WMS_PAT", os.environ.get("AIRTABLE_PAT", ""))
 
 
@@ -152,11 +166,16 @@ def fetch_inbound_cbm(
     since: date | None = None,
     until: date | None = None,
     week_str: str | None = None,
+    purposes: set[str] | None = None,
+    require_actual_date: bool = False,
 ) -> dict:
     """
-    movement(이동목적=생산산출) 조회 → CBM 집계.
+    movement(이동목적 ∈ purposes) 조회 → CBM 집계.
     since/until: 입하예상일 범위 (inclusive).
     week_str: '2026-W21' 형식이면 since/until 자동 계산.
+    purposes: 이동목적 subset (default {"생산산출"} — 기존 호출자 하위호환.
+              외부입하 전체는 EXTERNAL_INBOUND_PURPOSES).
+    require_actual_date: True면 실제입하일 NOT BLANK (입하 실적 subset, spec §6).
 
     Returns:
       total_cbm: float
@@ -174,7 +193,7 @@ def fetch_inbound_cbm(
         since = monday
         until = monday + timedelta(days=6)
 
-    formula = '{이동목적}="생산산출"'
+    formula = build_inbound_formula(purposes or {"생산산출"}, require_actual_date)
     if since and until:
         formula = (
             f"AND({formula}, "
