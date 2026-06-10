@@ -34,6 +34,29 @@ jobs:
       - name: Install dependencies
         run: pip install -r harness/requirements.txt
 
+      - name: Persist outbound estimated_cbm (deterministic replay)
+        continue-on-error: true   # replay 실패가 배차 추천을 막지 않도록
+        shell: bash               # pipefail로 tee 뒤에서도 replay 실패가 step에 드러나도록
+        run: |
+          if [ "${{ github.event.inputs.dry_run || 'false' }}" = "true" ]; then
+            python scripts/backbone/replay_outbound_cbm.py --recent 7 | tee replay_log.txt
+          else
+            python scripts/backbone/replay_outbound_cbm.py --recent 7 --write | tee replay_log.txt
+          fi
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+
+      - name: Upload replay log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: outbound-cbm-replay-log
+          path: replay_log.txt
+          retention-days: 90
+          overwrite: true
+          if-no-files-found: ignore
+
       - name: Run wave recommender
         run: python -m harness.dispatch.wave_recommender
         env:
