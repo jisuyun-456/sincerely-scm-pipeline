@@ -112,15 +112,15 @@ def build_mes_crosswalk_rows(
         })
     for name in sorted(mes_goods):
         code = str(mes_goods[name] or "").strip().upper()
-        if name in existing_keys:
-            stats["goods_already"] += 1
-            continue
         if not code:
             stats["goods_no_code"] += 1
             continue
         in_tms = code.lower() in product_codes
         if in_tms:
-            stats["goods_code_in_tms"] += 1
+            stats["goods_code_in_tms"] += 1  # 해소율 집계는 INSERT 여부와 무관 (재실행 안정)
+        if name in existing_keys:
+            stats["goods_already"] += 1
+            continue
         stats["goods_new"] += 1
         rows.append({
             "표준키": name, "키유형": "굿즈", "TMS_견적코드": code,
