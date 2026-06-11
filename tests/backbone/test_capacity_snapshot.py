@@ -2,8 +2,11 @@
 from datetime import date
 
 from harness.backbone.capacity_snapshot import (
+    EVENT_BOUNDARIES,
+    append_series,
     build_inbound_scheduled,
     build_outbound_forward,
+    build_snapshot,
     normalize_center,
 )
 
@@ -90,3 +93,94 @@ class TestInboundScheduled:
     def test_empty_no_zerodivision(self):
         out = build_inbound_scheduled([], TODAY)
         assert out["coverage_pct"] == 0.0
+
+
+# aggregate_occupied 출력 스키마 그대로 (harness/backbone/storage.py)
+STORAGE_AGG = {
+    "by_warehouse": {"베스트원": {"occupied_cbm": 306.24, "n_rows": 100,
+                                "pt_covered": 135, "pt_uncovered": 166,
+                                "stock_uncovered": 5000.0}},
+    "total_occupied_cbm": 306.24,
+    "pt_coverage_pct": 44.9,
+    "uncovered_pts": [],
+    "n_rows_filtered": 100,
+}
+
+
+def make_snap(mes=None, storage_max=None, staging_max=None):
+    outbound = build_outbound_forward([_ship("2026-06-12", 3.0)], TODAY)
+    inbound = build_inbound_scheduled([_mov("2026-06-12", 1.0)], TODAY)
+    return build_snapshot(TODAY, outbound, STORAGE_AGG, inbound, mes,
+                          storage_max_cbm=storage_max, staging_max_cbm=staging_max,
+                          generated_at="2026-06-11T07:30:00+09:00")
+
+
+class TestSnapshotTrackSeparation:
+    """Gate: 1주문 트랙간 중복 0 — 트랙 간 합산 필드 부재 + boundary 태깅."""
+
+    def test_three_tracks_with_event_boundaries(self):
+        snap = make_snap()
+        assert set(snap["tracks"]) == {"outbound", "storage", "inbound"}
+        for t, b in EVENT_BOUNDARIES.items():
+            assert snap["tracks"][t]["event_boundary"] == b
+
+    def test_no_cross_track_sum_field(self):
+        snap = make_snap()
+        # top-level에 트랙 횡단 합산 키 없음 — 각 트랙 숫자는 자기 입력만 반영
+        assert not any("cbm" in k.lower() or "total" in k.lower() for k in snap)
+        assert snap["tracks"]["outbound"]["forward_total_cbm"] == 3.0
+        assert snap["tracks"]["inbound"]["scheduled_total_cbm"] == 1.0
+        assert snap["tracks"]["storage"]["occupied_total_cbm"] == 306.24
+
+    def test_mes_kept_separate_from_scheduled(self):
+        mes = {"by_horizon": {7: 2.49, 14: 4.83}, "n_joined": 31, "n_total": 100}
+        snap = make_snap(mes=mes)
+        inb = snap["tracks"]["inbound"]
+        assert inb["mes_forecast"]["by_horizon"] == {"7": 2.49, "14": 4.83}
+        assert inb["scheduled_total_cbm"] == 1.0   # MES 미합산
+
+    def test_mes_none_when_pat_missing(self):
+        assert make_snap(mes=None)["tracks"]["inbound"]["mes_forecast"] is None
+
+
+class TestOccupancy:
+    def test_storage_occupancy_with_max(self):
+        snap = make_snap(storage_max={"베스트원": 500.0})
+        wh = snap["tracks"]["storage"]["by_warehouse"]["베스트원"]
+        assert wh["occupancy_pct"] == 61.2          # 306.24/500
+
+    def test_storage_occupancy_none_without_max(self):
+        wh = make_snap()["tracks"]["storage"]["by_warehouse"]["베스트원"]
+        assert wh["max_cbm"] is None and wh["occupancy_pct"] is None
+
+    def test_staging_peak_day(self):
+        snap = make_snap(staging_max={"에이원센터": 57.6})
+        st = snap["tracks"]["inbound"]["staging"]["에이원센터"]
+        assert st["max_cbm"] == 57.6
+        assert st["peak_day_cbm"] == 1.0
+        assert st["peak_day_pct"] == 1.7            # 1.0/57.6
+
+    def test_staging_no_arrivals_zero_not_error(self):
+        snap = make_snap(staging_max={"베스트원": 10.0})  # 베스트원 입하 0건
+        st = snap["tracks"]["inbound"]["staging"]["베스트원"]
+        assert st["peak_day_cbm"] == 0.0 and st["peak_date"] is None
+
+
+class TestAppendSeries:
+    def test_appends_new_date(self):
+        out = append_series([], make_snap())
+        assert len(out) == 1
+
+    def test_replaces_same_date_idempotent(self):
+        s1 = make_snap()
+        s2 = make_snap(mes={"by_horizon": {7: 1.0, 14: 2.0},
+                            "n_joined": 1, "n_total": 1})
+        out = append_series([s1], s2)
+        assert len(out) == 1
+        assert out[0]["tracks"]["inbound"]["mes_forecast"] is not None
+
+    def test_sorted_by_snapshot_date(self):
+        a = dict(make_snap(), snapshot_date="2026-06-12")
+        b = dict(make_snap(), snapshot_date="2026-06-10")
+        out = append_series([a], b)
+        assert [s["snapshot_date"] for s in out] == ["2026-06-10", "2026-06-12"]
