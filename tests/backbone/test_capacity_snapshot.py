@@ -86,6 +86,13 @@ class TestInboundScheduled:
         assert out["n_rows_window"] == 2
         assert out["coverage_pct"] == 50.0
 
+    def test_matched_but_zero_cbm_not_covered(self):
+        # 규격 해소됐어도 qty=0 등으로 CBM 미산출이면 covered 아님 (review fix)
+        recs = [_mov("2026-06-12", 1.0), _mov("2026-06-13", 0.0, src="mov")]
+        out = build_inbound_scheduled(recs, TODAY)
+        assert out["n_rows_window"] == 2
+        assert out["coverage_pct"] == 50.0
+
     def test_dateless_rows_skipped(self):
         out = build_inbound_scheduled([_mov("날짜없음", 1.0)], TODAY)
         assert out["n_rows_window"] == 0

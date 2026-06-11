@@ -59,11 +59,20 @@ def main():
             print("  [DRY-RUN] --write 시 신설")
 
     fields = ["Location_ID"] + (["Max_CBM"] if exists else [])
-    r = requests.get(f"https://api.airtable.com/v0/{WMS}/{LOC}",
-                     headers=HEADERS, timeout=60,
-                     params={"pageSize": 100, "fields[]": fields})
-    r.raise_for_status()
-    locs = {rec["fields"].get("Location_ID"): rec for rec in r.json()["records"]}
+    recs, off = [], None
+    while True:
+        params = {"pageSize": 100, "fields[]": fields}
+        if off:
+            params["offset"] = off
+        r = requests.get(f"https://api.airtable.com/v0/{WMS}/{LOC}",
+                         headers=HEADERS, timeout=60, params=params)
+        r.raise_for_status()
+        d = r.json()
+        recs += d["records"]
+        off = d.get("offset")
+        if not off:
+            break
+    locs = {rec["fields"].get("Location_ID"): rec for rec in recs}
 
     for loc_id, target in SEEDS.items():
         rec = locs.get(loc_id)

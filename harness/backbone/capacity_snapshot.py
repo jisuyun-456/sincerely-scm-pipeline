@@ -10,7 +10,8 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-HORIZON_DAYS = 14   # 사용자 CP 2026-06-11
+HORIZON_DAYS = 14   # 사용자 CP 2026-06-11. 윈도우 = today..today+14 양끝 포함
+                    # (15 캘린더일 — MES forecast의 days<=h 의미론과 정렬)
 
 EVENT_BOUNDARIES = {
     "outbound": "shipment.출하확정일",
@@ -71,7 +72,7 @@ def build_inbound_scheduled(
     """fetch_inbound_cbm records → 윈도우 입하 예정 by_date/by_center.
 
     records: [{exp_date, cbm, spec_src, center}]. coverage_pct 분모 = 윈도우 행 전체,
-    분자 = 규격 해소 성공(spec_src != 'none').
+    분자 = 규격 해소 + CBM>0 산출 성공 (qty=0 등 미산출 행은 covered 아님 — review fix).
     """
     end = today + timedelta(days=horizon_days)
     by_date: dict[str, float] = {}
@@ -82,9 +83,9 @@ def build_inbound_scheduled(
         if d is None or not (today <= d <= end):
             continue
         n_window += 1
-        if r.get("spec_src", "none") != "none":
-            n_matched += 1
         cbm = float(r.get("cbm") or 0)
+        if r.get("spec_src", "none") != "none" and cbm > 0:
+            n_matched += 1
         if cbm <= 0:
             continue
         key = d.isoformat()

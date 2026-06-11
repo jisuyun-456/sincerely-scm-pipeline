@@ -14,6 +14,8 @@ on:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # series commit push (git push || true가 토큰 실패를 삼키므로 명시 필수)
     steps:
       - uses: actions/checkout@v4
 
