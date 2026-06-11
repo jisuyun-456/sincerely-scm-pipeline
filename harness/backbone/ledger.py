@@ -7,12 +7,20 @@ from __future__ import annotations
 
 def build_propagation_row(project_code: str, goods_name: str, order_qty: int,
                           bom_rows: list[dict], cbm_per_unit: float | None,
-                          shipment_id: str) -> dict:
+                          shipment_id: str, *,
+                          shortage_summary: str | None = None,
+                          inbound_cbm_m3: float | None = None,
+                          mh_hours: float | None = None,
+                          storage_projection: str | None = None,
+                          wave_preview: str | None = None,
+                          fare_range: str | None = None,
+                          cascade_run_id: str | None = None,
+                          status: str | None = None) -> dict:
     mat = [f"{b['소품목_PT']}×{int((b.get('소요량_개당') or 0) * order_qty)}"
            for b in bom_rows]
     cbm = round((cbm_per_unit or 0) * order_qty, 4) if cbm_per_unit else None
     has_chain = bool(shipment_id) and cbm is not None and bool(bom_rows)
-    return {
+    row = {
         "전파ID": f"{project_code}_{goods_name}",
         "프로젝트코드": project_code,
         "굿즈명": goods_name,
@@ -21,8 +29,21 @@ def build_propagation_row(project_code: str, goods_name: str, order_qty: int,
         "포장소요_요약": "",
         "추정_CBM_m3": cbm,
         "shipment_id": shipment_id,
-        "전파상태": "완결" if has_chain else ("부분" if (bom_rows or cbm) else "끊김"),
+        "전파상태": status or ("완결" if has_chain else ("부분" if (bom_rows or cbm) else "끊김")),
     }
+    # P6 캐스케이드 트랙 — 전달된 것만 기입 (P6b 필드 신설 전 INSERT가
+    # unknown field로 실패하지 않도록 미전달 키는 행에 없어야 한다)
+    cascade = {
+        "부족자재_요약": shortage_summary,
+        "입하CBM_예상_m3": inbound_cbm_m3,
+        "MH_예상_h": mh_hours,
+        "창고적재_예상": storage_projection,
+        "wave_프리뷰": wave_preview,
+        "운임_예상범위": fare_range,
+        "cascade_실행ID": cascade_run_id,
+    }
+    row.update({k: v for k, v in cascade.items() if v is not None})
+    return row
 
 
 import os

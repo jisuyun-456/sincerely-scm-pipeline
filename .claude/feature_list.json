@@ -882,12 +882,22 @@
     },
     {
       "id": "CBM-CAP-P6A-CORE",
-      "title": "CBM 백본 P6a — 캐스케이드 코어 구현 (mrp.py + order_cascade.py S0~S7 dry-run, TDD)",
+      "title": "CBM 백본 P6a — 캐스케이드 코어 구현 (mrp.py + cascade.py + order_cascade.py S0~S7 dry-run, TDD)",
+      "priority": "high",
+      "status": "done",
+      "domain": "backbone",
+      "created_at": "2026-06-11",
+      "completed_at": "2026-06-11",
+      "notes": "TDD 완료: harness/backbone/mrp.py(8t)+cascade.py 순수 코어(23t — P4 capacity_snapshot 패턴: scripts/ 미임포트라 코어를 harness로)+ledger.py optional 7인자(3t)+orchestrator. 첫 dry-run: 238단위(14d 윈도우) 완결18/부분216/끊김4 — 부분 주인: S3 part CBM 미산출 197(ItemMaster 42.5% 한계)·S5 출하CBM 68. VC-4 수기 5/5 일치(order-derived 폴백 포함)·VC-5 audit 238행 write 0. pytest 397 green·validator 6/6 PASS·reviewer 3건 수정(ZONE_TYPE_STAGING 상수·createdTime warn·수량기준 2원화 문서화)"
+    },
+    {
+      "id": "CBM-CAP-P6B-LIGHTUP",
+      "title": "CBM 백본 P6b — 캐스케이드 점등 (Ledger 필드 7개 신설 + --write 첫 INSERT + cron + Slack digest)",
       "priority": "high",
       "status": "pending",
       "domain": "backbone",
       "created_at": "2026-06-11",
-      "notes": "READY_TO_START. spec §8: ledger.py 확장(optional 인자) + order→shipment-shape 어댑터 단위테스트 필수. gate = pytest green + dry-run 리포트 1회(VC-4·5). handoff: ~/.claude/plans/cbm-capacity-backbone-p6a-handoff.md. P6b(점등: Ledger 필드 7개+--write+cron+Slack)는 P6a 후"
+      "notes": "READY_TO_START. gate = VC-1(실주문 e2e ≤2 tick, createdTime 기준)·VC-2(idempotency — decide_insert unchanged 재실행 0 INSERT)·VC-3(키+출하CBM 커버리지 비퇴행)·VC-6(cron 첫 run). handoff: ~/.claude/plans/cbm-capacity-backbone-p6b-handoff.md. P6a 학습: 첫 --write는 238행 일괄 INSERT 예상·fetch() 오류 핸들링 보강 필요(validator WARN)"
     }
   ]
 }

@@ -55,3 +55,6 @@ docs/인사평가*.md
 # Sub-Spec 2 runtime state (transitions, anomalies, polling snapshot)
 audit_log/
 state/cbm_last_snapshot.json
+
+# P6a order cascade — 리포트는 비영속 (영속 기록 = PropagationLedger, spec §3.2)
+data/order_cascade/

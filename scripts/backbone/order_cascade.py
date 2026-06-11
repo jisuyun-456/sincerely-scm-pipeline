@@ -1,0 +1,290 @@
+"""P6a — order-trigger 캐스케이드 orchestrator (S0~S7, dry-run 기본).
+
+주문(PNA,굿즈) 1단위 → S1 키해소 → S2 MRP → S3 입하CBM·M/H·MES → S4 창고 →
+S5 배차 프리뷰 → S6 운임 프리뷰 → S7 PropagationLedger 행 (spec §1).
+코어 로직은 harness/backbone/cascade.py (순수) — 본 스크립트는 IO 조립만.
+
+dry-run(기본): Airtable write 0. 리포트 json+md + audit jsonl만 산출 (VC-4·5).
+--write: action in {new, changed} 행을 PropagationLedger에 batch INSERT
+  (P6b에서 필드 7개 신설 후 첫 실행 — P6a에서는 실행 금지).
+
+Usage:
+  python scripts/backbone/order_cascade.py                 # dry-run
+  python scripts/backbone/order_cascade.py --window 14
+  python scripts/backbone/order_cascade.py --write         # P6b 이후에만
+"""
+import argparse
+import json
+import os
+import sys
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
+
+import requests
+from dotenv import load_dotenv
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from harness.backbone.cascade import (  # noqa: E402
+    REPROCESS_WINDOW_DAYS,
+    CascadeContext,
+    collect_units,
+    latest_ledger_by_pid,
+    run_unit,
+)
+from harness.backbone.keys import normalize_goods  # noqa: E402
+from harness.backbone.part_cbm import part_cbm_for_pt  # noqa: E402
+from harness.backbone.storage import parse_pt_from_ledger_key  # noqa: E402
+from harness.dispatch.cbm_estimator import build_kit_cbm_lookup  # noqa: E402
+from harness.backbone.keys import PNA_RE, build_pkg_goods_map  # noqa: E402
+from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
+from harness.tms_settlement.config import rates_for  # noqa: E402
+from utils.cbm_utils import load_sync_parts_lookup  # noqa: E402
+
+WMS = "appLui4ZR5HWcQRri"
+TMS = "app4x70a8mOrIKsMf"
+MES = "appNSAPadsHbfaSHv"
+ORDER = "tblJslWg8sYEdCkXw"
+LEDGER_TBL = "tblkQmontWGSjo8c5"   # WMS_PropagationLedger (allowlist 내)
+BOM_TBL = "tblopHqepkx6mNEHL"
+ITEM_TBL = "tbl5ZGY373D5SCONV"
+INV_LEDGER = "tbl4DcXQRHJj921MN"
+LOC_TBL = "tblRwUTP5kWnHFt5P"
+PKG_SCHED = "tblae2NqJaexwjN9R"
+SYNC_ITEM = "tblwnNgHQxZ0WhDBh"
+SHIP = "tbllg1JoHclGYer7m"
+MES_V2 = "tblg96ys2vfPdyxHq"
+KST = timezone(timedelta(hours=9))
+
+
+def fetch(base, tid, pat, fields=None):
+    out, off = [], None
+    while True:
+        p = {"pageSize": 100}
+        if fields:
+            p["fields[]"] = fields
+        if off:
+            p["offset"] = off
+        r = requests.get(f"https://api.airtable.com/v0/{base}/{tid}",
+                         headers={"Authorization": f"Bearer {pat}"}, params=p,
+                         timeout=60)
+        r.raise_for_status()
+        d = r.json()
+        out += d["records"]
+        off = d.get("offset")
+        if not off:
+            break
+    return out
+
+
+def build_context(tp, wp, mp, today):
+    """전 스테이지 입력 사전적재 → CascadeContext (cascade.py 순수 코어 소비)."""
+    print("로딩: Product 룩업...", flush=True)
+    lk = load_product_lookup({"Authorization": f"Bearer {tp}"})
+    product_by_code = {}
+    for e in lk.values():
+        code = str(e.get("code") or "").strip().upper()
+        if code and e.get("cbm_per_box", 0) > 0:
+            product_by_code[code] = (e.get("qty_per_box") or 1, e["cbm_per_box"])
+
+    print("로딩: sync_item 브릿지 + pkg_schedule 폴백...", flush=True)
+    items = fetch(WMS, SYNC_ITEM, wp, ["굿즈명", "굿즈코드"])
+    name2code = {}
+    for r in items:
+        f = r["fields"]
+        nm = normalize_goods(str(f.get("굿즈명") or ""))
+        cd = str(f.get("굿즈코드") or "").strip().upper()
+        if nm and cd:
+            name2code[nm] = cd
+    pkgs = fetch(WMS, PKG_SCHED, wp, [
+        "프로젝트 코드 (PK) (from project)",
+        "주문 굿즈 리스트 (자동) (from project)",
+        "단품 굿즈 품목 및 수량",
+    ])
+    pkg_map = build_pkg_goods_map((r["fields"] for r in pkgs), name2code)
+
+    print("로딩: WMS_BOM + ItemMaster (MRP·kit·part CBM)...", flush=True)
+    bom = fetch(WMS, BOM_TBL, wp, ["프로젝트코드", "모품목_굿즈명", "소품목_PT",
+                                   "소요량_개당", "검증상태"])
+    bom_fields = [r["fields"] for r in bom]
+    im_recs = fetch(WMS, ITEM_TBL, wp, ["품목키", "CBM_개당_m3", "출처"])
+    item_master = {}
+    for r in im_recs:
+        f = r["fields"]
+        k = str(f.get("품목키") or "").strip()
+        if k:
+            item_master[k] = (float(f.get("CBM_개당_m3") or 0),
+                              str(f.get("출처") or ""))
+    kit = build_kit_cbm_lookup(bom_fields, item_master, name2code)
+
+    print("로딩: InventoryLedger + Location (재고·staging·Max_CBM)...", flush=True)
+    locs = {r["id"]: r["fields"]
+            for r in fetch(WMS, LOC_TBL, wp, ["Warehouse", "Zone_Type", "Max_CBM"])}
+    max_staging = sum(float(f.get("Max_CBM") or 0) for f in locs.values()
+                      if f.get("Zone_Type") == "INBOUND_STAGING") or None
+    inv = fetch(WMS, INV_LEDGER, wp, ["Ledger_Key", "Current_Stock", "Location",
+                                      "Stock_Type"])
+    stock_rows = []
+    for rec in inv:
+        f = rec.get("fields", {})
+        pt = parse_pt_from_ledger_key(str(f.get("Ledger_Key", "")))
+        if not pt:
+            continue
+        loc_ids = f.get("Location") or []
+        loc = locs.get(loc_ids[0], {}) if loc_ids else {}
+        stock_rows.append({
+            "pt": pt,
+            "stock": f.get("Current_Stock") or 0,
+            "warehouse": loc.get("Warehouse") or "미지정",
+            "zone_type": loc.get("Zone_Type") or "",
+            "stock_type": f.get("Stock_Type") or "",
+        })
+
+    # part CBM 4-tier — tier0 ItemMaster(P3' 백필 포함) + tier1 sync_parts 치수
+    # (tier2 movement 규격·tier3 QC버킷은 P3' 백필이 ItemMaster에 이미 반영 — 미적재)
+    sp_lookup = load_sync_parts_lookup()
+    pts = set(item_master) | set(sp_lookup)
+    part_cbm_by_pt = {}
+    for pt in pts:
+        cbm, _conf, tier = part_cbm_for_pt(pt, item_master, sp_lookup)
+        if cbm > 0:
+            part_cbm_by_pt[pt] = cbm
+
+    print("로딩: TMS Shipment count...", flush=True)
+    ships = fetch(TMS, SHIP, tp, ["project code"])
+    shipment_count = {}
+    for r in ships:
+        m = PNA_RE.search(str(r["fields"].get("project code") or ""))
+        if m:
+            shipment_count[m.group(0)] = shipment_count.get(m.group(0), 0) + 1
+
+    mes_rows = []
+    if mp:
+        print("로딩: MES ver2.0 (납기 forecast)...", flush=True)
+        mes_rows = [r["fields"] for r in
+                    fetch(MES, MES_V2, mp, ["굿즈", "계획수량", "납기일", "작업 상태"])]
+    else:
+        print("[WARN] AIRTABLE_MES_PAT 미설정 — S3 MES 타임라인 생략 (degrade)",
+              flush=True)
+
+    return CascadeContext(
+        pkg_map=pkg_map, product_lookup=lk, kit_lookup=kit,
+        shipment_count=shipment_count, bom_fields=bom_fields,
+        stock_rows=stock_rows, part_cbm_by_pt=part_cbm_by_pt,
+        mes_rows=mes_rows, name_to_code=name2code,
+        product_by_code=product_by_code, max_staging_cbm=max_staging,
+        rates=rates_for(today.isoformat()), today=today)
+
+
+def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
+                 window_days: int):
+    out_dir.mkdir(parents=True, exist_ok=True)
+    payload = {"run_id": run_id, "window_days": window_days, "totals": totals,
+               "units": [{k: v for k, v in r.items()} for r in results]}
+    (out_dir / f"report_{run_id}.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, default=str),
+        encoding="utf-8")
+    lines = [f"# Order Cascade Report — {run_id}", "",
+             f"- 감지 윈도우: {window_days}d (forward-only)",
+             f"- 단위: {totals['units']} (PNA,굿즈) | INSERT 대상 "
+             f"{totals['new'] + totals['changed']} "
+             f"(new {totals['new']} / changed {totals['changed']} / "
+             f"unchanged {totals['unchanged']})",
+             f"- 상태: 완결 {totals['완결']} / 부분 {totals['부분']} / "
+             f"끊김 {totals['끊김']}", "",
+             "| 전파ID | 상태 | action | 부족자재 | 입하CBM | M/H | wave | 사유 |",
+             "|---|---|---|---|---|---|---|---|"]
+    for r in results:
+        row = r["row"]
+        shortage = str(row.get("부족자재_요약") or "").replace("\n", "<br>")
+        lines.append(
+            f"| {row['전파ID']} | {row['전파상태']} | {r['action']} "
+            f"| {shortage or '—'} | {row.get('입하CBM_예상_m3', '—')} "
+            f"| {row.get('MH_예상_h', '—')} | {row.get('wave_프리뷰', '—')} "
+            f"| {'; '.join(r['reasons']) or '—'} |")
+    lines += ["", "> MRP 협력사별 부족분 묶음·Slack digest는 P6b.",
+              "> 리포트는 영속 아님 — 영속 기록은 PropagationLedger (spec §3.2)."]
+    (out_dir / f"report_{run_id}.md").write_text("\n".join(lines),
+                                                 encoding="utf-8")
+
+
+def main():
+    ap = argparse.ArgumentParser(description="order-trigger 캐스케이드 (dry-run 기본)")
+    ap.add_argument("--write", action="store_true",
+                    help="PropagationLedger INSERT (P6b 필드 신설 후에만)")
+    ap.add_argument("--window", type=int, default=REPROCESS_WINDOW_DAYS,
+                    help="감지·재처리 윈도우 일수 (기본 14)")
+    ap.add_argument("--out", default="data/order_cascade",
+                    help="리포트·audit 출력 디렉터리 (gitignored)")
+    args = ap.parse_args()
+
+    load_dotenv()
+    tp = os.environ["AIRTABLE_PAT"]
+    wp = os.environ["AIRTABLE_WMS_PAT"]
+    mp = os.environ.get("AIRTABLE_MES_PAT", "")
+
+    now = datetime.now(timezone.utc)
+    run_id = now.astimezone(KST).strftime("%Y%m%d-%H%M")
+    today = date.today()
+    out_dir = Path(args.out)
+    audit_path = out_dir / f"audit_{run_id}.jsonl"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    ctx = build_context(tp, wp, mp, today)
+
+    print("로딩: order 미러 + PropagationLedger 최신행...", flush=True)
+    orders = fetch(WMS, ORDER, wp, ["project_code", "굿즈 주문 수량 (자동)",
+                                    "주문수량", "파츠명",
+                                    "굿즈코드 (from sync_itemdb)"])
+    ledger_recs = fetch(WMS, LEDGER_TBL, wp)   # 신설 전 필드 미지정 (전 필드)
+    latest = latest_ledger_by_pid(ledger_recs)
+
+    units = collect_units(orders, now, window_days=args.window)
+    print(f"\n=== 캐스케이드 {len(units)}단위 (order {len(orders)}행, "
+          f"윈도우 {args.window}d, ledger 기존 {len(latest)} 전파ID) ===", flush=True)
+
+    results, totals = [], {"units": len(units), "new": 0, "changed": 0,
+                           "unchanged": 0, "완결": 0, "부분": 0, "끊김": 0}
+    with audit_path.open("a", encoding="utf-8") as audit:
+        for u in units:
+            pid = f"{u.pna}_{u.goods_name}"
+            prior = (latest.get(pid) or {}).get("fields")
+            r = run_unit(u, prior, ctx, run_id)
+            results.append(r)
+            totals[r["action"]] += 1
+            totals[r["status"]] += 1
+            audit.write(json.dumps({
+                "ts": now.isoformat(), "run_id": run_id, "전파ID": pid,
+                "action": r["action"], "status": r["status"],
+                "reasons": r["reasons"], "write": False,
+            }, ensure_ascii=False) + "\n")
+
+        to_insert = [r["row"] for r in results if r["action"] in ("new", "changed")]
+        print(f"\n  완결 {totals['완결']} / 부분 {totals['부분']} / "
+              f"끊김 {totals['끊김']} | INSERT 대상 {len(to_insert)} "
+              f"(unchanged skip {totals['unchanged']})", flush=True)
+
+        if not args.write:
+            write_report(out_dir, run_id, results, totals, args.window)
+            print(f"\n[DRY-RUN] Airtable write 0 (VC-5). 리포트: "
+                  f"{out_dir}/report_{run_id}.md", flush=True)
+            return
+
+        # --write: PropagationLedger INSERT-only (P6b 필드 7개 신설 후 첫 실행)
+        from harness._core.airtable import AirtableClient
+        client = AirtableClient.get_or_create(WMS, LEDGER_TBL, wp)
+        created = 0
+        for i in range(0, len(to_insert), 10):
+            chunk = [{"fields": row} for row in to_insert[i:i + 10]]
+            client.create_records(chunk)
+            created += len(chunk)
+            audit.write(json.dumps({
+                "ts": datetime.now(timezone.utc).isoformat(), "run_id": run_id,
+                "action": "insert", "count": len(chunk), "write": True,
+            }, ensure_ascii=False) + "\n")
+        write_report(out_dir, run_id, results, totals, args.window)
+        print(f"\n[WRITE] PropagationLedger INSERT {created}행 "
+              f"(UPDATE/DELETE 0 — INSERT-only).", flush=True)
+
+
+if __name__ == "__main__":
+    main()
