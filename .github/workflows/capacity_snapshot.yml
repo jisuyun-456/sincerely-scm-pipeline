@@ -1,0 +1,58 @@
+name: Capacity Snapshot
+
+on:
+  schedule:
+    # KST 07:30 매일 (UTC 22:30 전일)
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (series 파일 미기록·미커밋)'
+        required: false
+        default: 'false'
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r harness/requirements.txt
+
+      - name: Run capacity snapshot
+        shell: bash
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+          AIRTABLE_MES_PAT: ${{ secrets.AIRTABLE_API_KEY_MES }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run || 'false' }}" = "true" ]; then
+            python scripts/backbone/capacity_snapshot_run.py --dry-run | tee snapshot_log.txt
+          else
+            python scripts/backbone/capacity_snapshot_run.py | tee snapshot_log.txt
+          fi
+
+      - name: Upload snapshot log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capacity-snapshot-log
+          path: snapshot_log.txt
+          retention-days: 90
+          overwrite: true
+          if-no-files-found: ignore
+
+      - name: Commit capacity_series.json
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add data/capacity_series.json || true
+          git diff --cached --quiet || git commit -m "chore(backbone): capacity snapshot $(date -u -d '+9 hours' +%Y-%m-%d) [skip ci]"
+          git push || true
