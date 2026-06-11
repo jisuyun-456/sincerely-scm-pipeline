@@ -864,10 +864,20 @@
       "id": "CBM-CAP-P4",
       "title": "CBM 백본 P4 — 대시보드 (capacity_snapshot.py + capacity_series.json GHA cron + event-boundary 태깅)",
       "priority": "high",
-      "status": "pending",
+      "status": "done",
       "domain": "backbone",
       "created_at": "2026-06-10",
-      "notes": "READY_TO_START. handoff: ~/.claude/plans/cbm-capacity-backbone-p4-handoff.md. 체크포인트: 예측 horizon + (이월) Max_CBM 실측치. Supabase는 대시보드 스냅샷 한정(2026-05-08 정책)"
+      "completed_at": "2026-06-11",
+      "notes": "horizon 14d·Max_CBM A1-IB-001 57.6m³ CP 승인. 첫 스냅샷: 출고 284.1m³/83.3%·보관 306.24m³/44.9%·입하 246.4m³/27.5%·MES 3.56/5.34m³·staging peak 403.2%. pytest 363·validator 6/6·reviewer 3건 수정·8커밋. 잔여(사용자): push·GH secret AIRTABLE_API_KEY_MES·workflow_dispatch 1회. 기록: docs/superpowers/plans/2026-06-11-cbm-p4-implementation.md"
+    },
+    {
+      "id": "CBM-CAP-P6-DESIGN",
+      "title": "CBM 백본 P6 — 북극성 order-trigger 캐스케이드 설계 (주문 등록 1 이벤트 → 전 트랙 사전 셋팅)",
+      "priority": "high",
+      "status": "pending",
+      "domain": "backbone",
+      "created_at": "2026-06-11",
+      "notes": "READY_TO_START (전 입력 실점등 완료). 설계 phase — 코드 0, brainstorming→spec→grill-plan. handoff: ~/.claude/plans/cbm-capacity-backbone-p6-handoff.md. 잔여 입력: 보관 분모(베스트원 ST Max_CBM 실측) — 설계엔 비차단"
     }
   ]
 }
