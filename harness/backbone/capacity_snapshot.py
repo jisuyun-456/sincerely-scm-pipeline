@@ -53,3 +53,50 @@ def build_outbound_forward(
         "n_with_cbm": n_with_cbm,
         "coverage_pct": round(n_with_cbm / n_window * 100, 1) if n_window else 0.0,
     }
+
+
+def normalize_center(raw) -> str:
+    """movement 이동물품 3번째 토큰('에이원지식산업센터' 등) → Location.Warehouse 키."""
+    s = str(raw or "")
+    if "에이원" in s:
+        return "에이원센터"
+    if "베스트원" in s:
+        return "베스트원"
+    return "기타"
+
+
+def build_inbound_scheduled(
+    records: list[dict], today: date, horizon_days: int = HORIZON_DAYS,
+) -> dict:
+    """fetch_inbound_cbm records → 윈도우 입하 예정 by_date/by_center.
+
+    records: [{exp_date, cbm, spec_src, center}]. coverage_pct 분모 = 윈도우 행 전체,
+    분자 = 규격 해소 성공(spec_src != 'none').
+    """
+    end = today + timedelta(days=horizon_days)
+    by_date: dict[str, float] = {}
+    by_center: dict[str, dict] = {}
+    n_window = n_matched = 0
+    for r in records:
+        d = _parse_date(r.get("exp_date"))
+        if d is None or not (today <= d <= end):
+            continue
+        n_window += 1
+        if r.get("spec_src", "none") != "none":
+            n_matched += 1
+        cbm = float(r.get("cbm") or 0)
+        if cbm <= 0:
+            continue
+        key = d.isoformat()
+        by_date[key] = round(by_date.get(key, 0.0) + cbm, 4)
+        ce = by_center.setdefault(normalize_center(r.get("center")),
+                                  {"total_cbm": 0.0, "by_date": {}})
+        ce["total_cbm"] = round(ce["total_cbm"] + cbm, 4)
+        ce["by_date"][key] = round(ce["by_date"].get(key, 0.0) + cbm, 4)
+    return {
+        "scheduled_by_date": dict(sorted(by_date.items())),
+        "scheduled_total_cbm": round(sum(by_date.values()), 4),
+        "n_rows_window": n_window,
+        "coverage_pct": round(n_matched / n_window * 100, 1) if n_window else 0.0,
+        "by_center": by_center,
+    }

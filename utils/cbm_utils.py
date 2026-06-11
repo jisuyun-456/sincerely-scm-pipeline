@@ -249,6 +249,7 @@ def fetch_inbound_cbm(
         rows.append({
             "parts_code": parts_code,
             "parts_name": parsed["parts_name"],
+            "center":     parsed["center"],
             "supplier":   supplier,
             "exp_date":   d_key,
             "in_qty":     in_qty,

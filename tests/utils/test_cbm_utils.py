@@ -19,3 +19,18 @@ def test_multi_purpose_or_sorted():
 def test_require_actual_date():
     f = build_inbound_formula({"생산산출"}, require_actual_date=True)
     assert f == 'AND({이동목적}="생산산출", {실제입하일}!="")'
+
+
+def test_fetch_inbound_cbm_records_include_center(monkeypatch):
+    # P4: 센터별 staging 점유율 입력 — records에 center 키 동반
+    import utils.cbm_utils as cu
+
+    fake = [{"fields": {
+        cu.FLD_MOV_ITEM: "PT0001-박스 || PNA1_프로젝트 || 에이원지식산업센터",
+        cu.FLD_MOV_IN_QTY: 2,
+        cu.FLD_MOV_SPEC: "100*100*100",
+        cu.FLD_MOV_EXP_DATE: "2026-06-12",
+    }}]
+    monkeypatch.setattr(cu, "get_all_records", lambda *a, **k: fake)
+    out = cu.fetch_inbound_cbm({})
+    assert out["records"][0]["center"] == "에이원지식산업센터"
