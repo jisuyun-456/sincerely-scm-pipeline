@@ -1086,4 +1086,10 @@ git commit -m "ci(backbone): capacity snapshot daily cron — KST 07:30 series c
 
 **검증**: harness-validator **PASS 6/6** (forward curve·중복0·커버리지·cron·시드·소스write0). code-reviewer 3 major 수정 — ① 입하 coverage 분자 엄격화(spec해소∧CBM>0) ② workflow `permissions: contents: write` 명시 ③ seed 페이지네이션. minor 1(14d=15캘린더일 inclusive)은 docstring 명시로 처리(MES days<=h 의미론과 정렬).
 
-**사용자 잔여 액션**: ① 수동 push ② GH secret `AIRTABLE_API_KEY_MES` 등록 ③ push 후 `Capacity Snapshot` workflow_dispatch 1회 확인.
+**사용자 잔여 액션**: ① 수동 push ② GH secret `AIRTABLE_API_KEY_MES` 등록 ③ push 후 `Capacity Snapshot` workflow_dispatch 1회 확인. → **전부 완료 (2026-06-11)**: push `4d914c0` 반영, secret 등록(run에서 MES join 31/311 확인), dispatch run 27319107681 success.
+
+### 후속 fix (2026-06-11 같은 날) — series push가 main 보호에 거부됨
+
+dispatch run은 green이었으나 step log 정밀 확인 결과 **bot commit push가 GH006(main = PR-only 보호)으로 거부**되고 `git push || true`가 삼킴 — reviewer가 경고한 silent-fail 모드가 token scope 아닌 branch protection으로 현실화. (동일 원인으로 scorecard.yml 월간 스냅샷 커밋도 한 번도 landed 안 함 — bot 커밋 0개 확인, P5 백로그.)
+
+**해결 (사용자 선택: data branch 안)**: 시계열 SSOT를 비보호 **`capacity-data` 브랜치**로 이전 — ① run 전 `origin/capacity-data`에서 최신 series 복원(누적 무결성) ② append 후 `git push --force origin HEAD:capacity-data` (`|| true` 제거 — 실패는 red로 노출). main은 PR-only 유지, 브랜치는 매일 교체되지만 series 파일이 누적 이력 보유. 대시보드 소비 URL: `raw.githubusercontent.com/<repo>/capacity-data/data/capacity_series.json`. main의 `data/capacity_series.json`은 부트스트랩 copy로 동결.

@@ -27,6 +27,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r harness/requirements.txt
 
+      # 시계열 SSOT = capacity-data 브랜치 (main은 PR-only 보호 — GH006).
+      # 최신 series를 복원한 뒤 append해야 누적이 끊기지 않는다.
+      - name: Restore latest series from capacity-data branch
+        run: |
+          git fetch origin capacity-data || true
+          git checkout origin/capacity-data -- data/capacity_series.json 2>/dev/null || echo "capacity-data 브랜치 없음 — main 부트스트랩 copy 사용"
+
       - name: Run capacity snapshot
         shell: bash
         env:
@@ -50,11 +57,14 @@ jobs:
           overwrite: true
           if-no-files-found: ignore
 
-      - name: Commit capacity_series.json
+      # main 보호(PR-only) 우회하지 않고 비보호 capacity-data 브랜치에 적재.
+      # 브랜치는 매일 force 교체되지만 series 파일 자체가 누적 이력을 보유.
+      # push 실패는 의도적으로 step 실패로 노출 (|| true 금지 — silent fail 방지).
+      - name: Push series to capacity-data branch
         if: github.event.inputs.dry_run != 'true'
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
           git add data/capacity_series.json || true
-          git diff --cached --quiet || git commit -m "chore(backbone): capacity snapshot $(date -u -d '+9 hours' +%Y-%m-%d) [skip ci]"
-          git push || true
+          git diff --cached --quiet || git commit -m "chore(backbone): capacity snapshot $(date -u -d '+9 hours' +%Y-%m-%d)"
+          git push --force origin HEAD:capacity-data
