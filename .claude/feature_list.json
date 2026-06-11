@@ -874,10 +874,20 @@
       "id": "CBM-CAP-P6-DESIGN",
       "title": "CBM 백본 P6 — 북극성 order-trigger 캐스케이드 설계 (주문 등록 1 이벤트 → 전 트랙 사전 셋팅)",
       "priority": "high",
+      "status": "done",
+      "domain": "backbone",
+      "created_at": "2026-06-11",
+      "completed_at": "2026-06-11",
+      "notes": "설계 완료·push됨(18f711f). spec: docs/superpowers/specs/2026-06-11-cbm-p6-order-cascade-design.md — D1 cron 3x/day·D2 ledger+리포트만·D3 단일 orchestrator, 8요소 매핑 gap 0, 신규 4파일/재사용 11모듈, grill-plan 5답 반영(어댑터·capacity-feasibility·kill switch·createdTime·2세션). 구현 = P6a/P6b"
+    },
+    {
+      "id": "CBM-CAP-P6A-CORE",
+      "title": "CBM 백본 P6a — 캐스케이드 코어 구현 (mrp.py + order_cascade.py S0~S7 dry-run, TDD)",
+      "priority": "high",
       "status": "pending",
       "domain": "backbone",
       "created_at": "2026-06-11",
-      "notes": "READY_TO_START (전 입력 실점등 완료). 설계 phase — 코드 0, brainstorming→spec→grill-plan. handoff: ~/.claude/plans/cbm-capacity-backbone-p6-handoff.md. 잔여 입력: 보관 분모(베스트원 ST Max_CBM 실측) — 설계엔 비차단"
+      "notes": "READY_TO_START. spec §8: ledger.py 확장(optional 인자) + order→shipment-shape 어댑터 단위테스트 필수. gate = pytest green + dry-run 리포트 1회(VC-4·5). handoff: ~/.claude/plans/cbm-capacity-backbone-p6a-handoff.md. P6b(점등: Ledger 필드 7개+--write+cron+Slack)는 P6a 후"
     }
   ]
 }
