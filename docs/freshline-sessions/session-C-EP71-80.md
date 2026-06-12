@@ -171,9 +171,26 @@ make your case, share (the burden), come from a position of strength, get to cho
 
 ---
 
+## 생성된 Notion 페이지 IDs
+
+| EP | 제목 | Notion Page ID |
+|----|------|---------------|
+| EP71 | Jason Applies for Promotion | `37c4b750-152c-8124-9964-f875ead8156f` |
+| EP72 | Day Extends the Contract | `37c4b750-152c-8133-ae52-fff4afdb1ad4` |
+| EP73 | The Third Summer | `37c4b750-152c-811e-ba03-e0a290d61132` |
+| EP74 | Language Milestone | `37d4b750-152c-81c5-900d-c21f18f9f56e` |
+| EP75 | David Visits | `37d4b750-152c-814c-a82b-c3972fea9170` |
+| EP76 | The Parents Question | `37d4b750-152c-8136-91ff-c2897867b420` |
+| EP77 | The Career Conversation | `37d4b750-152c-8182-a3f7-d03ca253ef5d` |
+| EP78 | Day's Korean Network | `37d4b750-152c-81bf-8fba-d67c4a235853` |
+| EP79 | The American Dream | `37d4b750-152c-8146-a624-fe360fbe28bc` |
+| EP80 | Deep Roots (총복습) | `37d4b750-152c-81d4-bfe4-c19909424107` |
+
+---
+
 ## 세션 완료 후 체크리스트
 
-- [ ] EP71–79 페이지 생성 완료
-- [ ] EP80 총복습 페이지 생성 (테이블 25개 채워짐)
-- [ ] Obsidian log.md 업데이트
-- [ ] git commit
+- [x] EP71–79 페이지 생성 완료
+- [x] EP80 총복습 페이지 생성 (테이블 30개 채워짐)
+- [x] Obsidian log.md 업데이트
+- [x] git commit
