@@ -15,7 +15,7 @@ from harness._core.airtable import AirtableClient
 from harness._core.logger import StructuredLogger
 from harness._core.runner import IdempotentRunner
 from harness.tms_settlement.calc import SettlementItem
-from harness.tms_settlement.config import F_FARE, F_UNLOAD, MAX_BLOCKED_RATIO
+from harness.tms_settlement.config import F_FARE, MAX_BLOCKED_RATIO
 from harness.tms_settlement.verifier import SettlementVerifier
 
 _log = StructuredLogger("tms_settlement.write")
@@ -33,20 +33,18 @@ class WriteResult:
 
 def _assert_readback(item: SettlementItem, response: dict) -> None:
     """Verify PATCH response contains the values we intended to write."""
+    expected = item.fare_gross + item.unload_calc
     resp_fields = response.get("fields", {})
     written_fare = resp_fields.get(F_FARE)
-    if written_fare is not None and written_fare != item.fare_gross:
+    if written_fare is not None and written_fare != expected:
         raise RuntimeError(
             f"Read-back mismatch for {item.sc_id}: "
-            f"wrote fare={item.fare_gross} but Airtable returned {written_fare}"
+            f"wrote fare={expected} but Airtable returned {written_fare}"
         )
 
 
 def _build_patch_fields(item: SettlementItem) -> dict:
-    fields = {F_FARE: item.fare_gross}
-    if item.unload_calc > 0:
-        fields[F_UNLOAD] = item.unload_calc
-    return fields
+    return {F_FARE: item.fare_gross + item.unload_calc}
 
 
 def write_batch(
@@ -82,7 +80,7 @@ def write_batch(
     # Log warnings from batch verify
     for issue in batch.issues:
         if issue.severity == "WARNING":
-            _log.warning("verifier warning", dim=issue.dim, sc_id=issue.sc_id, msg=issue.msg)
+            _log.warning("verifier warning", dim=issue.dim, sc_id=issue.sc_id, detail=issue.msg)
 
     # ── Per-record write ──────────────────────────────────────────────────────
     for item in items:
