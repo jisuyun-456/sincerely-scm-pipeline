@@ -4,13 +4,15 @@
 
 | 구간 | EP 범위 | 상태 | 세션 파일 |
 |------|---------|------|----------|
-| 1–5구간 | EP01–50 | ✅ 완료 (리라이트) | — |
+| 1–3구간 | EP01–30 | ✅ 완료 (리라이트) | — |
+| **4구간** | EP31–40 | ✅ 완료 (신규 생성) | [session-F-EP31-40.md](session-F-EP31-40.md) |
+| 5구간 | EP41–50 | ✅ 완료 (리라이트) | — |
 | 6구간 EP51–56 | EP51–56 | ✅ 완료 (신규 생성) | — |
-| **6구간 EP57–60** | EP57–60 | 🔜 다음 세션 | [session-A-EP57-60.md](session-A-EP57-60.md) |
-| **7구간** | EP61–70 | 🔜 | [session-B-EP61-70.md](session-B-EP61-70.md) |
-| **8구간** | EP71–80 | 🔜 | [session-C-EP71-80.md](session-C-EP71-80.md) |
-| **9구간** | EP81–90 | 🔜 | [session-D-EP81-90.md](session-D-EP81-90.md) |
-| **10구간** | EP91–100 | 🔜 | [session-E-EP91-100.md](session-E-EP91-100.md) |
+| **6구간 EP57–60** | EP57–60 | ✅ 완료 | [session-A-EP57-60.md](session-A-EP57-60.md) |
+| **7구간** | EP61–70 | ✅ 완료 | [session-B-EP61-70.md](session-B-EP61-70.md) |
+| **8구간** | EP71–80 | ✅ 완료 | [session-C-EP71-80.md](session-C-EP71-80.md) |
+| **9구간** | EP81–90 | ✅ 완료 | [session-D-EP81-90.md](session-D-EP81-90.md) |
+| **10구간** | EP91–100 | ✅ 완료 | [session-E-EP91-100.md](session-E-EP91-100.md) |
 
 ---
 
