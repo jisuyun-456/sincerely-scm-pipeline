@@ -893,11 +893,21 @@
     {
       "id": "CBM-CAP-P6B-LIGHTUP",
       "title": "CBM 백본 P6b — 캐스케이드 점등 (Ledger 필드 7개 신설 + --write 첫 INSERT + cron + Slack digest)",
-      "priority": "high",
-      "status": "pending",
+      "priority": "done",
+      "status": "done",
       "domain": "backbone",
       "created_at": "2026-06-11",
-      "notes": "READY_TO_START. gate = VC-1(실주문 e2e ≤2 tick, createdTime 기준)·VC-2(idempotency — decide_insert unchanged 재실행 0 INSERT)·VC-3(키+출하CBM 커버리지 비퇴행)·VC-6(cron 첫 run). handoff: ~/.claude/plans/cbm-capacity-backbone-p6b-handoff.md. P6a 학습: 첫 --write는 238행 일괄 INSERT 예상·fetch() 오류 핸들링 보강 필요(validator WARN)"
+      "completed_at": "2026-06-12",
+      "notes": "완료(a75b7a7). 필드 7개 신설 + 첫 INSERT 224행(UPDATE/DELETE 0) + cron KST 10/15/18 + digest.py(8t). VC-1 PASS(주문→6트랙 14분/1tick)·VC-2 1차 FAIL→실버그 적발(Airtable 빈문자열 누락 ''≠None churn 14단위)→decide_insert 정규화 fix→INSERT 0 PASS·VC-3 PASS(굿즈 89.2%·forward ~75%)·pytest 406. 잔여: 사용자 push + workflow_dispatch 1회(VC-6 후반)"
+    },
+    {
+      "id": "CBM-CAP-P5-NONPHYSICAL-GOODS",
+      "title": "캐스케이드 비실물 굿즈명 노이즈 — '00 추가 데이터 입력란'·'STCK' 등 S1 끊김 고정 4건, is_service 필터 확장 검토",
+      "priority": "low",
+      "status": "pending",
+      "domain": "backbone",
+      "created_at": "2026-06-12",
+      "notes": "P6b VC-2 진단 중 발견. 비실물 단위가 (PNA,굿즈) 캐스케이드에 진입해 끊김 노이즈 고정 — P5 백로그"
     }
   ]
 }
