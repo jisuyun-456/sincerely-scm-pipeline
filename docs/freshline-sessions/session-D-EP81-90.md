@@ -195,5 +195,5 @@ earn it, you asked for it, pass it on, language transmission, I'm the one stayin
 
 - [x] EP81–89 페이지 생성 완료
 - [x] EP90 총복습 페이지 생성 (테이블 25개 채워짐)
-- [ ] Obsidian log.md 업데이트
-- [ ] git commit
+- [x] Obsidian log.md 업데이트
+- [x] git commit
