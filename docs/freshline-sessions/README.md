@@ -9,6 +9,7 @@
 | 5구간 | EP41–50 | ✅ 완료 (리라이트) | — |
 | 6구간 EP51–56 | EP51–56 | ✅ 완료 (신규 생성) | — |
 | **6구간 EP57–60** | EP57–60 | ✅ 완료 | [session-A-EP57-60.md](session-A-EP57-60.md) |
+| **6구간 EP51–60 (v2)** | EP51–60 | ✅ 완료 (23개 접속사 분산) | [session-G-EP51-60.md](session-G-EP51-60.md) |
 | **7구간** | EP61–70 | ✅ 완료 | [session-B-EP61-70.md](session-B-EP61-70.md) |
 | **8구간** | EP71–80 | ✅ 완료 | [session-C-EP71-80.md](session-C-EP71-80.md) |
 | **9구간** | EP81–90 | ✅ 완료 | [session-D-EP81-90.md](session-D-EP81-90.md) |
