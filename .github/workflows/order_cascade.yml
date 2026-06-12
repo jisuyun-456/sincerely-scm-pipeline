@@ -1,0 +1,61 @@
+name: Order Cascade
+
+on:
+  schedule:
+    # KST 10:00 / 15:00 / 18:00 영업일 (UTC 01:00 / 06:00 / 09:00)
+    # — wave_recommender 09/14/17 + 1h 오프셋 (cron 충돌 회피, spec §5)
+    - cron: '0 1 * * 1-5'
+    - cron: '0 6 * * 1-5'
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (Airtable INSERT 없음)'
+        required: false
+        default: 'false'
+
+# write 표면 = PropagationLedger INSERT + artifact + Slack — repo commit 없음
+# (P4 GH006 교훈: report는 artifact만, 별도 브랜치도 불필요 — 영속 기록은 Ledger)
+permissions:
+  contents: read
+
+jobs:
+  cascade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r harness/requirements.txt
+
+      - name: Run order cascade
+        shell: bash   # pipefail — tee 뒤에서도 스크립트 실패가 step에 드러나도록
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
+          AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+          AIRTABLE_MES_PAT: ${{ secrets.AIRTABLE_API_KEY_MES }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run || 'false' }}" = "true" ]; then
+            python scripts/backbone/order_cascade.py | tee cascade_log.txt
+          else
+            python scripts/backbone/order_cascade.py --write | tee cascade_log.txt
+          fi
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: order-cascade-report
+          path: |
+            data/order_cascade/
+            cascade_log.txt
+          retention-days: 14
+          overwrite: true
+          if-no-files-found: ignore

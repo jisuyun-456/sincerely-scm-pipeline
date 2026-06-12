@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from harness.backbone.cascade import (  # noqa: E402
     latest_ledger_by_pid,
     run_unit,
 )
+from harness.backbone.digest import build_digest  # noqa: E402
 from harness.backbone.keys import normalize_goods  # noqa: E402
 from harness.backbone.part_cbm import part_cbm_for_pt  # noqa: E402
 from harness.backbone.storage import parse_pt_from_ledger_key  # noqa: E402
@@ -56,6 +58,32 @@ MES_V2 = "tblg96ys2vfPdyxHq"
 KST = timezone(timedelta(hours=9))
 
 
+_FETCH_RETRIES = 4          # P6a validator WARN — cron 무인 실행 전 transient 보강
+_RETRY_STATUS = {429, 500, 502, 503, 504}
+
+
+def _get_with_retry(url, pat, params):
+    """timeout·연결오류·429/5xx에 한해 지수 backoff 재시도, 소진 시 loud raise."""
+    for attempt in range(1, _FETCH_RETRIES + 1):
+        try:
+            r = requests.get(url, headers={"Authorization": f"Bearer {pat}"},
+                             params=params, timeout=60)
+            if r.status_code in _RETRY_STATUS:
+                raise requests.exceptions.RetryError(
+                    f"HTTP {r.status_code}: {r.text[:200]}")
+            r.raise_for_status()
+            return r
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.RetryError) as err:
+            if attempt == _FETCH_RETRIES:
+                raise
+            wait = 2 ** attempt
+            print(f"[RETRY {attempt}/{_FETCH_RETRIES}] {url.rsplit('/', 1)[-1]} "
+                  f"{type(err).__name__} — {wait}s 후 재시도", flush=True)
+            time.sleep(wait)
+
+
 def fetch(base, tid, pat, fields=None):
     out, off = [], None
     while True:
@@ -64,10 +92,7 @@ def fetch(base, tid, pat, fields=None):
             p["fields[]"] = fields
         if off:
             p["offset"] = off
-        r = requests.get(f"https://api.airtable.com/v0/{base}/{tid}",
-                         headers={"Authorization": f"Bearer {pat}"}, params=p,
-                         timeout=60)
-        r.raise_for_status()
+        r = _get_with_retry(f"https://api.airtable.com/v0/{base}/{tid}", pat, p)
         d = r.json()
         out += d["records"]
         off = d.get("offset")
@@ -207,6 +232,27 @@ def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
                                                  encoding="utf-8")
 
 
+def send_slack(text: str) -> None:
+    """digest DM 발송 — 미설정/실패는 WARN만 (발송이 run 성패를 좌우하지 않음)."""
+    token = os.environ.get("SLACK_BOT_TOKEN", "")
+    user = os.environ.get("SLACK_DM_USER_ID", "")
+    if not token or not user:
+        print("[WARN] SLACK_BOT_TOKEN/SLACK_DM_USER_ID 미설정 — digest 발송 생략",
+              flush=True)
+        return
+    try:
+        r = requests.post("https://slack.com/api/chat.postMessage",
+                          headers={"Authorization": f"Bearer {token}"},
+                          json={"channel": user, "text": text}, timeout=30)
+        data = r.json()
+        if data.get("ok"):
+            print("[SLACK] digest 발송 완료", flush=True)
+        else:
+            print(f"[WARN] Slack 발송 실패: {data.get('error')}", flush=True)
+    except requests.exceptions.RequestException as err:
+        print(f"[WARN] Slack 발송 예외: {err}", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser(description="order-trigger 캐스케이드 (dry-run 기본)")
     ap.add_argument("--write", action="store_true",
@@ -263,8 +309,12 @@ def main():
               f"끊김 {totals['끊김']} | INSERT 대상 {len(to_insert)} "
               f"(unchanged skip {totals['unchanged']})", flush=True)
 
+        digest = build_digest(results, totals, run_id, args.window)
+
         if not args.write:
             write_report(out_dir, run_id, results, totals, args.window)
+            if digest:
+                print(f"\n[DRY-RUN] Slack digest (미발송):\n{digest}", flush=True)
             print(f"\n[DRY-RUN] Airtable write 0 (VC-5). 리포트: "
                   f"{out_dir}/report_{run_id}.md", flush=True)
             return
@@ -284,6 +334,10 @@ def main():
         write_report(out_dir, run_id, results, totals, args.window)
         print(f"\n[WRITE] PropagationLedger INSERT {created}행 "
               f"(UPDATE/DELETE 0 — INSERT-only).", flush=True)
+        if digest:
+            send_slack(digest)
+        else:
+            print("[SLACK] 신규 주문 0 — digest 미발송 (spec §3.2)", flush=True)
 
 
 if __name__ == "__main__":

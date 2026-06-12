@@ -310,7 +310,12 @@ def fare_preview(est_cbm: float, rates: dict) -> tuple[str, bool]:
 # ─── S7 idempotency ──────────────────────────────────────────────
 
 def decide_insert(row: dict, prior_fields: dict | None) -> str:
-    """spec §5 — 전파ID별 최신행 대비 상태·수치 변동 시에만 신규 INSERT."""
+    """spec §5 — 전파ID별 최신행 대비 상태·수치 변동 시에만 신규 INSERT.
+
+    Airtable은 빈 문자열 필드를 응답에서 누락 → ''와 None 동일 취급
+    (P6b VC-2 실측 — 미정규화 시 BOM 없는 단위가 매 run 재INSERT churn).
+    수치 0은 실값이라 누락과 동일 취급하지 않는다.
+    """
     if prior_fields is None:
         return "new"
     for k in CONTENT_FIELDS:
@@ -318,7 +323,7 @@ def decide_insert(row: dict, prior_fields: dict | None) -> str:
         if isinstance(a, (int, float)) and isinstance(b, (int, float)):
             if abs(a - b) > _NUM_TOL:
                 return "changed"
-        elif a != b:
+        elif (None if a == "" else a) != (None if b == "" else b):
             return "changed"
     return "unchanged"
 

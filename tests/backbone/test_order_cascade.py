@@ -250,6 +250,21 @@ def test_decide_insert_new_changed_unchanged():
     assert decide_insert(row, prior2) == "changed"
 
 
+def test_decide_insert_empty_string_equals_absent():
+    """P6b VC-2 실측 — Airtable은 빈 문자열 필드를 응답에서 누락.
+
+    '' 기입 행을 다시 읽으면 키 자체가 없음(None) → ''≠None 비교가
+    BOM 없는 14단위를 매 run 재INSERT(영구 churn)시킨 버그 회귀 방지.
+    """
+    row = {"전파ID": "PNA1_굿즈", "전파상태": "부분", "자재소요_요약": "",
+           "추정_CBM_m3": None, "wave_프리뷰": "부분: 출하CBM 미산출"}
+    prior = {"전파ID": "PNA1_굿즈", "전파상태": "부분",
+             "wave_프리뷰": "부분: 출하CBM 미산출"}   # '' 필드 누락 (Airtable 의미론)
+    assert decide_insert(row, prior) == "unchanged"
+    # 단, 0 vs 누락은 동일 취급 금지 (수치 0은 실값)
+    assert decide_insert(dict(row, 입하CBM_예상_m3=0.0), prior) == "changed"
+
+
 # ─── run_unit 통합 (부분/끊김 마킹 + 완결 happy path) ────────────
 
 def _ctx(**over):
