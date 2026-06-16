@@ -3,6 +3,7 @@ from harness.backbone.product_alias import (
     parse_size,
     resolve_registered_code,
     remap_lines,
+    inject_synthetic,
 )
 
 # Minimal product_lookup mimic: code.lower() → entry with cbm_per_box.
@@ -24,6 +25,9 @@ LOOKUP = {
     "vmcm": {"cbm_per_box": 0.0201, "qty_per_box": 48},
     "vmcs": {"cbm_per_box": 0.0201, "qty_per_box": 100},
     "rwcl": {"cbm_per_box": 0.1066, "qty_per_box": 25},
+    # 데스크테리어 매트 형제 (DSKT alias target — 기본형, 사용자 확정 2026-06-16)
+    "dsks": {"cbm_per_box": 0.1066, "qty_per_box": 30},
+    "dskw": {"cbm_per_box": 0.1066, "qty_per_box": 25},
     # a normally-registered code (control)
     "abcd": {"cbm_per_box": 0.02, "qty_per_box": 10},
     # an unpopulated SKU (box/qty blank → cbm 0)
@@ -94,3 +98,43 @@ def test_remap_lines_aggregates_on_collapse():
 
 def test_remap_lines_empty():
     assert remap_lines([], "x", LOOKUP) == []
+
+
+# ── ② #1: DSKT alias + TWKF synthetic registration (사용자 확정 2026-06-16) ──
+
+def test_alias_dskt_to_dsks():
+    # '데스크테리어 매트'(사이즈 무표기) → 기본형 DSKS (대형/30, 0.1066)
+    assert resolve_registered_code("DSKT", "데스크테리어 매트", LOOKUP) == "DSKS"
+
+
+def test_inject_synthetic_adds_twkf():
+    lk = {}
+    inject_synthetic(lk)
+    e = lk["twkf"]
+    assert e["code"] == "TWKF"
+    assert e["box_type"] == "대형"
+    assert e["qty_per_box"] == 12
+    assert e["cbm_per_box"] == 0.1066          # 대형 표준 = L510 (510×510×410)
+    # 이름 키로도 조회 가능 (estimate match_product 경로)
+    assert lk["lite 스트랩 박스"] is e
+
+
+def test_inject_synthetic_skips_if_already_registered():
+    # Product에 TWKF가 이미 있으면(향후 ⑤ 소스정합) 덮어쓰지 않음 — Product 우선
+    lk = {"twkf": {"code": "TWKF", "box_type": "특대형",
+                   "qty_per_box": 7, "cbm_per_box": 0.1662}}
+    inject_synthetic(lk)
+    assert lk["twkf"]["qty_per_box"] == 7      # 변경 없음
+
+
+def test_twkf_resolves_after_injection():
+    lk = {}
+    inject_synthetic(lk)
+    # 주입 후 TWKF는 '등록됨'으로 취급 → 원본 코드 그대로 (estimate가 매칭)
+    assert resolve_registered_code("TWKF", "Lite 스트랩 박스", lk) == "TWKF"
+
+
+def test_twkf_unresolved_before_injection():
+    # 주입 전에는 미등록 → 원본 반환 (S5 정직 미산출)
+    assert resolve_registered_code("TWKF", "Lite 스트랩 박스", {}) == "TWKF"
+    assert "twkf" not in {}

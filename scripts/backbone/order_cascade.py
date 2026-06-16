@@ -38,6 +38,7 @@ from harness.backbone.part_cbm import part_cbm_for_pt  # noqa: E402
 from harness.backbone.storage import parse_pt_from_ledger_key  # noqa: E402
 from harness.dispatch.cbm_estimator import build_kit_cbm_lookup  # noqa: E402
 from harness.backbone.keys import PNA_RE, build_pkg_goods_map  # noqa: E402
+from harness.backbone.product_alias import inject_synthetic  # noqa: E402
 from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 from harness.tms_settlement.config import rates_for  # noqa: E402
 from utils.cbm_utils import load_sync_parts_lookup  # noqa: E402
@@ -105,6 +106,7 @@ def build_context(tp, wp, mp, today):
     """전 스테이지 입력 사전적재 → CascadeContext (cascade.py 순수 코어 소비)."""
     print("로딩: Product 룩업...", flush=True)
     lk = load_product_lookup({"Authorization": f"Bearer {tp}"})
+    inject_synthetic(lk)   # Product 미등록 신규 SKU(TWKF 등) 권위 스펙 런타임 주입 (쓰기 0)
     product_by_code = {}
     for e in lk.values():
         code = str(e.get("code") or "").strip().upper()

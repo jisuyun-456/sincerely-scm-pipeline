@@ -20,6 +20,15 @@ ALIAS = {
     "BCTW": "BCTL",   # 굿이너프 비치타월         (BCTL 대형/40)
     "CNPB": "CNPG",   # 컬러풀 노트패드(블랙)      (CNPG 중대형/100)
     "BMVS": "BMCH",   # 브릭 메모&캘린더 스탠드 v1→2.0 (BMCH 중대형/20)
+    "DSKT": "DSKS",   # 데스크테리어 매트(사이즈 무표기) → 기본형 (DSKS 대형/30, 0.1066). 사용자 확정 2026-06-16
+}
+
+# Product 미등록 신규 SKU — 사용자 견적 입력 권위 박스 스펙. 런타임 product_lookup 주입(Product 쓰기 0).
+# alias/SIZE_FAMILY로 기존 등록코드에 환원 불가한 고유 스펙(qty_per_box)인 경우만 등재.
+# cbm_per_box는 표준 박스타입(cbm_calc.BOX_TYPE_TO_CBM_M3)에서 해소 — 단일 SSOT.
+SYNTHETIC = {
+    # TWKF Lite 스트랩 박스 — 대형 박스 L510(510×510×410), 박스당 12. 사용자 확정 2026-06-16.
+    "TWKF": {"name": "Lite 스트랩 박스", "box_type": "대형", "qty_per_box": 12},
 }
 
 # 사이즈 변형군 — WMS코드 → {size: 등록 SKU코드}. __default__ 필수 (굿즈명에 사이즈 없을 때).
@@ -83,6 +92,28 @@ def resolve_registered_code(code, goods_name, lookup):
         if dflt and _registered(dflt, lookup):
             return dflt
     return cu
+
+
+def inject_synthetic(lookup):
+    """SYNTHETIC 신규 SKU를 product_lookup에 주입(code·name 키). 박스 CBM은 표준 박스타입에서 해소.
+
+    이미 동일 code가 등록돼 있으면(향후 ⑤ WMS↔Product 소스정합 시) 스킵 — Product 우선.
+    load_product_lookup 직후 build_context에서 1회 호출 (Product/WMS 운영 데이터 쓰기 0).
+    """
+    from harness.settlement.cbm_calc import BOX_TYPE_TO_CBM_M3
+    for code, spec in SYNTHETIC.items():
+        ck = code.lower()
+        if ck in lookup:
+            continue
+        entry = {
+            "rec_id": f"synthetic:{code}", "name": spec["name"], "code": code,
+            "box_type": spec["box_type"], "qty_per_box": spec["qty_per_box"],
+            "cbm_per_box": BOX_TYPE_TO_CBM_M3.get(spec["box_type"], 0.0),
+        }
+        lookup[ck] = entry
+        if spec["name"]:
+            lookup.setdefault(spec["name"].lower(), entry)
+    return lookup
 
 
 def remap_lines(lines, goods_name, lookup):
