@@ -903,11 +903,12 @@
     {
       "id": "CBM-CAP-P5-NONPHYSICAL-GOODS",
       "title": "캐스케이드 비실물 굿즈명 노이즈 — '00 추가 데이터 입력란'·'STCK' 등 S1 끊김 고정, is_service 필터 확장 (V5)",
-      "priority": "medium",
-      "status": "pending",
+      "priority": "done",
+      "status": "done",
       "domain": "backbone",
       "created_at": "2026-06-12",
-      "notes": "데이터 정합성 감사 V5. 6단위 끊김(1.8%) + S5 서비스코드(SSSV·DP45·SLGN·CSPR) 노이즈. keys.py is_service에 placeholder/날짜형/고객물품 패턴 추가. 핸드오프: ~/.claude/plans/cbm-data-integrity-handoff.md"
+      "completed_at": "2026-06-16",
+      "notes": "완료(V5). keys.py is_service 확장 — _SERVICE_KW에 입력란·할인·시안·디자인·긴급제작·키트포장·고객물품 + 날짜형 ^0\\d{3}$(STCK MMDD). 과필터 가드: bare '키트' 금지(케이블키트·씨드키트 실물 완결 오제외 방지) → '키트포장'만. TDD 12케이스(8 서비스 TRUE + 4 가드)·pytest 182 green. 라이브 재실행(window46 dry-run) 검증: 끊김 8→0 / 완결 80 불변(실물 0 오제외) / 부분 707→623(노이즈 -84). 핸드오프: ~/.claude/plans/cbm-data-integrity-handoff.md ①V5 done → 다음 ②#1 TWKF·DSKT distinct-SKU(사용자 결정)"
     },
     {
       "id": "CBM-DATA-V2-PRODUCT-REGISTER",

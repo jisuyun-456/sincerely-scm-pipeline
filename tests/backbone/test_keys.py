@@ -52,6 +52,59 @@ class TestIsService:
         assert is_service("심볼아크릴트로피") is False
 
 
+class TestIsServiceNonPhysical:
+    """V5 (CBM-CAP-P5) — 비실물/placeholder/날짜형 굿즈명 필터 확장.
+    근거: data/order_cascade/report_20260616-1040.json 실측 (끊김 8 + 부분 노이즈 87)."""
+
+    # 끊김 고정 placeholder (8단위 전부 — 굿즈코드 미해소로 S1 끊김)
+    def test_placeholder_input_field(self):
+        assert is_service("00 추가 데이터 입력란") is True
+
+    # S5 서비스코드 노이즈 굿즈명 (SSSV 계열 — 박스CBM 산출 불가)
+    def test_discount(self):
+        assert is_service("할인") is True
+
+    def test_design_proof(self):
+        assert is_service("시안") is True
+
+    def test_design(self):
+        assert is_service("디자인") is True
+
+    def test_kit_packaging(self):
+        assert is_service("키트포장") is True
+
+    def test_urgent_production(self):
+        assert is_service("긴급제작") is True
+
+    # 고객 지급물(CSPR) — "고객 물품 : <임의 품명>" 접두
+    def test_customer_supplied_goods(self):
+        assert is_service("고객 물품 : 텀블러") is True
+        assert is_service("고객 물품 : Kaco 계산기") is True
+
+    # 날짜형 placeholder(STCK) — MMDD 0XXX (04~06월 = 0으로 시작)
+    def test_date_form_placeholder(self):
+        assert is_service("0428") is True
+        assert is_service("0601") is True
+        assert is_service("0615") is True
+
+    # ── 과필터 가드: 실물 굿즈는 절대 제외하지 않는다 (⚠️ report 완결 80 불변) ──
+    def test_real_cable_kit_kept(self):
+        # '키트포장'은 서비스이나 '케이블키트'는 실물 — bare '키트'로 잡으면 안 됨
+        assert is_service("커넥트 6in1 케이블키트") is False
+
+    def test_real_seed_kit_kept(self):
+        assert is_service("스타트 씨드키트_추가제작") is False
+
+    def test_real_named_goods_kept(self):
+        assert is_service("시그니처 다이어리") is False
+        assert is_service("클리어리유저블컵") is False
+
+    def test_non_date_number_not_filtered(self):
+        # 날짜형은 0으로 시작하는 4자리만 — 임의 숫자/수량은 placeholder 아님
+        assert is_service("1234") is False
+        assert is_service("12345") is False
+
+
 class TestComputeSoyoryang:
     def test_one_to_one(self):
         assert compute_soyoryang(125, 125) == 1.0
