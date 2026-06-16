@@ -12,14 +12,14 @@ PT_RE = re.compile(r"\b(PT\d{3,6})\b")
 PNA_RE = re.compile(r"PNA\d+")  # replay_outbound_cbm.py와 동일 패턴 (PNA뒤 '_'는 \b 미매칭)
 _TRAIL_QTY = re.compile(r"\s+(\d[\d,]*)\s*$")
 # 비물리 서비스/placeholder 굿즈명 — 캐스케이드 CBM/BOM 대상에서 제외.
-# V5(CBM-CAP-P5): "00 추가 데이터 입력란"(끊김 고정)·서비스 굿즈명(SSSV)·고객지급물(CSPR) 추가.
-# ⚠️ substring 매칭이므로 실물 굿즈와 겹치지 않는 토큰만 (예: '키트' 금지 — '케이블키트' 오제외).
-#    근거: data/order_cascade/report_20260616-1040.json 실측 (완결 80 불변 확인).
+# V5(CBM-CAP-P5): "00 추가 데이터 입력란"(끊김 고정)·서비스 굿즈명(SSSV)·고객지급물(CSPR).
+# V5.1(H1 분석): 굿즈명 공백 변형("키트 포장"·"고객 물품") 흡수 위해 is_service에서 공백 제거 후 매칭.
+#   → 키워드는 모두 무공백 토큰으로 저장. ⚠️ 실물과 겹치지 않는 토큰만 (예: '키트' 금지 — '케이블키트' 오제외).
 _SERVICE_KW = ("배송", "하차", "퀵", "다마스", "택배", "설치", "용차", "탑차",
-               "입력란", "할인", "시안", "디자인", "긴급제작", "키트포장", "고객 물품")
-# 날짜형 placeholder(STCK) — MMDD 0XXX (운영 데이터상 4~9월 = 0으로 시작).
-# 실물 굿즈명은 한글/영문 포함 → 0으로 시작하는 순4자리 충돌 없음 (과필터 0).
-_DATE_PLACEHOLDER_RE = re.compile(r"^0\d{3}$")
+               "입력란", "할인", "시안", "디자인", "긴급제작", "키트포장", "고객물품")
+# 날짜형 placeholder(STCK) — 유효 MMDD (월 01~12 · 일 01~31). V5.1로 10~12월(1XXX) 포함.
+# 실물 굿즈명은 한글/영문 포함 → 유효 MMDD 4자리 충돌 없음 (과필터 0).
+_DATE_PLACEHOLDER_RE = re.compile(r"^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$")
 
 
 def extract_pt(text: str) -> str | None:
@@ -47,12 +47,27 @@ def normalize_goods(name: str) -> str:
     return s.strip()
 
 
+# 재생산 접미 (재제작·재재제작·추가제작…) — BOM 베이스 매칭용. 괄호 변형은 보존(다른 BOM).
+_REPRO_SUFFIX_RE = re.compile(r"_[가-힣]*제작\d*$")
+
+
+def goods_base(name: str) -> str:
+    """재제작/추가제작 접미 + [n] 인덱스 제거한 베이스 굿즈명 (V3.1 BOM 매칭용).
+
+    normalize_goods와 달리 (...) 괄호는 보존 — (표준)/(고급) 변형 교차매칭 방지.
+    """
+    s = re.sub(r"\[\d+\]", "", name or "").strip()
+    s = _REPRO_SUFFIX_RE.sub("", s)
+    return s.strip()
+
+
 def is_service(name: str) -> bool:
     """배송·하차 등 비물리 서비스·placeholder 라인 판별(CBM/BOM 대상 제외)."""
     s = (name or "").strip()
     if _DATE_PLACEHOLDER_RE.match(s):
         return True
-    return any(k in s for k in _SERVICE_KW)
+    compact = re.sub(r"\s+", "", s)   # V5.1 — "키트 포장"·"고객 물품" 공백 변형 흡수
+    return any(k in compact for k in _SERVICE_KW)
 
 
 def compute_soyoryang(order_qty, goods_qty) -> float | None:

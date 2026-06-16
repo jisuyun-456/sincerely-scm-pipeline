@@ -14,6 +14,7 @@ from harness.backbone.keys import (
     PNA_RE,
     compute_soyoryang,
     extract_pts,
+    goods_base,
     is_service,
     normalize_goods,
     parse_goods,
@@ -181,22 +182,33 @@ def select_bom_rows(pna: str, goods_name: str, bom_fields: list[dict],
 
     Returns (rows [{소품목_PT, 소요량_개당}], n_verified).
     """
-    by_pt: dict[str, dict] = {}
-    verified: set[str] = set()
-    for f in bom_fields:
-        m = PNA_RE.search(str(f.get("프로젝트코드") or ""))
-        if not m or m.group(0) != pna:
-            continue
-        if str(f.get("모품목_굿즈명") or "") != goods_name:
-            continue
-        pt = str(f.get("소품목_PT") or "")
-        if not pt:
-            continue
-        is_verified = f.get("검증상태") == "검증완료"
-        if pt not in by_pt or (is_verified and pt not in verified):
-            by_pt[pt] = {"소품목_PT": pt, "소요량_개당": f.get("소요량_개당")}
-            if is_verified:
-                verified.add(pt)
+    def _collect(name_match) -> tuple[dict, set]:
+        by_pt: dict[str, dict] = {}
+        verified: set[str] = set()
+        for f in bom_fields:
+            m = PNA_RE.search(str(f.get("프로젝트코드") or ""))
+            if not m or m.group(0) != pna:
+                continue
+            if not name_match(str(f.get("모품목_굿즈명") or "")):
+                continue
+            pt = str(f.get("소품목_PT") or "")
+            if not pt:
+                continue
+            is_verified = f.get("검증상태") == "검증완료"
+            if pt not in by_pt or (is_verified and pt not in verified):
+                by_pt[pt] = {"소품목_PT": pt, "소요량_개당": f.get("소요량_개당")}
+                if is_verified:
+                    verified.add(pt)
+        return by_pt, verified
+
+    by_pt, verified = _collect(lambda nm: nm == goods_name)
+    if not by_pt:
+        # V3.1 — 재제작/추가제작 주문은 굿즈명에 접미가 붙어 베이스 BOM과 불일치.
+        # 베이스명 폴백 (검증 승급 없음 — 재제작 BOM이 베이스와 다를 수 있어 보수적).
+        base = goods_base(goods_name)
+        if base != goods_name:
+            by_pt, _v = _collect(lambda nm: goods_base(nm) == base)
+            verified = set()   # 베이스 매칭은 미검증 취급
     if by_pt:
         rows = [by_pt[pt] for pt in sorted(by_pt)]
         return rows, len(verified)

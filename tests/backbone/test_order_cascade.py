@@ -172,6 +172,26 @@ def test_select_bom_rows_fallback_from_orders():
     assert n_verified == 0
 
 
+def test_select_bom_rows_repro_base_fallback():
+    # V3.1 — 재제작 주문(접미)은 베이스 굿즈명 BOM과 매칭
+    rows, n_verified = select_bom_rows("PNA50702", "심볼아크릴트로피_재제작", _BOM_FIELDS)
+    by_pt = {r["소품목_PT"]: r["소요량_개당"] for r in rows}
+    assert by_pt == {"PT4900": 1.0, "PT4906": 1.0}
+    assert n_verified == 0   # 베이스 폴백은 미검증 취급 (보수적)
+
+
+def test_select_bom_rows_exact_precedence_over_base():
+    # 정확매칭이 있으면 베이스 폴백 안 함 — 검증완료 카운트 유지
+    rows, n_verified = select_bom_rows("PNA50702", "심볼아크릴트로피", _BOM_FIELDS)
+    assert n_verified == 1
+
+
+def test_select_bom_rows_base_no_cross_variant():
+    # 변형(표준) 접미 주문이 베이스만 있는 BOM에 잘못 붙지 않음
+    rows, _ = select_bom_rows("PNA50702", "심볼아크릴트로피(고급)_재제작", _BOM_FIELDS)
+    assert rows == []   # '심볼아크릴트로피(고급)' != '심볼아크릴트로피'
+
+
 # ─── S3: 입하 CBM·M/H ────────────────────────────────────────────
 
 def test_mh_for_inbound_pinned_constants():
