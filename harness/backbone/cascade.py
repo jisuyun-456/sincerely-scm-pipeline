@@ -22,6 +22,7 @@ from harness.backbone.keys import (
 from harness.backbone.ledger import build_propagation_row
 from harness.backbone.mes_forecast import build_inbound_forecast
 from harness.backbone.mrp import net_requirements
+from harness.backbone.product_alias import remap_lines
 from harness.backbone.storage import STOCK_TYPE_INCLUDE, ZONE_TYPE_INCLUDE
 from harness.dispatch.cbm_estimator import estimate_shipment_cbm_deterministic
 from harness.dispatch.wave_assigner import DRIVER_LIMITS
@@ -341,6 +342,12 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
     """
     reasons: list[str] = []
     lines_info = build_order_lines(unit, ctx.pkg_map)
+    # V2 견적코드 정합 — WMS sync_item 코드를 TMS Product 등록코드(권위 스펙)로 재매핑.
+    # alias(동일명 쌍둥이) + 사이즈군(굿즈명 사이즈 파싱). 미해소는 원본 유지 → S5 정직 미산출.
+    # ※ lines_info["code"]는 갱신하지 않음 — mes_timeline은 name_to_code(WMS코드 키스페이스)를
+    #    소비하므로 원본 WMS 코드 유지가 필요 (registered 코드로 덮으면 MES forecast 무음 실패).
+    lines_info["lines"] = remap_lines(lines_info["lines"], unit.goods_name,
+                                      ctx.product_lookup)
     oqty = unit.goods_qty or int(max(
         (_n(f.get("주문수량")) for f in unit.rows), default=0))
 
