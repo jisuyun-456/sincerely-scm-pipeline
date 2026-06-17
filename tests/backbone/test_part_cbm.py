@@ -39,6 +39,25 @@ def test_parse_axis_under_1mm_rejected():
     assert parse_dims_mm("0.5x100x100") is None
 
 
+def test_parse_film_explicit_thin_thickness():
+    # 필름 두께(3축)는 1mm 미만 허용 — W/H는 정상이므로 통째 거부 금지
+    assert parse_dims_mm("135x195x0.04") == (135.0, 195.0, 0.04)
+
+
+def test_parse_pouch_thin_thickness():
+    assert parse_dims_mm("200x300x0.1") == (200.0, 300.0, 0.1)
+
+
+def test_parse_thickness_below_floor_rejected():
+    # 두께 0.005 < MIN_THICKNESS_FLOOR_MM(0.01) = 진짜 노이즈 → 거부
+    assert parse_dims_mm("100x100x0.005") is None
+
+
+def test_parse_wh_under_1mm_still_rejected():
+    # 두께 하한 완화가 W/H 축에는 영향 없음 (0.5는 W축이라 여전히 거부)
+    assert parse_dims_mm("0.5x100x100") is None
+
+
 # ── calc_cbm ─────────────────────────────────────────────────────────────────
 def test_calc_cbm_basic():
     cbm, ok = calc_cbm("480*380*270", 1)
@@ -52,6 +71,12 @@ def test_calc_cbm_zero_qty():
 def test_calc_cbm_unit_over_5m3_rejected():
     # 2000*2000*2000mm = 8 m³ > MAX_UNIT_CBM 5 m³
     assert calc_cbm("2000*2000*2000", 1) == (0.0, False)
+
+
+def test_calc_cbm_film_value():
+    # 135x195x0.04mm = 1.053e-06 m³ (6자리 반올림 → 1e-06), 핵심은 ok=True
+    cbm, ok = calc_cbm("135x195x0.04", 1)
+    assert ok and cbm > 0 and abs(cbm - 1e-06) < 1e-9
 
 
 # ── QC 버킷 ──────────────────────────────────────────────────────────────────
