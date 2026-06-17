@@ -126,3 +126,45 @@ def remap_lines(lines, goods_name, lookup):
         rc = resolve_registered_code(code, goods_name, lookup)
         agg[rc] = agg.get(rc, 0.0) + qty
     return sorted(agg.items())
+
+
+def resolve_product_entry(name, code, name2code, lookup):
+    """이름·코드 → 등록 Product entry(dict) + 해소코드 + 방법. 캐스케이드·정산 공유 리졸버.
+
+    우선순위:
+      1) 코드 직접 (+alias)               — 캐스케이드 경로 (code 보유 시)
+      2) 이름 → sync_item 코드 (+alias)   — 정산 경로 (Shipment에 코드 없음 → 이름으로 코드 복원)
+      3) 이름 Jaccard 폴백                — sync_item 미등록 이름 (현행 정산 동작 보존)
+
+    Returns (entry|None, resolved_code|None, method).
+      method: 'code' | 'name2code' | 'jaccard' | 'unmatched'.
+    name2code: {normalize_goods(굿즈명): 굿즈코드(upper)} (None/{}이면 2단 스킵 → 현행 Jaccard만).
+    하위호환: name2code 미전달 + code 미전달 시 (3)만 실행 → 기존 match_product 동작과 동일.
+    """
+    from harness.backbone.keys import normalize_goods
+    from harness.settlement.cbm_calc import match_product
+
+    # 1) 코드 직접 (+alias). cbm_per_box==0(data_gap)이면 의도적으로 통과시켜 이름 폴백으로 —
+    #    기존 Jaccard-only 동작 보존(미입력 박스코드를 0으로 묵살하지 않음). audit data_gap이 별도 감시.
+    if code:
+        rc = resolve_registered_code(code, name, lookup)
+        e = lookup.get(str(rc).lower())
+        if e is not None and e.get("cbm_per_box", 0) > 0:
+            return e, rc, "code"
+
+    # 2) 이름 → sync_item 코드 (+alias)
+    if name and name2code:
+        c = name2code.get(normalize_goods(name))
+        if c:
+            rc = resolve_registered_code(c, name, lookup)
+            e = lookup.get(str(rc).lower())
+            if e is not None and e.get("cbm_per_box", 0) > 0:
+                return e, rc, "name2code"
+
+    # 3) 이름 Jaccard 폴백 (현행 정산 동작)
+    if name:
+        _k, e, _score = match_product(name, lookup)
+        if e is not None:
+            return e, (str(e.get("code") or "").upper() or None), "jaccard"
+
+    return None, None, "unmatched"

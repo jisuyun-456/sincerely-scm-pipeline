@@ -4,6 +4,7 @@ from harness.backbone.product_alias import (
     resolve_registered_code,
     remap_lines,
     inject_synthetic,
+    resolve_product_entry,
 )
 
 # Minimal product_lookup mimic: code.lower() → entry with cbm_per_box.
@@ -138,3 +139,52 @@ def test_twkf_unresolved_before_injection():
     # 주입 전에는 미등록 → 원본 반환 (S5 정직 미산출)
     assert resolve_registered_code("TWKF", "Lite 스트랩 박스", {}) == "TWKF"
     assert "twkf" not in {}
+
+
+# ── 공유 리졸버 resolve_product_entry (D — 캐스케이드·정산 단일 코드 경로) ──
+
+# name 키까지 포함한 lookup (match_product Jaccard 폴백 테스트용)
+NAMED = {}
+_omp = {"name": "오피스 마우스패드", "code": "OMPD", "cbm_per_box": 0.0201,
+        "qty_per_box": 50, "box_type": "중형", "rec_id": "r1"}
+NAMED["ompd"] = _omp
+NAMED["오피스 마우스패드"] = _omp
+
+
+def test_resolve_entry_code_path():
+    # 코드 직접 (+alias): DSKT → DSKS
+    e, rc, m = resolve_product_entry("데스크테리어 매트", "DSKT", {}, LOOKUP)
+    assert rc == "DSKS" and m == "code" and e is LOOKUP["dsks"]
+
+
+def test_resolve_entry_name2code_alias():
+    # 이름 → sync_item 코드(LOPU) → alias → LSPO
+    e, rc, m = resolve_product_entry("로고스트랩 파우치", None,
+                                     {"로고스트랩 파우치": "LOPU"}, LOOKUP)
+    assert rc == "LSPO" and m == "name2code" and e is LOOKUP["lspo"]
+
+
+def test_resolve_entry_name2code_size_family():
+    # normalize_goods가 (M사이즈) 제거 → name2code 키는 베이스명, 사이즈는 원본명에서 파싱
+    e, rc, m = resolve_product_entry("Solid G형박스(M사이즈)", None,
+                                     {"Solid G형박스": "DRCG"}, LOOKUP)
+    assert rc == "SOLB" and m == "name2code"
+
+
+def test_resolve_entry_synthetic_twkf():
+    lk = dict(LOOKUP)
+    inject_synthetic(lk)
+    e, rc, m = resolve_product_entry("Lite 스트랩 박스", None,
+                                     {"Lite 스트랩 박스": "TWKF"}, lk)
+    assert rc == "TWKF" and m == "name2code" and e["qty_per_box"] == 12
+
+
+def test_resolve_entry_jaccard_fallback():
+    # name2code 없음 → 현행 Jaccard 폴백 (정산 하위호환)
+    e, rc, m = resolve_product_entry("오피스 마우스패드", None, {}, NAMED)
+    assert m == "jaccard" and rc == "OMPD" and e is _omp
+
+
+def test_resolve_entry_unmatched():
+    e, rc, m = resolve_product_entry("존재하지않는무언가", None, {}, NAMED)
+    assert e is None and rc is None and m == "unmatched"

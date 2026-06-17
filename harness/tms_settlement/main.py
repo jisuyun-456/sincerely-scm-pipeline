@@ -17,6 +17,7 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from datetime import date, timedelta
@@ -41,6 +42,7 @@ from harness.tms_settlement.fetch import (
     UnregisteredDriverError,
     fetch_week,
     load_cbm_lookup,
+    load_name2code,
     split_by_driver,
 )
 from harness.tms_settlement.verifier import SettlementVerifier
@@ -137,16 +139,21 @@ def main() -> None:
         park=len(by_driver[DRIVER_PARK]),
     )
 
-    # ── 5. CBM lookup (optional, 박종성 unload fallback) ─────────────────────
+    # ── 5. CBM lookup + name2code (optional, 박종성 unload fallback) ──────────
     product_lookup: dict | None = None
+    name2code: dict = {}
     if by_driver[DRIVER_PARK]:
         product_lookup = load_cbm_lookup(cfg.pat)
+        # 공유 리졸버: 품목명→sync_item 코드→V2 alias→Product (캐스케이드와 동일 경로).
+        # AIRTABLE_WMS_PAT 미설정 시 {} → 현행 이름 Jaccard 폴백 유지.
+        name2code = load_name2code(os.environ.get("AIRTABLE_WMS_PAT"))
 
     # ── 6. Calculate ──────────────────────────────────────────────────────────
     settlement = (
         calc_lee(by_driver[DRIVER_LEE], DRIVER_LEE)
         + calc_cho(by_driver[DRIVER_CHO], DRIVER_CHO)
-        + calc_park(by_driver[DRIVER_PARK], DRIVER_PARK, product_lookup=product_lookup)
+        + calc_park(by_driver[DRIVER_PARK], DRIVER_PARK,
+                    product_lookup=product_lookup, name2code=name2code)
     )
 
     if not settlement:

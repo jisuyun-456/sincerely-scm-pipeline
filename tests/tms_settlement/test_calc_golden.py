@@ -11,10 +11,26 @@ expected value — these numbers match the contractual fare formula as of 2026-0
 from __future__ import annotations
 
 from tests.tms_settlement.conftest import rec
-from harness.tms_settlement.calc import calc_cho, calc_lee, calc_park
+from harness.tms_settlement.calc import _parse_unload_fee, calc_cho, calc_lee, calc_park
 from harness.tms_settlement.config import DRIVER_CHO, DRIVER_LEE, DRIVER_PARK
 
 DATE = "2026-05-05"
+
+
+# ── 상하차비 파서 동치 (E: BOX_FEE_RULES SSOT 리팩터 후 기존 동작 보존) ──
+
+def test_unload_parser_buckets():
+    assert _parse_unload_fee("중대5") == 5_000        # (5//5)×5000
+    assert _parse_unload_fee("대3") == 5_000          # (3//3)×5000
+    assert _parse_unload_fee("특대3") == 5_000        # (3//3)×5000
+    assert _parse_unload_fee("중대5대3특대3") == 15_000
+
+
+def test_unload_parser_floor_and_cap():
+    assert _parse_unload_fee("대2") == 0              # 2//3 = 0 (내림)
+    assert _parse_unload_fee("중대100") == 50_000     # cap MAX_UNLOAD_FEE
+    assert _parse_unload_fee("") == 0
+    assert _parse_unload_fee(None) == 0
 
 
 # ── Lee ──────────────────────────────────────────────────────────────────────
