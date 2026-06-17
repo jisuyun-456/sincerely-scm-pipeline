@@ -914,19 +914,19 @@
       "id": "CBM-DATA-V2-PRODUCT-REGISTER",
       "title": "데이터정합성 V2 — S5 출하CBM 미산출: WMS↔TMS 견적코드 불일치 정합 (alias+사이즈 resolver)",
       "priority": "high",
-      "status": "in_progress",
+      "status": "done",
       "domain": "backbone",
       "created_at": "2026-06-15",
-      "notes": "재진단(2026-06-16, 13-agent 적대검증): \"실품목 미등록\"이 아니라 WMS sync_item 코드≠TMS Product 등록코드 불일치. 11/13 이미 등록(동일명 쌍둥이 7: LOPU→LSPO·STTB→STNB·WCCV→WCV·SLVB→SLVR·BCTW→BCTL·CNPB→CNPG·BMVS→BMCH / 사이즈변형 4: DRCG→SOL[A/B/C]·SZBT→SLZ[B/S]·VMCB→VMC[M/S]·RCPC→RWCL). harness/backbone/product_alias.py(ALIAS+SIZE_FAMILY+parse_size+remap_lines, TDD 12t) + cascade.run_unit remap 주입. Product/WMS 쓰기 0. 재실행 검증: S5 real-code 미산출 60→17, 11타깃 전부 해소(완결 75→80). 잔여: ①BSPK·OFMP·UMUG 박스데이터 사용자입력 ②TWKF(Lite vs Tailored)·DSKT(매트) distinct-SKU 확인 ③VMCB VMC계열 채택 확인(VLM계열 별개·불일치) ④근본: WMS sync_item 굿즈코드 소스정합. 핸드오프: cbm-data-integrity-handoff.md"
+      "notes": "재진단(2026-06-16, 13-agent 적대검증): \"실품목 미등록\"이 아니라 WMS sync_item 코드≠TMS Product 등록코드 불일치. 11/13 이미 등록(동일명 쌍둥이 7: LOPU→LSPO·STTB→STNB·WCCV→WCV·SLVB→SLVR·BCTW→BCTL·CNPB→CNPG·BMVS→BMCH / 사이즈변형 4: DRCG→SOL[A/B/C]·SZBT→SLZ[B/S]·VMCB→VMC[M/S]·RCPC→RWCL). harness/backbone/product_alias.py(ALIAS+SIZE_FAMILY+parse_size+remap_lines, TDD 12t) + cascade.run_unit remap 주입. Product/WMS 쓰기 0. 재실행 검증: S5 real-code 미산출 60→17, 11타깃 전부 해소(완결 75→80). 잔여: ①BSPK·OFMP·UMUG 박스데이터 사용자입력 ②TWKF(Lite vs Tailored)·DSKT(매트) distinct-SKU 확인 ③VMCB VMC계열 채택 확인(VLM계열 별개·불일치) ④근본: WMS sync_item 굿즈코드 소스정합. 핸드오프: cbm-data-integrity-handoff.md || 2026-06-17 DONE: 공유 리졸버(resolve_product_entry)로 캐스케이드·정산 코드경로 통일 + SSOT/레거시정리(commit 599cf77). master 견적서 PDF 누락 6코드(CHTW·UMUG·BROF·TWKF·BRPH·KYCP) Product 등록 → register_in_product 8→5(잔여 5 BSPK·CMWG·KSEP·ODHZ·OFMP는 미사용, 사용자 스킵). TWKF synthetic 은퇴. 상시감시: scripts/backbone/goods_code_audit.py"
     },
     {
       "id": "CBM-DATA-V1-PART-CBM",
       "title": "데이터정합성 V1 — S3 입하 part CBM 81.7% 갭: calc_cbm 필름/봉투 2D 파서 보강 + sync_parts 치수 입력 정책",
       "priority": "high",
-      "status": "pending",
+      "status": "in_progress",
       "domain": "backbone",
       "created_at": "2026-06-15",
-      "notes": "최대 갭 268단위. ItemMaster PT 41.9%(351/837)는 현 치수데이터 천장. 누락 406PT 트리아지: 파서 회복 0·sync_parts 규격 공백 164·부재 242 → 소스 입력이 유일 해법. V1-a(코드): calc_cbm 2D 규격(135x195x0.04mm 필름) 파서. V1-b(정책): sync_parts 규격 가로×세로×높이 입력. 핸드오프: cbm-data-integrity-handoff.md"
+      "notes": "최대 갭 268단위. ItemMaster PT 41.9%(351/837)는 현 치수데이터 천장. 누락 406PT 트리아지: 파서 회복 0·sync_parts 규격 공백 164·부재 242 → 소스 입력이 유일 해법. V1-a(코드): calc_cbm 2D 규격(135x195x0.04mm 필름) 파서. V1-b(정책): sync_parts 규격 가로×세로×높이 입력. 핸드오프: cbm-data-integrity-handoff.md || 2026-06-17: 입력필요 986 PT worksheet 산출(docs/sync_parts_치수입력_worksheet.csv, 생성기 scripts/backbone/sync_parts_worksheet.py, 차단단위수순, 규격 기입력 17건 제외). 사용자가 WMS sync_parts에 규격 입력 예정 → 다음 세션 V1-a 파서 + 재검증."
     },
     {
       "id": "CBM-DATA-V3-BOM-VERIFY",
