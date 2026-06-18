@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
@@ -62,6 +63,36 @@ def _n(x) -> float:
 
 def _first(v):
     return v[0] if isinstance(v, list) and v else ("" if isinstance(v, list) else v)
+
+
+_DATE_RE = re.compile(r"(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})")
+
+
+def _norm_date(v) -> str | None:
+    """다양한 포맷(2026.6.12 / 2026-06-12) → ISO YYYY-MM-DD. #ERROR!·비날짜는 None.
+
+    order 미러 '출고 요청일'은 수식 필드라 점구분·미패딩·'#ERROR!' 혼재 — 정규화 필수.
+    """
+    m = _DATE_RE.search(str(v))
+    if not m:
+        return None
+    y, mo, da = m.groups()
+    return f"{y}-{int(mo):02d}-{int(da):02d}"
+
+
+def _earliest_date(rows: list[dict], field_name: str) -> str | None:
+    """order 행들에서 가장 이른 날짜 (ISO YYYY-MM-DD). 포맷 정규화 + 에러값 제외 (P3).
+
+    값이 lookup(list)일 수 있어 평탄화 후 _norm_date로 정규화(실패분 제외) → min.
+    """
+    vals: list[str] = []
+    for f in rows:
+        v = f.get(field_name)
+        for x in (v if isinstance(v, list) else [v]):
+            d = _norm_date(x)
+            if d:
+                vals.append(d)
+    return min(vals) if vals else None
 
 
 @dataclass
@@ -362,11 +393,13 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
                                       ctx.product_lookup)
     oqty = unit.goods_qty or int(max(
         (_n(f.get("주문수량")) for f in unit.rows), default=0))
+    ship_req = _earliest_date(unit.rows, "출고 요청일")   # P3 출고 forward 앵커
 
     if not lines_info["lines"]:
         reasons.append("S1 키해소 실패 (굿즈코드 미해소 — direct·pkg 모두 없음)")
         row = build_propagation_row(unit.pna, unit.goods_name, oqty, [], None, "",
-                                    status="끊김", cascade_run_id=run_id)
+                                    status="끊김", cascade_run_id=run_id,
+                                    ship_request_date=ship_req)
         return {"row": row, "action": decide_insert(row, prior_fields),
                 "status": "끊김", "reasons": reasons, "mes_by_date": {},
                 "src_counts": lines_info["src_counts"]}
@@ -403,6 +436,7 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
 
     mes = mes_timeline(lines_info["code"], ctx.mes_rows, ctx.name_to_code,
                        ctx.product_by_code, ctx.today)
+    production_due = min(mes) if mes else None   # P3 생산 forward 앵커 (MES 최조 납기)
 
     status = "완결" if not reasons else "부분"
     cbm_per_unit = est_cbm / oqty if est_cbm > 0 and oqty > 0 else None
@@ -413,6 +447,7 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
         inbound_cbm_m3=inb["inbound_cbm"] if bom_rows else None,
         mh_hours=inb["mh_hours"] if bom_rows else None,
         storage_projection=stag, wave_preview=wv, fare_range=fare,
+        production_due=production_due, ship_request_date=ship_req,
         cascade_run_id=run_id, status=status)
     return {"row": row, "action": decide_insert(row, prior_fields),
             "status": status, "reasons": reasons, "mes_by_date": mes,

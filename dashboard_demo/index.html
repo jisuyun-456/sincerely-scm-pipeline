@@ -177,8 +177,8 @@
         <div style="max-height:360px;overflow:auto">
           <table id="board"><thead><tr>
             <th>프로젝트</th><th class="num">굿즈</th><th>상태</th>
-            <th class="num">입하CBM</th><th class="num">출하CBM</th>
-            <th class="num">WMS M/H</th><th class="num">미산출</th><th>대표 부족자재</th>
+            <th class="num">입하CBM</th><th class="num">출하CBM</th><th class="num">WMS M/H</th>
+            <th>출고요청일</th><th>생산납기</th><th class="num">미산출</th><th>대표 부족자재</th>
           </tr></thead><tbody></tbody></table>
         </div>
         <div class="cap" id="boardcap"></div>
@@ -299,7 +299,35 @@ function gauge(host,label,occ,max,unit){const pct=max?Math.round(occ/max*1000)/1
 function kpiTiles(host,items){host.innerHTML='';items.forEach(([l,v])=>{const k=el('div','kpi');
   k.append(el('div','v',v),el('div','l',l));host.append(k);});}
 
-let DATA={}, WEEKFILTER='all', GLOBAL_WEEKS=[], BYP={};
+let DATA={}, WEEKFILTER='all', GLOBAL_WEEKS=[], BYP={}, TODAY='';
+function projForwardDate(rs){return rs.map(u=>(u.row||{})['출고요청일']).filter(Boolean).sort()[0]||null;}
+function projProdDate(rs){return rs.map(u=>(u.row||{})['생산_납기일']).filter(Boolean).sort()[0]||null;}
+function wkOffset(dateStr){if(!dateStr||!TODAY)return null;
+  const ws=x=>{const c=new Date(x+'T00:00:00');if(isNaN(c))return null;c.setDate(c.getDate()-((c.getDay()+6)%7));return c;};
+  const a=ws(dateStr),b=ws(TODAY);return(a&&b)?Math.round((a-b)/(7*86400000)):null;}
+function boardMatch(wk){if(WEEKFILTER==='all')return true;if(wk==null)return false;
+  if(WEEKFILTER==='w0')return wk===0;if(WEEKFILTER==='w1')return wk===1;if(WEEKFILTER==='w23')return wk===2||wk===3;return true;}
+function renderBoard(){
+  const tb=document.querySelector('#board tbody');tb.innerHTML='';
+  const projects=Object.keys(BYP).sort();let shown=0;const bk={w0:0,w1:0,w23:0,past:0,none:0};
+  for(const p of projects){const rs=BYP[p];const fwd=projForwardDate(rs),wk=wkOffset(fwd);
+    if(wk==null)bk.none++;else if(wk<0)bk.past++;else if(wk===0)bk.w0++;else if(wk===1)bk.w1++;else if(wk===2||wk===3)bk.w23++;
+    if(!boardMatch(wk))continue;shown++;
+    let i=0,o=0,m=0,unc=0,d=0,pa=0,br=0,short='';
+    for(const u of rs){const r=u.row||{};i+=+(r['입하CBM_예상_m3']||0);o+=+(r['추정_CBM_m3']||0);m+=+(r['MH_예상_h']||0);
+      if(u.reasons&&u.reasons.length)unc++;const s=r['전파상태'];if(s==='완결')d++;else if(s==='부분')pa++;else br++;
+      if(!short&&r['부족자재_요약'])short=String(r['부족자재_요약']).split('\n')[0];}
+    const badge=br?`<span class="badge b-bad">끊김 ${br}</span>`:pa?`<span class="badge b-part">부분 ${pa}</span>`:`<span class="badge b-ok">완결 ${d}</span>`;
+    const prod=projProdDate(rs);const tr=el('tr','click');tr.onclick=()=>openTrace(p);
+    tr.innerHTML=`<td><b>${p}</b></td><td class="num">${rs.length}</td><td>${badge}</td>`+
+      `<td class="num">${F(i)}</td><td class="num">${F(o)}</td><td class="num">${F1(m)}</td>`+
+      `<td class="small">${fwd||'—'}</td><td class="small">${prod||'—'}</td>`+
+      `<td class="num">${unc}</td><td class="small">${short||'—'}</td>`;
+    tb.append(tr);}
+  const lbl=WEEKFILTER==='all'?'전체':WEEKFILTER==='w0'?'이번주':WEEKFILTER==='w1'?'+1주':'+2~3주';
+  document.getElementById('boardcap').innerHTML=
+    `${lbl} 표시 <b>${shown}</b> 프로젝트 · 출고요청일 버킷(${TODAY} 기준) — 이번주 ${bk.w0} / +1주 ${bk.w1} / +2~3주 ${bk.w23} / 과거 ${bk.past} / 미정 ${bk.none} · 행 클릭→S2~S6 트레이스`;
+}
 function selectedWeekSet(){
   if(WEEKFILTER==='w0')return new Set(GLOBAL_WEEKS.slice(0,1));
   if(WEEKFILTER==='w1')return new Set(GLOBAL_WEEKS.slice(1,2));
@@ -320,7 +348,7 @@ async function load(){
   document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
   document.querySelectorAll('#hzbar button').forEach(b=>b.onclick=()=>{
     WEEKFILTER=b.dataset.hz;document.querySelectorAll('#hzbar button').forEach(x=>x.classList.toggle('on',x===b));
-    renderWeekly();renderStrip();});
+    renderWeekly();renderStrip();renderBoard();});
   document.getElementById('m-x').onclick=closeTrace;
   document.getElementById('mbg').onclick=e=>{if(e.target.id==='mbg')closeTrace();};
 }
@@ -383,6 +411,7 @@ function closeTrace(){document.getElementById('mbg').classList.remove('on');}
 
 function render(){
   const {rep,snap}=DATA;
+  TODAY=snap.snapshot_date;
   document.getElementById('runmeta').textContent=
     `run ${rep.run_id} · 윈도우 ${rep.window_days}d · 보드=트레이스 / 부하=${snap.snapshot_date} 스냅샷`;
   BYP={};for(const u of rep.units){const r=u.row||{};const p=r['프로젝트코드']||'—';(BYP[p]=BYP[p]||[]).push(u);}
@@ -420,18 +449,8 @@ function render(){
   if(stoW.max_cbm==null)A.push(['a','📐',`storage 분모 미시드 — 베스트원 ${F1(stoW.occupied_cbm)} m³`,'Max_CBM 권위값 확인 시 가동률%']);
   A.forEach(([k,ic,t,d])=>{const a=el('div','alert '+k);a.innerHTML=`<div class="ic">${ic}</div><div><div class="t">${t}</div><div class="d">${d}</div></div>`;al.append(a);});
 
-  // board (rows clickable)
-  const tb=document.querySelector('#board tbody');tb.innerHTML='';
-  for(const p of projects){const rs=BYP[p];let i=0,o=0,m=0,unc=0,d=0,pa=0,bk=0,short='';
-    for(const u of rs){const r=u.row||{};i+=+(r['입하CBM_예상_m3']||0);o+=+(r['추정_CBM_m3']||0);m+=+(r['MH_예상_h']||0);
-      if(u.reasons&&u.reasons.length)unc++;const s=r['전파상태'];if(s==='완결')d++;else if(s==='부분')pa++;else bk++;
-      if(!short&&r['부족자재_요약'])short=String(r['부족자재_요약']).split('\n')[0];}
-    const badge=bk?`<span class="badge b-bad">끊김 ${bk}</span>`:pa?`<span class="badge b-part">부분 ${pa}</span>`:`<span class="badge b-ok">완결 ${d}</span>`;
-    const tr=el('tr','click');tr.onclick=()=>openTrace(p);
-    tr.innerHTML=`<td><b>${p}</b></td><td class="num">${rs.length}</td><td>${badge}</td>`+
-      `<td class="num">${F(i)}</td><td class="num">${F(o)}</td><td class="num">${F1(m)}</td><td class="num">${unc}</td><td class="small">${short||'—'}</td>`;
-    tb.append(tr);}
-  document.getElementById('boardcap').textContent=`${projects.length} 프로젝트 · 행 클릭 시 굿즈별 S2~S6 트레이스 · 출하CBM=S5 / 입하CBM=S3`;
+  // board (rows clickable, week-filterable by 출고요청일)
+  renderBoard();
 
   // part KPI tiles
   const join=Math.round(mf.n_joined/mf.n_total*100);

@@ -10,6 +10,8 @@ import pytest
 
 from harness.backbone.cascade import (
     CascadeContext,
+    _earliest_date,
+    _norm_date,
     build_order_lines,
     collect_units,
     decide_insert,
@@ -35,6 +37,28 @@ def _order(pc, goods, part, oqty, code=None, created="2026-06-10T00:00:00.000Z")
     if code is not None:
         f["굿즈코드 (from sync_itemdb)"] = code
     return {"id": f"rec{pc}{part}", "createdTime": created, "fields": f}
+
+
+# ─── P3: forward 날짜 정규화 (출고요청일 수식필드 방어) ─────────────
+
+def test_norm_date_formats():
+    assert _norm_date("2026.6.12") == "2026-06-12"     # 점구분·미패딩
+    assert _norm_date("2026-06-17") == "2026-06-17"    # 이미 ISO
+    assert _norm_date("2026.12.5") == "2026-12-05"
+    assert _norm_date("#ERROR!") is None               # 수식 에러
+    assert _norm_date("") is None
+    assert _norm_date(None) is None
+
+
+def test_earliest_date_skips_errors_and_normalizes():
+    rows = [{"출고 요청일": "#ERROR!"}, {"출고 요청일": "2026.6.12"},
+            {"출고 요청일": "2026.3.19"}]
+    assert _earliest_date(rows, "출고 요청일") == "2026-03-19"   # 에러 제외, 최소
+    # lookup(list) 평탄화
+    assert _earliest_date([{"출고 요청일": ["2026.7.1", "#ERROR!", "2026.5.9"]}],
+                          "출고 요청일") == "2026-05-09"
+    # 전부 에러/공백 → None
+    assert _earliest_date([{"출고 요청일": "#ERROR!"}], "출고 요청일") is None
 
 
 # ─── S0: collect_units ───────────────────────────────────────────

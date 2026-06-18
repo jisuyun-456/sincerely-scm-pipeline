@@ -214,11 +214,15 @@ def build_project_board(results: list[dict]) -> list[str]:
         pna = r["row"].get("프로젝트코드") or "—"
         by_pna.setdefault(pna, []).append(r)
 
-    lines = ["", "## 프로젝트별 진행 보드 (P1)", "",
+    def _min_date(rs, field):
+        ds = [r["row"].get(field) for r in rs if r["row"].get(field)]
+        return min(ds) if ds else "—"
+
+    lines = ["", "## 프로젝트별 진행 보드 (P1·P3)", "",
              f"- 프로젝트 {len(by_pna)}개 / 단위 {len(results)}개", "",
              "| 프로젝트 | 굿즈 | 완결 | 부분 | 끊김 | 입하CBM | 출하CBM "
-             "| WMS M/H(h) | 미산출 굿즈 |",
-             "|---|--:|--:|--:|--:|--:|--:|--:|--:|"]
+             "| WMS M/H(h) | 출고요청일 | 생산납기 | 미산출 |",
+             "|---|--:|--:|--:|--:|--:|--:|--:|---|---|--:|"]
     for pna in sorted(by_pna):
         rs = by_pna[pna]
         done = sum(1 for r in rs if r["row"]["전파상태"] == "완결")
@@ -230,7 +234,9 @@ def build_project_board(results: list[dict]) -> list[str]:
         uncovered = sum(1 for r in rs if r["reasons"])
         lines.append(
             f"| {pna} | {len(rs)} | {done} | {part} | {broke} "
-            f"| {in_cbm} | {out_cbm} | {mh} | {uncovered} |")
+            f"| {in_cbm} | {out_cbm} | {mh} "
+            f"| {_min_date(rs, '출고요청일')} | {_min_date(rs, '생산_납기일')} "
+            f"| {uncovered} |")
     return lines
 
 
@@ -319,7 +325,8 @@ def main():
     print("로딩: order 미러 + PropagationLedger 최신행...", flush=True)
     orders = fetch(WMS, ORDER, wp, ["project_code", "굿즈 주문 수량 (자동)",
                                     "주문수량", "파츠명",
-                                    "굿즈코드 (from sync_itemdb)"])
+                                    "굿즈코드 (from sync_itemdb)",
+                                    "출고 요청일"])
     ledger_recs = fetch(WMS, LEDGER_TBL, wp)   # 신설 전 필드 미지정 (전 필드)
     latest = latest_ledger_by_pid(ledger_recs)
 
