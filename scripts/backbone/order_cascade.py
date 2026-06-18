@@ -202,6 +202,38 @@ def build_context(tp, wp, mp, today):
         rates=rates_for(today.isoformat()), today=today)
 
 
+def build_project_board(results: list[dict]) -> list[str]:
+    """프로젝트(PNA)별 진행 롤업 보드 — BOM·CBM 트레이스 한눈에 (P1).
+
+    ledger row를 프로젝트코드로 묶어 자재 입하CBM ↔ 완제품 출하CBM,
+    WMS M/H, 상태 분포를 1행으로 요약. 굿즈 단위 상세는 아래 단위별 테이블 참조.
+    신규 연산 없음 — 기존 ledger row 필드만 집계.
+    """
+    by_pna: dict[str, list[dict]] = {}
+    for r in results:
+        pna = r["row"].get("프로젝트코드") or "—"
+        by_pna.setdefault(pna, []).append(r)
+
+    lines = ["", "## 프로젝트별 진행 보드 (P1)", "",
+             f"- 프로젝트 {len(by_pna)}개 / 단위 {len(results)}개", "",
+             "| 프로젝트 | 굿즈 | 완결 | 부분 | 끊김 | 입하CBM | 출하CBM "
+             "| WMS M/H(h) | 미산출 굿즈 |",
+             "|---|--:|--:|--:|--:|--:|--:|--:|--:|"]
+    for pna in sorted(by_pna):
+        rs = by_pna[pna]
+        done = sum(1 for r in rs if r["row"]["전파상태"] == "완결")
+        part = sum(1 for r in rs if r["row"]["전파상태"] == "부분")
+        broke = sum(1 for r in rs if r["row"]["전파상태"] == "끊김")
+        in_cbm = round(sum(float(r["row"].get("입하CBM_예상_m3") or 0) for r in rs), 4)
+        out_cbm = round(sum(float(r["row"].get("추정_CBM_m3") or 0) for r in rs), 4)
+        mh = round(sum(float(r["row"].get("MH_예상_h") or 0) for r in rs), 2)
+        uncovered = sum(1 for r in rs if r["reasons"])
+        lines.append(
+            f"| {pna} | {len(rs)} | {done} | {part} | {broke} "
+            f"| {in_cbm} | {out_cbm} | {mh} | {uncovered} |")
+    return lines
+
+
 def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
                  window_days: int):
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -217,16 +249,21 @@ def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
              f"(new {totals['new']} / changed {totals['changed']} / "
              f"unchanged {totals['unchanged']})",
              f"- 상태: 완결 {totals['완결']} / 부분 {totals['부분']} / "
-             f"끊김 {totals['끊김']}", "",
-             "| 전파ID | 상태 | action | 부족자재 | 입하CBM | M/H | wave | 사유 |",
-             "|---|---|---|---|---|---|---|---|"]
+             f"끊김 {totals['끊김']}"]
+    lines += build_project_board(results)
+    lines += ["", "## 단위별 상세 (전파ID)", "",
+              "| 전파ID | 상태 | action | 부족자재 | 입하CBM | 출하CBM | M/H "
+              "| wave | 운임범위 | 사유 |",
+              "|---|---|---|---|--:|--:|--:|---|---|---|"]
     for r in results:
         row = r["row"]
         shortage = str(row.get("부족자재_요약") or "").replace("\n", "<br>")
         lines.append(
             f"| {row['전파ID']} | {row['전파상태']} | {r['action']} "
             f"| {shortage or '—'} | {row.get('입하CBM_예상_m3', '—')} "
+            f"| {row.get('추정_CBM_m3', '—')} "
             f"| {row.get('MH_예상_h', '—')} | {row.get('wave_프리뷰', '—')} "
+            f"| {row.get('운임_예상범위', '—')} "
             f"| {'; '.join(r['reasons']) or '—'} |")
     lines += ["", "> MRP 협력사별 부족분 묶음·Slack digest는 P6b.",
               "> 리포트는 영속 아님 — 영속 기록은 PropagationLedger (spec §3.2)."]
