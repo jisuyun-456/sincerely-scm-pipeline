@@ -151,7 +151,24 @@ def _check_box_sum_internal(box_sum_str: str) -> tuple[bool, int, int]:
 def _clean_item_name(s: str) -> str:
     if re.search(r'\d\+[가-힣A-Za-z]', s):
         return s.strip()
-    return re.sub(r"\s*\d+$", "", s).strip()
+    cleaned = re.sub(r"\s*\d+개$", "", s)
+    cleaned = re.sub(r"\s*\d+$", "", cleaned)
+    if cleaned.strip() != s.strip():
+        print(f"  ⚠️  item name cleaned: {s.strip()!r} → {cleaned.strip()!r}", file=sys.stderr)
+    return cleaned.strip()
+
+
+_SIZE_ALIASES: dict = {
+    "소형": "소", "중형": "중", "대형": "대", "특대형": "특대",
+    "중데": "중대",
+}
+
+def _normalize_size(raw: str) -> str:
+    s = raw.strip()
+    normalized = _SIZE_ALIASES.get(s, s)
+    if normalized != s:
+        print(f"  ⚠️  size alias: {s!r} → {normalized!r}", file=sys.stderr)
+    return normalized
 
 
 def _format_qty(qty_str: str) -> str:
@@ -224,7 +241,7 @@ def parse_packing_detail(text: str) -> list[dict]:
                 box_num += 1
                 boxes.append({
                     "box_num":        box_num,
-                    "size":           m.group(4).strip(),
+                    "size":           _normalize_size(m.group(4)),
                     "item":           _clean_item_name(current_item),
                     "qty":            qty_str,
                     "remainder_items": _parse_remainder(qty_str),
@@ -238,7 +255,7 @@ def parse_packing_detail(text: str) -> list[dict]:
                     box_num += 1
                     boxes.append({
                         "box_num":        box_num,
-                        "size":           mi.group(4).strip(),
+                        "size":           _normalize_size(mi.group(4)),
                         "item":           _clean_item_name(current_item),
                         "qty":            qty_str,
                         "remainder_items": _parse_remainder(qty_str),
@@ -255,7 +272,7 @@ def parse_packing_detail(text: str) -> list[dict]:
                         box_num += 1
                         boxes.append({
                             "box_num":         box_num,
-                            "size":            mc.group(4).strip(),
+                            "size":            _normalize_size(mc.group(4)),
                             "item":            current_item,
                             "qty":             qty_str,
                             "remainder_items": [],
@@ -519,7 +536,7 @@ def _sort_summary_by_box_order(summary_lines: list, groups: list) -> list:
 # PDF 그리기
 # ────────────────────────────────────────────────────────────────────────────
 def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str):
-    """HTML 디자인 기반 Packing List (A4) — 네이비 헤더 / 주소 카드 / 품목표 / 합계 바"""
+    """HTML 디자인 기반 Packing List (A4) — 네이비 헤더 / 주소 카드 / 품목표 / 합계 바 (multi-page)"""
     if rec.get("is_error"):
         _draw_error_page(c, rec, font, font_bold)
         return
@@ -540,6 +557,60 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
 
     def ln(h=5*mm):
         nonlocal y; y -= h
+
+    TBL_W  = W - 2*M
+    desc_w = TBL_W - 18*mm - 30*mm - 18*mm - 30*mm
+    COL_W  = [18*mm, desc_w, 30*mm, 18*mm, 30*mm]
+    COL_AL = ["C", "L", "C", "C", "C"]
+    HDR_H_TBL = 8 * mm
+    ROW_H_TBL = 7.5 * mm
+    TOTAL_H   = 12 * mm
+    # minimum y before drawing a row: reserve space for total bar + sig line + footer
+    Y_FLOOR   = M + 40 * mm
+
+    page_num = [1]
+    company_disp = (rec["company"].split("-", 1)[-1]
+                    if "-" in rec["company"] else rec["company"])
+
+    def _draw_footer_line():
+        c.setFillColor(MUTED); c.setFont(font, 7.5)
+        pg = f"  —  {page_num[0]}" if page_num[0] > 1 else ""
+        c.drawCentredString(W / 2, M / 2,
+                            f"SINCERELY Co., Ltd.  ·  Packing List  ·  {rec['to_num']}{pg}")
+
+    def _draw_table_header():
+        nonlocal y
+        c.setFillColor(NAVY)
+        c.rect(M, y - HDR_H_TBL, TBL_W, HDR_H_TBL, fill=1, stroke=0)
+        c.setFont(font_bold, 8); c.setFillColor(colors.white)
+        hx = M
+        for hdr, cw in zip(
+            ["BOX No.", "DESCRIPTION OF GOODS", "QTY / UNIT", "SIZE", "REMARKS"], COL_W
+        ):
+            c.drawCentredString(hx + cw / 2, y - HDR_H_TBL + 2.5 * mm, hdr)
+            hx += cw
+        y -= HDR_H_TBL
+
+    def _start_new_page(tbl_start_y_ref):
+        nonlocal y
+        c.setStrokeColor(LINE); c.setLineWidth(0.85)
+        c.rect(M, y, TBL_W, tbl_start_y_ref - y + HDR_H_TBL, stroke=1, fill=0)
+        _draw_footer_line()
+        c.showPage()
+        page_num[0] += 1
+        y = PH - M
+        CONT_H = 12 * mm
+        c.setFillColor(NAVY)
+        c.rect(0, y - CONT_H, W, CONT_H, fill=1, stroke=0)
+        c.setFillColor(colors.white)
+        c.setFont(font_bold, 9.5)
+        c.drawString(M, y - 8 * mm, "PACKING LIST  (continued)")
+        c.setFont(font, 8); c.setFillColor(W_MUT)
+        c.drawRightString(W - M, y - 4.5 * mm, rec["to_num"])
+        c.drawRightString(W - M, y - 9 * mm, company_disp)
+        y -= CONT_H; ln(6 * mm)
+        _draw_table_header()
+        return y
 
     # ── 1. 헤더 (전폭 네이비, 30mm) ─────────────────────────────────────────
     HDR_H = 30 * mm
@@ -597,8 +668,6 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
     shipper_addr = (rec.get("shipper_addr")
                     or "서울시 성동구 왕십리로88 노벨빌딩 4층 신시어리")
     shipper_tel  = rec.get("shipper_tel") or ""
-    company_disp = (rec["company"].split("-", 1)[-1]
-                    if "-" in rec["company"] else rec["company"])
     cons_attn    = rec.get("consignee_name") or company_disp
 
     draw_addr(M, "From (Shipper)",
@@ -630,44 +699,29 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
     y -= PROJ_H; ln(6*mm)
 
     # ── 4. 품목 테이블 (canvas 직접 그리기, platypus 미사용) ─────────────────
-    TBL_W  = W - 2*M
-    desc_w = TBL_W - 18*mm - 30*mm - 18*mm - 30*mm
-    COL_W  = [18*mm, desc_w, 30*mm, 18*mm, 30*mm]
-    COL_AL = ["C", "L", "C", "C", "C"]
-    HDR_H_TBL = 8 * mm
-    ROW_H_TBL = 7.5 * mm
-
-    # 헤더 행
-    c.setFillColor(NAVY)
-    c.rect(M, y - HDR_H_TBL, TBL_W, HDR_H_TBL, fill=1, stroke=0)
-    c.setFont(font_bold, 8); c.setFillColor(colors.white)
-    hx = M
-    for hdr, cw in zip(
-        ["BOX No.", "DESCRIPTION OF GOODS", "QTY / UNIT", "SIZE", "REMARKS"], COL_W
-    ):
-        c.drawCentredString(hx + cw / 2, y - HDR_H_TBL + 2.5 * mm, hdr)
-        hx += cw
-    y -= HDR_H_TBL
+    _draw_table_header()
+    tbl_start_y = y
 
     # ── 요약 행 (외박스 포장 물품 및 수량 통합) ─────────────────────────────
-    tbl_start_y = y
     SUMM_ACCENT = 3 * mm   # 좌측 강조 바 폭
+    last_summ_page = page_num[0]
     for sl in _sort_summary_by_box_order(rec.get("summary_lines", []), rec.get("groups", [])):
+        if y - ROW_H_TBL < Y_FLOOR:
+            tbl_start_y = _start_new_page(tbl_start_y)
         c.setFillColor(TINT)
         c.rect(M, y - ROW_H_TBL, TBL_W, ROW_H_TBL, fill=1, stroke=0)
-        # 좌측 네이비 액센트
         c.setFillColor(NAVY)
         c.rect(M, y - ROW_H_TBL, SUMM_ACCENT, ROW_H_TBL, fill=1, stroke=0)
         c.setStrokeColor(LINE); c.setLineWidth(0.85)
         c.line(M, y - ROW_H_TBL, M + TBL_W, y - ROW_H_TBL)
-        # 텍스트: BOX No. 열은 공란, DESCRIPTION 열에 요약 텍스트 (볼드)
         c.setFont(font_bold, 9.1); c.setFillColor(NAVY)
         pad = COL_W[0] + 5 * mm  # BOX No. 열 건너뜀
         c.drawString(M + pad, y - ROW_H_TBL + 2.5 * mm, sl[:40])
         y -= ROW_H_TBL
+        last_summ_page = page_num[0]
 
-    # 요약 행과 데이터 행 구분선
-    if rec.get("summary_lines"):
+    # 요약 행과 데이터 행 구분선 (같은 페이지 세그먼트에 있을 때만)
+    if rec.get("summary_lines") and last_summ_page == page_num[0]:
         c.setStrokeColor(NAVY); c.setLineWidth(1.2)
         c.line(M, y, M + TBL_W, y)
 
@@ -707,6 +761,8 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
                 })
 
     for ri, row in enumerate(row_data):
+        if y - ROW_H_TBL < Y_FLOOR:
+            tbl_start_y = _start_new_page(tbl_start_y)
         if row["hapojang"]:
             bg = AMBER
         else:
@@ -737,7 +793,6 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
     ln(7*mm)
 
     # ── 5. 합계 바 (네이비, 12mm) ─────────────────────────────────────────────
-    TOTAL_H = 12 * mm
     c.setFillColor(NAVY)
     c.rect(M, y - TOTAL_H, W - 2*M, TOTAL_H, fill=1, stroke=0)
 
@@ -770,9 +825,7 @@ def draw_packing_list(c: rl_canvas.Canvas, rec: dict, font: str, font_bold: str)
         c.line(sx, y - 9*mm, sx + SIG_W, y - 9*mm)
 
     # ── 7. 페이지 하단 ───────────────────────────────────────────────────────
-    c.setFillColor(MUTED); c.setFont(font, 7.5)
-    c.drawCentredString(W / 2, M / 2,
-                        f"SINCERELY Co., Ltd.  ·  Packing List  ·  {rec['to_num']}")
+    _draw_footer_line()
 
 
 def generate_packing_list(records: list, output) -> int:
