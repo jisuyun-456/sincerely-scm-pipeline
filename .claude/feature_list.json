@@ -946,6 +946,33 @@
       "domain": "backbone",
       "created_at": "2026-06-15",
       "notes": "1702행 중 검증완료 117(6.9%)·이송 1585. MRP는 미검증행도 소비. scripts/backbone/task_bom_verify.py 재실행. 핸드오프: cbm-data-integrity-handoff.md"
+    },
+    {
+      "id": "DISPATCH-SERVICE-CONF-FIX",
+      "title": "자동배차 수동건 해소 — 비물리 서비스라인(SSSV/CSPR) confidence 제외",
+      "priority": "high",
+      "status": "done",
+      "domain": "dispatch",
+      "created_at": "2026-06-19",
+      "notes": "근본원인: estimate_shipment_cbm_deterministic가 SSSV(신시어리서비스) 등 서비스 order라인을 unmatched로 세어 conf 0.7 cap → floor 0.8 미달로 6/23~30 수동 다발. SERVICE_CODES{SSSV,CSPR} 제외 적용. 검증 퀵 자동배차 2→26, replay 389건 백필(err0, Total_CBM 미터치), pytest 485 pass. commit a545970."
+    },
+    {
+      "id": "KEYS-IS-SERVICE-ACCURACY",
+      "title": "is_service 이름매칭 정확도 — '신시어리서비스'·'고객입고물품' 미탐 + '퀵차지'(실물) 오탐",
+      "priority": "medium",
+      "status": "pending",
+      "domain": "backbone",
+      "created_at": "2026-06-19",
+      "notes": "keys.is_service: _SERVICE_KW에 '서비스' 없어 신시어리서비스 미탐, '고객입고물품'은 '고객물품'과 불일치로 미탐. 반대로 '퀵' 키워드가 '퀵차지 보조배터리'(실물)를 오탐 → 캐스케이드 CBM 누락 가능. dispatch는 코드집합(SERVICE_CODES)으로 우회했으나 cascade is_service 경로는 잔존. 단어경계/제외토큰 보강 필요."
+    },
+    {
+      "id": "DISPATCH-W1-SLOT-TEST",
+      "title": "pre-existing 실패: test_w1_accepts_only_morning_slot vs _slot_filter_w1('무관' 허용) 모순",
+      "priority": "low",
+      "status": "pending",
+      "domain": "dispatch",
+      "created_at": "2026-06-19",
+      "notes": "테스트는 W1이 '무관' 거부 기대하나 코드는 '무관' 허용(오전 포함 의도). 본 세션 변경과 무관(stash로 확인). 테스트/코드 중 어느 쪽이 의도인지 확정 필요."
     }
   ]
 }
