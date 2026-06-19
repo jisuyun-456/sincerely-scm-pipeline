@@ -22,6 +22,12 @@ _KIT_SRC_CONF = {"TMS_Product": 1.0, "박스유도": 0.9, "MES_제품DB": 0.8, "
                  "치수파싱": 0.55, "QC버킷": 0.40}  # P3' part_cbm 백필 출처 (spec §6 2축치수·QC버킷)
 KIT_CONF_CAP = 0.8  # Product 직접조인(0.9~1.0)보다 항상 낮게 — 신뢰도 사다리 정렬 (spec §6-2)
 
+# 비물리 서비스/고객지급 굿즈코드 — 박스·CBM이 없어 confidence 산정에서 제외.
+# (코드 기반: keys.is_service 이름매칭은 '신시어리서비스'·'고객입고물품'을 못 잡고
+#  '퀵차지'(실물 보조배터리)를 오탐하므로, 정확도 위해 코드 집합으로 관리. 발견 시 확장.)
+# 진단(2026-06-19): SSSV가 6/23~30 미출고 71건 중 56건의 confidence를 0.7로 cap.
+SERVICE_CODES: frozenset[str] = frozenset({"SSSV", "CSPR"})
+
 # Thousand-separator: '1,000' → '1000' (digit-comma-three-digits, not in larger run)
 _THOUSANDS_COMMA = re.compile(r"(\d),(?=\d{3}(?!\d))")
 
@@ -251,6 +257,7 @@ def estimate_shipment_cbm_deterministic(
     lookup: dict,
     shipment_count: dict[str, int],
     kit_lookup: dict | None = None,
+    service_codes: set[str] | None = None,
 ) -> dict:
     """결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.
 
@@ -258,6 +265,9 @@ def estimate_shipment_cbm_deterministic(
     blank project_code/no order는 호출측에서 기존 퍼지 estimate_shipment_cbm 폴백.
     kit_lookup: {(PNA, 견적코드): (kit_cbm_per_unit, conf)} — Product CBM 부재 시만 적용
     (이중계상 가드: direct 우선). kit 사용 시 confidence ≤ 0.8.
+    service_codes: 비물리 서비스라인(예: SSSV 신시어리서비스·CSPR 고객입고물품) 코드 집합.
+    해당 라인은 박스/CBM이 없으므로 matched/unmatched 판정·CBM 합산에서 제외 —
+    실물이 전부 매칭이면 서비스 동반에도 confidence 1.0. (None=미적용, 기존 동작.)
     Returns dict: {estimated_cbm, confidence, mode, matched, unmatched, kit_used}.
     """
     if shipment_count.get(project_code, 0) > 1:
@@ -267,12 +277,15 @@ def estimate_shipment_cbm_deterministic(
     if not lines:
         return {"estimated_cbm": 0.0, "confidence": 0.0, "mode": "no_order",
                 "matched": [], "unmatched": [], "kit_used": []}
+    svc = {c.upper() for c in service_codes} if service_codes else None
     total = 0.0
     matched: list[str] = []
     unmatched: list[str] = []
     kit_used: list[str] = []
     kit_confs: list[float] = []
     for code, qty in lines:
+        if svc and str(code).upper() in svc:
+            continue  # 비물리 서비스라인 — confidence/CBM 산정 제외
         e = lookup.get(str(code).lower())
         if e and e["cbm_per_box"] > 0 and qty > 0:
             total += math.ceil(qty / e["qty_per_box"]) * e["cbm_per_box"]

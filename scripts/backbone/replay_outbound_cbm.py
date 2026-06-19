@@ -27,7 +27,8 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 from harness.dispatch.cbm_estimator import (  # noqa: E402
-    estimate_shipment_cbm_deterministic, estimate_shipment_cbm, build_kit_cbm_lookup,
+    SERVICE_CODES, estimate_shipment_cbm_deterministic, estimate_shipment_cbm,
+    build_kit_cbm_lookup,
 )
 from harness.backbone.keys import (  # noqa: E402
     resolve_goods_code, build_pkg_goods_map, normalize_goods,
@@ -167,6 +168,7 @@ def build_inputs():
           f"[Gate ≥85%]", flush=True)
     print("shipment 로딩...", flush=True)
     ships = fetch(TMS, SHIP, TP, ["project code", "Total_CBM", "estimated_cbm",
+                                  "estimation_confidence",
                                   "최종 출고 품목 및 수량", "최종 출하 품목"])
     shipment_count = collections.Counter()
     for r in ships:
@@ -219,7 +221,8 @@ def main():
             blank += 1
         else:
             res = estimate_shipment_cbm_deterministic(m.group(0), obp, lk, scount,
-                                                      kit_lookup=kit)
+                                                      kit_lookup=kit,
+                                                      service_codes=SERVICE_CODES)
             mode = res["mode"]
             if mode == "partial_skip":
                 partial += 1
@@ -233,7 +236,11 @@ def main():
                     newly += 1
                 if res["confidence"] >= 0.7:
                     cur = n(f.get("estimated_cbm"))
-                    if abs(cur - res["estimated_cbm"]) > WRITE_TOL:
+                    cur_conf = n(f.get("estimation_confidence"))
+                    # 값 변동 OR confidence 변동 시 PATCH — 서비스라인 제외는 est 값은
+                    # 그대로(서비스=CBM 0)이고 confidence만 0.7→1.0 상승하므로 conf 비교 필수.
+                    if (abs(cur - res["estimated_cbm"]) > WRITE_TOL
+                            or abs(cur_conf - res["confidence"]) > 1e-9):
                         to_patch.append((r["id"], res["estimated_cbm"], res["confidence"]))
             else:  # deterministic but est==0 (전부 unmatched/qty0)
                 unmatched_only += 1
