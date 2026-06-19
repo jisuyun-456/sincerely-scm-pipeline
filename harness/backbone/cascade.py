@@ -26,7 +26,7 @@ from harness.backbone.mes_forecast import build_inbound_forecast
 from harness.backbone.mrp import net_requirements
 from harness.backbone.product_alias import remap_lines
 from harness.backbone.storage import STOCK_TYPE_INCLUDE, ZONE_TYPE_INCLUDE
-from harness.dispatch.cbm_estimator import estimate_shipment_cbm_deterministic
+from harness.dispatch.cbm_estimator import SERVICE_CODES, estimate_shipment_cbm_deterministic
 from harness.dispatch.wave_assigner import DRIVER_LIMITS
 from harness.tms_settlement.config import round_up_500
 
@@ -423,7 +423,7 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
 
     est = estimate_shipment_cbm_deterministic(
         unit.pna, {unit.pna: lines_info["lines"]}, ctx.product_lookup,
-        ctx.shipment_count, kit_lookup=ctx.kit_lookup)
+        ctx.shipment_count, kit_lookup=ctx.kit_lookup, service_codes=SERVICE_CODES)
     est_cbm = est["estimated_cbm"]
     if est_cbm <= 0:
         reasons.append(f"S5 출하CBM 미산출 (mode={est['mode']}, "
