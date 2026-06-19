@@ -135,6 +135,55 @@ class TestDeterministicKitFallback:
         assert res["estimated_cbm"] == 0.0 and res["unmatched"] == ["KIT-A"]
 
 
+# ───────────────────── 비물리 서비스라인 제외 (confidence 보정) ─────────────────────
+
+class TestDeterministicServiceExclusion:
+    """비물리 서비스라인(SSSV 신시어리서비스·CSPR 고객입고물품)은 matched/unmatched
+    confidence 계산에서 제외 — 실물이 전부 매칭이고 잔여 unmatched가 서비스라인뿐이면
+    conf 1.0. 서비스라인은 박스/CBM이 없으므로 estimated_cbm에도 미가산."""
+
+    def test_service_line_excluded_yields_full_confidence(self):
+        # SBAT(실물) 매칭 + SSSV(서비스) → 서비스 제외 시 conf 1.0 (기존엔 0.7)
+        r = estimate_shipment_cbm_deterministic(
+            "PNA1", {"PNA1": [("SBAT", 38), ("SSSV", 100)]}, _DET_LOOKUP, {"PNA1": 1},
+            service_codes={"SSSV", "CSPR"})
+        assert r["confidence"] == 1.0
+        assert r["matched"] == ["SBAT"]
+        assert "SSSV" not in r["unmatched"]
+        assert abs(r["estimated_cbm"] - 0.0402) < 1e-6   # 서비스라인 CBM 미가산
+
+    def test_service_exclusion_case_insensitive(self):
+        r = estimate_shipment_cbm_deterministic(
+            "PNA1", {"PNA1": [("SBAT", 38), ("sssv", 100)]}, _DET_LOOKUP, {"PNA1": 1},
+            service_codes={"SSSV"})
+        assert r["confidence"] == 1.0
+        assert [c for c in r["unmatched"] if c.upper() == "SSSV"] == []
+
+    def test_real_unmatched_still_caps_confidence(self):
+        # 서비스 제외해도 실물 누락(NOPE)이 남으면 conf 0.7 유지 (정직)
+        r = estimate_shipment_cbm_deterministic(
+            "PNA1", {"PNA1": [("SBAT", 19), ("SSSV", 100), ("NOPE", 5)]},
+            _DET_LOOKUP, {"PNA1": 1}, service_codes={"SSSV"})
+        assert r["confidence"] == 0.7
+        assert r["unmatched"] == ["NOPE"]
+
+    def test_all_service_order_zero(self):
+        # 전부 서비스라인 → 물리 CBM 없음 → est 0, conf 0 (안전하게 수동)
+        r = estimate_shipment_cbm_deterministic(
+            "PNA1", {"PNA1": [("SSSV", 100)]}, _DET_LOOKUP, {"PNA1": 1},
+            service_codes={"SSSV"})
+        assert r["estimated_cbm"] == 0.0
+        assert r["confidence"] == 0.0
+        assert r["matched"] == [] and r["unmatched"] == []
+
+    def test_backward_compat_no_service_codes(self):
+        # service_codes 미전달 → 기존 동작 유지 (SSSV가 unmatched → conf 0.7)
+        r = estimate_shipment_cbm_deterministic(
+            "PNA1", {"PNA1": [("SBAT", 38), ("SSSV", 100)]}, _DET_LOOKUP, {"PNA1": 1})
+        assert r["confidence"] == 0.7
+        assert "SSSV" in r["unmatched"]
+
+
 # ────────────────────────── parse_product_lines_v2 ──────────────────────────
 
 class TestParseV1Compatibility:
