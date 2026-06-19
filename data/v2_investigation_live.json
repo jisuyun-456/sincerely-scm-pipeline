@@ -1,0 +1,962 @@
+{
+  "fetched_records": 1000,
+  "n_candidates": 71,
+  "products": {
+    "테크미니파우치": {
+      "n_shipments": 5,
+      "n_single_box_type": 5,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "브랜드팝클리어키링": {
+      "n_shipments": 4,
+      "n_single_box_type": 4,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 2,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0,
+        2.0
+      ],
+      "cbm_validation": []
+    },
+    "킵세이프마그넷배터리Ma": {
+      "n_shipments": 4,
+      "n_single_box_type": 4,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 101,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        101.0,
+        101.0,
+        101.0
+      ],
+      "cbm_validation": []
+    },
+    "클래시차량용방향제": {
+      "n_shipments": 3,
+      "n_single_box_type": 3,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 28,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        25.1,
+        33.3,
+        25.0
+      ],
+      "cbm_validation": []
+    },
+    "올웨이즈양우산": {
+      "n_shipments": 3,
+      "n_single_box_type": 3,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 44,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        31.0,
+        50.5,
+        50.2
+      ],
+      "cbm_validation": []
+    },
+    "커넥트6in1케이블키트": {
+      "n_shipments": 3,
+      "n_single_box_type": 3,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 152,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        182.0,
+        121.0
+      ],
+      "cbm_validation": []
+    },
+    "슬로건다이어리": {
+      "n_shipments": 3,
+      "n_single_box_type": 3,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 3,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        3.0,
+        3.0,
+        3.0
+      ],
+      "cbm_validation": []
+    },
+    "킵세이프마그넷배터리Slim": {
+      "n_shipments": 3,
+      "n_single_box_type": 3,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 101,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        100.7,
+        100.5,
+        100.5
+      ],
+      "cbm_validation": []
+    },
+    "슬림 터보선풍기": {
+      "n_shipments": 4,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 50,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        50.5,
+        50.3
+      ],
+      "cbm_validation": []
+    },
+    "아이콘 케이블홀더 세트": {
+      "n_shipments": 2,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 255,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        255.0
+      ],
+      "cbm_validation": []
+    },
+    "레더스킨다이어리(커스텀)": {
+      "n_shipments": 2,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 125,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        50.5,
+        200.0
+      ],
+      "cbm_validation": []
+    },
+    "액티브스포츠타월": {
+      "n_shipments": 2,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 40,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        40.4
+      ],
+      "cbm_validation": []
+    },
+    "슬로건다이어리(표준)": {
+      "n_shipments": 2,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 51,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        50.5,
+        51.0
+      ],
+      "cbm_validation": []
+    },
+    "유니크디퓨저": {
+      "n_shipments": 2,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 41,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        40.7,
+        40.4
+      ],
+      "cbm_validation": []
+    },
+    "홀리데이네임택": {
+      "n_shipments": 2,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 158,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        203.0,
+        112.0
+      ],
+      "cbm_validation": []
+    },
+    "에디션골프공6구": {
+      "n_shipments": 2,
+      "n_single_box_type": 2,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 25,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        25.2,
+        25.0
+      ],
+      "cbm_validation": []
+    },
+    "심볼아크릴트로피": {
+      "n_shipments": 2,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 30,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        30.2
+      ],
+      "cbm_validation": []
+    },
+    "액티브 스포츠 타월": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 38,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        37.8
+      ],
+      "cbm_validation": [
+        {
+          "sc_id": "SC00028452",
+          "expected_cbm": 0.1972,
+          "actual_cbm": 1.05,
+          "match_ratio": 0.188
+        }
+      ]
+    },
+    "어드벤스3단자동우산": {
+      "n_shipments": 3,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 26,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        25.5
+      ],
+      "cbm_validation": [
+        {
+          "sc_id": "SC00028560",
+          "expected_cbm": 0.0986,
+          "actual_cbm": 0.525,
+          "match_ratio": 0.188
+        }
+      ]
+    },
+    "볼마커": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": [
+        {
+          "sc_id": "SC00028624",
+          "expected_cbm": 0.0098,
+          "actual_cbm": 0.021,
+          "match_ratio": 0.467
+        }
+      ]
+    },
+    "Solid 스탠다드 G형박스 키트": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "대형",
+      "inferred_qty_per_box": 11,
+      "cbm_per_box": 0.1066,
+      "qty_per_box_observations": [
+        11.2
+      ],
+      "cbm_validation": [
+        {
+          "sc_id": "SC00028545",
+          "expected_cbm": 0.9594,
+          "actual_cbm": 0.959,
+          "match_ratio": 1.0
+        }
+      ]
+    },
+    "스탠딩휴대용선풍기": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중형",
+      "inferred_qty_per_box": 4,
+      "cbm_per_box": 0.0201,
+      "qty_per_box_observations": [
+        4.0
+      ],
+      "cbm_validation": []
+    },
+    "브릭스탠드멀티충전스테이션 패드": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "데일리 칫솔살균기": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 51,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        51.0
+      ],
+      "cbm_validation": []
+    },
+    "모바일오피스파우치2.0 키트": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 10,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        10.0
+      ],
+      "cbm_validation": []
+    },
+    "프레젠트골프공3구": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "스테이텀블러": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "아너월넛트로피": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 9,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        9.0
+      ],
+      "cbm_validation": []
+    },
+    "핸디링미니선풍기": {
+      "n_shipments": 2,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 70,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        70.5
+      ],
+      "cbm_validation": []
+    },
+    "포켓마켓백": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 250,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        250.5
+      ],
+      "cbm_validation": []
+    },
+    "아임히어리플렉터키링": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 168,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        168.0
+      ],
+      "cbm_validation": []
+    },
+    "인마이백피크닉매트": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "플러스멀티충전스테이션": {
+      "n_shipments": 2,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 20,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        20.2
+      ],
+      "cbm_validation": []
+    },
+    "시그니처다이어리(그레이)": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 52,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        51.5
+      ],
+      "cbm_validation": []
+    },
+    "글로시키링": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중형",
+      "inferred_qty_per_box": 66,
+      "cbm_per_box": 0.0201,
+      "qty_per_box_observations": [
+        66.0
+      ],
+      "cbm_validation": []
+    },
+    "베이직도킹형보조배터리": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 61,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        61.0
+      ],
+      "cbm_validation": []
+    },
+    "모먼트골드스파클": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 155,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        155.0
+      ],
+      "cbm_validation": []
+    },
+    "Motion스탠다드박스(Tower) 키트": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "특대형",
+      "inferred_qty_per_box": 20,
+      "cbm_per_box": 0.1662,
+      "qty_per_box_observations": [
+        20.2
+      ],
+      "cbm_validation": []
+    },
+    "브랜드스트랩단우산": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 48,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        48.0
+      ],
+      "cbm_validation": []
+    },
+    "시그니처다이어리": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "모먼트일회용카메라": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 100,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        100.2
+      ],
+      "cbm_validation": []
+    },
+    "밸류무선충전마우스패드": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 17,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        17.0
+      ],
+      "cbm_validation": []
+    },
+    "챔피언피규어트로피": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 18,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        18.3
+      ],
+      "cbm_validation": []
+    },
+    "프라임폴더블멀티충전기": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 51,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        51.0
+      ],
+      "cbm_validation": []
+    },
+    "UV(퀵차지보조배터리)": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "퍼블랭킷(무릎담요)": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "특대형",
+      "inferred_qty_per_box": 25,
+      "cbm_per_box": 0.1662,
+      "qty_per_box_observations": [
+        25.2
+      ],
+      "cbm_validation": []
+    },
+    "스탠리데일리텀블러": {
+      "n_shipments": 2,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "시그니처다이어리100": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 0,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        0.5
+      ],
+      "cbm_validation": []
+    },
+    "카드트레이피규어세트": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 101,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        101.3
+      ],
+      "cbm_validation": []
+    },
+    "레더스킨다이어리(표준)300": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 0,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        0.2
+      ],
+      "cbm_validation": []
+    },
+    "알류미늄플레이트(클래시방향제_전사)": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "컬러풀노트패드": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 126,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        125.6
+      ],
+      "cbm_validation": []
+    },
+    "월드와이드멀티어댑터": {
+      "n_shipments": 2,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 67,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        67.0
+      ],
+      "cbm_validation": []
+    },
+    "뮤지엄머그": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "중대형",
+      "inferred_qty_per_box": 24,
+      "cbm_per_box": 0.0493,
+      "qty_per_box_observations": [
+        24.3
+      ],
+      "cbm_validation": []
+    },
+    "데코스티커+ 데코스티커140": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 12,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        12.0
+      ],
+      "cbm_validation": []
+    },
+    "후드스트링": {
+      "n_shipments": 1,
+      "n_single_box_type": 1,
+      "inferred_box_type": "극소형",
+      "inferred_qty_per_box": 1,
+      "cbm_per_box": 0.0098,
+      "qty_per_box_observations": [
+        1.0
+      ],
+      "cbm_validation": []
+    },
+    "레더스킨다이어리": {
+      "n_shipments": 2,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027466",
+          "qty": 710,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중형": 1,
+            "중대형": 14
+          },
+          "total_box_count": 15,
+          "single_box_type": null
+        },
+        {
+          "sc_id": "SC00027495",
+          "qty": 1505,
+          "total_cbm": 0.0,
+          "boxes": {
+            "극소형": 1,
+            "중대형": 30
+          },
+          "total_box_count": 31,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "브랜디드 타월키트": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00028349",
+          "qty": 102,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중형": 1,
+            "특대형": 5
+          },
+          "total_box_count": 6,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "클리어 리유저블컵": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00028083",
+          "qty": 502,
+          "total_cbm": 0.0,
+          "boxes": {
+            "극소형": 1,
+            "대형": 10
+          },
+          "total_box_count": 11,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "클로저휴대폰스트랩(블리스터)": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027436",
+          "qty": 603,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중형": 1,
+            "중대형": 7
+          },
+          "total_box_count": 8,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "로고스트랩파우치(키트)": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027622",
+          "qty": 122,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중대형": 1,
+            "대형": 2
+          },
+          "total_box_count": 3,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "펠트파우치키트100": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027274",
+          "qty": 1,
+          "total_cbm": 0.0,
+          "boxes": {
+            "대형": 1,
+            "특대형": 8
+          },
+          "total_box_count": 9,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "주차번호판피규어세트": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027468",
+          "qty": 101,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중대형": 1,
+            "대형": 1
+          },
+          "total_box_count": 2,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "아쿠아스노클링마스크150": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027608",
+          "qty": 2,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중대형": 1,
+            "대형": 4
+          },
+          "total_box_count": 5,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "디자이너노트": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027080",
+          "qty": 820,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중형": 1,
+            "중대형": 5
+          },
+          "total_box_count": 6,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "에센셜와인오프너세트": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027172",
+          "qty": 101,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중형": 1,
+            "대형": 4
+          },
+          "total_box_count": 5,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "매트블랙텀블러": {
+      "n_shipments": 2,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027213",
+          "qty": 302,
+          "total_cbm": 0.0,
+          "boxes": {
+            "극소형": 1,
+            "대형": 6
+          },
+          "total_box_count": 7,
+          "single_box_type": null
+        },
+        {
+          "sc_id": "SC00026964",
+          "qty": 152,
+          "total_cbm": 0.0,
+          "boxes": {
+            "극소형": 1,
+            "대형": 3
+          },
+          "total_box_count": 4,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "포터블피크닉롤테이블 키트": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027029",
+          "qty": 801,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중대형": 1,
+            "대형": 53
+          },
+          "total_box_count": 54,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "레디고런치박스": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027111",
+          "qty": 51,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중대형": 1,
+            "대형": 1
+          },
+          "total_box_count": 2,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "클리어리유저블컵(스탠다드)": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00027076",
+          "qty": 102,
+          "total_cbm": 0.0,
+          "boxes": {
+            "극소형": 1,
+            "대형": 2
+          },
+          "total_box_count": 3,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    },
+    "브릭스탠드멀티충전스테이션": {
+      "n_shipments": 1,
+      "n_single_box_type": 0,
+      "mixed_evidence": [
+        {
+          "sc_id": "SC00026971",
+          "qty": 216,
+          "total_cbm": 0.0,
+          "boxes": {
+            "중대형": 1,
+            "대형": 6
+          },
+          "total_box_count": 7,
+          "single_box_type": null
+        }
+      ],
+      "recommendation": "manual_review"
+    }
+  }
+}

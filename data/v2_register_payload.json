@@ -1,0 +1,123 @@
+{
+  "baseId": "app4x70a8mOrIKsMf",
+  "tableId": "tblBNh6oGDlTKGrdQ",
+  "records": [
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "Solid 스탠다드 G형박스",
+        "fldtpUf2UVooLcxwd": "DRCG",
+        "fldqGM1lw2TUpZdKW": "대형",
+        "fld1ECU2hhnEurOef": "510*510*410",
+        "fldENIdfxbVn8YnPI": 12
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "Lite 스트랩 박스",
+        "fldtpUf2UVooLcxwd": "TWKF",
+        "fldqGM1lw2TUpZdKW": "대형",
+        "fld1ECU2hhnEurOef": "510*510*410",
+        "fldENIdfxbVn8YnPI": 11
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "브릭 메모&캘린더 스탠드 2.0",
+        "fldtpUf2UVooLcxwd": "BMVS",
+        "fldqGM1lw2TUpZdKW": "중대형",
+        "fld1ECU2hhnEurOef": "480*380*270",
+        "fldENIdfxbVn8YnPI": 20
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "굿이너프 비치타월",
+        "fldtpUf2UVooLcxwd": "BCTW",
+        "fldqGM1lw2TUpZdKW": "대형",
+        "fld1ECU2hhnEurOef": "510*510*410",
+        "fldENIdfxbVn8YnPI": 26
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "로고스트랩 파우치",
+        "fldtpUf2UVooLcxwd": "LOPU",
+        "fldqGM1lw2TUpZdKW": "대형",
+        "fld1ECU2hhnEurOef": "510*510*410",
+        "fldENIdfxbVn8YnPI": 127
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "Quality 슬리브박스",
+        "fldtpUf2UVooLcxwd": "SLVB",
+        "fldqGM1lw2TUpZdKW": "대형",
+        "fld1ECU2hhnEurOef": "510*510*410",
+        "fldENIdfxbVn8YnPI": 9
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "Simple 슬라이드 지퍼백",
+        "fldtpUf2UVooLcxwd": "SZBT",
+        "fldqGM1lw2TUpZdKW": "중대형",
+        "fld1ECU2hhnEurOef": "480*380*270",
+        "fldENIdfxbVn8YnPI": 46
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "스탠드-업 칫솔",
+        "fldtpUf2UVooLcxwd": "STTB",
+        "fldqGM1lw2TUpZdKW": "중대형",
+        "fld1ECU2hhnEurOef": "480*380*270",
+        "fldENIdfxbVn8YnPI": 94
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "밸류 메모큐브",
+        "fldtpUf2UVooLcxwd": "VMCB",
+        "fldqGM1lw2TUpZdKW": "중형",
+        "fld1ECU2hhnEurOef": "350*250*230",
+        "fldENIdfxbVn8YnPI": 34
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "웹캠 커버",
+        "fldtpUf2UVooLcxwd": "WCCV",
+        "fldqGM1lw2TUpZdKW": "중형",
+        "fld1ECU2hhnEurOef": "350*250*230",
+        "fldENIdfxbVn8YnPI": 304
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "데스크테리어 매트",
+        "fldtpUf2UVooLcxwd": "DSKT",
+        "fldqGM1lw2TUpZdKW": "대형",
+        "fld1ECU2hhnEurOef": "510*510*410",
+        "fldENIdfxbVn8YnPI": 25
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "컬러풀노트패드(블랙)",
+        "fldtpUf2UVooLcxwd": "CNPB",
+        "fldqGM1lw2TUpZdKW": "중대형",
+        "fld1ECU2hhnEurOef": "480*380*270",
+        "fldENIdfxbVn8YnPI": 117
+      }
+    },
+    {
+      "fields": {
+        "fldx01uKEnCd0J0nP": "Raw 코튼 파우치",
+        "fldtpUf2UVooLcxwd": "RCPC",
+        "fldqGM1lw2TUpZdKW": "중대형",
+        "fld1ECU2hhnEurOef": "480*380*270",
+        "fldENIdfxbVn8YnPI": 101
+      }
+    }
+  ]
+}
