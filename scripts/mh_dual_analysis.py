@@ -31,7 +31,6 @@ Method B (Cycle Time):
 
 import argparse
 import datetime
-import math
 import os
 import re
 import statistics
@@ -60,6 +59,7 @@ PUTAWAY_PER_CBM_MIN = 7.0
 QC_STD_PER_PROJECT = 2.5
 
 CYCLE_MAX_MIN = 180.0   # 인터벌 이상치 필터: 180분 초과는 유휴 오염으로 제외
+CYCLE_MIN_MIN = -10.0  # 입고 한정: 입고수량입력이 입하완료 전에 기록되는 패턴 허용 (실측 -4분 이내)
 
 # ── Airtable 설정 ──────────────────────────────────────────────────────────────
 IBSA_BASE  = "app6DGHCPI3Yh3IFS"
@@ -314,13 +314,15 @@ def aggregate(records, sync_parts):
             w["검수_fallback_count"] += 1
 
         # 입고 interval (병렬 — 시작 = 입하완료처리시간)
+        # CYCLE_MIN_MIN < d: 입고수량입력이 입하완료 전 기록되는 패턴 허용 (-10분까지)
         if ts_입하 and ts_입고:
             d = diff_min(ts_입하, ts_입고)
-            if d is not None and 0 < d < CYCLE_MAX_MIN:
-                w["입고_intervals"].append(d)
-                w["B_입고"] += d
+            if d is not None and CYCLE_MIN_MIN < d < CYCLE_MAX_MIN:
+                actual_d = abs(d)  # 음수(동시 처리) → 절대값으로 M/H 계산
+                w["입고_intervals"].append(actual_d)
+                w["B_입고"] += actual_d
                 if qty >= 5:
-                    w["입고_qty_pairs"].append((qty, d))
+                    w["입고_qty_pairs"].append((qty, actual_d))
             else:
                 w["B_입고"] += putaway_mh(cbm)
                 w["입고_fallback_count"] += 1
@@ -360,8 +362,8 @@ def aggregate_by_pt(records):
 
         if ts_입하 and ts_입고:
             d = diff_min(ts_입하, ts_입고)
-            if d is not None and 0 < d < CYCLE_MAX_MIN:
-                pt[pt_code]["입고"].append((qty, d))
+            if d is not None and CYCLE_MIN_MIN < d < CYCLE_MAX_MIN:
+                pt[pt_code]["입고"].append((qty, abs(d)))
 
     return pt
 
