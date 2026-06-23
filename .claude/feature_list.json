@@ -995,30 +995,30 @@
     },
     {
       "id": "DISPATCH-LEVER2-CONF07",
-      "title": "레버2 — 부분매칭 conf0.7 CBM 활용(안전마진/프리뷰)로 자동화율 추가 상승",
+      "title": "레버2 — 부분매칭 conf0.7 CBM 활용(안전마진)로 자동화율 추가 상승",
       "priority": "medium",
       "status": "pending",
       "domain": "dispatch",
       "created_at": "2026-06-23",
-      "notes": "B측정 12/45 수동건이 deterministic conf0.7(부분매칭)으로 floor 미달. 부분매칭은 과소추정→과적 위험이라 무조건 자동 금지. 안전마진(×1.2) 후 자동 또는 '수동+CBM프리뷰' 검토단축 검토."
+      "notes": "opt-in 메커니즘 구현 완료(commit, wave_assigner CONF_GATE_MODE) — 기본 'product'(현행 무변경). 'separate' 전환 시 slot/cbm 분리 게이트 + effective_cbm=cbm/cbm_conf 인플레이트(과소추정→과적 방지)로 conf0.7 자동 허용. **운영 승인 후 CONF_GATE_MODE='separate' 전환**이 잔여 결정(차량 과적 리스크 trade-off). 253 tests pass."
     },
     {
       "id": "DISPATCH-A2-FULLAUTO",
       "title": "A-2 후속 — 진짜 다차출하(active>1) full-match fuzzy 자동배차 허용 튜닝",
       "priority": "low",
-      "status": "pending",
+      "status": "done",
       "domain": "dispatch",
       "created_at": "2026-06-23",
-      "notes": "현재 A-2 는 per-shipment fuzzy CBM 을 cap 0.7(수동)로만 기입. full-match(fuzzy conf 1.0)은 신뢰 가능하므로 cap 상향해 자동 허용 검토(텍스트 파싱 신뢰도 검증 후). B측정 진짜다차 5건."
+      "notes": "완료: fuzzy_write_decision 에서 full-match(fuzzy conf≥1.0)는 CBM 완전(과소추정 아님) → conf 0.9(자동 허용)로 기입. 부분매칭은 0.7 cap(수동) 유지. commit 0b9f83b. 다음 replay --write 시 반영."
     },
     {
       "id": "DISPATCH-AUDIT-REMAINING",
       "title": "자동배차 감사 잔여 — GHA concurrency·KR_HOLIDAYS 2027+·quick-into-driver·landmark region",
       "priority": "medium",
-      "status": "pending",
+      "status": "done",
       "domain": "dispatch",
       "created_at": "2026-06-23",
-      "notes": "43-agent 감사 잔여 P2: wave_recommender.yml concurrency 가드 / scheduling KR_HOLIDAYS 2026만 하드코딩 / _ensure_minimum_load 퀵→자체기사 트럭 유입(method 체크 누락) / region_classifier 랜드마크 오분류 / _spillover_target region·cbm 무시 / 자동화율 분모 autonomous 포함."
+      "notes": "완료(commit 0b9f83b): yml concurrency 가드 / KR_HOLIDAYS 2027 + 미등록연도 경고 가드 / _ensure_minimum_load 외부퀵→자체기사 트럭 차단 / region 랜드마크+서울 contains 우선순위+strip / _spillover_target 성수기 소형→고고엑스 / 자동화율 분모 plan합. 보류: add_logen_days 휴일반영(Contract C3 위배 — ops 확인 필요), _spillover_target region 차원(로젠이 전 지역 커버라 보류)."
     }
   ]
 }

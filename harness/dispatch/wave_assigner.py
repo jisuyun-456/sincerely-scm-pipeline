@@ -55,6 +55,30 @@ WAVE_IDS = ('W1', 'W2', 'W3', 'spillover_고고엑스', 'spillover_로젠', 'loc
 # 결정론 CBM(conf 1.0) shipment만 자동 점등, 저신뢰(퍼지·기본값)는 사용자 검토.
 CONFIDENCE_FLOOR = 0.8
 
+# ── LEVER2 (2026-06-23, opt-in) — 부분매칭 conf 0.7 CBM 활용 ───────────────────
+# 부분매칭 deterministic CBM 은 매칭된 라인만 합산 = 과소추정 → 그대로 자동배차하면 차량 과적
+# 위험. 'separate' 모드는 slot/cbm 신뢰도를 분리 게이트하고, 용량 검사에서 저신뢰 CBM 을
+# effective_cbm = cbm/cbm_conf 로 인플레이트해 과소추정이 과적으로 이어지지 않게 한다.
+# 기본 'product' = 현행(곱 floor, 무변경). 운영 승인 후 'separate' 로 전환.
+CONF_GATE_MODE = 'product'    # 'product'(현행) | 'separate'(LEVER2 활성)
+SLOT_FLOOR = 0.8              # separate 모드: 슬롯 신뢰도 하한
+CBM_FLOOR = 0.7              # separate 모드: CBM 신뢰도 하한 (부분매칭 0.7 허용)
+CAPACITY_MARGIN_CAP = 1.6    # effective_cbm 인플레이션 상한 (과도한 spillover 방지)
+
+
+def _below_floor(s: 'Shipment', confidence_floor: float) -> bool:
+    """저신뢰 → 수동 분리 여부. product=곱 floor(현행) / separate=slot·cbm 분리 게이트(LEVER2)."""
+    if CONF_GATE_MODE == 'separate':
+        return s.slot_confidence < SLOT_FLOOR or s.cbm_confidence < CBM_FLOOR
+    return s.slot_confidence * s.cbm_confidence < confidence_floor
+
+
+def _effective_cbm(s: 'Shipment') -> float:
+    """용량 검사용 CBM. separate 모드에서 저신뢰(부분매칭) CBM 을 인플레이트해 과적 방지."""
+    if CONF_GATE_MODE == 'separate' and 0.0 < s.cbm_confidence < 1.0:
+        return min(s.cbm / s.cbm_confidence, s.cbm * CAPACITY_MARGIN_CAP)
+    return s.cbm
+
 
 QUICK_METHODS = frozenset({
     '퀵(수도권)', '퀵(지방)', '자체기사',
@@ -172,7 +196,7 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
     if confidence_floor > 0:
         confident = []
         for s in active:
-            if s.slot_confidence * s.cbm_confidence < confidence_floor:
+            if _below_floor(s, confidence_floor):
                 plans['수동'].shipments.append(s)  # 사용자 검토 대상
             else:
                 confident.append(s)
@@ -207,13 +231,14 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
         for ship in group:
             best_wave = None
             best_residual = math.inf
+            eff_cbm = _effective_cbm(ship)  # separate 모드: 저신뢰 CBM 인플레이트(과적 방지)
             for wid in candidates:
                 if not _region_ok(wid, region):
                     continue
-                if not _can_fit(wid, ship.cbm, 1, plans[wid]):
+                if not _can_fit(wid, eff_cbm, 1, plans[wid]):
                     continue
                 limits = DRIVER_LIMITS[wid]
-                residual = limits['max_cbm'] - (plans[wid].total_cbm + ship.cbm)
+                residual = limits['max_cbm'] - (plans[wid].total_cbm + eff_cbm)
                 if residual < best_residual:
                     best_residual = residual
                     best_wave = wid
