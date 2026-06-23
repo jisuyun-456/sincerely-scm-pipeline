@@ -477,7 +477,8 @@ def main() -> None:
             print(f"  {wid}: {cnt}건")
 
     automation_count = sum(plans[w].count for w in ("W1", "W2", "W3"))
-    total_count = len(shipments)
+    # 분모 = 자동화 가능 모수 (autonomous 파트너로 드롭된 건 제외) = 전 plan 버킷 합.
+    total_count = sum(p.count for p in plans.values())
     print(f"  automation: {automation_count}/{total_count} ({automation_count/total_count:.0%})" if total_count else "  no shipments")
 
     # Stage: PATCH + Slack

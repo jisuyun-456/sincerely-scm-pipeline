@@ -60,6 +60,9 @@ QUICK_METHODS = frozenset({
     '퀵(수도권)', '퀵(지방)', '자체기사',
     '바로고', '고객직접퀵배차', '신시어리퀵',
 })
+# 외부 퀵 운송(고고엑스 등) — '자체기사'는 제외(W1/W2/W3 본인이 자체기사). min-load 시 자체기사
+# 트럭으로 끌어오면 SLA·운송수단이 맞지 않는 대상.
+EXTERNAL_QUICK_METHODS = QUICK_METHODS - frozenset({'자체기사'})
 
 
 @dataclass
@@ -123,6 +126,10 @@ def _slot_filter_w1(candidates: List[str], slot: Optional[str]) -> List[str]:
 def _spillover_target(region: str, group_cbms: List[float], mode: str,
                       method: Optional[str] = None) -> str:
     if method in QUICK_METHODS:
+        return 'spillover_고고엑스'
+    # 성수기 소형(≤0.5 CBM) 화물은 고고엑스(택배 대체) — P3.5 문서 룰 활성화
+    # (기존엔 mode/group_cbms 가 무시돼 전부 로젠으로 갔음). (2026-06-23)
+    if mode == 'peak' and group_cbms and max(group_cbms) <= 0.5:
         return 'spillover_고고엑스'
     return 'spillover_로젠'
 
@@ -344,6 +351,10 @@ def _ensure_minimum_load(plans: Dict[str, WavePlan]) -> Dict[str, WavePlan]:
             if plans[donor].count == 0:
                 continue
             for i, ship in enumerate(plans[donor].shipments):
+                # 외부 퀵(고고엑스 등) 배송을 자체기사 트럭(W1/W2)으로 끌어오지 않음 — 운송수단 보존.
+                # ('자체기사' 화물의 W3→W1 재배치는 정상 허용). (2026-06-23)
+                if ship.method in EXTERNAL_QUICK_METHODS:
+                    continue
                 if not _region_ok(gw, ship.region):
                     continue
                 if not _can_fit(gw, ship.cbm, 1, plans[gw]):

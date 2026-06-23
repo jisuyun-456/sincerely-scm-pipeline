@@ -13,6 +13,12 @@ on:
         required: false
         default: 'false'
 
+# 동시 실행 직렬화 — cron 과 수동 dispatch 가 겹쳐 같은 레코드를 이중 PATCH / 스냅샷 race 하는 것 방지.
+# cancel-in-progress=false: 진행 중인 run 을 죽이지 않고 큐잉(배차 누락 방지).
+concurrency:
+  group: wave-recommender
+  cancel-in-progress: false
+
 jobs:
   run:
     runs-on: ubuntu-latest
