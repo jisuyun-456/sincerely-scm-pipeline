@@ -14,6 +14,8 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
+import urllib.error
 import urllib.request
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
@@ -76,6 +78,8 @@ def _load_snapshot() -> dict:
 
 
 def _save_snapshot(snapshot: dict) -> None:
+    if DRY_RUN:
+        return  # dry run 은 baseline 스냅샷을 오염시키지 않음 (다음 LIVE 가 신규건을 정상 감지)
     if not SNAPSHOT_PATH:
         return
     import pathlib
@@ -101,11 +105,33 @@ def _get(url: str, params: dict) -> dict:
         return json.loads(r.read())
 
 
-def _patch(url: str, payload: dict) -> None:
+def _patch(url: str, payload: dict, *, retries: int = 3) -> bool:
+    """PATCH with 429/5xx 백오프 재시도. 성공 True / 영구실패 False (예외로 run 을 죽이지 않음)."""
     data = json.dumps(payload, ensure_ascii=False).encode()
-    req = urllib.request.Request(url, data=data, headers=_airtable_headers(), method="PATCH")
-    with urllib.request.urlopen(req, timeout=30) as r:
-        r.read()
+    for attempt in range(retries):
+        req = urllib.request.Request(url, data=data, headers=_airtable_headers(), method="PATCH")
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                r.read()
+            return True
+        except urllib.error.HTTPError as e:
+            body = ""
+            try:
+                body = e.read()[:200].decode("utf-8", "replace")
+            except Exception:
+                pass
+            if e.code in (429, 500, 502, 503) and attempt < retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            print(f"[ERROR] PATCH {e.code}: {body}")
+            return False
+        except urllib.error.URLError as e:
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            print(f"[ERROR] PATCH URLError: {e}")
+            return False
+    return False
 
 
 import urllib.parse
@@ -217,14 +243,14 @@ def _build_shipment(rec: dict) -> Optional[Shipment]:
 
 # ─── Airtable PATCH ───────────────────────────────────────────────────────────
 
-def _patch_batch(batch: list[dict]) -> None:
-    """batch 10건 PATCH → Shipment table (wave 4 fields + 배송슬롯)."""
+def _patch_batch(batch: list[dict]) -> bool:
+    """batch 10건 PATCH → Shipment table. 성공 True / 실패 False."""
     if DRY_RUN:
         for rec in batch:
             print(f"  [DRY] PATCH {rec['id']}: {rec['fields']}")
-        return
+        return True
     url = f"https://api.airtable.com/v0/{BASE_ID}/{SHIPMENT_TABLE}"
-    _patch(url, {"records": batch})
+    return _patch(url, {"records": batch})
 
 
 def patch_airtable(
@@ -263,9 +289,13 @@ def patch_airtable(
                     "cbm_conf": s.cbm_confidence,
                 })
 
-    # Batch 10
+    # Batch 10 — 한 배치 실패가 나머지를 막지 않도록 (PATCH 는 매 cron 멱등 재시도되므로 자가복구).
+    failures = 0
     for i in range(0, len(records_to_patch), 10):
-        _patch_batch(records_to_patch[i:i + 10])
+        if not _patch_batch(records_to_patch[i:i + 10]):
+            failures += 1
+    if failures:
+        print(f"[WARN] {failures}개 배치 PATCH 실패 — 다음 cron 에서 재시도(멱등)")
 
     return records_to_patch
 
@@ -275,15 +305,16 @@ def patch_airtable(
 PENDING_DIGEST_PATH = "_AutoResearch/SCM/outputs/audit_log/pending_digest.json"
 
 
-def _slack_post(text: str) -> None:
+def _slack_post(text: str) -> bool:
+    """Slack DM 발송. ok=False(만료토큰 등)는 HTTP 200 이라 body 의 ok 를 확인. 성공 True."""
     token = os.environ.get("SLACK_BOT_TOKEN", "")
     user = os.environ.get("SLACK_DM_USER_ID", "")
     if not token or not user:
         print("[WARN] SLACK_BOT_TOKEN or SLACK_DM_USER_ID not set — skipping Slack")
-        return
+        return False
     if DRY_RUN:
         print(f"[DRY] Slack → {user}: {text[:200]}")
-        return
+        return True
     data = json.dumps({"channel": user, "text": text}).encode()
     req = urllib.request.Request(
         "https://slack.com/api/chat.postMessage",
@@ -291,8 +322,16 @@ def _slack_post(text: str) -> None:
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=10) as r:
-        r.read()
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            resp = json.loads(r.read() or b"{}")
+    except Exception as e:
+        print(f"[ERROR] Slack post 예외: {e}")
+        return False
+    if not resp.get("ok"):
+        print(f"[ERROR] Slack post 실패: {resp.get('error')}")
+        return False
+    return True
 
 
 def _format_digest(
@@ -369,8 +408,9 @@ def send_or_queue_digest(
     if pending.exists():
         with open(pending, encoding="utf-8") as f:
             old = json.load(f)
-        _slack_post(old.get("text", ""))
-        pending.unlink()
+        # 큐된 다이제스트는 *전송 성공* 시에만 삭제 (실패 시 다음 cycle 재시도 — 알림 유실 방지)
+        if _slack_post(old.get("text", "")):
+            pending.unlink()
 
     _slack_post(_format_digest(plans, diff, today_iso, change_report, otif_summary))
 

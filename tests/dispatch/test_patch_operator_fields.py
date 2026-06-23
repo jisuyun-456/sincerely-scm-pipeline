@@ -20,7 +20,7 @@ def _ship(sid, slot="오전", locked=False):
 
 
 def _run(monkeypatch, plans, current_slots):
-    monkeypatch.setattr(wr, "_patch_batch", lambda batch: None)
+    monkeypatch.setattr(wr, "_patch_batch", lambda batch: True)
     return wr.patch_airtable(plans, {}, "2026-06-22T00:00:00+09:00", current_slots)
 
 

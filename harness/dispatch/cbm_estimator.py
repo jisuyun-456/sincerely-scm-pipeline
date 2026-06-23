@@ -33,6 +33,28 @@ SERVICE_CODES: frozenset[str] = frozenset({"SSSV", "CSPR"})
 TERMINAL_STATUS: frozenset[str] = frozenset({"출하 완료", "진행 취소"})
 
 
+# A-2 (2026-06-22): 결정론 실패(다차출하·no_order·unmatched) shipment 의 per-shipment 텍스트
+# 추정을 PATCH 할지 결정. CBM 공백을 메우되, 텍스트 파싱 신뢰도 한계를 감안해 confidence 를
+# 자동배차 floor(0.8) 미만으로 cap → 자동배차는 하지 않고 수동 검토/정산/용량 프리뷰에만 활용.
+FUZZY_MIN_CONF = 0.5    # 이 미만이면 라인 매칭이 너무 불완전 → 쓰지 않음(과소추정 위험)
+FUZZY_CONF_CAP = 0.7    # 항상 floor 미만으로 cap (수동 유지)
+
+
+def fuzzy_write_decision(fz: dict, cur_est: float, cur_conf: float,
+                         tol: float = 1e-4) -> tuple | None:
+    """per-shipment 퍼지 추정을 estimated_cbm 으로 쓸지 결정. (est, conf) 또는 None.
+
+    fz: estimate_shipment_cbm() 결과. cur_est/cur_conf: 현재 Airtable 값(idempotency).
+    """
+    est = fz.get("estimated_cbm", 0.0)
+    if est <= 0 or fz.get("confidence", 0.0) < FUZZY_MIN_CONF:
+        return None
+    conf = min(fz["confidence"], FUZZY_CONF_CAP)
+    if abs(cur_est - est) <= tol and abs(cur_conf - conf) <= 1e-9:
+        return None  # 변동 없음 → skip
+    return (round(est, 4), round(conf, 2))
+
+
 def count_active_shipments(ships: list[dict], status_field: str = "발송상태_TMS") -> dict[str, int]:
     """PNA별 *활성*(미종료) shipment 수.
 
