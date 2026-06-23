@@ -21,8 +21,10 @@ FLD_POD = "fldNPH5xLdYevknfZ"          # POD_확인일시
 
 DEFAULT_LOG_PATH = Path("_AutoResearch/SCM/outputs/audit_log/assumed_otif.jsonl")
 
-SAME_DAY_METHODS = {"퀵", "자체기사", "바로고"}
-LOGEN_METHODS = {"택배", "로젠"}
+# 실제 배송방식 값은 접미사가 붙는다('퀵(수도권)'·'택배(일반)'·'신시어리택배' 등).
+# 정확일치(set membership)면 100% 측정불가가 되므로 부분문자열(substring)로 매칭. (2026-06-22 fix)
+SAME_DAY_KEYS = ("퀵", "자체기사", "바로고")
+LOGEN_KEYS = ("택배", "로젠")
 
 
 def _first(val) -> str:
@@ -58,10 +60,10 @@ def _estimate_one(rec: dict) -> OtifResult:
     ship_date = date.fromisoformat(ship_date_raw[:10])
     promise_date = date.fromisoformat(promise_raw[:10])
 
-    if method_raw in SAME_DAY_METHODS:
+    if any(k in method_raw for k in SAME_DAY_KEYS):
         assumed_pod = ship_date
         method = "당일"
-    elif method_raw in LOGEN_METHODS:
+    elif any(k in method_raw for k in LOGEN_KEYS):
         assumed_pod = add_logen_days(ship_date, 3)
         method = "로젠+3일"
     else:

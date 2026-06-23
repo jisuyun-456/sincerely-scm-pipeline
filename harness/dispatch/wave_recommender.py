@@ -116,8 +116,13 @@ def fetch_auto_targets(today_iso: str, rolling_days: int = 7) -> list[dict]:
 
     필터:
     - project code NOT empty
-    - 발송상태_TMS NOT IN SHIPPED_STATUSES
-    - 출하확정일 설정됨 + within 7 business days (Python-side)
+    - 발송상태_TMS NOT IN 종료상태 ('출하 완료'·'진행 취소')
+    - 출하확정일 설정됨 + [today, window_end] 영업일 rolling window (서버사이드 + Python 재확인)
+
+    NOTE(2026-06-22): 발송상태_TMS 실제 옵션은 '출하 대기'·'출하 완료'·'진행 취소'·'이슈 발생'·
+    'EMPTY'·'베스트원'. 과거 코드는 존재하지 않는 '발송완료/취소/반품/회수/배달완료'를 제외하려 해
+    필터가 무효화 → 전체 이력(9900+건)을 매 실행 스캔하고 종료건도 재배차했다. 종료상태 2종만 제외하고
+    날짜창을 서버사이드(IS_AFTER/IS_BEFORE, Airtable formula 는 field ID 지원)로 좁혀 수정.
     """
     window_end = rolling_window_end(date.fromisoformat(today_iso), rolling_days)
     window_end_iso = window_end.isoformat()
@@ -125,12 +130,11 @@ def fetch_auto_targets(today_iso: str, rolling_days: int = 7) -> list[dict]:
     formula = (
         "AND("
         f"NOT({{{FLD_PROJECT_CODE}}}=''),"
-        f"NOT({{{FLD_STATUS}}}='발송완료'),"
-        f"NOT({{{FLD_STATUS}}}='취소'),"
-        f"NOT({{{FLD_STATUS}}}='반품'),"
-        f"NOT({{{FLD_STATUS}}}='회수'),"
-        f"NOT({{{FLD_STATUS}}}='배달완료'),"
-        f"{{{FLD_SHIP_DATE}}}!=''"
+        f"NOT({{{FLD_STATUS}}}='출하 완료'),"
+        f"NOT({{{FLD_STATUS}}}='진행 취소'),"
+        f"{{{FLD_SHIP_DATE}}}!='',"
+        f"IS_AFTER({{{FLD_SHIP_DATE}}}, DATEADD('{today_iso}', -1, 'days')),"
+        f"IS_BEFORE({{{FLD_SHIP_DATE}}}, DATEADD('{window_end_iso}', 1, 'days'))"
         ")"
     )
 
@@ -227,23 +231,28 @@ def patch_airtable(
     plans: dict[str, WavePlan],
     shipment_map: dict[str, Shipment],
     now_iso: str,
+    current_slots: dict[str, Optional[str]] | None = None,
 ) -> list[dict]:
-    """wave 4 fields + 배송슬롯 → Airtable PATCH (batch 10). Returns diff list."""
+    """wave 추천 필드 + (조건부) 배송슬롯 → Airtable PATCH (batch 10). Returns diff list.
+
+    운영자 소유 필드 보호 (2026-06-22):
+    - wave_locked 는 운영자 *입력* 이므로 추천기가 절대 되쓰지 않는다 (PATCH 미포함).
+    - 배송슬롯은 잠금 안 됐고 현재 셀이 비어있을 때만 추천값을 기입 — 운영자 수동 수정/잠금을
+      매 cron 이 덮어쓰지 않도록. current_slots: {record_id: 현재 배송슬롯값}.
+    """
+    current_slots = current_slots or {}
     records_to_patch: list[dict] = []
 
     for wave_id, plan in plans.items():
         for s in plan.shipments:
-            rec = {
-                "id": s.id,
-                "fields": {
-                    FLD_WAVE_REC: WAVE_DISPLAY.get(wave_id, wave_id),
-                    FLD_WAVE_CONF: round(s.slot_confidence * s.cbm_confidence, 2),
-                    FLD_WAVE_LOCKED: s.wave_locked,
-                    FLD_WAVE_UPDATED: now_iso,
-                },
+            fields: dict = {
+                FLD_WAVE_REC: WAVE_DISPLAY.get(wave_id, wave_id),
+                FLD_WAVE_CONF: round(s.slot_confidence * s.cbm_confidence, 2),
+                FLD_WAVE_UPDATED: now_iso,
             }
-            if s.slot:
-                rec["fields"][FLD_SLOT] = s.slot
+            if s.slot and not s.wave_locked and not current_slots.get(s.id):
+                fields[FLD_SLOT] = s.slot
+            rec = {"id": s.id, "fields": fields}
             records_to_patch.append(rec)
 
             if s.slot_confidence * s.cbm_confidence < CONFIDENCE_FLOOR:
@@ -433,7 +442,9 @@ def main() -> None:
 
     # Stage: PATCH + Slack
     shipment_map = {s.id: s for s in shipments}
-    diff = patch_airtable(plans, shipment_map, now_iso)
+    # 현재 배송슬롯값 — 비어있을 때만 추천값 기입 (운영자 수정 보호)
+    current_slots = {rec["id"]: _first(rec.get("fields", {}).get(FLD_SLOT)) for rec in raw_records}
+    diff = patch_airtable(plans, shipment_map, now_iso, current_slots)
 
     # Step 3: 가정 OTIF 추정
     otif_results = estimate_all(raw_records)

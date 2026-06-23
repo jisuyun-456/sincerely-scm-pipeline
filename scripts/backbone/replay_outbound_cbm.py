@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 from harness.dispatch.cbm_estimator import (  # noqa: E402
     SERVICE_CODES, estimate_shipment_cbm_deterministic, estimate_shipment_cbm,
-    build_kit_cbm_lookup,
+    build_kit_cbm_lookup, count_active_shipments,
 )
 from harness.backbone.keys import (  # noqa: E402
     resolve_goods_code, build_pkg_goods_map, normalize_goods,
@@ -168,14 +168,11 @@ def build_inputs():
           f"[Gate ≥85%]", flush=True)
     print("shipment 로딩...", flush=True)
     ships = fetch(TMS, SHIP, TP, ["project code", "Total_CBM", "estimated_cbm",
-                                  "estimation_confidence",
+                                  "estimation_confidence", "발송상태_TMS",
                                   "최종 출고 품목 및 수량", "최종 출하 품목"])
-    shipment_count = collections.Counter()
-    for r in ships:
-        m = PNA.search(str(r["fields"].get("project code") or ""))
-        if m:
-            shipment_count[m.group(0)] += 1
-    return lk, order_by_project, dict(shipment_count), ships, kit
+    # 활성(미종료) 출하만 카운트 — 과거 '출하 완료'가 다차출하(partial_skip)를 오판하지 않도록. (레버1)
+    shipment_count = count_active_shipments(ships)
+    return lk, order_by_project, shipment_count, ships, kit
 
 
 def main():

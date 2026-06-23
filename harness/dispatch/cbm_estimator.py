@@ -28,6 +28,32 @@ KIT_CONF_CAP = 0.8  # Product 직접조인(0.9~1.0)보다 항상 낮게 — 신�
 # 진단(2026-06-19): SSSV가 6/23~30 미출고 71건 중 56건의 confidence를 0.7로 cap.
 SERVICE_CODES: frozenset[str] = frozenset({"SSSV", "CSPR"})
 
+# 종료(비활성) 발송상태 — 다차출하(partial_skip) 카운트에서 제외. 과거 '출하 완료'가
+# 신규 1건짜리 프로젝트를 다차로 오판해 CBM을 통째 skip → 자동배차 수동화하던 문제 해소. (2026-06-22 레버1)
+TERMINAL_STATUS: frozenset[str] = frozenset({"출하 완료", "진행 취소"})
+
+
+def count_active_shipments(ships: list[dict], status_field: str = "발송상태_TMS") -> dict[str, int]:
+    """PNA별 *활성*(미종료) shipment 수.
+
+    종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_skip(다차출하)를
+    오판하지 않게 한다. estimate_shipment_cbm_deterministic 의 shipment_count 입력용.
+    """
+    from collections import Counter
+    cnt: Counter = Counter()
+    for r in ships:
+        f = r.get("fields", r)
+        m = PNA_RE.search(str(f.get("project code") or ""))
+        if not m:
+            continue
+        status = f.get(status_field)
+        if isinstance(status, list):
+            status = status[0] if status else ""
+        if str(status or "") in TERMINAL_STATUS:
+            continue
+        cnt[m.group(0)] += 1
+    return dict(cnt)
+
 # Thousand-separator: '1,000' → '1000' (digit-comma-three-digits, not in larger run)
 _THOUSANDS_COMMA = re.compile(r"(\d),(?=\d{3}(?!\d))")
 

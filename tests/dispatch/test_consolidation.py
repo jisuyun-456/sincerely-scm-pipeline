@@ -73,12 +73,18 @@ class TestTierRouting:
 
 
 class TestW1SlotFilter:
-    def test_w1_accepts_only_morning_slot(self, empty_autonomy):
-        # W1은 '오전' 슬롯만. '무관' 슬롯이면 W1 후보에서 제외
+    def test_w1_accepts_morning_and_무관(self, empty_autonomy):
+        # W1 이장훈은 '오전'·'무관' 슬롯 적재 ('무관'=오전 시간대 포함이므로 허용, _slot_filter_w1).
         ships = [
             Shipment('M1', 'PNA-A', '무관', 'tier1_seoul', 1.0),
             Shipment('M2', 'PNA-A', '무관', 'tier1_seoul', 1.0),
             Shipment('M3', 'PNA-A', '무관', 'tier1_seoul', 1.0),
         ]
+        plans = assign_waves(ships, empty_autonomy, '2026-05-28', use_sa=False)
+        assert plans['W1'].count >= 1
+
+    def test_w1_rejects_afternoon_slot(self, empty_autonomy):
+        # '오후' 슬롯은 W1 후보에서 제외 (W1 은 오전/무관만).
+        ships = [Shipment('A1', 'PNA-A', '오후 1 (오후 2시 - 4시)', 'tier1_seoul', 1.0)]
         plans = assign_waves(ships, empty_autonomy, '2026-05-28', use_sa=False)
         assert plans['W1'].count == 0

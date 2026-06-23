@@ -46,6 +46,39 @@ class TestParseTimeWindow:
         assert parse_time_window(text) is None
 
 
+class TestKoreanTimeParsing:
+    """#6 (2026-06-22) — 한글 시간표현 파싱: '시'·'에서…사이'·오전/오후 보정."""
+
+    @pytest.mark.parametrize('text,start,end', [
+        ('오후 1시~3시', 13.0, 15.0),    # 명시적 오후
+        ('오전 9시~11시', 9.0, 11.0),
+        ('2시~4시', 14.0, 16.0),         # 무표기 1~7시 → 배송관행상 오후
+        ('10시에서 12시사이', 10.0, 12.0),  # 한글 구분자, 10>7 → 보정 없음
+        ('1시부터 5시', 13.0, 17.0),
+    ])
+    def test_korean_range(self, text, start, end):
+        w = parse_time_window(text)
+        assert w is not None and not w.is_split
+        assert w.start_h == start and w.end_h == end
+
+    @pytest.mark.parametrize('text,start,end', [
+        ('오후 3시', 14.0, 16.0),
+        ('오전 11시', 10.0, 12.0),
+    ])
+    def test_single_hour_with_ampm(self, text, start, end):
+        w = parse_time_window(text)
+        assert w is not None
+        assert w.start_h == start and w.end_h == end
+
+    def test_evening_keyword_wins_over_single_hour(self):
+        # '저녁 6시'는 18시로 (단일 '시' 파싱이 야간 키워드를 가로채면 안 됨)
+        assert parse_time_window('저녁 6시 이후') == TimeWindow(18, 22)
+
+    def test_decide_slot_korean_afternoon(self):
+        assert decide_slot('퀵(수도권)', '오후 1시~3시') == ('오후 1 (오후 2시 - 4시)', 0.9)
+        assert decide_slot('퀵(수도권)', '2시~4시') == ('오후 1 (오후 2시 - 4시)', 0.9)
+
+
 class TestMapWindowToSlot:
     @pytest.mark.parametrize('w,expected', [
         (TimeWindow(9.0, 12.0), '오전'),
