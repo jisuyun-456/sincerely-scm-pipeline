@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-06-19",
+  "updated_at": "2026-06-23",
   "tasks": [
     {
       "id": "CTRL-TOWER-01",
@@ -969,10 +969,56 @@
       "id": "DISPATCH-W1-SLOT-TEST",
       "title": "pre-existing 실패: test_w1_accepts_only_morning_slot vs _slot_filter_w1('무관' 허용) 모순",
       "priority": "low",
-      "status": "pending",
+      "status": "done",
       "domain": "dispatch",
       "created_at": "2026-06-19",
-      "notes": "테스트는 W1이 '무관' 거부 기대하나 코드는 '무관' 허용(오전 포함 의도). 본 세션 변경과 무관(stash로 확인). 테스트/코드 중 어느 쪽이 의도인지 확정 필요."
+      "notes": "해소(2026-06-23): _slot_filter_w1 의도(W1=오전/무관 허용)에 맞춰 테스트 갱신 — test_w1_accepts_morning_and_무관 + test_w1_rejects_afternoon_slot. commit de8f2e3."
+    },
+    {
+      "id": "DISPATCH-INTEGRITY-2026-06",
+      "title": "자동배차 정합성 일괄 수정 — 상태필터·partial_skip(레버1)·운영자필드·OTIF·한글시간·A-2·PATCH견고화",
+      "priority": "high",
+      "status": "done",
+      "domain": "dispatch",
+      "created_at": "2026-06-23",
+      "source": "session 2026-06-23 자동배차 6/29·6/30 재실행 + 43-agent 적대적 감사",
+      "notes": "(1) fetch_auto_targets 상태필터 무효화 버그(발송완료≠'출하 완료')→전체이력 244s 스캔→실제 종료상태 2종 제외+서버사이드 날짜창(~2s). (2) 레버1 count_active_shipments: 활성 출하만 카운트해 가짜 partial_skip 제거(B측정 향후99건 자동화 55%→~70%, 15/45 복구). (3) 운영자필드 보호: wave_locked 미기입, 배송슬롯 빈칸+미잠금만 기입. (4) otif_estimator 접미사 부분문자열 매칭(100% 측정불가 해소). (5) slot_decider 한글시간('2시~4시'·'10시에서 12시사이') 파싱+오후보정. (6) A-2 fuzzy_write_decision per-shipment CBM capped≤0.7. (7) PATCH 429/5xx 재시도·무크래시·Slack ok·snapshot dry-run안전. 테스트 229 pass. commit de8f2e3, 5dc2ba4."
+    },
+    {
+      "id": "DISPATCH-LEVER1-WRITE",
+      "title": "레버1 라이브 반영 — replay --write 로 estimated_cbm 갱신(active-only 복구 점등)",
+      "priority": "high",
+      "status": "pending",
+      "domain": "dispatch",
+      "created_at": "2026-06-23",
+      "notes": "dry-run --recent 30: PATCH 대상 70건(결정론 conf≥0.7 + A-2 fuzzy 5), Gate PASS 81.3%. 라이브 --write 는 사용자 명시 승인 필요(권한 분류기가 read-only 경계 때문에 차단). 반영 후 wave_recommender 가 읽어 자동화율 상승."
+    },
+    {
+      "id": "DISPATCH-LEVER2-CONF07",
+      "title": "레버2 — 부분매칭 conf0.7 CBM 활용(안전마진/프리뷰)로 자동화율 추가 상승",
+      "priority": "medium",
+      "status": "pending",
+      "domain": "dispatch",
+      "created_at": "2026-06-23",
+      "notes": "B측정 12/45 수동건이 deterministic conf0.7(부분매칭)으로 floor 미달. 부분매칭은 과소추정→과적 위험이라 무조건 자동 금지. 안전마진(×1.2) 후 자동 또는 '수동+CBM프리뷰' 검토단축 검토."
+    },
+    {
+      "id": "DISPATCH-A2-FULLAUTO",
+      "title": "A-2 후속 — 진짜 다차출하(active>1) full-match fuzzy 자동배차 허용 튜닝",
+      "priority": "low",
+      "status": "pending",
+      "domain": "dispatch",
+      "created_at": "2026-06-23",
+      "notes": "현재 A-2 는 per-shipment fuzzy CBM 을 cap 0.7(수동)로만 기입. full-match(fuzzy conf 1.0)은 신뢰 가능하므로 cap 상향해 자동 허용 검토(텍스트 파싱 신뢰도 검증 후). B측정 진짜다차 5건."
+    },
+    {
+      "id": "DISPATCH-AUDIT-REMAINING",
+      "title": "자동배차 감사 잔여 — GHA concurrency·KR_HOLIDAYS 2027+·quick-into-driver·landmark region",
+      "priority": "medium",
+      "status": "pending",
+      "domain": "dispatch",
+      "created_at": "2026-06-23",
+      "notes": "43-agent 감사 잔여 P2: wave_recommender.yml concurrency 가드 / scheduling KR_HOLIDAYS 2026만 하드코딩 / _ensure_minimum_load 퀵→자체기사 트럭 유입(method 체크 누락) / region_classifier 랜드마크 오분류 / _spillover_target region·cbm 무시 / 자동화율 분모 autonomous 포함."
     }
   ]
 }
