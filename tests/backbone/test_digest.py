@@ -98,3 +98,36 @@ def test_build_digest_no_shortage_no_warning_sections():
     assert text is not None
     assert "부족자재" not in text
     assert "경고" not in text
+
+
+# ─── build_digest D1 출하CBM 사전계획 (Chain A) ─────────────────────
+
+def _d1(total=20.5, coverage=100.0):
+    return {
+        "by_week": {"2026-W27": {"cbm": 12.5, "n": 3, "week_start": "2026-06-29"},
+                    "2026-W28": {"cbm": 8.0, "n": 2, "week_start": "2026-07-06"}},
+        "total_cbm": total, "dated_cbm": total, "n_units": 5, "n_dated": 5,
+        "coverage_pct": coverage,
+    }
+
+
+def test_build_digest_includes_d1_outbound_when_provided():
+    results = [_result("new", status="완결", shortage="부족분 없음")]
+    text = build_digest(results, _totals(new=1, 완결=1), "20260612-1000", 14, d1=_d1())
+    assert "출하CBM" in text
+    assert "20.5" in text          # total_cbm
+    assert "2026-W27" in text      # top week label
+
+
+def test_build_digest_omits_d1_section_when_none():
+    results = [_result("new", status="완결", shortage="부족분 없음")]
+    text = build_digest(results, _totals(new=1, 완결=1), "20260612-1000", 14)
+    assert "출하CBM" not in text
+
+
+def test_build_digest_omits_d1_when_empty_forecast():
+    results = [_result("new", status="완결", shortage="부족분 없음")]
+    empty = {"by_week": {}, "total_cbm": 0.0, "dated_cbm": 0.0,
+             "n_units": 0, "n_dated": 0, "coverage_pct": 0.0}
+    text = build_digest(results, _totals(new=1, 완결=1), "20260612-1000", 14, d1=empty)
+    assert "출하CBM" not in text

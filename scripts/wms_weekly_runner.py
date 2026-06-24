@@ -900,6 +900,36 @@ def _build_b3_inbound_section(series_path: Path | None = None) -> str:
     return _b3_from_snapshot(series[-1])
 
 
+def _b3_slack_from_snapshot(snap: dict) -> str:
+    """B3 — capacity_series 스냅샷 → Slack 컴팩트 요약 (pure, 전체 일자표 미포함)."""
+    inb = (snap.get("tracks") or {}).get("inbound") or {}
+    parts = [
+        "*WMS 주간 — B3 입하 14d 사전계획*",
+        f"  입하 예정: {inb.get('scheduled_total_cbm', 0)}m³ "
+        f"({inb.get('n_rows_window', 0)}행, 규격커버 {inb.get('coverage_pct', 0)}%)",
+    ]
+    bh = (inb.get("mes_forecast") or {}).get("by_horizon") or {}
+    if bh:
+        horizon = " / ".join(f"{h}d {v}m³"
+                             for h, v in sorted(bh.items(), key=lambda kv: int(kv[0])))
+        parts.append(f"  MES 납기 forecast: {horizon}")
+    return "\n".join(parts)
+
+
+def b3_slack_summary(series_path: Path | None = None) -> str | None:
+    """data/capacity_series.json 최신 스냅샷 → B3 Slack 요약. 없으면 None (발송 생략)."""
+    path = series_path or (ROOT / "data" / "capacity_series.json")
+    if not path.exists():
+        return None
+    try:
+        series = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not series:
+        return None
+    return _b3_slack_from_snapshot(series[-1])
+
+
 def _build_cbm_section(cbm_week: dict | None, cbm_bal: dict | None, cbm_corr: dict | None) -> str:
     """Iter 8~11 CBM 섹션 마크다운 빌드."""
     lines: list[str] = []
@@ -1072,6 +1102,26 @@ def _compute_week_label(override_week: str | None = None) -> tuple[str, str]:
 
 
 # ── 메인 ───────────────────────────────────────────────────────────────────────
+def _notify_slack_b3(week_id: str) -> None:
+    """B3 입하 14d 사전계획 컴팩트 요약을 Slack DM 발송 (Chain A). 데이터/토큰 부재 시 생략."""
+    summary = b3_slack_summary()
+    if not summary:
+        return
+    token = os.environ.get("SLACK_BOT_TOKEN", "")
+    user  = os.environ.get("SLACK_DM_USER_ID", "")
+    if not token or not user:
+        return
+    try:
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"channel": user, "text": f"{summary}\n  (WMS Weekly {week_id})"},
+            timeout=10,
+        )
+    except Exception:
+        pass
+
+
 def main(dry_run: bool, override_week: str | None = None) -> None:
     if not AIRTABLE_PAT:
         print("[ERROR] AIRTABLE_WMS_PAT (또는 AIRTABLE_PAT) 환경변수 없음. .env 파일 확인")
@@ -1128,9 +1178,10 @@ def main(dry_run: bool, override_week: str | None = None) -> None:
     # 3. 리포트 저장
     report_path = step_save_report(results, week_id, date_range, dry_run)
 
-    # 4. log 업데이트
+    # 4. log 업데이트 + B3 Slack DM (Chain A)
     if not dry_run and report_path:
         step_update_log(results, report_path, week_id)
+        _notify_slack_b3(week_id)
 
     print(f"\n{'='*60}")
     print("WMS 주간 분석 완료")

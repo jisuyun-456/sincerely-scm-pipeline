@@ -1017,10 +1017,14 @@ def _notify_slack_report(results: dict, week_str: str, report_path: Path) -> Non
     r2  = results["iter2"]
     r4  = results["iter4"]
     r6b = results["iter6b"]
+    us  = r2["util_stats"]   # A3 차량 적재율 (median + under/over 플래그)
+    a3_median = f"{us['median']}%" if us["n_loaded"] else "N/A (실적재 0건)"
     lines = [
         f"*TMS 주간 AutoResearch — {week_str}*",
         f"  내부 소화율: {r2['internal_rate']}% (목표 ≥80%) | 고고엑스: {r2['gogox_rate']}%",
         f"  OTIF On-Time: {r4['on_time_rate']}%",
+        f"  차량 적재율 median: {a3_median} ({us['window']}) — "
+        f"저적재 {us['n_under']}건·오버부킹 {us['n_over']}건",
         f"  갭분석: 흡수 가능 {r6b['absorbable_count']}건 → 소화율 {r6b['new_internal_rate_pct']}% 달성 예상",
         f"  리포트: {report_path.name}",
     ]

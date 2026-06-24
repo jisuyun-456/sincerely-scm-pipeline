@@ -48,6 +48,7 @@ except ImportError:
 
 # P2 A3 — 차량 적재율 SSOT (하드코딩 정원 대신 라이브 차량한도)
 from utils.vehicle_util import capacities_from_shipments, capacity_for
+from utils.cbm_panels import inbound_panel, load_rate_panel, outbound_panel
 
 # ================================================================
 # 환경변수
@@ -1121,6 +1122,13 @@ def main():
             "usage":   usage_data,
         },
         "shipment":tms_data,
+        # Chain A — CBM forecast 패널 (A3 적재율 함대요약 / B3 입하 14d / 출하 14d)
+        # NOTE: 'cbm_forecast' 키 — 레거시 weekly_forecast 'forecast' 키와 충돌 회피 (dashboard.html).
+        "cbm_forecast": {
+            "load_rate": load_rate_panel(tms_data.get("driver_pct", {})),
+            "inbound":   inbound_panel(),
+            "outbound":  outbound_panel(),
+        },
         # weekly 섹션: 출하 탭에서 이전주/다음주/트렌드/품질/기사님 등 상세 표시용
         "weekly": {
             "this_week": {

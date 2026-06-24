@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-06-23",
+  "updated_at": "2026-06-24",
   "tasks": [
     {
       "id": "CTRL-TOWER-01",
@@ -1019,6 +1019,26 @@
       "domain": "dispatch",
       "created_at": "2026-06-23",
       "notes": "완료(commit 0b9f83b): yml concurrency 가드 / KR_HOLIDAYS 2027 + 미등록연도 경고 가드 / _ensure_minimum_load 외부퀵→자체기사 트럭 차단 / region 랜드마크+서울 contains 우선순위+strip / _spillover_target 성수기 소형→고고엑스 / 자동화율 분모 plan합. 보류: add_logen_days 휴일반영(Contract C3 위배 — ops 확인 필요), _spillover_target region 차원(로젠이 전 지역 커버라 보류)."
+    },
+    {
+      "id": "CBM-CHAIN-A-DASHBOARD-SLACK",
+      "title": "Chain A — D1/B3/A3 대시보드+Slack 통합 (P2 산출물 운영 가시화)",
+      "priority": "high",
+      "domain": "dashboard",
+      "status": "done",
+      "created_at": "2026-06-24",
+      "source": "bom-cbm-ops 진입메뉴 A / chain 세션 2026-06-24",
+      "notes": "A3 적재율→tms_weekly_runner Slack + GH Pages(cbm_panels.load_rate_panel 함대 median+flags); D1 출하CBM→order_cascade build_digest(d1=) digest; B3 입하14d→wms_weekly_runner _notify_slack_b3 + GH Pages. 대시보드=Surface B(generate_scm_report cbm_forecast 키 + dashboard.html 3패널 a3-loadrate/b3-inbound/d1-outbound). utils/cbm_panels.py(7테스트), capacity_series.json(committed). 리뷰: forecast 키 충돌(weekly_forecast 크래시)→cbm_forecast 리네임. 597 tests green."
+    },
+    {
+      "id": "CBM-CHAIN-C-OVERBOOK-ALERT",
+      "title": "Chain C — 배차 재분배 코드화 (조희선 과적→박종성/이장훈 무비용 흡수 alert)",
+      "priority": "high",
+      "domain": "tms",
+      "status": "done",
+      "created_at": "2026-06-24",
+      "source": "bom-cbm-ops 진입메뉴 C / 2026-06-24 배차적재율 진단 실행",
+      "notes": "scripts/dispatch/overbook_alert.py read-only Slack DM(shadow). dispatch-day 재구성(배차일지 33d stale)으로 조희선 util>95% + 박종성/이장훈 동일일 흡수여력 + 경기 surcharge 노출. wave_recommender/wave_assigner/vehicle_util/config.RATE_HISTORY 재사용. util>200%=multi-run 아티팩트 분리, 95~100% 용량임박 vs >100% 과적 구분. 리뷰수정: 이장훈 우선(flat daily ₩0)·박종성 거리요금 재프레이밍, surcharge region-tier 추정 disclosure. 15테스트. live dry-run 2026-06-25 조희선 99% 감지. Immutable Ledger 준수(PATCH 없음). 의존: 배차일지 입력재개 후 per-run 확정."
     }
   ]
 }

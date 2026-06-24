@@ -419,11 +419,11 @@ def main():
               f"끊김 {totals['끊김']} | INSERT 대상 {len(to_insert)} "
               f"(unchanged skip {totals['unchanged']})", flush=True)
 
-        digest = build_digest(results, totals, run_id, args.window)
-
         d1 = weekly_outbound_forecast(results)
         print(f"  D1 출하CBM 사전계획: {d1['total_cbm']}m³ / 주차 {len(d1['by_week'])}개 "
               f"(날짜커버 {d1['coverage_pct']}%)", flush=True)
+
+        digest = build_digest(results, totals, run_id, args.window, d1=d1)
 
         if not args.write:
             write_report(out_dir, run_id, results, totals, args.window)

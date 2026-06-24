@@ -1,7 +1,12 @@
-"""B3 입하 14d 사전계획 섹션 (capacity_series 표면화) 테스트 — P2."""
+"""B3 입하 14d 사전계획 섹션 (capacity_series 표면화) 테스트 — P2 + Chain A Slack."""
 import json
 
-from scripts.wms_weekly_runner import _b3_from_snapshot, _build_b3_inbound_section
+from scripts.wms_weekly_runner import (
+    _b3_from_snapshot,
+    _b3_slack_from_snapshot,
+    _build_b3_inbound_section,
+    b3_slack_summary,
+)
 
 _SNAP = {
     "snapshot_date": "2026-06-18", "horizon_days": 14,
@@ -39,3 +44,29 @@ def test_build_b3_inbound_section_reads_latest(tmp_path):
     ]), encoding="utf-8")
     md = _build_b3_inbound_section(p)
     assert "2026-06-18" in md and "56.6904 m³" in md   # 최신 스냅샷 사용
+
+
+# ─── B3 Slack 요약 (Chain A) — compact, not full markdown table ──────────
+
+def test_b3_slack_from_snapshot_is_compact():
+    s = _b3_slack_from_snapshot(_SNAP)
+    assert "B3 입하 14d" in s
+    assert "56.6904" in s and "16.4%" in s     # total + coverage
+    assert "7d 11.18m³" in s and "14d 11.61m³" in s   # MES horizon
+    # 컴팩트: 전체 일자 테이블은 미포함 (Slack 과부하 방지)
+    assert "| 입하예상일 |" not in s
+
+
+def test_b3_slack_summary_none_when_missing(tmp_path):
+    assert b3_slack_summary(tmp_path / "nope.json") is None
+
+
+def test_b3_slack_summary_reads_latest(tmp_path):
+    p = tmp_path / "capacity_series.json"
+    p.write_text(json.dumps([
+        {"snapshot_date": "2026-06-10", "horizon_days": 14,
+         "tracks": {"inbound": {"scheduled_total_cbm": 1.0}}},
+        _SNAP,
+    ]), encoding="utf-8")
+    s = b3_slack_summary(p)
+    assert s is not None and "56.6904" in s
