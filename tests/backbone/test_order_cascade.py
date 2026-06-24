@@ -379,3 +379,35 @@ def test_run_unit_idempotent_unchanged_skip():
     prior = dict(first["row"])
     again = run_unit(_sym_unit(), prior, _ctx(), run_id="20260611-1200")
     assert again["action"] == "unchanged"   # 실행ID 달라도 내용 동일 → INSERT 0
+
+
+# ── D1 출하CBM 주별 사전계획 (P2) ──────────────────────────────────────────────
+def test_weekly_outbound_forecast_buckets_by_iso_week():
+    from scripts.backbone.order_cascade import weekly_outbound_forecast
+
+    def wk(s):
+        y, w, _ = date.fromisoformat(s).isocalendar()
+        return f"{y}-W{w:02d}"
+
+    results = [
+        {"row": {"추정_CBM_m3": 10.0}, "ship_req": "2026-06-29"},   # 같은 주
+        {"row": {"추정_CBM_m3": 5.0}, "ship_req": "2026-07-01"},    # 같은 주
+        {"row": {"추정_CBM_m3": 3.0}, "ship_req": "2026-07-06"},    # 다음 주
+        {"row": {"추정_CBM_m3": 0}, "ship_req": "2026-07-06"},      # CBM 0 → 제외
+        {"row": {"추정_CBM_m3": 7.0}, "ship_req": None},            # 날짜 없음 → 미버킷
+        {"row": {"추정_CBM_m3": 2.0}, "ship_req": "#ERROR!"},       # 파싱 실패 → 미버킷
+    ]
+    f = weekly_outbound_forecast(results)
+    assert f["by_week"][wk("2026-06-29")] == {
+        "cbm": 15.0, "n": 2, "week_start": "2026-06-29"}
+    assert f["by_week"][wk("2026-07-06")]["cbm"] == 3.0
+    assert f["n_units"] == 5        # CBM>0 단위만 (0 제외)
+    assert f["dated_cbm"] == 18.0   # 10+5+3
+    assert f["total_cbm"] == 27.0   # 10+5+3+7+2
+    assert f["coverage_pct"] == round(18 / 27 * 100, 1)
+
+
+def test_weekly_outbound_forecast_empty():
+    from scripts.backbone.order_cascade import weekly_outbound_forecast
+    f = weekly_outbound_forecast([])
+    assert f["by_week"] == {} and f["total_cbm"] == 0.0 and f["coverage_pct"] == 0.0

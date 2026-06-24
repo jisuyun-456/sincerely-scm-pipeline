@@ -402,7 +402,7 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
                                     ship_request_date=ship_req)
         return {"row": row, "action": decide_insert(row, prior_fields),
                 "status": "끊김", "reasons": reasons, "mes_by_date": {},
-                "src_counts": lines_info["src_counts"]}
+                "src_counts": lines_info["src_counts"], "ship_req": ship_req}
 
     bom_rows, n_verified = select_bom_rows(unit.pna, unit.goods_name,
                                            ctx.bom_fields, unit=unit)
@@ -451,4 +451,4 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
         cascade_run_id=run_id, status=status)
     return {"row": row, "action": decide_insert(row, prior_fields),
             "status": status, "reasons": reasons, "mes_by_date": mes,
-            "src_counts": lines_info["src_counts"]}
+            "src_counts": lines_info["src_counts"], "ship_req": ship_req}

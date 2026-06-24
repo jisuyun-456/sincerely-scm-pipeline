@@ -240,6 +240,69 @@ def build_project_board(results: list[dict]) -> list[str]:
     return lines
 
 
+def _iso_date(raw):
+    try:
+        return date.fromisoformat(str(raw or "")[:10])
+    except ValueError:
+        return None
+
+
+def weekly_outbound_forecast(results: list[dict]) -> dict:
+    """D1 — ship_req(출고요청일) ISO주차별 추정_CBM_m3 집계 (출하CBM 사전계획).
+
+    PropLedger 추정_CBM_m3는 날짜 미저장(cdb8d29) → cascade 결과 in-memory ship_req로
+    버킷. CBM 0(끊김·미산출)·날짜 없는 단위는 미산입 — coverage_pct로 투명화.
+    """
+    buckets: dict[str, dict] = {}
+    cbm_total = cbm_dated = 0.0
+    n_total = n_dated = 0
+    for r in results:
+        cbm = float(r["row"].get("추정_CBM_m3") or 0)
+        if cbm <= 0:
+            continue
+        n_total += 1
+        cbm_total += cbm
+        d = _iso_date(r.get("ship_req"))
+        if d is None:
+            continue
+        n_dated += 1
+        cbm_dated += cbm
+        y, w, _ = d.isocalendar()
+        label = f"{y}-W{w:02d}"
+        # week_start = 해당 주 월요일 (date.fromisocalendar W53/short-year ValueError 회피)
+        b = buckets.setdefault(label, {
+            "cbm": 0.0, "n": 0,
+            "week_start": (d - timedelta(days=d.weekday())).isoformat()})
+        b["cbm"] = round(b["cbm"] + cbm, 4)
+        b["n"] += 1
+    return {
+        "by_week": dict(sorted(buckets.items())),
+        "total_cbm": round(cbm_total, 4),
+        "dated_cbm": round(cbm_dated, 4),
+        "n_units": n_total,
+        "n_dated": n_dated,
+        "coverage_pct": round(cbm_dated / cbm_total * 100, 1) if cbm_total else 0.0,
+    }
+
+
+def build_d1_outbound_section(results: list[dict]) -> list[str]:
+    """D1 출하CBM 주별 사전계획 마크다운 섹션 (출하확정 14d보다 먼 사전수요)."""
+    f = weekly_outbound_forecast(results)
+    lines = ["", "## D1 출하CBM 주별 사전계획 (ship_req 출고요청일 기준)", "",
+             f"- 출하CBM 단위 {f['n_units']}개 / 날짜 확보 {f['n_dated']}개 "
+             f"(CBM 커버 {f['coverage_pct']}%) | 합계 {f['total_cbm']}m³ "
+             f"(날짜확보 {f['dated_cbm']}m³)", "",
+             "| ISO주차 | 주 시작 | 출하CBM(m³) | 단위 |",
+             "|---|---|--:|--:|"]
+    for label, b in f["by_week"].items():
+        lines.append(f"| {label} | {b['week_start']} | {b['cbm']} | {b['n']} |")
+    if not f["by_week"]:
+        lines.append("| (날짜 확보 단위 없음) | — | — | — |")
+    lines += ["", "> PropLedger 추정_CBM 기반 사전수요 — capacity_series outbound(출하확정 "
+              "14d)보다 먼 윈도우. D2 완전주문(OTIF×BOM)은 P5에서 결합."]
+    return lines
+
+
 def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
                  window_days: int):
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -257,6 +320,7 @@ def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
              f"- 상태: 완결 {totals['완결']} / 부분 {totals['부분']} / "
              f"끊김 {totals['끊김']}"]
     lines += build_project_board(results)
+    lines += build_d1_outbound_section(results)
     lines += ["", "## 단위별 상세 (전파ID)", "",
               "| 전파ID | 상태 | action | 부족자재 | 입하CBM | 출하CBM | M/H "
               "| wave | 운임범위 | 사유 |",
@@ -356,6 +420,10 @@ def main():
               f"(unchanged skip {totals['unchanged']})", flush=True)
 
         digest = build_digest(results, totals, run_id, args.window)
+
+        d1 = weekly_outbound_forecast(results)
+        print(f"  D1 출하CBM 사전계획: {d1['total_cbm']}m³ / 주차 {len(d1['by_week'])}개 "
+              f"(날짜커버 {d1['coverage_pct']}%)", flush=True)
 
         if not args.write:
             write_report(out_dir, run_id, results, totals, args.window)

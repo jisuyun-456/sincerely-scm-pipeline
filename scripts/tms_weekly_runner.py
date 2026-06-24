@@ -17,6 +17,7 @@ TMS 주간 AutoResearch 통합 러너 (매주 월요일 실행)
 
 import argparse
 import os
+import statistics
 import sys
 import time
 from datetime import date, timedelta
@@ -33,6 +34,17 @@ OUTPUTS_DIR = ROOT / "_AutoResearch" / "SCM" / "outputs"
 LOG_PATH = ROOT / "_AutoResearch" / "SCM" / "wiki" / "log.md"
 INDEX_PATH = ROOT / "_AutoResearch" / "SCM" / "wiki" / "index.md"
 OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# P2 A3 — 차량 적재율 SSOT (하드코딩 정원 dict 폐기, 2026-06-24)
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from utils.vehicle_util import (  # noqa: E402
+    FALLBACK_CAP, aggregate_capacity, bare_driver, summarize_util,
+)
+
+# 후방호환 — tms_iter7/iter8_analyzer가 import. 라이브 차량한도 실측 fallback 값
+# (권위는 vehicle_util.capacities_from_shipments의 라이브 값; 하드코딩 재도입 아님).
+TRUCK_CAPACITY_M3 = FALLBACK_CAP
 
 # ── Airtable 상수 ──────────────────────────────────────────────────────────────
 BASE_ID = "app4x70a8mOrIKsMf"
@@ -67,13 +79,6 @@ HOLIDAYS_2026: dict[date, str] = {
     date(2026, 10,  5): "대체공휴일(개천절)",        # 10/3 토요일
     date(2026, 10,  9): "한글날",
     date(2026, 12, 25): "크리스마스",
-}
-
-# 기사별 트럭 적재 용량 (m³) — 2026-05-12 확정
-TRUCK_CAPACITY_M3: dict[str, float] = {
-    "이장훈": 7.6,
-    "조희선": 7.6,
-    "박종성": 9.5,
 }
 
 AIRTABLE_PAT = os.environ.get("AIRTABLE_PAT", "")
@@ -245,6 +250,8 @@ def step_pull_data() -> dict:
         "fldVJoKjjzcwpHIHC",  # Total_CBM
         "fldIQqaoj2CYlCSFH",  # 배송파트너 (링크)
         "fldwrsxDL2VFdmUKo",  # 오버부킹
+        "fldyQAoRZFn6oeQ0E",  # 차량이용률(%) = Total_CBM/차량한도 (A3 권위 소스)
+        "fldXm6K2MZ5ENSFoE",  # 차량한도 (라이브 정원 lookup)
     ])
     dispatch_recs = [
         r for r in all_dispatch_recs
@@ -273,11 +280,23 @@ def step_pull_data() -> dict:
         "fldZJD4YRYg8Mr6yi",  # 납기차이일
     ])
 
+    # P2 A3 — 라이브 차량한도(배차일지 lookup)를 기사별 집계 (하드코딩 정원 dict 대체)
+    cap_pairs = []
+    for rec in all_dispatch_recs:
+        f = rec["fields"]
+        cap = f.get("fldXm6K2MZ5ENSFoE")
+        if isinstance(cap, list):
+            cap = cap[0] if cap else None
+        for pid in (f.get("fldIQqaoj2CYlCSFH") or []):
+            cap_pairs.append((partner_cache.get(pid, pid), cap))
+    vehicle_caps = aggregate_capacity(cap_pairs)
+
     print(f"  Shipment(최근30일): {len(recent_ships)}건")
     print(f"  퀵(수도권)(최근30일): {len(quik_ships)}건")
     print(f"  배차일지(최근30일): {len(dispatch_recs)}건 (전체 {len(all_dispatch_recs)}건 중)")
     print(f"  배송클레임(최근90일): {len(claim_recs)}건")
     print(f"  OTIF(전체): {len(otif_recs)}건")
+    print(f"  차량한도(라이브): {vehicle_caps}")
 
     return {
         "shipments": recent_ships,
@@ -287,6 +306,8 @@ def step_pull_data() -> dict:
         "claims": claim_recs,
         "quik_ships": quik_ships,
         "partner_cache": partner_cache,
+        "vehicle_caps": vehicle_caps,
+        "all_dispatches": all_dispatch_recs,
     }
 
 
@@ -359,31 +380,35 @@ def analyze_iter2_dispatch_efficiency(data: dict) -> dict:
             driver_days[name] = driver_days.get(name, 0) + 1
             driver_cbm[name]  = driver_cbm.get(name, 0.0) + cbm_val
 
-    # ── util_v2: CBM 적재율 per driver (Σ CBM / Σ capacity×days) ───────────────
-    driver_util_v2: dict[str, float] = {}
-    for driver_name, cap in TRUCK_CAPACITY_M3.items():
-        # partner_cache 이름에 기사 이름 substring 매칭
-        matched_name = next(
-            (n for n in driver_days if driver_name in n), None
-        )
-        if matched_name:
-            days = driver_days.get(matched_name, 0)
-            cbm  = driver_cbm.get(matched_name, 0.0)
-            driver_util_v2[driver_name] = round(cbm / (cap * days) * 100, 1) if days > 0 else 0.0
-        else:
-            driver_util_v2[driver_name] = 0.0
+    # ── A3: 차량 적재율 — 배차일지 차량이용률(%)(=Total_CBM/차량한도)가 권위 소스 ──
+    # 구 driver_util_v2(Σcbm/(하드코딩정원×days))는 라이브 차량한도와 40~70% 어긋나
+    # 폐기. 0%(미적재)·>100%(오버부킹) 혼입 → median + under/over 플래그로 보고.
+    # 배차일지 최근30일 0건(미갱신) 시 전체 기준으로 폴백 + window 명시(silent blank 방지).
+    disp = dispatches if dispatches else data.get("all_dispatches", [])
+    util_stats = summarize_util([r["fields"].get("fldyQAoRZFn6oeQ0E") for r in disp])
+    util_stats["window"] = "최근30일" if dispatches else "전체(최근30일 0건·미갱신)"
 
-    # overall CBM 적재율
-    total_cbm_loaded  = sum(driver_cbm.values())
-    total_cap_avail   = sum(
-        TRUCK_CAPACITY_M3.get(dn, 0) * driver_days.get(
-            next((n for n in driver_days if dn in n), ""), 0
-        )
-        for dn in TRUCK_CAPACITY_M3
-    )
-    util_v2_overall = round(
-        total_cbm_loaded / total_cap_avail * 100, 1
-    ) if total_cap_avail > 0 else 0.0
+    driver_util_vals: dict[str, list[float]] = {}
+    driver_disp_days: dict[str, int] = {}
+    driver_disp_cbm: dict[str, float] = {}
+    for rec in disp:
+        f = rec["fields"]
+        u = f.get("fldyQAoRZFn6oeQ0E")
+        try:
+            cbm = float(f.get("fldVJoKjjzcwpHIHC") or 0)
+        except (ValueError, TypeError):
+            cbm = 0.0
+        for pid in (f.get("fldIQqaoj2CYlCSFH") or []):
+            name = bare_driver(partner_cache.get(pid, pid))
+            if u is not None:
+                driver_util_vals.setdefault(name, []).append(float(u))
+            if cbm > 0:
+                driver_disp_days[name] = driver_disp_days.get(name, 0) + 1
+                driver_disp_cbm[name] = round(driver_disp_cbm.get(name, 0.0) + cbm, 2)
+    driver_util = {
+        k: round(statistics.median(v), 1)
+        for k, v in driver_util_vals.items() if v
+    }
 
     return {
         "sample_size":     len(quik_ships),
@@ -393,8 +418,11 @@ def analyze_iter2_dispatch_efficiency(data: dict) -> dict:
         "none_rate":       round(cat["none"]     / total * 100, 1),
         "driver_days":     driver_days,
         "driver_cbm":      driver_cbm,
-        "driver_util_v2":  driver_util_v2,
-        "util_v2_overall": util_v2_overall,
+        "util_stats":      util_stats,
+        "driver_util":     driver_util,
+        "driver_disp_days": driver_disp_days,
+        "driver_disp_cbm":  driver_disp_cbm,
+        "vehicle_caps":    data.get("vehicle_caps", {}),
     }
 
 
@@ -678,7 +706,7 @@ def analyze_iter6_absorption_gap(data: dict) -> dict:
 
     total_headroom = 0.0
     driver_headroom: dict[str, float] = {}
-    for driver_name, cap in TRUCK_CAPACITY_M3.items():
+    for driver_name, cap in (data.get("vehicle_caps") or {}).items():
         matched = next((n for n in driver_days if driver_name in n), None)
         if matched:
             headroom = max(0.0, cap * driver_days[matched] - driver_cbm.get(matched, 0.0))
@@ -806,20 +834,24 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 기사별 운행일 (최근 30일):
 {chr(10).join(f"  {k}: {v}일" for k, v in r2["driver_days"].items()) if r2["driver_days"] else "  (데이터 없음)"}
 
-### K1 차량이용률 v2 (CBM 적재율)
+### K1 차량 적재율 (A3 — 배차일지 차량이용률 라이브 차량한도 기준)
 
-> util_v2 = Total_CBM 합계 / (트럭 용량 x 운행일수)
+> 권위 소스 = 배차일지 차량이용률(%) formula (= Total_CBM / 차량한도). 기준: {r2["util_stats"]["window"]}.
+> 구 하드코딩 정원(이장훈 7.6m³) 폐기 — 라이브 차량한도(이장훈 {r2['vehicle_caps'].get('이장훈', '?')}m³)와
+> 40~70% 격차 교정. 0%(미적재)·>100%(오버부킹) 혼입 → median 중심 보고.
 
-| 기사 | 트럭 용량 | 총 CBM | 운행일 | 적재율 |
-|------|---------|--------|--------|--------|
+- 적재율 median (실적재 {r2["util_stats"]["n_loaded"]}건): **{str(r2["util_stats"]["median"]) + "%" if r2["util_stats"]["n_loaded"] else "N/A (실적재 0건)"}** (capped mean {r2["util_stats"]["mean_capped"]}%)
+- ⚠ 미적재 0%: {r2["util_stats"]["n_zero"]}건 / 저적재 <50%: {r2["util_stats"]["n_under"]}건 ({r2["util_stats"]["under_pct"]}%) / 오버부킹 >100%: {r2["util_stats"]["n_over"]}건 ({r2["util_stats"]["over_pct"]}%)
+
+| 기사 | 차량한도 | 운행일 | 총 CBM | 적재율 median |
+|------|---------|--------|--------|---------------|
 {chr(10).join(
-    f"| {dn} | {TRUCK_CAPACITY_M3.get(dn, '-')}m³ | "
-    + f"{r2['driver_cbm'].get(next((n for n in r2['driver_cbm'] if dn in n), ''), 0.0):.2f}m³ | "
-    + f"{r2['driver_days'].get(next((n for n in r2['driver_days'] if dn in n), ''), 0)}일 | "
-    + f"**{r2['driver_util_v2'].get(dn, 0.0)}%** |"
-    for dn in ["이장훈", "조희선", "박종성"]
-)}
-| **전체** | - | {sum(r2['driver_cbm'].values()):.2f}m³ | - | **{r2['util_v2_overall']}%** |
+    f"| {dn} | {r2['vehicle_caps'].get(dn, '-')}m³ | "
+    + f"{r2['driver_disp_days'].get(dn, 0)}일 | "
+    + f"{r2['driver_disp_cbm'].get(dn, 0.0):.2f}m³ | "
+    + f"**{util}%** |"
+    for dn, util in sorted(r2['driver_util'].items())
+) if r2['driver_util'] else "| (배차일지 데이터 없음) | - | - | - | - |"}
 
 > {'목표 달성' if r2["internal_rate"] >= 80 else f'미달 — {80 - r2["internal_rate"]:.1f}%p 개선 필요 (고고엑스 건 내부 흡수 검토)'}
 
@@ -944,7 +976,7 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 ### KPI 스냅샷
 - 내부 소화율: {r2["internal_rate"]}% (목표 ≥80%) | 고고엑스: {r2["gogox_rate"]}%
 - OTIF On-Time: {r4["on_time_rate"]}% (목표 ≥90%)
-- 차량이용률 v2 (CBM 적재율): {r2["util_v2_overall"]}%
+- 차량 적재율 median: {r2["util_stats"]["median"]}% (저적재 {r2["util_stats"]["n_under"]}건·오버부킹 {r2["util_stats"]["n_over"]}건)
 - 약속납기일 전환율: {r4["proxy_conversion_rate"]}%
 - 다음 주 예측: {r5["total_forecast"]}건 (피크 {r5["peak_day"]}요일)
 
