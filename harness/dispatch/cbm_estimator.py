@@ -26,7 +26,8 @@ KIT_CONF_CAP = 0.8  # Product 직접조인(0.9~1.0)보다 항상 낮게 — 신�
 # (코드 기반: keys.is_service 이름매칭은 '신시어리서비스'·'고객입고물품'을 못 잡고
 #  '퀵차지'(실물 보조배터리)를 오탐하므로, 정확도 위해 코드 집합으로 관리. 발견 시 확장.)
 # 진단(2026-06-19): SSSV가 6/23~30 미출고 71건 중 56건의 confidence를 0.7로 cap.
-SERVICE_CODES: frozenset[str] = frozenset({"SSSV", "CSPR"})
+# 진단(2026-06-25): LOPU·BSPK·BCTW·DSKT·CMWG — Product 테이블 미등록, 하차서비스·부자재 등 비물리.
+SERVICE_CODES: frozenset[str] = frozenset({"SSSV", "CSPR", "LOPU", "BSPK", "BCTW", "DSKT", "CMWG"})
 
 # 종료(비활성) 발송상태 — 다차출하(partial_skip) 카운트에서 제외. 과거 '출하 완료'가
 # 신규 1건짜리 프로젝트를 다차로 오판해 CBM을 통째 skip → 자동배차 수동화하던 문제 해소. (2026-06-22 레버1)

@@ -340,6 +340,7 @@ def _format_digest(
     today_iso: str,
     change_report: "ChangeReport | None" = None,
     otif_summary: "dict | None" = None,
+    n_dates: int = 1,
 ) -> str:
     util = compute_utilization(plans)
     lines = [f"*Wave 추천 엔진 다이제스트 — {today_iso}*"]
@@ -356,8 +357,14 @@ def _format_digest(
 
     for wid in ("W1", "W2", "W3"):
         plan = plans[wid]
-        u = util.get(wid, 0.0)
-        line = f"  {wid}: {plan.count}건 / {plan.total_cbm:.2f} CBM ({u:.0%})"
+        display = WAVE_DISPLAY.get(wid, wid)
+        u_total = util.get(wid, 0.0)
+        if n_dates > 1:
+            u_daily = u_total / n_dates
+            cbm_label = f"{plan.total_cbm:.2f} CBM — 일평균 {u_daily:.0%} ({n_dates}일)"
+        else:
+            cbm_label = f"{plan.total_cbm:.2f} CBM ({u_total:.0%})"
+        line = f"  {display}: {plan.count}건 / {cbm_label}"
         if otif_summary and wid in otif_summary:
             s = otif_summary[wid]
             line += f" — 납기 {s['on_time']}/{s['total']}건 ✅"
@@ -379,13 +386,14 @@ def save_pending_digest(
     today_iso: str,
     change_report=None,
     otif_summary=None,
+    n_dates: int = 1,
 ) -> None:
     import pathlib
     pathlib.Path(PENDING_DIGEST_PATH).parent.mkdir(parents=True, exist_ok=True)
     with open(PENDING_DIGEST_PATH, "w", encoding="utf-8") as f:
         json.dump(
             {"date": today_iso,
-             "text": _format_digest(plans, diff, today_iso, change_report, otif_summary)},
+             "text": _format_digest(plans, diff, today_iso, change_report, otif_summary, n_dates)},
             f,
         )
 
@@ -396,10 +404,11 @@ def send_or_queue_digest(
     today_iso: str,
     change_report=None,
     otif_summary=None,
+    n_dates: int = 1,
 ) -> None:
     now = datetime.now(KST)
     if is_quiet_hour(now):
-        save_pending_digest(plans, diff, today_iso, change_report, otif_summary)
+        save_pending_digest(plans, diff, today_iso, change_report, otif_summary, n_dates)
         print(f"[INFO] quiet hours — digest queued for next cycle")
         return
 
@@ -412,7 +421,7 @@ def send_or_queue_digest(
         if _slack_post(old.get("text", "")):
             pending.unlink()
 
-    _slack_post(_format_digest(plans, diff, today_iso, change_report, otif_summary))
+    _slack_post(_format_digest(plans, diff, today_iso, change_report, otif_summary, n_dates))
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -497,8 +506,9 @@ def main() -> None:
         or change_report.removed
         or change_report.critical_modified
     )
+    n_dates = max(1, len(date_to_shipments))
     if diff or has_changes:
-        send_or_queue_digest(plans, diff, today_iso, change_report, otif_summary)
+        send_or_queue_digest(plans, diff, today_iso, change_report, otif_summary, n_dates)
     else:
         print("  no changes to report")
 

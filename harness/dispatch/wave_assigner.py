@@ -31,7 +31,7 @@ DRIVER_LIMITS: Dict[str, Dict] = {
            'pattern': '09:00_고정'},
     'W2': {'driver_id': 'CA-NEW-1', 'name': '조희선', 'max_cbm': 7.616, 'max_count': 6,
            'regions': frozenset({'tier1_seoul', 'tier2_이장훈_gyeonggi', 'tier3_gyeonggi_etc', 'tier4_incheon'}),
-           'preferred_slots': frozenset({'무관', '오전', '오후 1 (오후 2시 - 4시)'}),
+           'preferred_slots': frozenset({'무관', '오전', '오후 1 (오후 2시 - 4시)', '오후 2 (오후 4시 - 6시)'}),
            'pattern': '1회_99%_고정'},
     'W3': {'driver_id': 'CA-0003', 'name': '박종성', 'max_cbm': 9.486, 'max_count': 8,
            'regions': frozenset({'tier1_seoul', 'tier2_이장훈_gyeonggi', 'tier3_gyeonggi_etc',
@@ -140,11 +140,13 @@ def _region_ok(wave_id: str, region: str) -> bool:
     return region in DRIVER_LIMITS[wave_id]['regions']
 
 
-def _slot_filter_w1(candidates: List[str], slot: Optional[str]) -> List[str]:
-    """W1 이장훈은 오전/무관 슬롯만 적재. 무관은 오전 시간대 포함이므로 허용."""
-    if 'W1' in candidates and slot not in ('오전', '무관', None):
-        return [c for c in candidates if c != 'W1']
-    return candidates
+def _slot_ok(wave_id: str, slot: Optional[str]) -> bool:
+    """shipment 슬롯이 해당 기사 preferred_slots 내에 있는지 확인. 무관/None 슬롯 → 모두 허용."""
+    if not slot or slot == '무관':
+        return True
+    if wave_id not in DRIVER_LIMITS:
+        return True
+    return slot in DRIVER_LIMITS[wave_id]['preferred_slots']
 
 
 def _spillover_target(region: str, group_cbms: List[float], mode: str,
@@ -225,7 +227,7 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
         group.sort(key=lambda s: (s.project_code, -s.cbm))
 
         candidates = TIER_TO_CANDIDATES.get(region, [])
-        candidates = _slot_filter_w1(candidates, slot)
+        candidates = [c for c in candidates if _slot_ok(c, slot)]
 
         # Best-Fit Decreasing: shipment 하나씩 → 잔여 capacity 가장 작은 wave
         for ship in group:
@@ -277,7 +279,7 @@ def _score(plans: Dict[str, WavePlan]) -> float:
             for s in plan.shipments:
                 if not _region_ok(wid, s.region):
                     score -= REGION_VIOLATION_PENALTY
-                if wid == 'W1' and s.slot not in ('오전', '무관', None):
+                if not _slot_ok(wid, s.slot):
                     score -= REGION_VIOLATION_PENALTY
     return score
 
@@ -384,7 +386,7 @@ def _ensure_minimum_load(plans: Dict[str, WavePlan]) -> Dict[str, WavePlan]:
                     continue
                 if not _can_fit(gw, ship.cbm, 1, plans[gw]):
                     continue
-                if gw == "W1" and ship.slot not in ("오전", "무관", None):
+                if not _slot_ok(gw, ship.slot):
                     continue
                 plans[donor].shipments.pop(i)
                 plans[gw].shipments.append(ship)
