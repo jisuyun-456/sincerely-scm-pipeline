@@ -201,10 +201,19 @@ def estimate_shipment_cbm(shipment: dict, lookup: dict) -> dict:
             "unmatched": [],
         }
 
+    # '배송 품목'(multipleRecordLinks/list)은 다차출하 TO별 per-shipment 분할 수량 소스.
+    # '최종 출고 품목 및 수량'보다 granularity 높으므로 최우선 참조.
+    _bp_raw = f.get("배송 품목") or []
+    if isinstance(_bp_raw, list):
+        baesong_text = "; ".join(str(x) for x in _bp_raw if x and str(x).lower() != "none").strip()
+    else:
+        baesong_text = str(_bp_raw).strip()
     post_text = (f.get("최종 출고 품목 및 수량") or "").strip()
     pre_text = (f.get("최종 출하 품목") or "").strip()
-    text = post_text or pre_text
-    mode = "임가공_후_추정" if post_text else "임가공_전_추정"
+    text = baesong_text or post_text or pre_text
+    mode = ("배송품목_추정" if baesong_text
+            else "임가공_후_추정" if post_text
+            else "임가공_전_추정")
     if not text:
         return {
             "estimated_cbm": 0.0,

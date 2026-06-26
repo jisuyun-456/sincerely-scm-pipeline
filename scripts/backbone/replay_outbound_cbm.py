@@ -169,7 +169,7 @@ def build_inputs():
     print("shipment 로딩...", flush=True)
     ships = fetch(TMS, SHIP, TP, ["project code", "Total_CBM", "estimated_cbm",
                                   "estimation_confidence", "발송상태_TMS",
-                                  "최종 출고 품목 및 수량", "최종 출하 품목"])
+                                  "최종 출고 품목 및 수량", "최종 출하 품목", "배송 품목"])
     # 활성(미종료) 출하만 카운트 — 과거 '출하 완료'가 다차출하(partial_skip)를 오판하지 않도록. (레버1)
     shipment_count = count_active_shipments(ships)
     return lk, order_by_project, shipment_count, ships, kit
