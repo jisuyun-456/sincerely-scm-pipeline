@@ -5,8 +5,8 @@ pkg_schedule/Shipment/배송요청) + ~50% of the goods/material masters
 (ItemMaster⊕Product, BOM, sync_parts, sync_item, material, KeyCrosswalk,
 InventoryLedger) + small reference tables. PropagationLedger left empty.
 
-Run:  AIRTABLE_ZISU_PAT=... AIRTABLE_WMS_PAT=... AIRTABLE_PAT=... \
-      python scripts/unify/seed_zisu_base.py [--projects 20] [--frac 0.5] [--force]
+Run:  AIRTABLE_JISU_PAT=... AIRTABLE_WMS_PAT=... AIRTABLE_PAT=... \
+      python scripts/unify/seed_jisu_base.py [--projects 20] [--frac 0.5] [--force]
 
 Only writes to the new base (apptJBFsVRGaeUvLW). Never mutates WMS/TMS.
 """
@@ -24,10 +24,10 @@ import urllib.request
 ZBASE = "apptJBFsVRGaeUvLW"
 WBASE = "appLui4ZR5HWcQRri"
 TBASE = "app4x70a8mOrIKsMf"
-IDS = json.load(open(os.path.join(os.path.dirname(__file__), "zisu_tableids.json"), encoding="utf-8"))
+IDS = json.load(open(os.path.join(os.path.dirname(__file__), "jisu_tableids.json"), encoding="utf-8"))
 PNARE = re.compile(r"(PNA\d+)")
 
-ZPAT = os.environ["AIRTABLE_ZISU_PAT"]
+ZPAT = os.environ.get("AIRTABLE_JISU_PAT") or os.environ["AIRTABLE_ZISU_PAT"]
 WPAT = os.environ["AIRTABLE_WMS_PAT"]
 TPAT = os.environ["AIRTABLE_PAT"]
 

@@ -2,10 +2,11 @@
 
 Creates ~20 canonical tables (curated fields, live names preserved) via the
 Airtable Meta API, then a 2nd pass adds →project / →ItemMaster link fields.
-Idempotent: existing tables/fields are skipped. Writes table-id map to
-scratchpad for seed_zisu_base.py.
+Idempotent: existing tables/fields are skipped, and any field newly added to a
+TABLES spec is back-filled onto an already-created table (pass 1b). Writes the
+table-id map to jisu_tableids.json for seed_jisu_base.py.
 
-Run:  AIRTABLE_ZISU_PAT=... python scripts/unify/build_zisu_base.py [--dry-run]
+Run:  AIRTABLE_JISU_PAT=... python scripts/unify/build_jisu_base.py [--dry-run]
 
 Read-only to live WMS/TMS — this script only writes to the new sandbox base.
 """
@@ -19,7 +20,7 @@ import urllib.request
 
 BASE = "apptJBFsVRGaeUvLW"
 META = f"https://api.airtable.com/v0/meta/bases/{BASE}"
-IDS_OUT = os.path.join(os.path.dirname(__file__), "zisu_tableids.json")
+IDS_OUT = os.path.join(os.path.dirname(__file__), "jisu_tableids.json")
 
 # ---- field-type helpers -----------------------------------------------------
 def T(name):       return {"name": name, "type": "singleLineText"}
@@ -95,6 +96,7 @@ TABLES: dict[str, list[dict]] = {
                           T("shipment_id"), SEL("전파상태", "완결", "부분", "끊김"),
                           ML("부족자재_요약"), N("입하CBM_예상_m3", 4), N("MH_예상_h", 2),
                           T("창고적재_예상"), T("wave_프리뷰"), T("운임_예상범위"),
+                          DATE("출고요청일"), DATE("생산_납기일"),
                           T("cascade_실행ID"), DT("생성시각")],
 }
 
@@ -112,8 +114,15 @@ LINK_FIELDS: list[tuple[str, str, str]] = [
 ]
 
 
+def _pat():
+    p = os.environ.get("AIRTABLE_JISU_PAT") or os.environ.get("AIRTABLE_ZISU_PAT")
+    if not p:
+        raise SystemExit("set AIRTABLE_JISU_PAT (legacy AIRTABLE_ZISU_PAT also accepted)")
+    return p
+
+
 def _hdr():
-    return {"Authorization": f"Bearer {os.environ['AIRTABLE_ZISU_PAT']}",
+    return {"Authorization": f"Bearer {_pat()}",
             "Content-Type": "application/json"}
 
 
@@ -145,6 +154,21 @@ def main(dry_run=False):
             continue
         res = _req(f"{META}/tables", {"name": name, "fields": fields}, "POST")
         print(f"[created] {name} -> {res['id']} ({len(fields)}f)")
+    # pass 1b — back-fill any scalar field newly added to a TABLES spec onto an
+    # already-created table (idempotent field add — never modifies/deletes).
+    have = existing()
+    for name, fields in TABLES.items():
+        if name not in have:
+            continue
+        present = {f["name"] for f in have[name]["fields"]}
+        for fld in fields:
+            if fld["name"] in present:
+                continue
+            if dry_run:
+                print(f"[dry-run] add field {name}.{fld['name']}")
+                continue
+            _req(f"{META}/tables/{have[name]['id']}/fields", fld, "POST")
+            print(f"[added] field {name}.{fld['name']}")
     # pass 2 — link fields
     have = existing()
     for tbl, fld, target in LINK_FIELDS:
