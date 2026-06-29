@@ -26,7 +26,7 @@ import requests
 from dotenv import load_dotenv
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import mm
+from reportlab.lib.units import mm, inch
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas as rl_canvas
@@ -45,6 +45,10 @@ HEADERS = {"Authorization": f"Bearer {PAT}"}
 
 LABEL_W = 150 * mm
 LABEL_H = 100 * mm
+
+# 4×6 inch 라벨지 (10×15cm 스티커) — 프린터 "4x6" 용지에서 실제 크기로 바로 출력
+LABEL_W_4X6 = 4 * inch   # 101.6 mm
+LABEL_H_4X6 = 6 * inch   # 152.4 mm
 
 # V3140 라벨지: A4 2×2, 각 셀 98.73 × 139 mm
 CELL_W  = 98.73 * mm
@@ -1006,6 +1010,190 @@ def generate_v3140_pdf(records: list, output) -> int:
 
 
 # ────────────────────────────────────────────────────────────────────────────
+# 4×6 inch 단일 라벨 (10×15cm 스티커) — 1카톤 1페이지
+#
+# 섹션 배분 (6 inch = 152.4 mm):
+#   헤더     13 mm  SINCERELY 좌 | C/No. + SIZE 우  (navy)
+#   메타     21 mm  TO / PO / ORIGIN
+#   수취인   25 mm  CONSIGNEE 회사명 + 주소 + 담당
+#   바디     83 mm  CONTENTS | QTY 통합 테이블 (품목수 자동 스케일)
+#   푸터     10 mm  SHIP DATE | MADE IN KOREA | SINCERELY Co.
+#
+# 바디 폰트 크기 (품목수 n 기준):
+#   n=1 → 32pt  n=3 → 32pt  n=5 → 28pt  n=8 → 17pt  n=10 → 14pt  n=12 → 11pt
+# ────────────────────────────────────────────────────────────────────────────
+def _build_label_items(box: dict) -> list[dict]:
+    """외박스 라벨용 품목+수량 목록 (combined pack · 잔여분 포함)"""
+    combined = _parse_combined_items(box["item"])
+    if combined:
+        items = [
+            {"name": sub["name"],
+             "qty":  _format_qty(sub["qty"]) + " EA" if sub["qty"] else "1 EA"}
+            for sub in combined
+        ]
+    else:
+        m = re.match(r"^(\d+)(?:\+(\d+))?", str(box["qty"]))
+        main  = m.group(1) if m else str(box["qty"])
+        extra = m.group(2) if m and m.group(2) else None
+        items = [{"name": box["item"],
+                  "qty":  main + (f"+{extra}" if extra else "") + " EA"}]
+    for r in box.get("remainder_items", []):
+        if r.get("name"):
+            items.append({"name": r["name"],
+                           "qty":  (r["qty"] + " EA") if r.get("qty") else ""})
+    return items
+
+
+def draw_carton_label_4x6(c: rl_canvas.Canvas, x: float, y: float,
+                           box: dict, to_num: str, date_str: str,
+                           company: str, consignee_name: str, consignee_addr: str,
+                           font: str, font_bold: str):
+    W, H  = LABEL_W_4X6, LABEL_H_4X6
+    PAD   = 5 * mm
+    NAVY  = colors.HexColor("#0b2747")
+    INK   = colors.HexColor("#0f0f10")
+    INK2  = colors.HexColor("#3a3a3d")
+    MUTED = colors.HexColor("#7c7c82")
+    LINE  = colors.HexColor("#d8d9dd")
+
+    def sep(ypos: float):
+        c.setStrokeColor(LINE); c.setLineWidth(0.7)
+        c.line(x, ypos, x + W, ypos)
+
+    # ── 헤더 (13mm) ──────────────────────────────────────────────────────────
+    HDR_H = 13 * mm
+    HDR_Y = y + H - HDR_H
+    c.setFillColor(NAVY)
+    c.rect(x, HDR_Y, W, HDR_H, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    c.setFont(font_bold, 13)
+    c.drawString(x + PAD, HDR_Y + 7.5 * mm, "SINCERELY")
+    c.setFont(font, 5.5)
+    c.setFillColor(colors.HexColor("#9cc0e8"))
+    c.drawString(x + PAD, HDR_Y + 2.5 * mm, "신시어리  ·  Seoul, Korea")
+    cno    = f"C/No. {box['box_num']} / {box['total_boxes']}"
+    cno_fs = 12
+    while c.stringWidth(cno, font_bold, cno_fs) > W / 2 - PAD and cno_fs > 8:
+        cno_fs -= 1
+    c.setFont(font_bold, cno_fs); c.setFillColor(colors.white)
+    c.drawRightString(x + W - PAD, HDR_Y + 7.5 * mm, cno)
+    c.setFont(font, 6); c.setFillColor(colors.HexColor("#9cc0e8"))
+    c.drawRightString(x + W - PAD, HDR_Y + 2.5 * mm, f"SIZE  {box['size']}형")
+
+    # ── Meta (21mm): TO / PO / ORIGIN ────────────────────────────────────────
+    META_H = 21 * mm
+    META_Y = HDR_Y - META_H
+    sep(META_Y)
+    for i, (k, v) in enumerate([
+        ("TO",     to_num),
+        ("PO",     (company or "")[:26]),
+        ("ORIGIN", "KOREA"),
+    ]):
+        ry = HDR_Y - (5.5 * mm + i * 6.5 * mm)
+        c.setFont(font_bold, 6); c.setFillColor(MUTED)
+        c.drawString(x + PAD, ry, k)
+        c.setFont(font_bold, 8); c.setFillColor(INK)
+        c.drawString(x + PAD + 14 * mm, ry, v)
+
+    # ── Consignee (25mm) ─────────────────────────────────────────────────────
+    CONS_H = 25 * mm
+    CONS_Y = META_Y - CONS_H
+    sep(CONS_Y)
+    consignee_label = company.split("-", 1)[-1] if "-" in company else company
+    C_TOP = META_Y - 3.5 * mm
+    c.setFont(font_bold, 5.5); c.setFillColor(MUTED)
+    c.drawString(x + PAD, C_TOP, "CONSIGNEE  /  수취인")
+    c.setFont(font_bold, 13); c.setFillColor(INK)
+    c.drawString(x + PAD, C_TOP - 8 * mm, (consignee_label or "—")[:18])
+    if consignee_addr:
+        c.setFont(font, 6); c.setFillColor(MUTED)
+        c.drawString(x + PAD, C_TOP - 15 * mm, consignee_addr[:34])
+    if consignee_name:
+        c.setFont(font_bold, 7.5); c.setFillColor(INK2)
+        c.drawString(x + PAD, C_TOP - 21 * mm, f"담당  {consignee_name}")
+
+    # ── Body (83mm): CONTENTS | QTY 통합 테이블 ──────────────────────────────
+    FTR_H   = 10 * mm
+    BODY_H  = CONS_Y - (y + FTR_H)     # ≈ 83 mm
+    SEC_HDR = 7 * mm                    # "CONTENTS / QTY" 레이블 행
+    ITEMS_H = BODY_H - SEC_HDR         # 품목 행 전체 가용 높이 ≈ 76 mm
+
+    items = _build_label_items(box)
+    n     = max(len(items), 1)
+
+    # 폰트 크기: 줄간격(mm) → pt 역산, 최소 8pt, 최대 32pt
+    line_h_mm = ITEMS_H / mm / n
+    fs = max(8, min(32, int(line_h_mm * 1.842)))   # 1pt ≈ 0.3528 mm, 65% 채움
+
+    # 섹션 레이블
+    c.setFont(font_bold, 6); c.setFillColor(MUTED)
+    c.drawString(x + PAD, CONS_Y - 5.5 * mm, "CONTENTS")
+    c.drawRightString(x + W - PAD, CONS_Y - 5.5 * mm, "QTY")
+    sep(CONS_Y - SEC_HDR)
+
+    # QTY 컬럼 너비 — 가장 긴 수량 문자열 기준으로 동적 산출
+    qty_col_w = max(
+        (c.stringWidth(it["qty"], font_bold, fs) for it in items if it["qty"]),
+        default=0,
+    ) + 2 * mm
+
+    # 품목 행 그리기 (품목명 좌 · 수량 우, 동일 font_bold + fs)
+    line_h   = ITEMS_H / n
+    items_top = CONS_Y - SEC_HDR
+    for i, item in enumerate(items):
+        iy       = items_top - line_h * 0.15 - i * line_h
+        max_nm_w = W - 2 * PAD - qty_col_w - 2 * mm
+        name     = item["name"]
+        c.setFont(font_bold, fs); c.setFillColor(INK)
+        while c.stringWidth(name, font_bold, fs) > max_nm_w and len(name) > 2:
+            name = name[:-1]
+        c.drawString(x + PAD, iy, name)
+        if item["qty"]:
+            c.drawRightString(x + W - PAD, iy, item["qty"])
+
+    # ── 푸터 (10mm) ───────────────────────────────────────────────────────────
+    c.setFillColor(colors.HexColor("#fafbfd"))
+    c.rect(x, y, W, FTR_H, fill=1, stroke=0)
+    sep(y + FTR_H)
+    c.setFont(font_bold, 6.5); c.setFillColor(MUTED)
+    c.drawString(x + PAD, y + 3.5 * mm, "SHIP")
+    skw = c.stringWidth("SHIP  ", font_bold, 6.5)
+    c.setFont(font_bold, 7); c.setFillColor(INK2)
+    c.drawString(x + PAD + skw, y + 3.5 * mm, date_str)
+    c.setFont(font_bold, 7); c.setFillColor(NAVY)
+    c.drawCentredString(x + W / 2, y + 3.5 * mm, "MADE IN KOREA")
+    c.setFont(font_bold, 7); c.setFillColor(NAVY)
+    c.drawRightString(x + W - PAD, y + 3.5 * mm, "SINCERELY Co.")
+
+    # ── 외곽선 ────────────────────────────────────────────────────────────────
+    c.setStrokeColor(colors.HexColor("#333333")); c.setLineWidth(1.0)
+    c.rect(x, y, W, H, stroke=1, fill=0)
+
+
+def generate_4x6_pdf(records: list, output) -> int:
+    """4×6 inch 단일 라벨 — 카톤 1개당 1페이지, 프린터 4x6 용지에서 실제 크기로 바로 인쇄"""
+    font, font_bold = register_fonts()
+    c = rl_canvas.Canvas(output, pagesize=(LABEL_W_4X6, LABEL_H_4X6))
+    count = 0
+    for rec in records:
+        if rec.get("is_error"):
+            _draw_error_page(c, rec, font, font_bold)
+            c.showPage()
+            count += 1
+            continue
+        for box in rec["boxes"]:
+            draw_carton_label_4x6(
+                c, 0, 0, box, rec["to_num"], rec["date"],
+                rec["company"], rec["consignee_name"], rec["consignee_addr"],
+                font, font_bold,
+            )
+            c.showPage()
+            count += 1
+    c.save()
+    return count
+
+
+# ────────────────────────────────────────────────────────────────────────────
 def _demo_records() -> list:
     """Airtable 없이 테스트용 샘플 데이터 (PNA51270-펄어비스 기준)"""
     boxes = []
@@ -1041,8 +1229,8 @@ def main():
     parser.add_argument("--to-num",       help="TO번호 (예: TO00016184)")
     parser.add_argument("--date",         help="출고 요청일 필터 (예: 2026-05-07)")
     parser.add_argument("--upload-field", help="업로드할 Airtable 필드 ID")
-    parser.add_argument("--paper",        choices=["150x100", "v3140"], default="v3140",
-                        help="라벨지 규격: 150x100(기본 낱장) / v3140(A4 4-up, 기본)")
+    parser.add_argument("--paper",        choices=["150x100", "v3140", "4x6"], default="4x6",
+                        help="라벨지 규격: 4x6(4×6인치 단일, 기본) / v3140(A4 4-up) / 150x100(낱장 가로)")
     parser.add_argument("--dry-run",      action="store_true", help="데이터 출력만, PDF 미생성")
     parser.add_argument("--demo",         action="store_true", help="Airtable 없이 샘플 데이터로 테스트")
     args = parser.parse_args()
@@ -1068,6 +1256,8 @@ def main():
             import math
             pages = math.ceil(n_boxes / 4)
             print(f"  • {r['to_num']}  {r['date']}  {r['company']}  → {n_boxes}카톤 ({pages}장 A4)")
+        elif args.paper == "4x6":
+            print(f"  • {r['to_num']}  {r['date']}  {r['company']}  → {n_boxes}카톤 ({n_boxes}장 4×6인치)")
         else:
             print(f"  • {r['to_num']}  {r['date']}  {r['company']}  → {n_boxes}카톤 ({n_boxes*2}페이지)")
         for b in r["boxes"]:
@@ -1092,13 +1282,16 @@ def main():
     else:
         suffix = ""
 
-    paper_tag = "_v3140" if args.paper == "v3140" else ""
-    filename = f"통합라벨{paper_tag}{suffix}_{stamp}.pdf"
+    paper_tag = {"v3140": "_v3140", "4x6": "_4x6", "150x100": ""}.get(args.paper, "")
+    filename = f"외박스라벨{paper_tag}{suffix}_{stamp}.pdf"
 
     buf = BytesIO()
     if args.paper == "v3140":
         n = generate_v3140_pdf(records, buf)
         print(f"\n  규격: V3140 (A4 4-up, {CELL_W/mm:.2f}×{CELL_H/mm:.2f}mm × 4셀)")
+    elif args.paper == "4x6":
+        n = generate_4x6_pdf(records, buf)
+        print(f"\n  규격: 4×6 inch ({LABEL_W_4X6/mm:.1f}×{LABEL_H_4X6/mm:.1f}mm) — 프린터 4x6 용지에서 실제 크기로 인쇄")
     else:
         n = generate_combined_pdf(records, buf)
         print(f"\n  규격: 150×100mm 낱장 ({n}페이지)")
