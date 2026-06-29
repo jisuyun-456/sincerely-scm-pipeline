@@ -1112,47 +1112,87 @@ def draw_carton_label_4x6(c: rl_canvas.Canvas, x: float, y: float,
         c.setFont(font_bold, 7.5); c.setFillColor(INK2)
         c.drawString(x + PAD, C_TOP - 21 * mm, f"담당  {consignee_name}")
 
-    # ── Body (83mm): CONTENTS | QTY 통합 테이블 ──────────────────────────────
-    FTR_H   = 10 * mm
-    BODY_H  = CONS_Y - (y + FTR_H)     # ≈ 83 mm
-    SEC_HDR = 7 * mm                    # "CONTENTS / QTY" 레이블 행
-    ITEMS_H = BODY_H - SEC_HDR         # 품목 행 전체 가용 높이 ≈ 76 mm
+    # ── Body (83mm): CONTENTS (위 절반) + QTY (아래 절반), 구분선 ───────────
+    FTR_H  = 10 * mm
+    BODY_H = CONS_Y - (y + FTR_H)   # ≈ 83 mm
+    HALF_H = BODY_H / 2              # ≈ 41.5 mm
+
+    CONT_TOP = CONS_Y
+    CONT_BOT = CONS_Y - HALF_H
+    QTY_TOP  = CONT_BOT
+    sep(CONT_BOT)
 
     items = _build_label_items(box)
     n     = max(len(items), 1)
+    LBL_H = 6.5 * mm   # 섹션 레이블("CONTENTS" / "QTY") 높이
 
-    # 폰트 크기: 줄간격(mm) → pt 역산, 최소 8pt, 최대 32pt
-    line_h_mm = ITEMS_H / mm / n
-    fs = max(8, min(32, int(line_h_mm * 1.842)))   # 1pt ≈ 0.3528 mm, 65% 채움
-
-    # 섹션 레이블
+    # ── CONTENTS 섹션 ─────────────────────────────────────────────────────────
     c.setFont(font_bold, 6); c.setFillColor(MUTED)
-    c.drawString(x + PAD, CONS_Y - 5.5 * mm, "CONTENTS")
-    c.drawRightString(x + W - PAD, CONS_Y - 5.5 * mm, "QTY")
-    sep(CONS_Y - SEC_HDR)
+    c.drawString(x + PAD, CONT_TOP - 5 * mm, "CONTENTS")
 
-    # QTY 컬럼 너비 — 가장 긴 수량 문자열 기준으로 동적 산출
-    qty_col_w = max(
-        (c.stringWidth(it["qty"], font_bold, fs) for it in items if it["qty"]),
-        default=0,
-    ) + 2 * mm
-
-    # 품목 행 그리기 (품목명 좌 · 수량 우, 동일 font_bold + fs)
-    # 각 행을 슬롯 높이(line_h) 안에서 세로 중앙 정렬 → 헤더 레이블 겹침 방지
-    line_h    = ITEMS_H / n
-    items_top = CONS_Y - SEC_HDR
-    cap_h_mm  = fs * 0.254          # 근사 cap height: fs[pt] × 0.72 × 0.3528
+    name_avail = HALF_H - LBL_H
+    line_h_n   = name_avail / n
+    name_fs    = max(8, min(28, int(line_h_n / mm * 1.842)))
+    if n == 1:
+        while c.stringWidth(items[0]["name"], font_bold, name_fs) > W - 2 * PAD and name_fs > 8:
+            name_fs -= 1
+    cap_n     = name_fs * 0.254
+    txt_top_n = CONT_TOP - LBL_H
     for i, item in enumerate(items):
-        slot_cy  = items_top - (i + 0.5) * line_h   # 슬롯 세로 중심
-        iy       = slot_cy - (cap_h_mm / 2) * mm    # 기준선 = 중심 - cap/2
-        max_nm_w = W - 2 * PAD - qty_col_w - 2 * mm
-        name     = item["name"]
-        c.setFont(font_bold, fs); c.setFillColor(INK)
-        while c.stringWidth(name, font_bold, fs) > max_nm_w and len(name) > 2:
-            name = name[:-1]
-        c.drawString(x + PAD, iy, name)
-        if item["qty"]:
-            c.drawRightString(x + W - PAD, iy, item["qty"])
+        slot_cy = txt_top_n - (i + 0.5) * line_h_n
+        iy      = slot_cy - (cap_n / 2) * mm
+        nm = item["name"]
+        c.setFont(font_bold, name_fs); c.setFillColor(INK)
+        while c.stringWidth(nm, font_bold, name_fs) > W - 2 * PAD and len(nm) > 2:
+            nm = nm[:-1]
+        c.drawString(x + PAD, iy, nm)
+
+    # ── QTY 섹션 ──────────────────────────────────────────────────────────────
+    c.setFont(font_bold, 6); c.setFillColor(MUTED)
+    c.drawString(x + PAD, QTY_TOP - 5 * mm, "QTY")
+
+    qty_avail = HALF_H - LBL_H
+    txt_top_q = QTY_TOP - LBL_H
+
+    if n == 1:
+        qty_str  = items[0]["qty"]  # e.g. "50+1 EA" or "12 EA"
+        m        = re.match(r"^(\d+)(?:\+(\w+))?\s*EA$", qty_str)
+        main_qty = m.group(1) if m else re.sub(r"\s*EA$", "", qty_str)
+        extra    = m.group(2) if m and m.group(2) else None
+
+        qty_fs = 52
+        while qty_fs > 16 and (
+            c.stringWidth(main_qty, font_bold, qty_fs) > W * 0.58
+            or qty_fs * 0.3528 > qty_avail / mm * 0.85
+        ):
+            qty_fs -= 2
+
+        # 세로 중앙 정렬
+        char_h  = qty_fs * 0.3528 * mm
+        qty_y   = txt_top_q - (qty_avail / 2) - (char_h / 2)
+
+        c.setFont(font_bold, qty_fs); c.setFillColor(INK)
+        c.drawString(x + PAD, qty_y, main_qty)
+        cur_x = x + PAD + c.stringWidth(main_qty, font_bold, qty_fs)
+
+        if extra:
+            ext_fs = max(10, int(qty_fs * 0.35))
+            c.setFont(font_bold, ext_fs); c.setFillColor(INK2)
+            c.drawString(cur_x + 1 * mm, qty_y + qty_fs * 0.1 * mm, f"+{extra}")
+            cur_x += c.stringWidth(f"+{extra}", font_bold, ext_fs) + 2 * mm
+
+        ea_fs = max(13, int(qty_fs * 0.38))
+        c.setFont(font_bold, ea_fs); c.setFillColor(INK2)
+        c.drawString(cur_x + 2 * mm, qty_y + 1 * mm, "EA")
+    else:
+        line_h_q = qty_avail / n
+        qty_fs   = max(8, min(28, int(line_h_q / mm * 1.842)))
+        cap_q    = qty_fs * 0.254
+        for i, item in enumerate(items):
+            slot_cy = txt_top_q - (i + 0.5) * line_h_q
+            iy      = slot_cy - (cap_q / 2) * mm
+            c.setFont(font_bold, qty_fs); c.setFillColor(INK)
+            c.drawString(x + PAD, iy, item["qty"])
 
     # ── 푸터 (10mm) ───────────────────────────────────────────────────────────
     c.setFillColor(colors.HexColor("#fafbfd"))
