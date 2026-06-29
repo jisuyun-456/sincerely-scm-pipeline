@@ -1138,10 +1138,13 @@ def draw_carton_label_4x6(c: rl_canvas.Canvas, x: float, y: float,
     ) + 2 * mm
 
     # 품목 행 그리기 (품목명 좌 · 수량 우, 동일 font_bold + fs)
-    line_h   = ITEMS_H / n
+    # 각 행을 슬롯 높이(line_h) 안에서 세로 중앙 정렬 → 헤더 레이블 겹침 방지
+    line_h    = ITEMS_H / n
     items_top = CONS_Y - SEC_HDR
+    cap_h_mm  = fs * 0.254          # 근사 cap height: fs[pt] × 0.72 × 0.3528
     for i, item in enumerate(items):
-        iy       = items_top - line_h * 0.15 - i * line_h
+        slot_cy  = items_top - (i + 0.5) * line_h   # 슬롯 세로 중심
+        iy       = slot_cy - (cap_h_mm / 2) * mm    # 기준선 = 중심 - cap/2
         max_nm_w = W - 2 * PAD - qty_col_w - 2 * mm
         name     = item["name"]
         c.setFont(font_bold, fs); c.setFillColor(INK)
