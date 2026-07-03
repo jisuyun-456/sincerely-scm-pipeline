@@ -297,7 +297,7 @@ footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px s
   <span class="doc-name">BOM·CBM 데이터 기초 공동설계 — 킥오프 핸드오프</span>
   <div class="right">
     <span>SCM-BOM-CBM-KICKOFF-01</span>
-    <span class="ver">v1.2 · 26.06.24</span>
+    <span class="ver">v1.3 · 26.06.24</span>
   </div>
 </div>
 
@@ -311,8 +311,13 @@ footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px s
       <li><a href="#ch2">II · 배경 — 왜 지금인가</a></li>
       <li><a href="#ch3">III · 최종 비전 (cascade 예시)</a></li>
       <li><a href="#ch4">IV · 기초공사 5단계 (L0~L4)</a></li>
-      <li><a href="#ch6">V · 이해관계자 &amp; RACI</a></li>
-      <li><a href="#ch7">VI · 로드맵 순서</a></li>
+      <li><a href="#ch5">V · SSOT 경계 &amp; 소유</a></li>
+      <li><a href="#ch6">VI · 이해관계자 &amp; RACI</a></li>
+      <li><a href="#ch7">VII · 로드맵 순서</a></li>
+      <li><a href="#ch8">VIII · 스코프 (In / Out)</a></li>
+      <li><a href="#ch9">IX · 리스크 · 가정 · 의존성</a></li>
+      <li><a href="#ch10">X · 의사결정 &amp; 다음 단계</a></li>
+      <li><a href="#ch11">XI · 부록 — 확인 필요 항목</a></li>
     </ul>
     <div class="cross">
       <a href="2026-06-22-cbm-bom-logistics-brief.html">BOM-CBM 물류 자동화 브리프 (06.22) <span class="arr">→</span></a>
@@ -362,7 +367,7 @@ footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px s
 
     <div class="note accent">
       <div class="tag">오늘 반드시 닫을 것</div>
-      <div class="body">로드맵 순서(<a href="#ch7">VI장</a>) + RACI(<a href="#ch6">V장</a>).</div>
+      <div class="body">로드맵 순서(<a href="#ch7">VII장</a>) + RACI(<a href="#ch6">VI장</a>).</div>
     </div>
 
     <!-- ─── II. 배경 ─── -->
@@ -556,95 +561,66 @@ SERPA 3.0 <span class="arr">→</span> sync <span class="arr">→</span> <strong
       </div>
     </div>
 
-    <!-- ─── V. RACI ─── -->
-    <h2 id="ch6"><span class="nm">V</span>이해관계자 &amp; RACI<span class="tag-pill solid">핵심</span></h2>
+    <!-- ─── V. SSOT 경계 & 소유 ─── -->
+    <h2 id="ch5"><span class="nm">V</span>SSOT 경계 &amp; 소유 — 계층형 소유 + 계약 심(seam)</h2>
 
-    <p class="dropcap"><strong>A</strong> = 최종책임 · <strong>R</strong> = 실행 · <strong>C</strong> = 협의 · <strong>I</strong> = 공유. 스폰서·추가 참석자는 <span class="tag-pill warn">[확인]</span>.</p>
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
 
-    <div class="tbl c4">
-      <div class="r h"><div>작업</div><div>안나 (품질혁신)</div><div>물류 (윤지수)</div><div>스폰서 / IT</div></div>
-      <div class="r">
-        <div>L0 아이템 정체성 SSOT 설계</div>
-        <div><strong>A / R</strong></div>
-        <div>C <span style="font-size:11.5px;color:var(--muted)">(프로토타입 crosswalk seed)</span></div>
-        <div>I</div>
-      </div>
-      <div class="r">
-        <div>코드 정합 (굿즈코드↔PT####↔견적코드↔SERPA)</div>
-        <div><strong>A</strong></div>
-        <div>R</div>
-        <div>C <span style="font-size:11.5px;color:var(--muted)">(SERPA/IT)</span></div>
-      </div>
-      <div class="r">
-        <div>L1 계층 · 품목유형 분류</div>
-        <div><strong>A / R</strong></div>
-        <div>C</div>
-        <div>I</div>
-      </div>
-      <div class="r">
-        <div>L2 BOM 구조·소요량 설계</div>
-        <div><strong>A / R</strong></div>
-        <div>C <span style="font-size:11.5px;color:var(--muted)">(부트스트랩 로직·시드 제공)</span></div>
-        <div>I</div>
-      </div>
-      <div class="r">
-        <div>L3 CBM (굿즈 · 파츠) 구축</div>
-        <div>I</div>
-        <div><strong>A / R</strong></div>
-        <div>I</div>
-      </div>
-      <div class="r">
-        <div>L4 수량전파 cascade 재구축</div>
-        <div>I</div>
-        <div><strong>A / R</strong></div>
-        <div>I</div>
-      </div>
-      <div class="r">
-        <div>표준키 crosswalk 계약 (인터페이스)</div>
-        <div><strong>A</strong></div>
-        <div>R</div>
-        <div>C</div>
-      </div>
-      <div class="r">
-        <div>스냅샷 대시보드 <span style="font-size:11.5px;color:var(--muted)">(백엔드 잠정)</span></div>
-        <div>C</div>
-        <div><strong>R</strong></div>
-        <div><span class="tag-pill warn">[확인]</span></div>
-      </div>
+    <!-- ─── VI. RACI ─── -->
+    <h2 id="ch6"><span class="nm">VI</span>이해관계자 &amp; RACI<span class="tag-pill solid">핵심</span></h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
     </div>
 
     <!-- ─── VII. 로드맵 ─── -->
-    <h2 id="ch7"><span class="nm">VI</span>로드맵 순서<span class="tag-pill solid">핵심</span></h2>
+    <h2 id="ch7"><span class="nm">VII</span>로드맵 순서<span class="tag-pill solid">핵심</span></h2>
 
-    <p class="dropcap">기초공사 순서(L0→L4)를 그대로 일정화한다. 기존 물류 7~12월 작업(Chain)을 흡수한다.</p>
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
 
-    <div class="roadmap">
-      <div class="road-row">
-        <div class="v">P0<br>7월 W1</div>
-        <div class="d"><strong>킥오프 · 정렬 (오늘 · 공동)</strong>비전(cascade 예시) 공유, 기초 5단계·SSOT 경계 원칙 합의, <strong>로드맵+RACI 확정</strong>.</div>
-      </div>
-      <div class="road-row">
-        <div class="v">P1<br>7~8월</div>
-        <div class="d"><strong>L0+L1 정체성·계층 (안나 주도)</strong>안나 주도 정체성 SSOT + 계층 + 코드 4종 정합. 물류가 crosswalk/BOM/CBM 시드·요구사항 제공.</div>
-      </div>
-      <div class="road-row">
-        <div class="v">P2<br>8~9월</div>
-        <div class="d"><strong>L2 BOM (안나 주도)</strong>안나 주도 BOM 구조/소요량 설계. 물류는 부트스트랩 로직·시드 제공.</div>
-      </div>
-      <div class="road-row">
-        <div class="v">P3<br>9~10월</div>
-        <div class="d"><strong>L3 CBM (물류 주도)</strong>아이템에 CBM 바인딩 (파츠 CBM 등록 포함).</div>
-      </div>
-      <div class="road-row">
-        <div class="v">P4<br>11~12월</div>
-        <div class="d"><strong>L4 전파 · 통합 (공동)</strong>신 기초 위 project→운임 전체 흐름 재구축 + 스냅샷 대시보드(백엔드 잠정) + 연말 리뷰 · 2027 스코프.</div>
-      </div>
+    <!-- ─── VIII. 스코프 ─── -->
+    <h2 id="ch8"><span class="nm">VIII</span>스코프 (In / Out)</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── IX. 리스크 ─── -->
+    <h2 id="ch9"><span class="nm">IX</span>리스크 · 가정 · 의존성</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── X. 의사결정 & 다음 단계 ─── -->
+    <h2 id="ch10"><span class="nm">X</span>의사결정 포인트 &amp; 다음 단계</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── XI. 부록 ─── -->
+    <h2 id="ch11"><span class="nm">XI</span>부록 — 오늘 확정 필요 [확인] 항목</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
     </div>
 
     <div class="src"><strong>출처</strong> · 물류 cascade dry-run 실측(<code class="inl">data/order_cascade/</code>), BOM·CBM 백본 스펙.</div>
 
     <footer class="end">
-      <span>작성: 물류파트 윤지수 · 2026.06.24 · SCM-BOM-CBM-KICKOFF-01 · v1.2</span>
+      <span>작성: 물류파트 윤지수 · 2026.06.24 · SCM-BOM-CBM-KICKOFF-01 · v1.3</span>
       <span>END OF DOCUMENT</span>
     </footer>
 
@@ -659,8 +635,13 @@ SERPA 3.0 <span class="arr">→</span> sync <span class="arr">→</span> <strong
       <li class="sub"><a href="#ch2-problem">구조적 문제</a></li>
       <li><a href="#ch3">III. 최종 비전 (cascade 예시)</a></li>
       <li><a href="#ch4">IV. 기초공사 5단계 (L0~L4)</a></li>
-      <li><a href="#ch6">V. 이해관계자 &amp; RACI</a></li>
-      <li><a href="#ch7">VI. 로드맵 순서</a></li>
+      <li><a href="#ch5">V. SSOT 경계 &amp; 소유</a></li>
+      <li><a href="#ch6">VI. 이해관계자 &amp; RACI</a></li>
+      <li><a href="#ch7">VII. 로드맵 순서</a></li>
+      <li><a href="#ch8">VIII. 스코프 (In / Out)</a></li>
+      <li><a href="#ch9">IX. 리스크 · 가정 · 의존성</a></li>
+      <li><a href="#ch10">X. 의사결정 &amp; 다음 단계</a></li>
+      <li><a href="#ch11">XI. 부록 — 확인 필요 항목</a></li>
     </ul>
   </aside>
 
