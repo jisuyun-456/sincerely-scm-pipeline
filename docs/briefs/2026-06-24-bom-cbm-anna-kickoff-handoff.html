@@ -297,7 +297,7 @@ footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px s
   <span class="doc-name">BOM·CBM 데이터 기초 공동설계 — 킥오프 핸드오프</span>
   <div class="right">
     <span>SCM-BOM-CBM-KICKOFF-01</span>
-    <span class="ver">v1.1 · 26.06.24</span>
+    <span class="ver">v1.2 · 26.06.24</span>
   </div>
 </div>
 
@@ -311,13 +311,8 @@ footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px s
       <li><a href="#ch2">II · 배경 — 왜 지금인가</a></li>
       <li><a href="#ch3">III · 최종 비전 (cascade 예시)</a></li>
       <li><a href="#ch4">IV · 기초공사 5단계 (L0~L4)</a></li>
-      <li><a href="#ch5">V · SSOT 경계 &amp; 소유</a></li>
-      <li><a href="#ch6">VI · 이해관계자 &amp; RACI</a></li>
-      <li><a href="#ch7">VII · 로드맵 순서</a></li>
-      <li><a href="#ch8">VIII · 스코프 (In / Out)</a></li>
-      <li><a href="#ch9">IX · 리스크 · 가정 · 의존성</a></li>
-      <li><a href="#ch10">X · 의사결정 &amp; 다음 단계</a></li>
-      <li><a href="#ch11">XI · 부록 — 확인 필요 항목</a></li>
+      <li><a href="#ch6">V · 이해관계자 &amp; RACI</a></li>
+      <li><a href="#ch7">VI · 로드맵 순서</a></li>
     </ul>
     <div class="cross">
       <a href="2026-06-22-cbm-bom-logistics-brief.html">BOM-CBM 물류 자동화 브리프 (06.22) <span class="arr">→</span></a>
@@ -367,7 +362,7 @@ footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px s
 
     <div class="note accent">
       <div class="tag">오늘 반드시 닫을 것</div>
-      <div class="body">로드맵 순서(<a href="#ch7">VII장</a>) + RACI(<a href="#ch6">VI장</a>).</div>
+      <div class="body">로드맵 순서(<a href="#ch7">VI장</a>) + RACI(<a href="#ch6">V장</a>).</div>
     </div>
 
     <!-- ─── II. 배경 ─── -->
@@ -561,52 +556,8 @@ SERPA 3.0 <span class="arr">→</span> sync <span class="arr">→</span> <strong
       </div>
     </div>
 
-    <!-- ─── V. SSOT 경계 & 소유 ─── -->
-    <h2 id="ch5"><span class="nm">V</span>SSOT 경계 &amp; 소유 — 계층형 소유 + 계약 심(seam)</h2>
-
-    <p class="dropcap">한쪽이 전부 소유하지 않는다. 상위(기초 3단)와 하위(운영 2단)를 명확한 인터페이스 계약으로 잇는다.</p>
-
-<pre class="code">[안나 / 품질혁신] 상위 기초 3단              [물류] 하위 운영 2단
-아이템 정체성 · 계층 · BOM SSOT   ── 계약 ──▶  CBM + 수량전파
-(신규 SSOT · 백엔드 잠정)         (표준키        (Airtable 유지 — 운영데이터 정책)
- · 품목 정체성 / 명명 규칙         crosswalk)    · CBM 실측 / 추정
- · 계층 (완제품→…→포장재)                        · order→자재→CBM→배차→운임 전파
- · BOM 구조/소요량 (모품목→소품목)
- · 코드 정합 (4종 → 1 표준키)</pre>
-
-    <h3 id="ch5-own">소유 정의</h3>
-
-    <dl class="def">
-      <div>
-        <dt>안나(상위) 소유</dt>
-        <dd>품목이 <strong>"무엇인가"</strong>이자 <strong>"무엇으로 구성되는가"</strong> — 정체성·계층·BOM 구조·코드 정합.</dd>
-      </div>
-      <div>
-        <dt>물류(하위) 소유</dt>
-        <dd>품목이 <strong>"얼마나·어떤 부피로 흐르는가"</strong> — CBM·전파. 운영 데이터라 <strong>Airtable 유지</strong> <span style="font-size:12px;color:var(--muted)">(CLAUDE.md 정책: WMS/TMS 운영데이터는 Airtable 단일 원천, 외부 DB 이중화 금지 — 백엔드 선택과 무관하게 확정)</span>.</dd>
-      </div>
-      <div>
-        <dt>계약 심 (seam)</dt>
-        <dd>표준키 crosswalk. 안나가 표준 정체성+계층+코드를 발행 → 물류가 소비(53% 약점 → 표준코드로 해소) → 물류가 모은 BOM 부트스트랩(order 그룹핑)·CBM 추정 로직·cascade 파이프라인을 seed로 역제공.</dd>
-      </div>
-    </dl>
-
-    <h3 id="ch5-sync">동기화 메커니즘 (원칙만 오늘 합의 — 상세설계는 P1)</h3>
-
-    <ul>
-      <li><strong>방향:</strong> 상위 SSOT → 하위 Airtable, <strong>단방향</strong>(하위가 상위를 구독). 물류 cascade가 상위 표준키를 읽어오는 구조.</li>
-      <li>백엔드가 Supabase 등 외부 DB로 확정되면, Airtable 쪽에 표준키를 담을 <strong>크로스워크 테이블</strong>(신규 또는 기존 확장)이 필요할 가능성이 높다 — 기존 <code class="inl">WMS_KeyCrosswalk</code> 2-tier 패턴(품목키 ↔ 코드 4종 정합)이 설계 선례가 될 수 있다.</li>
-      <li>기존 <code class="inl">WMS_BOM</code>(Airtable, 1,702행)은 안나 신규 SSOT로 이관되기 전까지 <strong>과도기 자산</strong>으로 유지 — 이관 시점·방식은 P2에서 결정.</li>
-      <li>정확한 신규 테이블/필드, 동기화 주기(배치 vs API)는 <strong>P1에서 안나·물류 공동 설계</strong>. 오늘은 이 원칙(단방향·상위 권위)과 P1 착수 일정만 합의한다.</li>
-    </ul>
-
-    <div class="pullquote">
-      "우리 것에 맞춰라"가 아니라 "기초는 새로, 교훈은 활용".
-      <cite>물류 프로토타입의 위치 — 폐기 아닌 참고 자산 + 시드</cite>
-    </div>
-
-    <!-- ─── VI. RACI ─── -->
-    <h2 id="ch6"><span class="nm">VI</span>이해관계자 &amp; RACI<span class="tag-pill solid">핵심</span></h2>
+    <!-- ─── V. RACI ─── -->
+    <h2 id="ch6"><span class="nm">V</span>이해관계자 &amp; RACI<span class="tag-pill solid">핵심</span></h2>
 
     <p class="dropcap"><strong>A</strong> = 최종책임 · <strong>R</strong> = 실행 · <strong>C</strong> = 협의 · <strong>I</strong> = 공유. 스폰서·추가 참석자는 <span class="tag-pill warn">[확인]</span>.</p>
 
@@ -663,7 +614,7 @@ SERPA 3.0 <span class="arr">→</span> sync <span class="arr">→</span> <strong
     </div>
 
     <!-- ─── VII. 로드맵 ─── -->
-    <h2 id="ch7"><span class="nm">VII</span>로드맵 순서<span class="tag-pill solid">핵심</span></h2>
+    <h2 id="ch7"><span class="nm">VI</span>로드맵 순서<span class="tag-pill solid">핵심</span></h2>
 
     <p class="dropcap">기초공사 순서(L0→L4)를 그대로 일정화한다. 기존 물류 7~12월 작업(Chain)을 흡수한다.</p>
 
@@ -690,95 +641,10 @@ SERPA 3.0 <span class="arr">→</span> sync <span class="arr">→</span> <strong
       </div>
     </div>
 
-    <!-- ─── VIII. 스코프 ─── -->
-    <h2 id="ch8"><span class="nm">VIII</span>스코프 (In / Out)</h2>
-
-    <p class="dropcap">기초공사 범위와 경계를 명확히 한다.</p>
-
-    <div class="tbl c2">
-      <div class="r h"><div>포함 (In Scope)</div><div>제외 (Out of Scope)</div></div>
-      <div class="r">
-        <div>L0~L4 데이터 기초 (정체성·계층·BOM·CBM·전파)</div>
-        <div>SERPA 3.0 원본 수정 (read-only)</div>
-      </div>
-      <div class="r">
-        <div>코드 체계 4종 정합 (1 표준키)</div>
-        <div>운영 데이터(movement·inventory)의 외부 DB 이중화</div>
-      </div>
-      <div class="r">
-        <div>표준키 crosswalk 계약</div>
-        <div>TMS 운임/배차 엔진 재작성</div>
-      </div>
-      <div class="r">
-        <div>물류 프로토타입 seed 이관</div>
-        <div><em>(신규 SSOT DB 백엔드 선택 — 별도 공동 결정, 잠정)</em></div>
-      </div>
-    </div>
-
-    <!-- ─── IX. 리스크 ─── -->
-    <h2 id="ch9"><span class="nm">IX</span>리스크 · 가정 · 의존성</h2>
-
-    <div class="tbl c3-wide">
-      <div class="r h"><div>항목</div><div>내용</div><div>대응</div></div>
-      <div class="r">
-        <div><strong>기초 재구축 규모</strong></div>
-        <div>밑바닥부터 = 큰 작업</div>
-        <div>물류 프로토타입을 폐기 아닌 시드로 → 기간 단축</div>
-      </div>
-      <div class="r">
-        <div><strong>SSOT DB 백엔드 미확정</strong></div>
-        <div>Supabase 여부 포함 잠정</div>
-        <div>안나 주도 공동 결정. 운영데이터는 백엔드 무관 Airtable 유지</div>
-      </div>
-      <div class="r">
-        <div><strong>코드 정합 난이도</strong></div>
-        <div>SERPA 원본 코드 접근·규칙 필요</div>
-        <div>IT 협의 (RACI C)</div>
-      </div>
-    </div>
-
-    <!-- ─── X. 의사결정 & 다음 단계 ─── -->
-    <h2 id="ch10"><span class="nm">X</span>의사결정 포인트 &amp; 다음 단계</h2>
-
-    <h3 id="ch10-decide">오늘 킥오프에서 닫을 결정</h3>
-    <ol>
-      <li>기초공사 5단계(L0→L4) 순서 합의</li>
-      <li>SSOT 경계 원칙 합의 (정체성·계층·BOM=안나 / CBM·전파=물류·Airtable)</li>
-      <li><strong>로드맵 순서(P0~P4) 확정</strong></li>
-      <li><strong>RACI 확정</strong> (담당·협의·공유)</li>
-    </ol>
-
-    <h3 id="ch10-next">다음 단계 (킥오프 직후)</h3>
-    <dl class="def">
-      <div>
-        <dt>안나</dt>
-        <dd>L0 정체성 SSOT 초안 설계 착수 (물류 crosswalk seed 수령).</dd>
-      </div>
-      <div>
-        <dt>물류</dt>
-        <dd>프로토타입 데이터·로직 시드 패키징 + BOM/CBM 요구사항 정리.</dd>
-      </div>
-    </dl>
-
-    <!-- ─── XI. 부록 ─── -->
-    <h2 id="ch11"><span class="nm">XI</span>부록 — 오늘 확정 필요 [확인] 항목</h2>
-
-    <div class="note">
-      <div class="tag">확인 필요</div>
-      <div class="body">
-        <ul style="margin:8px 0 0;padding-left:20px">
-          <li>스폰서 · 전체 참석자 명단</li>
-          <li><strong>SSOT DB 백엔드</strong> (Supabase 여부 — 현재 잠정)</li>
-          <li>킥오프 시간 · 장소</li>
-          <li>물류 프로토타입 데이터의 시드 활용 범위</li>
-        </ul>
-      </div>
-    </div>
-
     <div class="src"><strong>출처</strong> · 물류 cascade dry-run 실측(<code class="inl">data/order_cascade/</code>), BOM·CBM 백본 스펙.</div>
 
     <footer class="end">
-      <span>작성: 물류파트 윤지수 · 2026.06.24 · SCM-BOM-CBM-KICKOFF-01 · v1.1</span>
+      <span>작성: 물류파트 윤지수 · 2026.06.24 · SCM-BOM-CBM-KICKOFF-01 · v1.2</span>
       <span>END OF DOCUMENT</span>
     </footer>
 
@@ -793,17 +659,8 @@ SERPA 3.0 <span class="arr">→</span> sync <span class="arr">→</span> <strong
       <li class="sub"><a href="#ch2-problem">구조적 문제</a></li>
       <li><a href="#ch3">III. 최종 비전 (cascade 예시)</a></li>
       <li><a href="#ch4">IV. 기초공사 5단계 (L0~L4)</a></li>
-      <li><a href="#ch5">V. SSOT 경계 &amp; 소유</a></li>
-      <li class="sub"><a href="#ch5-own">소유 정의</a></li>
-      <li class="sub"><a href="#ch5-sync">동기화 메커니즘</a></li>
-      <li><a href="#ch6">VI. 이해관계자 &amp; RACI</a></li>
-      <li><a href="#ch7">VII. 로드맵 순서</a></li>
-      <li><a href="#ch8">VIII. 스코프 (In / Out)</a></li>
-      <li><a href="#ch9">IX. 리스크 · 가정 · 의존성</a></li>
-      <li><a href="#ch10">X. 의사결정 &amp; 다음 단계</a></li>
-      <li class="sub"><a href="#ch10-decide">오늘 닫을 결정</a></li>
-      <li class="sub"><a href="#ch10-next">다음 단계</a></li>
-      <li><a href="#ch11">XI. 부록 — 확인 필요 항목</a></li>
+      <li><a href="#ch6">V. 이해관계자 &amp; RACI</a></li>
+      <li><a href="#ch7">VI. 로드맵 순서</a></li>
     </ul>
   </aside>
 
