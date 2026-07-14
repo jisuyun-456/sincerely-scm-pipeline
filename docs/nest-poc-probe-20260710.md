@@ -59,6 +59,8 @@ NEST 관리 화면(master-db) 확인 결과, **옵션 레벨**(예: Display 스�
 3. **PNA51684 (보령 레퍼런스)**: 굿즈 6종 + 키트 1건 정상 조회. `unassignedQuantity` 의미론 실측 확인 — BFSB 쇼핑백 100(전량 단품), DRCG 등 키트 구성분은 0.
 4. 구형 PNA 404는 대부분 `PRIMARY_QUOTE_NOT_FOUND` (프로젝트는 존재, 확정 견적 없음) — NEST 견적 확정 플로우 도입 이전 세대로 추정. "NEST 전환 후 아이템 누락"(260421 회의록) 검증은 이 API로 상시 모니터링 가능.
 
+> **후속 설계 (2026-07-14)**: 3문항 설계 브리프 — CBM 의존 체인·NEST 요구사항 등급표·자재팀 위치 액션(S2.5) → [`briefs/2026-07-14-nest-cbm-bom-cascade-design.md`](briefs/2026-07-14-nest-cbm-bom-cascade-design.md) (문서형 HTML 동반)
+
 ## 4. 다음 단계 권고 (후속 세션)
 
 1. **P1 대사 전용 라이브**: `nest_sync.py` (cron 선행 스텝, T1 신규/T2 변경/T3 소비직전 호출 정책) + 스냅샷 참조 테이블(WMS 베이스, INSERT-only) + 주문↔견적 3-way 대사 digest — cascade 동작 무변경.
