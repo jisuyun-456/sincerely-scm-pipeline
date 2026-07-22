@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>BOM-CBM 물류 운영 자동화 브리프 (문서형)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+/* ─────────────────────────────────────────────────────────
+   DOC STYLE · "문서형" 에디토리얼 레이아웃
+   Editorial layout: left nav · article · right TOC
+   Fonts: Newsreader (serif) + Pretendard (sans) + JetBrains Mono
+   ───────────────────────────────────────────────────────── */
+
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#fbfbfa;
+  --surface-3:#f4f4f2;
+  --ink:#1a1a1a;
+  --ink-2:#3a3a38;
+  --muted:#75756f;
+  --muted-2:#a8a8a2;
+  --line:#ebebe6;
+  --line-2:#f2f2ee;
+  --accent:#3b3b6e;
+  --accent-soft:#f2f2fb;
+  --highlight:#fff7c2;
+  --warn:#8a3a00;
+  --warn-soft:#fff3e6;
+  --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;
+}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+.topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+.topbar .sep{color:var(--muted-2)}
+.topbar .doc-name{color:var(--muted);font-size:13px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+.topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+
+/* ── 3-COL LAYOUT ────────────────────────────────────── */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+
+/* ── LEFT NAV ────────────────────────────────────────── */
+aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+aside.side h4:first-child{margin-top:0}
+aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+aside.side li a{display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);border-left:1px solid transparent;transition:color .12s,border-color .12s;line-height:1.45}
+aside.side li a:hover{color:var(--ink);text-decoration:none}
+aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+
+/* ── ARTICLE ─────────────────────────────────────────── */
+article{min-width:0;max-width:720px;margin:0 auto}
+article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+article h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;color:var(--ink)}
+article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+article .byline .k{color:var(--muted-2);margin-right:4px}
+
+article h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;display:flex;align-items:baseline;gap:12px;position:relative}
+article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+
+article h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px}
+article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+
+article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+article p strong{color:var(--ink);font-weight:600}
+article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+
+article code,code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+pre.code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:14px 18px;color:var(--ink-2);line-height:1.65;overflow-x:auto;max-width:640px;margin:18px 0}
+pre.code .c{color:var(--accent);font-weight:500}
+pre.code .h{color:var(--muted);font-style:italic}
+
+article ul,article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+article ul li,article ol li{margin:6px 0;line-height:1.75}
+article ul li::marker{color:var(--muted-2)}
+article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+/* ── COMPONENTS ──────────────────────────────────────── */
+.pullquote{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;max-width:640px}
+.pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+.pullquote cite::before{content:"— "}
+
+.note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+.note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+.note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+.note .body strong{color:var(--ink)}
+.note.warn{border-top-color:var(--warn)}
+.note.warn .tag{color:var(--warn)}
+.note.accent{border-top-color:var(--accent)}
+.note.accent .tag{color:var(--accent)}
+
+dl.def{margin:0 0 24px;max-width:680px}
+dl.def > div{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+dl.def > div:first-child{border-top:1px solid var(--ink)}
+dl.def > div:last-child{border-bottom:1px solid var(--line)}
+dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+
+.formula{max-width:640px;margin:24px 0;padding:18px 22px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:13.5px;color:var(--ink);line-height:1.7;position:relative}
+.formula::before{content:"FORMULA";position:absolute;top:-10px;left:14px;background:#fff;padding:2px 8px;font-size:9.5px;letter-spacing:0.12em;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.formula .c{color:var(--accent);font-weight:500}
+.formula .em{background:var(--highlight);padding:0 4px;border-radius:2px}
+
+.tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:680px;font-size:13.5px}
+.tbl .r{display:grid;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.tbl .r:last-child{border-bottom:0}
+.tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;padding-bottom:8px}
+.tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+.tbl.c3 .r{grid-template-columns:140px 160px 1fr;gap:18px}
+.tbl.c3-wide .r{grid-template-columns:170px 1fr 1fr;gap:18px}
+.tbl.c3-num .r{grid-template-columns:1.4fr 80px 80px;gap:16px}
+.tbl.c4 .r{grid-template-columns:140px 140px 1fr 130px;gap:14px}
+.tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.tbl strong{color:var(--ink);font-weight:600}
+.tbl .num{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--ink-2)}
+.tbl .total{font-family:var(--mono);font-weight:600;color:var(--ink);border-top:1px solid var(--ink);padding-top:11px}
+
+.tag-pill{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:#fff;letter-spacing:0.03em}
+.tag-pill.solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-pill.warn{background:var(--warn-soft);color:var(--warn);border-color:#e8c8a8}
+.tag-pill.accent{background:var(--accent-soft);color:var(--accent);border-color:#d8d8ee}
+
+.concepts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:24px 0;max-width:720px}
+.concept{border:1px solid var(--line);border-radius:4px;padding:18px;background:var(--surface-2);position:relative;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.concept .n{position:absolute;top:14px;right:18px;font-family:var(--serif);font-size:36px;font-weight:600;color:var(--ink);opacity:0.1;line-height:1}
+.concept .t{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);line-height:1.3;padding-right:28px}
+.concept .t .sub{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+
+.roadmap{margin:24px 0;max-width:720px;display:grid;gap:8px}
+.road-row{display:grid;grid-template-columns:100px 1fr;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.road-row .v{background:var(--ink);color:#fff;padding:14px 16px;font-family:var(--mono);font-size:11.5px;letter-spacing:0.05em;font-weight:500;display:flex;align-items:center}
+.road-row .d{padding:14px 18px;font-size:14px;color:var(--ink-2);line-height:1.6}
+.road-row .d strong{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+
+.src{max-width:640px;margin-top:6px;padding:10px 14px;border:1px dashed var(--muted-2);border-radius:3px;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--surface-2)}
+.src strong{color:var(--ink-2)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px;margin:24px 0}
+.stat{border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:var(--surface-2)}
+.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat .v{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+.stat .v .unit{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px;font-family:var(--mono)}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+.flow{max-width:640px;margin:20px 0;padding:18px 22px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+.flow .arr{color:var(--accent);font-weight:500}
+.flow strong{color:var(--ink);font-weight:600}
+
+.tree{max-width:640px;margin:20px 0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:18px 22px}
+.tree strong{color:var(--ink);font-weight:600}
+.tree .l{color:var(--muted-2)}
+
+/* ── RIGHT TOC ────────────────────────────────────────── */
+aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+aside.toc ul{list-style:none;padding:0;margin:0}
+aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+aside.toc li a:hover{color:var(--ink);text-decoration:none}
+aside.toc li a.active{color:var(--ink)}
+aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+
+.dropcap::first-letter{font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;float:left;padding:6px 10px 0 0;color:var(--ink)}
+
+footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ── CUSTOM: HERO DARK BLOCK ──────────────────────────── */
+.hero-dark{
+  background:var(--ink);color:#e0e0dc;border-radius:6px;
+  padding:32px 28px;margin:32px 0;max-width:720px;
+}
+.hero-dark .hd-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
+  color:#888882;margin:0 0 20px;font-weight:600;
+}
+.hero-dark pre.code-dark{
+  font-family:var(--mono);font-size:11.5px;line-height:1.8;color:#c0c0ba;
+  background:transparent;border:none;padding:0;margin:0 0 28px;overflow-x:auto;white-space:pre;
+}
+.hero-dark pre.code-dark .cd-label{color:#8888cc;font-weight:600}
+.hero-dark pre.code-dark .cd-go{color:#6aaa6a;font-weight:600}
+.hero-dark pre.code-dark .cd-note{color:#888882;font-style:italic}
+.hero-dark pre.code-dark .cd-action{color:#c8a040;font-weight:500}
+.hero-dark .hd-grid-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  color:#666660;margin:0 0 10px;font-weight:600;
+}
+
+/* S0~S7 트랙 카드 그리드 */
+.track-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.track-card{
+  border:1px solid rgba(255,255,255,0.1);border-radius:4px;
+  padding:14px 16px;background:rgba(255,255,255,0.04);
+}
+.track-card .tc-id{
+  font-family:var(--mono);font-size:12.5px;color:#9898cc;font-weight:600;margin-bottom:4px;
+}
+.track-card .tc-body{font-size:13px;color:#c0c0ba;line-height:1.55;}
+.track-card .tc-formula{
+  font-family:var(--mono);font-size:11px;color:#8888aa;margin-top:6px;line-height:1.5;
+}
+
+/* ── CUSTOM: VULN CARDS ───────────────────────────────── */
+.vuln-card{border-radius:4px;padding:20px 22px;margin:18px 0;max-width:680px;}
+.vuln-card .vc-badge{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  font-weight:700;margin-bottom:8px;display:inline-block;padding:2px 8px;border-radius:3px;
+}
+.vuln-card .vc-title{margin:0 0 10px;font-size:15px;font-family:var(--sans);font-weight:600;line-height:1.35;}
+.vuln-card p{margin:0 0 8px;font-size:14px;line-height:1.65;}
+.vuln-card .vc-solution{
+  font-size:12.5px;font-family:var(--mono);padding:8px 12px;border-radius:3px;
+  margin-top:10px;line-height:1.6;
+}
+/* P0 빨강 */
+.vuln-card.p0{background:#fff5f5;border:1px solid #f0c0c0;border-left:4px solid #cc2222;}
+.vuln-card.p0 .vc-badge{background:#cc2222;color:#fff;}
+.vuln-card.p0 .vc-title{color:#8a0000;}
+.vuln-card.p0 p{color:#5a2020;}
+.vuln-card.p0 .vc-solution{background:#fce8e8;color:#7a1010;}
+/* P1 주황 */
+.vuln-card.p1{background:#fff8f0;border:1px solid #f0d0a0;border-left:4px solid #c06010;}
+.vuln-card.p1 .vc-badge{background:#c06010;color:#fff;}
+.vuln-card.p1 .vc-title{color:#6a3000;}
+.vuln-card.p1 p{color:#5a3818;}
+.vuln-card.p1 .vc-solution{background:#fde8d0;color:#6a3000;}
+/* P2 노랑 */
+.vuln-card.p2{background:#fffbea;border:1px solid #e8d870;border-left:4px solid #b0880a;}
+.vuln-card.p2 .vc-badge{background:#b0880a;color:#fff;}
+.vuln-card.p2 .vc-title{color:#6a5000;}
+.vuln-card.p2 p{color:#5a4820;}
+.vuln-card.p2 .vc-solution{background:#fdf5c8;color:#6a5000;}
+/* P3 회색 */
+.vuln-card.p3{background:var(--surface-2);border:1px solid var(--line);border-left:4px solid var(--muted);}
+.vuln-card.p3 .vc-badge{background:var(--muted);color:#fff;}
+.vuln-card.p3 .vc-title{color:var(--ink);}
+.vuln-card.p3 p{color:var(--ink-2);}
+.vuln-card.p3 .vc-solution{background:var(--surface-3);color:var(--muted);}
+
+/* ── CUSTOM: MECE GROUP HEADER ────────────────────────── */
+.mece-group-header{border-top:2px solid var(--ink);padding-top:12px;margin:48px 0 0;}
+.mece-group-header .mg-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:4px;
+}
+.mece-group-header .mg-title{
+  font-family:var(--serif);font-size:20px;font-weight:600;color:var(--ink);
+  margin:0 0 2px;scroll-margin-top:80px;
+}
+.mece-group-header .mg-desc{
+  font-size:14px;color:var(--muted);font-style:italic;margin:4px 0 0;
+  font-family:var(--serif);
+}
+
+/* 성숙도 배지 */
+.badge-go{display:inline-block;padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;background:#d4f0d4;color:#1a6a1a;border:1px solid #90c890;}
+.badge-now{display:inline-block;padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;background:var(--accent-soft);color:var(--accent);border:1px solid #c0c0e8;}
+.badge-ext{display:inline-block;padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:10px;letter-spacing:0.05em;background:var(--surface-3);color:var(--muted);border:1px solid var(--line);}
+
+/* ── CUSTOM: ROADMAP MONTH TABLES ─────────────────────── */
+.month-block{margin:28px 0;max-width:720px;}
+.month-block .mb-header{
+  padding:10px 18px;font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;border-radius:4px 4px 0 0;
+  border:1px solid var(--line);border-bottom:none;
+}
+.month-block .tbl{margin:0;border-radius:0 0 4px 4px;border-top:2px solid var(--ink);}
+/* 월별 배경색 교차 */
+.mb-jul .mb-header{background:#e8eef8;color:#1a2a5a;}
+.mb-aug .mb-header{background:#fdf3e6;color:#5a2800;}
+.mb-sep .mb-header{background:#e8f4e8;color:#1a4a1a;}
+.mb-oct .mb-header{background:#f8e8f8;color:#4a1a4a;}
+.mb-nov .mb-header{background:#e8f8f8;color:#1a3a4a;}
+.mb-dec .mb-header{background:#f4f4e8;color:#3a3a00;}
+
+/* ── CUSTOM: SUMMARY MATURITY TABLE ROWS ─────────────── */
+.r.mat-go{border-left:3px solid #4a904a;padding-left:8px;}
+.r.mat-now{border-left:3px solid var(--accent);padding-left:8px;}
+.r.mat-ext{border-left:3px solid var(--muted-2);padding-left:8px;}
+.r.mat-total{background:var(--surface-2);}
+
+@media print{
+  .topbar,aside.side,aside.toc{display:none}
+  .layout{display:block;padding:0;margin:0}
+  article{max-width:100%;padding:0 8px}
+  body{font-size:9.5pt;line-height:1.5;margin:0}
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+
+  /* 섹션 헤더는 다음 내용과 항상 같은 페이지 */
+  article h2{break-after:avoid;margin-top:20px}
+  article h3{break-after:avoid}
+
+  /* 행 단위로만 분리 방지 — 테이블 전체는 분리 허용 */
+  .tbl tr{break-inside:avoid}
+  thead{display:table-header-group}
+
+  /* 작은 카드류는 통째로 유지 */
+  .stat,.formula,.concept,.flow{break-inside:avoid}
+  .vuln-card{break-inside:avoid}
+
+  /* 트랙 카드: 2열 그리드를 단순 블록으로 */
+  .track-grid{display:block}
+  .track-card{break-inside:avoid;display:inline-block;width:48%;vertical-align:top;margin:2px}
+
+  /* 히어로 코드 블록: 페이지 분리 허용 (너무 길어서) */
+  .hero-dark{break-inside:auto}
+  pre.code{break-inside:auto;white-space:pre-wrap;word-break:break-all;font-size:7.5pt}
+
+  /* 월별 로드맵 행 */
+  .road-row{break-inside:avoid}
+
+  /* 통계 3카드 가로 유지 */
+  .stats{display:flex;gap:8px}
+
+  /* 공백 최소화 */
+  orphans:3;
+  widows:3;
+}
+@media (max-width:1040px){
+  .layout{grid-template-columns:220px minmax(0,1fr)}
+  aside.toc{display:none}
+}
+@media (max-width:720px){
+  .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+  aside.side{position:static;height:auto}
+  .topbar{padding:12px 20px}
+  article h1{font-size:34px}
+  article h2{font-size:24px;margin-top:48px}
+  .topbar .doc-name{display:none}
+  .concepts,.stats{grid-template-columns:1fr}
+  .track-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="mark"><div class="dot">SC</div> Sincerely SCM</div>
+  <span class="sep">/</span>
+  <span class="doc-name">BOM-CBM 물류 운영 자동화 브리프</span>
+  <div class="right">
+    <span>SCM-BOM-CBM-01</span>
+    <span class="ver">v1.0 · 26.06.22</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT SIDE NAV -->
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch0">I · 배경 및 현황</a></li>
+      <li><a href="#chA">II · Cascade 사례: PNA51684</a></li>
+      <li><a href="#chB">III · 취약점 4가지</a></li>
+      <li><a href="#chC">IV · MECE 5그룹</a></li>
+      <li><a href="#chC-1">— I. 조달·입하 계획</a></li>
+      <li><a href="#chC-2">— II. 보관·재고 관리</a></li>
+      <li><a href="#chC-3">— III. 생산·조립</a></li>
+      <li><a href="#chC-4">— IV. 출고·배송</a></li>
+      <li><a href="#chC-5">— V. 원가·수익성</a></li>
+      <li><a href="#chD">V · 연간 실행 로드맵</a></li>
+      <li><a href="#chE">VI · 전체 현황 요약</a></li>
+    </ul>
+    <div class="cross">
+      <a href="#">BOM-CBM backbone plan <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <!-- ARTICLE -->
+  <article>
+
+    <div class="eyebrow">SCM AUTOMATION BRIEF · BOM-CBM INTEGRATION · 2026.06.22</div>
+    <h1>BOM-CBM 물류 운영 자동화 브리프</h1>
+    <p class="lede">6개 모듈 수량 전파 체계 구축 이후 현황, 대표 Cascade 사례, 취약점 해소 계획, 그리고 17건 Value Chain 자동화 로드맵을 정리한 운영 기준 문서.</p>
+    <div class="byline">
+      <span><span class="k">작성일</span>2026.06.22</span>
+      <span><span class="k">기준</span>Phase-1 완료 (2026.06.12)</span>
+      <span><span class="k">용도</span>팀 공유 · 운영 기준 문서</span>
+      <span><span class="k">작성</span>Sincerely SCM</span>
+    </div>
+
+    <!-- ─── I. 배경 및 현황 ─── -->
+    <h2 id="ch0"><span class="nm">I</span>배경 및 현황</h2>
+
+    <p class="dropcap">기존에는 project, order, task, pkg, movement, TMS 6개 모듈이 텍스트 키로만 연결되어 자재·패키징 수량이 시스템 내에서 자동 전파되지 않는 구조적 한계가 있었다. 2026년 6월 9일 Phase-1 구축 완료, 6월 12일 CBM 커버리지 목표를 달성했다.</p>
+
+    <p>Phase-1 이후 6개 모듈은 아래 순서로 수량 정보가 자동 연결된다. 각 단계의 키 매핑 정합성이 확보되어야 cascade가 올바르게 동작한다.</p>
+
+    <div class="flow">
+<strong>Project</strong>
+  <span class="arr">→</span> Order
+  <span class="arr">→</span> Task
+  <span class="arr">→</span> PKG <span style="font-size:11px;color:var(--muted)">(BOM 연결)</span>
+  <span class="arr">→</span> Movement <span style="font-size:11px;color:var(--muted)">(CBM 연결)</span>
+  <span class="arr">→</span> <strong>TMS</strong> <span style="font-size:11px;color:var(--muted)">(배차·정산)</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">BOM 적재</div>
+        <div class="v">1,702<span class="unit">행</span></div>
+        <div class="sub">자재소요·패키징 소요 기반</div>
+      </div>
+      <div class="stat">
+        <div class="k">CBM 마스터</div>
+        <div class="v">1,309<span class="unit">행</span></div>
+        <div class="sub">배차·보관·이송단가 산출 기반</div>
+      </div>
+      <div class="stat">
+        <div class="k">굿즈 CBM 커버리지</div>
+        <div class="v">89.2<span class="unit">%</span></div>
+        <div class="sub">목표 80%+ 달성 (2026.06.12)</div>
+      </div>
+    </div>
+
+    <h3 id="ch0-legend">성숙도 범례</h3>
+    <dl class="def">
+      <div>
+        <dt><span class="badge-go">가동</span></dt>
+        <dd>현재 시스템에서 실제 작동 중. 추가 개발 없이 운영 데이터를 생산하고 있다.</dd>
+      </div>
+      <div>
+        <dt><span class="badge-now">즉시</span></dt>
+        <dd>추가 개발 없이 즉시 KPI화·자동화 가능. 설정 또는 단순 쿼리로 가동 전환 가능하다.</dd>
+      </div>
+      <div>
+        <dt><span class="badge-ext">확장후</span></dt>
+        <dd>추가 모듈 연동(MES, 보관료 테이블, 원가 계정 등) 후 가동 가능하다.</dd>
+      </div>
+    </dl>
+
+    <!-- ─── II. Cascade 사례 ─── -->
+    <h2 id="chA"><span class="nm">II</span>대표 Cascade 사례: PNA51684</h2>
+
+    <p>보령 프로젝트(PNA51684)를 기준으로 order 생성 시점부터 TMS 정산까지 S0~S7 전 트랙이 어떻게 자동 연결되는지 보여준다. 이 사례는 현재 가동 중인 cascade 플로우의 교차검증 기준점이다.</p>
+
+    <div class="hero-dark">
+      <div class="hd-label">Cascade 플로우 — PNA51684 (보령 프로젝트)</div>
+<pre class="code-dark"><span class="cd-note"># 입력 주문</span>
+<span class="cd-go">[WMS order]</span>   PNA51684 · 쇼핑백/G형박스/눈마사지기/미르텀블러 각 100 + 키트포장 100
+
+<span class="cd-note"># S0 ~ S7 자동 전파</span>
+<span class="cd-label">[S0 감지]</span>     (PNA, 굿즈) 단위 신규 주문 감지
+<span class="cd-label">[S1 키해소]</span>   PT#### ↔ WMS 아이템코드 ↔ TMS 견적코드 크로스워크 정합
+<span class="cd-label">[S2 MRP]</span>      자재 전개 (×100):
+                쇼핑백    4PT → 부족 4PT×100
+                G형박스   6PT → 부족 3PT×100
+                눈마사지기 6PT → 부족 6PT×100
+                미르텀블러 5PT → 부족 3PT×100
+                키트포장  1PT → 부족 1PT×100
+              ⇒ 총 17개 PT 발주 목록 자동 산출     <span class="cd-action">← 발주 액션</span>
+<span class="cd-label">[S3 입하예측]</span> 입하CBM ≈ 1.06m³ · M/H 1.31h       <span class="cd-action">← 도크/인력 준비</span>
+<span class="cd-label">[S4 창고투영]</span> staging 0.0% → 최대 1.6% (Max 57.6m³) — 여유 충분
+<span class="cd-label">[S5 배차]</span>     출하CBM 3.57m³ → W1/W2/W3 전부 가능 (max 4.5/7.6/9.5)
+<span class="cd-label">[S6 운임]</span>     ₩64,000~₩105,500 (수도권 거리대)
+<span class="cd-label">[S7 Ledger]</span>   PropagationLedger INSERT — 전파상태 "부분" + 끊김 사유 기록
+     ↓ TMS replay cron
+<span class="cd-go">[TMS Shipment]</span> estimated_cbm 3.572 ✓ (cascade 산출 3.57과 일치 — 교차검증 통과)
+<span class="cd-go">[배차]</span>         wave_recommendation · 차량이용률 KPI rollup 자동
+<span class="cd-go">[운임정산]</span>     CBM 구간 요율 → 정산 파이프라인 자동 소비</pre>
+
+      <div class="hd-grid-label">S0 ~ S7 트랙 상세</div>
+      <div class="track-grid">
+        <div class="track-card">
+          <div class="tc-id">S0 · 감지</div>
+          <div class="tc-body">(PNA, 굿즈) 단위 신규 주문 감지</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S1 · 키해소</div>
+          <div class="tc-body">PT#### ↔ WMS ↔ TMS 크로스워크 정합</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S2 · MRP</div>
+          <div class="tc-body">gross = 소요량_개당 × 주문수량</div>
+          <div class="tc-formula">shortfall = max(0, gross − floor(현재고))</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S3 · 입하CBM / M/H</div>
+          <div class="tc-body">부족 PT 입하 부피 + 인력 예측</div>
+          <div class="tc-formula">입하CBM ≈ 1.06m³ · M/H 1.31h</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S4 · 창고투영</div>
+          <div class="tc-body">staging % before / after</div>
+          <div class="tc-formula">0.0% → Max 1.6% (Max 57.6m³, 여유 충분)</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S5 · 배차프리뷰</div>
+          <div class="tc-body">W1 / W2 / W3 feasibility</div>
+          <div class="tc-formula">max 4.5 / 7.6 / 9.5 m³ — 전부 가능</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S6 · 운임프리뷰</div>
+          <div class="tc-body">도로거리 밴드 기반 요율 범위</div>
+          <div class="tc-formula">₩64,000 ~ ₩105,500 (수도권)</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S7 · Ledger INSERT</div>
+          <div class="tc-body">PropagationLedger idempotent INSERT</div>
+          <div class="tc-formula">전파상태 "부분" + 끊김 사유 기록</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="formula">
+      gross = <span class="c">소요량_개당</span> × <span class="c">주문수량</span><br>
+      shortfall = max(0,  gross  −  floor(<span class="c">현재고</span>))
+    </div>
+
+    <!-- ─── III. 취약점 ─── -->
+    <h2 id="chB"><span class="nm">III</span>현재 취약점 4가지</h2>
+
+    <p>Phase-1 구축 이후 운영 데이터를 분석한 결과 아래 4가지 취약점이 식별됐다. P0부터 순서대로 해소하며 PropagationLedger 완결률을 단계적으로 끌어올린다.</p>
+
+    <div class="vuln-card p0">
+      <span class="vc-badge">P0 · Critical</span>
+      <div class="vc-title">파츠 단위 CBM 미등록 — 입하 예측 정확도 저해</div>
+      <p>굿즈 CBM(완제품)은 89.2% 달성했지만 파츠(부품) CBM은 대부분 미등록 상태다. 스타트씨드키트 11개 PT 중 CBM이 있는 건 PT2117(화분) 1개뿐이다. S3 입하CBM 예측이 불완전하고, <strong>PropagationLedger 완결률이 9%(33/368)에 머무는 가장 큰 원인</strong>이다.</p>
+      <div class="vc-solution">해결: order의 박스규격/박스수량 필드로 파츠 CBM 일괄 추정 + 입하 빈도 높은 파츠 200종 우선 실측. 8월 완료 목표.</div>
+    </div>
+
+    <div class="vuln-card p1">
+      <span class="vc-badge">P1 · High</span>
+      <div class="vc-title">BOM 검증완료 비율 낮음 — 93.1%가 이송 상태</div>
+      <p>실데이터 기준: 1,702행 중 검증완료 117행(6.9%), 이송 1,585행(93.1%). 검증완료 굿즈는 10개뿐이고 전부 1~2행짜리 단품이다. 복합 구성 굿즈(씨드키트, 케이블키트 등)는 전부 이송 상태다.</p>
+      <p>cascade MRP는 검증상태 무관하게 실행되므로 산술 계산은 맞지만 <strong>BOM 구성 자체가 틀렸을 리스크</strong>가 존재한다.</p>
+      <div class="vc-solution">해결: 6~7월 출고 물량 상위 20개 굿즈 우선 검증완료 전환. 신규 등록 굿즈는 등록 시점에 즉시 검증.</div>
+    </div>
+
+    <div class="vuln-card p2">
+      <span class="vc-badge">P2 · Medium</span>
+      <div class="vc-title">WMS_BOM 미등록 굿즈 존재</div>
+      <p>cascade는 order 직독으로 MRP를 돌리지만, BOM 테이블에 모품목이 없는 굿즈가 아직 존재한다. 자동화 기능(C2 패키징 소요, D1 CBM 사전예측 등)은 BOM 테이블 기반이므로 <strong>미등록 굿즈는 자동화에서 제외</strong>된다.</p>
+      <div class="vc-solution">해결: 9월까지 전체 굿즈 BOM 등록 완료.</div>
+    </div>
+
+    <div class="vuln-card p3">
+      <span class="vc-badge">P3 · Low</span>
+      <div class="vc-title">산출물/서비스 PT 품목유형 분류 미확립</div>
+      <p>추상적산출물, 조립산출물, 외주생산총공정산출물 같은 가상 PT가 ItemMaster에 체계적으로 분류되어 있지 않다. 물리적으로 존재하지 않는 PT가 CBM·재고 계산에 혼입될 수 있다.</p>
+      <div class="vc-solution">해결: ItemMaster 품목유형 코드 정의 (물리부품/산출물/서비스/임가공) + 일괄 분류.</div>
+    </div>
+
+    <!-- ─── IV. MECE 5그룹 ─── -->
+    <h2 id="chC"><span class="nm">IV</span>MECE 5그룹 — Value Chain 기준 (총 17건)</h2>
+
+    <p>17건의 자동화 업무를 Value Chain 5개 그룹으로 분류했다. 각 그룹은 상호 배타적이며 업무 흐름상 선후 관계를 반영한다.</p>
+
+    <!-- I. 조달·입하 -->
+    <div class="mece-group-header">
+      <div class="mg-label">Group I · 4건</div>
+      <div class="mg-title" id="chC-1">조달·입하 계획 (Pre-Inbound Planning)</div>
+      <div class="mg-desc">주문 확정 직후, 자재 발주·입하 전 수행되는 계획 업무.</div>
+    </div>
+
+    <div class="tbl c4">
+      <div class="r h"><div>항목</div><div>메커니즘</div><div>효과·KPI</div><div>성숙도</div></div>
+      <div class="r">
+        <div><strong>C1 MRP 자동산출</strong></div>
+        <div>고객주문 × BOM 소요량 → 파츠별 소요·부족량 자동 산출</div>
+        <div>발주 정확도 향상, 결품율 감소</div>
+        <div><span class="badge-go">가동</span></div>
+      </div>
+      <div class="r">
+        <div><strong>C2 패키징 자재 소요·재고</strong></div>
+        <div>포장 BOM × 출고단위 → 박스·완충재·라벨 소요 예측</div>
+        <div>패키징 결품 방지</div>
+        <div><span class="badge-now">즉시</span></div>
+      </div>
+      <div class="r">
+        <div><strong>B3 입하 부피 예측</strong></div>
+        <div>발주 PT CBM × 소요량 → 입하 전 도크 공간·인력 사전계획</div>
+        <div>Dock-to-Stock 단축</div>
+        <div><span class="badge-now">즉시</span></div>
+      </div>
+      <div class="r">
+        <div><strong>D1 주문→출고 CBM 사전예측</strong></div>
+        <div>BOM 폭발 + CBM → 생산 시점부터 출하 CBM 산출, 배차·창고 사전계획</div>
+        <div>배차 선행 계획 가능</div>
+        <div><span class="badge-now">즉시</span></div>
+      </div>
+    </div>
+
+    <!-- II. 보관·재고 -->
+    <div class="mece-group-header">
+      <div class="mg-label">Group II · 3건</div>
+      <div class="mg-title" id="chC-2">보관·재고 관리 (Storage &amp; Inventory)</div>
+      <div class="mg-desc">입하 완료 후, 자재가 창고에 있는 동안의 관리 업무.</div>
+    </div>
+
+    <div class="tbl c4">
+      <div class="r h"><div>항목</div><div>메커니즘</div><div>효과·KPI</div><div>성숙도</div></div>
+      <div class="r">
+        <div><strong>B1 Location·Capa 가동률</strong></div>
+        <div>품목 CBM × 재고수량 = 점유 부피 → 적치 최적화</div>
+        <div>Location 가동률 KPI</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+      <div class="r">
+        <div><strong>B2 보관료 정산</strong></div>
+        <div>부피 기반 보관비 자동 산정</div>
+        <div>보관료 정산 정확도 향상</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+      <div class="r">
+        <div><strong>C3 자재 차감 정합성</strong></div>
+        <div>계획 소요량 vs 실투입(movement) 편차 감지 → 즉시 알림</div>
+        <div>누락·과투입 Alert</div>
+        <div><span class="badge-now">즉시</span></div>
+      </div>
+    </div>
+
+    <!-- III. 생산·조립 -->
+    <div class="mece-group-header">
+      <div class="mg-label">Group III · 2건</div>
+      <div class="mg-title" id="chC-3">생산·조립 (Production &amp; Assembly)</div>
+      <div class="mg-desc">자재 조달 후 임가공·조립 단계에서 발생하는 원가·리드타임 관리.</div>
+    </div>
+
+    <div class="tbl c4">
+      <div class="r h"><div>항목</div><div>메커니즘</div><div>효과·KPI</div><div>성숙도</div></div>
+      <div class="r">
+        <div><strong>C5 견적↔실투입 편차</strong></div>
+        <div>BOM 표준 소요 vs 실제 투입(movement) 비교 → 원가누수 감지</div>
+        <div>원가누수 식별, 견적 정확도 개선</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+      <div class="r">
+        <div><strong>D3 생산-물류 연계 리드타임</strong></div>
+        <div>생산 완료 시점 기준 물류 부하(CBM) 예측 → 배차 병목 사전 대응</div>
+        <div>생산-배차 연계, OTIF 개선</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+    </div>
+
+    <!-- IV. 출고·배송 -->
+    <div class="mece-group-header">
+      <div class="mg-label">Group IV · 5건</div>
+      <div class="mg-title" id="chC-4">출고·배송 (Outbound &amp; Delivery)</div>
+      <div class="mg-desc">피킹 완료 후 출하·운송까지의 TMS 업무 — 배차, 운임, 적재율 관리.</div>
+    </div>
+
+    <div class="tbl c4">
+      <div class="r h"><div>항목</div><div>메커니즘</div><div>효과·KPI</div><div>성숙도</div></div>
+      <div class="r">
+        <div><strong>A1 배차 최적화 (Wave)</strong></div>
+        <div>CBM 기반 적재 bin-packing → 과적·공차 방지</div>
+        <div>차량이용률 향상, Wave 자동 편성</div>
+        <div><span class="badge-go">가동</span></div>
+      </div>
+      <div class="r">
+        <div><strong>A2 이송단가 정산</strong></div>
+        <div>CBM 구간별 단가 자동 적용 → 청구 누락·과청구 방지</div>
+        <div>정산 정확도 향상, 청구 오류율 감소</div>
+        <div><span class="badge-now">즉시</span></div>
+      </div>
+      <div class="r">
+        <div><strong>A3 차량 적재율 KPI</strong></div>
+        <div>실측 CBM / 차량 Capa 비율 산출</div>
+        <div>적재율 추세 관리, 공차 비용 가시화</div>
+        <div><span class="badge-now">즉시</span></div>
+      </div>
+      <div class="r">
+        <div><strong>A4 발송모드 분기</strong></div>
+        <div>CBM 임계값 기준 자체기사 vs 로젠/고고엑스 자동 라우팅</div>
+        <div>소량건 외주 전환, 물류비 절감</div>
+        <div><span class="badge-now">즉시</span></div>
+      </div>
+      <div class="r">
+        <div><strong>D2 완전주문 (OTIF × BOM)</strong></div>
+        <div>출고 전 movement 실투입 PT vs BOM 구성품 PT 자동 대조 → 누락 Alert, 전체 일치 시 Perfect Order 카운트</div>
+        <div>Perfect Order율 향상, 클레임 감소</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+    </div>
+
+    <!-- V. 원가·수익성 -->
+    <div class="mece-group-header">
+      <div class="mg-label">Group V · 3건</div>
+      <div class="mg-title" id="chC-5">원가·수익성 분석 (Cost &amp; Profitability Analytics)</div>
+      <div class="mg-desc">운영 데이터가 충분히 쌓인 후 수행하는 관리·분석 레이어.</div>
+    </div>
+
+    <div class="tbl c4">
+      <div class="r h"><div>항목</div><div>메커니즘</div><div>효과·KPI</div><div>성숙도</div></div>
+      <div class="r">
+        <div><strong>A5 Lane·노선 수익성</strong></div>
+        <div>CBM당 운임 분석 → 노선별 단가 매핑</div>
+        <div>적자 노선 식별, 운임 재협상 근거</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+      <div class="r">
+        <div><strong>E1 제조원가 대비 물류비</strong></div>
+        <div>품목별 CBM·물류비 매칭 → 원가 대비 비율 산출</div>
+        <div>적자 품목 식별, 가격 재검토 근거</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+      <div class="r">
+        <div><strong>E2 물류 ABC 분석</strong></div>
+        <div>CBM·회전율 기반 품목 등급 → 보관·배차 우선순위</div>
+        <div>보관 효율 향상, 배차 우선순위 최적화</div>
+        <div><span class="badge-ext">확장후</span></div>
+      </div>
+    </div>
+
+    <!-- ─── V. 연간 실행 로드맵 ─── -->
+    <h2 id="chD"><span class="nm">V</span>연간 실행 로드맵 (2026년 7~12월)</h2>
+
+    <p>월별 실행 계획을 정리한다. 취약점 해소(P0~P3)와 새로운 자동화 항목 가동을 병행하며 12월 연말 리뷰에서 2027년 Phase-3 스코프를 결정한다.</p>
+
+    <!-- 7월 -->
+    <div class="month-block mb-jul">
+      <div class="mb-header">7월 — Quick Win 집중</div>
+      <div class="tbl c3-wide">
+        <div class="r h"><div>주차</div><div>태스크</div><div>그룹</div></div>
+        <div class="r">
+          <div class="mono">W1</div>
+          <div><strong>A2 이송단가 전체 단가 매핑 완료</strong> — 전체 CBM 구간×거리 단가 테이블 입력</div>
+          <div><span class="badge-now">IV</span></div>
+        </div>
+        <div class="r">
+          <div class="mono">W2</div>
+          <div><strong>B3·D1</strong> 입하예측·출하CBM 사전계획 운영 시작</div>
+          <div><span class="badge-now">I</span></div>
+        </div>
+        <div class="r">
+          <div class="mono">W2</div>
+          <div><strong>C3 자재차감 정합성 Alert</strong> 가동</div>
+          <div><span class="badge-now">II</span></div>
+        </div>
+        <div class="r">
+          <div class="mono">W3</div>
+          <div><strong>A3·A4</strong> 차량적재율 KPI + 발송모드 분기</div>
+          <div><span class="badge-now">IV</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8월 -->
+    <div class="month-block mb-aug">
+      <div class="mb-header">8월 — 취약점 P0·P1 해소</div>
+      <div class="tbl c2">
+        <div class="r h"><div>태스크</div><div>상세</div></div>
+        <div class="r">
+          <div><strong>P0 파츠 CBM 일괄 등록</strong></div>
+          <div>입하 빈도 높은 파츠 200종 우선 실측/추정 입력. PropagationLedger 완결률 목표: 30%+</div>
+        </div>
+        <div class="r">
+          <div><strong>P1 BOM 검증 캠페인</strong></div>
+          <div>출고 물량 상위 20개 굿즈 이송→검증완료 전환. 목표: 검증완료 30%+</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9월 -->
+    <div class="month-block mb-sep">
+      <div class="mb-header">9월 — 재고·보관 레이어</div>
+      <div class="tbl c2">
+        <div class="r h"><div>태스크</div><div>그룹</div></div>
+        <div class="r">
+          <div><strong>B1 Location·Capa 가동률 KPI 대시보드</strong></div>
+          <div>II · <span class="badge-ext">확장후</span></div>
+        </div>
+        <div class="r">
+          <div><strong>P2 전체 굿즈 BOM 등록 완료</strong> + <strong>P3 산출물PT 품목유형 분류</strong></div>
+          <div>취약점 해소</div>
+        </div>
+        <div class="r">
+          <div><strong>BOM 검증완료 50%+ 목표</strong></div>
+          <div>—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10월 -->
+    <div class="month-block mb-oct">
+      <div class="mb-header">10월 — 품질·원가 레이어</div>
+      <div class="tbl c2">
+        <div class="r h"><div>태스크</div><div>그룹</div></div>
+        <div class="r">
+          <div><strong>C5 견적↔실투입 편차 분석</strong> 첫 번째 리포트</div>
+          <div>III · <span class="badge-ext">확장후</span></div>
+        </div>
+        <div class="r">
+          <div><strong>D2 완전주문 (OTIF × BOM)</strong> 파일럿</div>
+          <div>IV · <span class="badge-ext">확장후</span></div>
+        </div>
+        <div class="r">
+          <div><strong>B2 보관료 정산 자동화</strong></div>
+          <div>II · <span class="badge-ext">확장후</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11월 -->
+    <div class="month-block mb-nov">
+      <div class="mb-header">11월 — 통합·수익성</div>
+      <div class="tbl c2">
+        <div class="r h"><div>태스크</div><div>그룹</div></div>
+        <div class="r">
+          <div><strong>D3 생산-물류 연계 리드타임</strong> (MES 납기 ↔ TMS 배차 연결)</div>
+          <div>III · <span class="badge-ext">확장후</span></div>
+        </div>
+        <div class="r">
+          <div><strong>A5 Lane·노선 수익성</strong> 첫 번째 분석 리포트</div>
+          <div>V · <span class="badge-ext">확장후</span></div>
+        </div>
+        <div class="r">
+          <div><strong>E1 제조원가 대비 물류비</strong> 품목별 파일럿</div>
+          <div>V · <span class="badge-ext">확장후</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12월 -->
+    <div class="month-block mb-dec">
+      <div class="mb-header">12월 — 연말 결산</div>
+      <div class="tbl c2">
+        <div class="r h"><div>태스크</div><div>그룹</div></div>
+        <div class="r">
+          <div><strong>E2 물류 ABC 분석</strong> — CBM·회전율 기반 품목 등급 확정</div>
+          <div>V · <span class="badge-ext">확장후</span></div>
+        </div>
+        <div class="r">
+          <div><strong>연간 리뷰</strong>: 17건 가동률, 완결률, Perfect Order율</div>
+          <div>—</div>
+        </div>
+        <div class="r">
+          <div><strong>2027년 Phase-3 스코프 결정</strong></div>
+          <div>—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── VI. 요약 ─── -->
+    <h2 id="chE"><span class="nm">VI</span>전체 현황 요약</h2>
+
+    <p>17건 전체의 성숙도 분포와 취약점 해소 우선순위를 정리한다.</p>
+
+    <div class="tbl c3-num">
+      <div class="r h"><div>성숙도</div><div style="text-align:right">항목수</div><div>해당 업무</div></div>
+      <div class="r mat-go">
+        <div><span class="badge-go">가동</span> 현재 작동 중</div>
+        <div class="num">2건</div>
+        <div>A1 Wave배차, C1 MRP</div>
+      </div>
+      <div class="r mat-now">
+        <div><span class="badge-now">즉시</span> 추가 개발 불필요</div>
+        <div class="num">6건</div>
+        <div>A2·A3·A4, B3, C2·C3, D1</div>
+      </div>
+      <div class="r mat-ext">
+        <div><span class="badge-ext">확장후</span> 모듈 연동 필요</div>
+        <div class="num">9건</div>
+        <div>A5, B1·B2, C5, D2·D3, E1·E2</div>
+      </div>
+      <div class="r mat-total">
+        <div class="total">합계</div>
+        <div class="num total">17건</div>
+        <div class="total">—</div>
+      </div>
+    </div>
+
+    <h3 id="chE-vuln">취약점 해소 우선순위</h3>
+
+    <div class="roadmap">
+      <div class="road-row">
+        <div class="v">8월<br>P0</div>
+        <div class="d"><strong>파츠 CBM 200종 등록</strong>PropagationLedger 완결률 목표 30%+. 입하 빈도 높은 파츠 우선 실측 또는 order 박스규격으로 추정 입력.</div>
+      </div>
+      <div class="road-row">
+        <div class="v">8~9월<br>P1</div>
+        <div class="d"><strong>물량 상위 20개 굿즈 BOM 검증완료 전환</strong>이송 상태 1,585행 중 출고 빈도 상위 20개를 우선 검증완료로 전환. 목표: 검증완료 50%+</div>
+      </div>
+      <div class="road-row">
+        <div class="v">9월<br>P2</div>
+        <div class="d"><strong>전체 굿즈 BOM 등록 완료</strong>BOM 테이블 미등록 굿즈 일괄 등록. C2·D1 등 BOM 기반 자동화의 커버리지 100% 달성.</div>
+      </div>
+      <div class="road-row">
+        <div class="v">9월<br>P3</div>
+        <div class="d"><strong>ItemMaster 품목유형 코드 분류 정비</strong>물리부품/산출물/서비스/임가공 4개 유형 코드 정의 + 일괄 분류. 가상 PT가 CBM·재고 계산에 혼입되는 문제 차단.</div>
+      </div>
+    </div>
+
+    <div class="pullquote">
+      CBM 커버리지와 BOM 검증완료율이 함께 올라야 cascade 완결률이 개선된다.
+      <cite>Sincerely SCM · BOM-CBM Phase-1 리뷰 (2026.06.12)</cite>
+    </div>
+
+    <footer class="end">
+      <span>SCM-BOM-CBM-01 · v1.0</span>
+      <span>END OF DOCUMENT</span>
+    </footer>
+
+  </article>
+
+  <!-- RIGHT TOC -->
+  <aside class="toc" id="toc">
+    <h5>이 문서 안에서</h5>
+    <ul>
+      <li><a href="#ch0">I. 배경 및 현황</a></li>
+      <li class="sub"><a href="#ch0-legend">성숙도 범례</a></li>
+      <li><a href="#chA">II. Cascade 사례</a></li>
+      <li><a href="#chB">III. 취약점 4가지</a></li>
+      <li><a href="#chC">IV. MECE 5그룹</a></li>
+      <li class="sub"><a href="#chC-1">I. 조달·입하 계획</a></li>
+      <li class="sub"><a href="#chC-2">II. 보관·재고 관리</a></li>
+      <li class="sub"><a href="#chC-3">III. 생산·조립</a></li>
+      <li class="sub"><a href="#chC-4">IV. 출고·배송</a></li>
+      <li class="sub"><a href="#chC-5">V. 원가·수익성 분석</a></li>
+      <li><a href="#chD">V. 연간 실행 로드맵</a></li>
+      <li><a href="#chE">VI. 전체 현황 요약</a></li>
+      <li class="sub"><a href="#chE-vuln">취약점 해소 우선순위</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<script>
+  (function(){
+    const navLinks = document.querySelectorAll('#nav a[href^="#"], #toc a[href^="#"]');
+    const sections = [...document.querySelectorAll('article h2[id], article h3[id], .mece-group-header .mg-title[id]')];
+    function setActive(){
+      const y = window.scrollY + 100;
+      let current = sections[0];
+      for(const s of sections){ if(s.offsetTop <= y) current = s; }
+      if(!current) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current.id));
+    }
+    window.addEventListener('scroll', setActive, {passive:true});
+    setActive();
+  })();
+</script>
+
+</body>
+</html>

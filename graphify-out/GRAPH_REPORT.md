@@ -1,16 +1,16 @@
-# Graph Report - SCM_WORK  (2026-06-23)
+# Graph Report - SCM_WORK  (2026-07-21)
 
 ## Corpus Check
-- 563 files · ~3,013,884 words
+- 592 files · ~3,058,820 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 13634 nodes · 17731 edges · 1203 communities (1055 shown, 148 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 939 edges (avg confidence: 0.73)
+- 14695 nodes · 19190 edges · 1263 communities (1112 shown, 151 thin omitted)
+- Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 1072 edges (avg confidence: 0.73)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `aaa6de54`
+- Built from commit: `20673af3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -1186,18 +1186,78 @@
 - [[_COMMUNITY_Community 1200|Community 1200]]
 - [[_COMMUNITY_Community 1201|Community 1201]]
 - [[_COMMUNITY_Community 1202|Community 1202]]
+- [[_COMMUNITY_Community 1203|Community 1203]]
+- [[_COMMUNITY_Community 1204|Community 1204]]
+- [[_COMMUNITY_Community 1205|Community 1205]]
+- [[_COMMUNITY_Community 1206|Community 1206]]
+- [[_COMMUNITY_Community 1207|Community 1207]]
+- [[_COMMUNITY_Community 1208|Community 1208]]
+- [[_COMMUNITY_Community 1209|Community 1209]]
+- [[_COMMUNITY_Community 1210|Community 1210]]
+- [[_COMMUNITY_Community 1211|Community 1211]]
+- [[_COMMUNITY_Community 1212|Community 1212]]
+- [[_COMMUNITY_Community 1213|Community 1213]]
+- [[_COMMUNITY_Community 1214|Community 1214]]
+- [[_COMMUNITY_Community 1215|Community 1215]]
+- [[_COMMUNITY_Community 1216|Community 1216]]
+- [[_COMMUNITY_Community 1217|Community 1217]]
+- [[_COMMUNITY_Community 1218|Community 1218]]
+- [[_COMMUNITY_Community 1219|Community 1219]]
+- [[_COMMUNITY_Community 1220|Community 1220]]
+- [[_COMMUNITY_Community 1221|Community 1221]]
+- [[_COMMUNITY_Community 1222|Community 1222]]
+- [[_COMMUNITY_Community 1223|Community 1223]]
+- [[_COMMUNITY_Community 1224|Community 1224]]
+- [[_COMMUNITY_Community 1225|Community 1225]]
+- [[_COMMUNITY_Community 1226|Community 1226]]
+- [[_COMMUNITY_Community 1227|Community 1227]]
+- [[_COMMUNITY_Community 1228|Community 1228]]
+- [[_COMMUNITY_Community 1229|Community 1229]]
+- [[_COMMUNITY_Community 1230|Community 1230]]
+- [[_COMMUNITY_Community 1231|Community 1231]]
+- [[_COMMUNITY_Community 1232|Community 1232]]
+- [[_COMMUNITY_Community 1233|Community 1233]]
+- [[_COMMUNITY_Community 1234|Community 1234]]
+- [[_COMMUNITY_Community 1235|Community 1235]]
+- [[_COMMUNITY_Community 1236|Community 1236]]
+- [[_COMMUNITY_Community 1237|Community 1237]]
+- [[_COMMUNITY_Community 1238|Community 1238]]
+- [[_COMMUNITY_Community 1239|Community 1239]]
+- [[_COMMUNITY_Community 1240|Community 1240]]
+- [[_COMMUNITY_Community 1241|Community 1241]]
+- [[_COMMUNITY_Community 1242|Community 1242]]
+- [[_COMMUNITY_Community 1243|Community 1243]]
+- [[_COMMUNITY_Community 1244|Community 1244]]
+- [[_COMMUNITY_Community 1245|Community 1245]]
+- [[_COMMUNITY_Community 1246|Community 1246]]
+- [[_COMMUNITY_Community 1247|Community 1247]]
+- [[_COMMUNITY_Community 1248|Community 1248]]
+- [[_COMMUNITY_Community 1249|Community 1249]]
+- [[_COMMUNITY_Community 1250|Community 1250]]
+- [[_COMMUNITY_Community 1251|Community 1251]]
+- [[_COMMUNITY_Community 1252|Community 1252]]
+- [[_COMMUNITY_Community 1253|Community 1253]]
+- [[_COMMUNITY_Community 1254|Community 1254]]
+- [[_COMMUNITY_Community 1255|Community 1255]]
+- [[_COMMUNITY_Community 1256|Community 1256]]
+- [[_COMMUNITY_Community 1257|Community 1257]]
+- [[_COMMUNITY_Community 1258|Community 1258]]
+- [[_COMMUNITY_Community 1259|Community 1259]]
+- [[_COMMUNITY_Community 1260|Community 1260]]
+- [[_COMMUNITY_Community 1261|Community 1261]]
+- [[_COMMUNITY_Community 1262|Community 1262]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `fields` - 126 edges
-2. `products` - 67 edges
-3. `StructuredLogger` - 43 edges
-4. `assign_waves()` - 41 edges
-5. `fields` - 40 edges
-6. `AirtableClient` - 31 edges
-7. `get_config()` - 30 edges
-8. `parse_product_lines_v2()` - 28 edges
-9. `not_recv_by_partner` - 26 edges
-10. `load_product_lookup()` - 25 edges
+2. `fields` - 125 edges
+3. `fields` - 125 edges
+4. `products` - 67 edges
+5. `StructuredLogger` - 43 edges
+6. `assign_waves()` - 42 edges
+7. `fields` - 40 edges
+8. `AirtableClient` - 31 edges
+9. `get_config()` - 30 edges
+10. `main()` - 30 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `출고확인서 PDF: PNA51099 (2026-05-20)` --conceptually_related_to--> `신시어리 SCM 시스템 (Airtable WMS+TMS)`  [INFERRED]
@@ -1206,28 +1266,28 @@
   outputs/By ы꽩援щ텇??PNA51780-ALPS_?ㅽ룷?고뙆??_2026-05-11.pdf → 인수인계서/index.html
 - `test_patch_airtable_survives_batch_failure()` --calls--> `WavePlan`  [INFERRED]
   tests/dispatch/test_patch_resilience.py → harness/dispatch/wave_assigner.py
-- `main()` --calls--> `fetch_auto_targets()`  [INFERRED]
-  scripts/verification/verify_c1_filter.py → harness/dispatch/wave_recommender.py
 - `WMS 이슈 교차검증 요약 (71건 분석)` --semantically_similar_to--> `2026-05-06 주간운영 — 재고이슈취합·시스템전환`  [INFERRED] [semantically similar]
   scripts/slides_html/slide_wms_01.html → sincerely-meeting-notes/260506_주간운영_재고이슈취합_시스템전환.md
+- `main()` --calls--> `map_parttype_to_component()`  [INFERRED]
+  scripts/backbone/bom_component_type.py → harness/backbone/bom_bootstrap.py
 
-## Communities (1203 total, 148 thin omitted)
+## Communities (1263 total, 151 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.07
-Nodes (23): AirtableClient, AuditTableMissingError, _RateLimiter, In-process 3 req/s sliding-window limiter (thread-safe).      Cross-process file, SchemaError, ConfigError, Exception, Raised when a shipment record has a driver ID not in KNOWN_DRIVERS. (+15 more)
+Nodes (22): AirtableClient, AuditTableMissingError, _RateLimiter, In-process 3 req/s sliding-window limiter (thread-safe).      Cross-process file, SchemaError, ConfigError, Raised when a shipment record has a driver ID not in KNOWN_DRIVERS., UnregisteredDriverError (+14 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.06
 Nodes (45): DimScore, Issue, Virtual SAP verifier — shared dataclasses and enums., Severity, VerifierResult, PartnerType, FI document verifier — checks fi_document integrity and coverage., Run FI document integrity checks for the given sim_run_id. (+37 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.13
-Nodes (31): consulting-pm-expert Agent (D3), scm-logistics-expert Agent (D1), tax-accounting-expert Agent (D2), tms-carrier Agent (D-TMS2), tms-cost-lane Agent (SK-09), tms-improvement Agent (D-TMS1), tms-otif-kpi Agent (SK-06), tms-shipment Agent (SK-05) (+23 more)
+Cohesion: 0.12
+Nodes (34): consulting-pm-expert Agent (D3), scm-logistics-expert Agent (D1), tax-accounting-expert Agent (D2), tms-carrier Agent (D-TMS2), tms-cost-lane Agent (SK-09), tms-improvement Agent (D-TMS1), tms-otif-kpi Agent (SK-06), tms-shipment Agent (SK-05) (+26 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.12
-Nodes (17): [2026-04-21] WEEKLY | 주간 분석 2026-W16, [2026-05-08] SCM | WMS Slack MM 직접 조회 보고서, [2026-05-11] WEEKLY | 주간 분석 2026-W19, [2026-05-15] WEEKLY | 주간 분석 2026-W19, Iter6 갭분석, KPI 스냅샷, KPI 스냅샷, KPI 스냅샷 (+9 more)
+Nodes (17): [2026-04-21] SETUP | program.md 초기화 + 주간 러너 구성, [2026-05-08] SCM | WMS Slack MM 직접 조회 보고서, [2026-05-08] WMS | Slack 이슈 교차검증 완료, [2026-05-27] WEEKLY | 주간 분석 2026-W21, Iter6 갭분석, KPI 스냅샷, WMS AutoResearch — Session Log, 교차검증 요약 (+9 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.15
@@ -1239,7 +1299,7 @@ Nodes (13): 3B. WMS — 공정별 M/H 계산 방식, code:block5 (M/H = CBM × 4
 
 ### Community 6 - "Community 6"
 Cohesion: 0.11
-Nodes (17): [2026-04-15] WEEKLY | 주간 분석 20260415, [2026-04-15] WEEKLY | 주간 분석 20260415, [2026-04-20] WEEKLY | 주간 분석 2026-W16, [2026-04-20] WEEKLY | 주간 분석 2026-W16, KPI 스냅샷, KPI 스냅샷, KPI 스냅샷, KPI 스냅샷 (+9 more)
+Nodes (17): [2026-04-15] WEEKLY | 주간 분석 20260415, [2026-04-15] WEEKLY | 주간 분석 20260415, [2026-04-15] WEEKLY | 주간 분석 20260415, [2026-04-20] WEEKLY | 주간 분석 2026-W16, KPI 스냅샷, KPI 스냅샷, KPI 스냅샷, KPI 스냅샷 (+9 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.17
@@ -1247,7 +1307,7 @@ Nodes (12): code:powershell (py -m pytest "$env:USERPROFILE/.claude/harness/scri
 
 ### Community 8 - "Community 8"
 Cohesion: 0.11
-Nodes (30): analyze_inbound(), analyze_picking(), analyze_qc(), _c(), _calc_weekly_km_breakdown(), fetch_additional_usage(), _fetch_all(), fetch_box_cbm_live() (+22 more)
+Nodes (36): analyze_inbound(), analyze_picking(), analyze_qc(), _c(), _calc_weekly_km_breakdown(), fetch_additional_usage(), _fetch_all(), fetch_box_cbm_live() (+28 more)
 
 ### Community 9 - "Community 9"
 Cohesion: 0.20
@@ -1290,12 +1350,12 @@ Cohesion: 0.13
 Nodes (34): airtable_get(), build_doc(), _cell_style_base(), download_qr_image(), _draw_banner(), _draw_box_block(), draw_confirmation(), _draw_error_page() (+26 more)
 
 ### Community 19 - "Community 19"
-Cohesion: 0.12
-Nodes (17): analyze_cbm_balance(), analyze_cbm_dts_corr(), analyze_cbm_weekly(), analyze_dock_to_stock(), analyze_inventory_accuracy(), analyze_qc_defect(), analyze_qc_pareto(), _compute_week_label() (+9 more)
+Cohesion: 0.11
+Nodes (30): wms_weekly_runner.py ───────────────────────────────────────────────────────────, analyze_cbm_balance(), analyze_cbm_dts_corr(), analyze_cbm_weekly(), analyze_dock_to_stock(), analyze_inventory_accuracy(), analyze_qc_defect(), analyze_qc_pareto() (+22 more)
 
 ### Community 20 - "Community 20"
-Cohesion: 0.11
-Nodes (20): analyze_iter1_volume(), analyze_iter2_dispatch_efficiency(), analyze_iter3_cost(), analyze_iter4_otif(), analyze_iter6_absorption_gap(), analyze_iter6_post_backfill(), classify_partner(), _compute_week_label() (+12 more)
+Cohesion: 0.07
+Nodes (39): analyze_iter1_volume(), analyze_iter3_cost(), analyze_iter4_otif(), analyze_iter6_absorption_gap(), analyze_iter6_post_backfill(), _compute_week_label(), _delta(), get_all_records() (+31 more)
 
 ### Community 21 - "Community 21"
 Cohesion: 0.06
@@ -1346,8 +1406,8 @@ Cohesion: 0.08
 Nodes (25): 6-Layer MECE Audit — Findings Report, Backlog Summary, Cross-Layer Conflicts (11건, X1~X11), Executive Summary, Findings Matrix (6 × 7 = 42 cells), L1 — Global CLAUDE.md (6 findings), L2 — SCM_WORK CLAUDE.md (12 findings), L3 — Universal Project Harness (9 findings) (+17 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.08
-Nodes (49): airtable_get(), _check_box_sum_internal(), _clean_item_name(), clear_attachment_field(), _demo_records(), draw_carton_label(), _draw_error_page(), draw_shipping_mark() (+41 more)
+Cohesion: 0.06
+Nodes (60): airtable_get(), _check_box_sum_internal(), _clean_item_name(), clear_attachment_field(), _demo_records(), draw_carton_label(), _draw_error_page(), draw_shipping_mark() (+52 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.07
@@ -1374,8 +1434,8 @@ Cohesion: 0.09
 Nodes (22): CBM-driven TMS analytics — dashboard widgets + GitHub auto-KPI catalog, code:sql (ALTER TABLE tms_daily_volume ADD COLUMN total_cbm NUMERIC(8,), code:block2 (util_v2 = Σ(Total_CBM of shipped trips) / Σ(vehicle.capacity), code:block3 (expected = Total_CBM × std_rate_per_m3[carrier]), Context, K1. 차량이용률 v2 (CBM-weighted) — **P0** (catalog #2), K2. Standard vs Actual Freight Variance — P1 (catalog #6), K3. Next-Week CBM Forecast — P1 (catalog #9) (+14 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.15
-Nodes (22): tms_iter7_analyzer.py ──────────────────────────────────────────────────────────, _actual_weekly_shipments(), analyze_iter7_forecast_mape(), analyze_iter7_internal_rate_3way_roi(), analyze_iter7_lane_cbm(), analyze_iter7_v1_v2_shadow(), _build_report(), main() (+14 more)
+Cohesion: 0.07
+Nodes (45): _actual_weekly_shipments(), analyze_iter7_forecast_mape(), analyze_iter7_internal_rate_3way_roi(), analyze_iter7_lane_cbm(), analyze_iter7_v1_v2_shadow(), _build_report(), main(), _parse_forecast_total() (+37 more)
 
 ### Community 41 - "Community 41"
 Cohesion: 0.09
@@ -1522,8 +1582,8 @@ Cohesion: 0.08
 Nodes (36): batch_patch(), calc_record_mh(), extract_pt_code(), fetch_target_records(), load_sync_parts_lookup(), main(), parse_dims_mm(), mh_backfill_to_ibsa.py ───────────────────────────────────────────────────────── (+28 more)
 
 ### Community 77 - "Community 77"
-Cohesion: 0.12
-Nodes (24): calc_cbm(), fetch_inbound_cbm(), get_all_records(), _headers(), load_sync_parts_lookup(), parse_date(), parse_dims_mm(), parse_inbound_item() (+16 more)
+Cohesion: 0.13
+Nodes (22): calc_cbm(), fetch_inbound_cbm(), get_all_records(), _headers(), load_sync_parts_lookup(), parse_date(), parse_dims_mm(), parse_inbound_item() (+14 more)
 
 ### Community 78 - "Community 78"
 Cohesion: 0.14
@@ -1563,7 +1623,7 @@ Nodes (24): create_records(), delete_all_records(), get_existing_refs(), get_las
 
 ### Community 87 - "Community 87"
 Cohesion: 0.05
-Nodes (61): _apply_withholding(), calc_cho(), calc_lee(), calc_park(), _is_outsource(), _is_pna(), _make_item(), _parse_unload_fee() (+53 more)
+Nodes (43): 1.1 종합 판정, 1.2 6모듈 성숙도 스코어카드 (rubric: 3축 최소값 0~4 — §9.4), 1.3 강점·취약점 Top 3, 1.4 P0 — 지금 무너져 있는 것 3건 (§7), 1. 경영 요약, 2. 방법론·근거 체계, 3.1 2026-04 — GAP closure와 주간 KPI 캐던스 확립, 3.2 2026-05 — 정산 하네스 · 5-agent 체계 · Lane 전략 · CBM 엔진 (+35 more)
 
 ### Community 88 - "Community 88"
 Cohesion: 0.15
@@ -1610,8 +1670,8 @@ Cohesion: 0.18
 Nodes (10): 6-Layer audit findings 보존 매트릭스 (19/19), 6-Layer 최종 구조, 6-Layer 최종 정리 (L1 restructure 2026-05-17 반영), code:markdown (## Hook Lifecycle (settings.json SSOT)), L1 신구조 (Hybrid), L3 추가 항목 (harness/README.md), Layer 간 의존성 확인 (L1 변경 후), Rollback (+2 more)
 
 ### Community 99 - "Community 99"
-Cohesion: 0.07
-Nodes (37): build_order_lines(), CascadeUnit, _earliest_date(), fare_preview(), _first(), mes_timeline(), _n(), _norm_date() (+29 more)
+Cohesion: 0.05
+Nodes (71): build_order_lines(), CascadeUnit, collect_units(), _earliest_date(), fare_preview(), _first(), mes_timeline(), mh_for_inbound() (+63 more)
 
 ### Community 100 - "Community 100"
 Cohesion: 0.18
@@ -1622,8 +1682,8 @@ Cohesion: 0.20
 Nodes (18): fetch_all_events(), fetch_missing_shipments(), fetch_shipments_by_rec_ids(), main(), paginate(), patch_batch(), post_batch(), 배송이벤트 없는 완료 Shipment (2026-01-01 이후) (+10 more)
 
 ### Community 102 - "Community 102"
-Cohesion: 0.16
-Nodes (16): calc_running_balance(), get_total_outbound_cbm(), main(), scripts/wms_cbm_ledger.py ──────────────────────────────────────────────────────, YTD 또는 지정 기간의 입하 vs 출하 CBM 대비로 창고 Running Balance 계산.      Returns:       since, TMS Shipment.총 CBM 기간 합계.     since/until: 출하일 범위 (inclusive). until 미지정 시 오늘까지., _tms_headers(), calc_running_balance() (+8 more)
+Cohesion: 0.12
+Nodes (21): calc_running_balance(), get_total_outbound_cbm(), get_weekly_inbound_cbm(), main(), scripts/wms_cbm_ledger.py ──────────────────────────────────────────────────────, 주간 입하 CBM 합계. week_str 예: '2026-W21'., YTD 또는 지정 기간의 입하 vs 출하 CBM 대비로 창고 Running Balance 계산.      Returns:       since, TMS Shipment.총 CBM 기간 합계.     since/until: 출하일 범위 (inclusive). until 미지정 시 오늘까지. (+13 more)
 
 ### Community 103 - "Community 103"
 Cohesion: 0.11
@@ -1759,7 +1819,7 @@ Nodes (10): fetch_park_dayoung(), main(), 박종성 다영기획 출발 상하�
 
 ### Community 136 - "Community 136"
 Cohesion: 0.12
-Nodes (18): _estimate_one(), _first(), otif_summary_by_wave(), OtifResult, Sub-Spec 4 가정 OTIF 추정 — 배송방식별 가정 POD + 납기 준수 예측.  실제 OTIF는 Airtable OTIF 테이블(for, record_id → wave 역매핑 후 wave별 on_time / at_risk 집계.      on_time=None (측정불가/POD확인, record_id → wave 역매핑 후 wave별 on_time / at_risk 집계.      on_time=None (측정불가/POD확인, 실제 Airtable 값은 '퀵(수도권)'·'택배(일반)' 등 접미사 포함 — 정확일치였다면 전부 측정불가. (+10 more)
+Nodes (15): generated_at, kpi, completion_rate, defect_rate, issue_total, picking_total, period, end (+7 more)
 
 ### Community 138 - "Community 138"
 Cohesion: 0.16
@@ -1826,8 +1886,8 @@ Cohesion: 0.38
 Nodes (6): download_image(), main(), Export the 12 final Stitch presentation slides to a single PDF. Screenshots fetc, download_image(), main(), Export the 12 final Stitch presentation slides to a single PDF. Screenshots fetc
 
 ### Community 155 - "Community 155"
-Cohesion: 0.13
-Nodes (9): AirtableClient, AuditTableMissingError, _RateLimiter, 10건씩 batch POST. records=[{'fields': {...}}, ...]., In-process 3 req/s sliding-window limiter (thread-safe).      Cross-process fi, SchemaError, WriteForbiddenError, AuthError (+1 more)
+Cohesion: 0.06
+Nodes (31): n, strict, n, strict, n, strict, n, strict (+23 more)
 
 ### Community 156 - "Community 156"
 Cohesion: 0.38
@@ -1855,7 +1915,7 @@ Nodes (3): equity_report.html 다크테마 8챕터 템플릿, Equity Research Re
 
 ### Community 169 - "Community 169"
 Cohesion: 0.08
-Nodes (16): assert_domain(), assert_state_path(), LocalProdWriteForbidden, Refuse writes that land outside the gitignored state/ tree.      Also blocks any, state_dir(), BatchedRunner, IdempotentRunner, Checkpoint at batch granularity using a hash of batch contents. (+8 more)
+Nodes (28): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+20 more)
 
 ### Community 183 - "Community 183"
 Cohesion: 0.17
@@ -1878,8 +1938,8 @@ Cohesion: 0.09
 Nodes (22): _check_secret(), generate_barcode_pdf(), generate_pkg_label(), generate_tms_pdf(), generate_wms_pdf(), Barcode 베이스: 출고확인서 / 피킹리스트 / 라벨지, WMS 출고서류 3종: carton_label / packing_list / shipping_mark / all, pkg_schedule 투입자재 피킹 라벨 (80×55mm) (+14 more)
 
 ### Community 188 - "Community 188"
-Cohesion: 0.08
-Nodes (54): depot, route, stops, total_km, total_min, depot, route, stops (+46 more)
+Cohesion: 0.14
+Nodes (33): depot, route, stops, total_km, total_min, depot, route, stops (+25 more)
 
 ### Community 189 - "Community 189"
 Cohesion: 0.04
@@ -1891,55 +1951,55 @@ Nodes (48): W14, W15, W16, W17, W18, 수량이슈, 운영이슈, 품질이슈 (+
 
 ### Community 192 - "Community 192"
 Cohesion: 0.09
-Nodes (48): depot, route, stops, total_km, total_min, depot, route, stops (+40 more)
+Nodes (45): depot, route, stops, total_km, total_min, depot, route, stops (+37 more)
 
 ### Community 193 - "Community 193"
-Cohesion: 0.11
-Nodes (40): depot, route, stops, total_km, total_min, depot, route, stops (+32 more)
+Cohesion: 0.09
+Nodes (48): depot, route, stops, total_km, total_min, depot, route, stops (+40 more)
 
 ### Community 194 - "Community 194"
-Cohesion: 0.08
-Nodes (52): depot, route, stops, total_km, total_min, depot, route, stops (+44 more)
+Cohesion: 0.09
+Nodes (47): depot, route, stops, total_km, total_min, depot, route, stops (+39 more)
 
 ### Community 196 - "Community 196"
-Cohesion: 0.07
-Nodes (32): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+24 more)
+Cohesion: 0.04
+Nodes (55): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+47 more)
 
 ### Community 197 - "Community 197"
 Cohesion: 0.08
 Nodes (26): W10, W11, W12, W14, qc, by_week, defect_by_item, result_dist (+18 more)
 
 ### Community 198 - "Community 198"
-Cohesion: 0.09
-Nodes (46): depot, route, stops, total_km, total_min, depot, route, stops (+38 more)
+Cohesion: 0.11
+Nodes (41): depot, route, stops, total_km, total_min, depot, route, stops (+33 more)
 
 ### Community 199 - "Community 199"
-Cohesion: 0.04
-Nodes (58): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+50 more)
+Cohesion: 0.05
+Nodes (44): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+36 more)
 
 ### Community 200 - "Community 200"
-Cohesion: 0.11
-Nodes (39): depot, route, stops, total_km, total_min, depot, route, stops (+31 more)
+Cohesion: 0.09
+Nodes (46): depot, route, stops, total_km, total_min, depot, route, stops (+38 more)
 
 ### Community 201 - "Community 201"
 Cohesion: 0.38
 Nodes (6): 중복 견적코드 결정론 해소: formula CBM>0 우선 → 큰 qty_per_box → rec_id 사전순., _resolve_dup(), Task 1.1 — 중복 견적코드 결정론 해소 (_resolve_dup). formula CBM>0 우선 → 큰 qty_per_box → rec, test_prefers_formula_cbm_over_zero(), test_tiebreak_larger_qty_per_box(), test_tiebreak_rec_id_lexicographic()
 
 ### Community 205 - "Community 205"
-Cohesion: 0.05
-Nodes (44): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+36 more)
+Cohesion: 0.08
+Nodes (30): claim_id, definition, denominator, numerator, status, value, window, cbm_coverage_matrix (+22 more)
 
 ### Community 206 - "Community 206"
-Cohesion: 0.05
-Nodes (44): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+36 more)
+Cohesion: 0.04
+Nodes (66): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+58 more)
 
 ### Community 207 - "Community 207"
-Cohesion: 0.05
-Nodes (44): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+36 more)
+Cohesion: 0.07
+Nodes (32): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+24 more)
 
 ### Community 208 - "Community 208"
 Cohesion: 0.05
-Nodes (40): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+32 more)
+Nodes (44): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+36 more)
 
 ### Community 209 - "Community 209"
 Cohesion: 0.05
@@ -1954,8 +2014,8 @@ Cohesion: 0.11
 Nodes (41): depot, route, stops, total_km, total_min, depot, route, stops (+33 more)
 
 ### Community 212 - "Community 212"
-Cohesion: 0.06
-Nodes (36): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+28 more)
+Cohesion: 0.05
+Nodes (48): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+40 more)
 
 ### Community 213 - "Community 213"
 Cohesion: 0.09
@@ -1983,15 +2043,15 @@ Nodes (34): 10. Out of Scope (P3.5+), 11. Reuse Path, 12. Dependencies, 13. 관�
 
 ### Community 229 - "Community 229"
 Cohesion: 0.06
-Nodes (29): parse_product_lines_v2(), Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 + 여, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Tests for harness.dispatch.cbm_estimator.  Covers C2 (parse accuracy) and C3·C, C2: '1,000개' must not split to '000개' fragments. (+21 more)
+Nodes (29): parse_product_lines_v2(), Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 + 여, Returns ``[(product_name, total_qty, extra), ...]``.      ``total_qty``는 본수량 +, Tests for harness.dispatch.cbm_estimator.  Covers C2 (parse accuracy) and C3·C, C2: '1,000개' must not split to '000개' fragments. (+21 more)
 
 ### Community 230 - "Community 230"
-Cohesion: 0.08
-Nodes (28): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+20 more)
+Cohesion: 0.05
+Nodes (40): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+32 more)
 
 ### Community 231 - "Community 231"
 Cohesion: 0.05
-Nodes (33): ABC, BatchResult, DimScore, FormativeResult, Issue, VerifierBase, DimScore, FormativeResult (+25 more)
+Nodes (32): ABC, BatchResult, DimScore, FormativeResult, Issue, VerifierBase, DimScore, FormativeResult (+24 more)
 
 ### Community 232 - "Community 232"
 Cohesion: 0.05
@@ -2006,24 +2066,24 @@ Cohesion: 0.06
 Nodes (32): 10. Out of Scope (이번 전략 범위 외), 11. 관련 문서, 12.1 사용자 결정 사항 (2026-05-27), 12.2 Backtest 결과 (2026-05-27, 26년 1,640건 sample 100건), 12.3 ROI 재추정 (이전 보수 → v3 개선), 12.4 Sub-Spec 5개 구조 (v3 최종), 12.5 SAP 글로벌 표준 비교 (사용자 질문 답), 12. Addendum v3 (2026-05-27 후반) — 자동 시스템 결정 + Backtest 통합 + 새 조건 (+24 more)
 
 ### Community 235 - "Community 235"
-Cohesion: 0.09
-Nodes (14): TestW1SlotFilter, Tests for partner locked-in handling (Contract C5)., Contract C5 — locked-in 9 records recommender override 0건., TestLockedIn, Tests for wave_locked override handling (Contract C7)., Contract C7 — wave_locked=True 처리 (다음 cycle skip)., TestOverride, _build_ships() (+6 more)
+Cohesion: 0.12
+Nodes (11): Tests for wave_locked override handling (Contract C7)., Contract C7 — wave_locked=True 처리 (다음 cycle skip)., TestOverride, _build_ships(), Tests for SA local search (P3.5 Decision 4 — wave_assigner.refine_with_sa)., TestSAConvergence, assign_waves(), 메인 entry — Greedy → (optional) SA refinement → minimum load 보장.      Args: (+3 more)
 
 ### Community 236 - "Community 236"
-Cohesion: 0.07
-Nodes (35): assign_waves_greedy(), _below_floor(), _can_fit(), _clone(), _ensure_minimum_load(), _neighbor(), Stage B+C+D — Wave 배정 알고리즘 (Sub-Spec 3).  Pipeline: 1. Override 처리: wave_locked=, W1 이장훈은 오전/무관 슬롯만 적재. 무관은 오전 시간대 포함이므로 허용. (+27 more)
+Cohesion: 0.09
+Nodes (26): assign_waves_greedy(), _below_floor(), _can_fit(), Stage B+C+D — Wave 배정 알고리즘 (Sub-Spec 3).  Pipeline: 1. Override 처리: wave_locked=, W1 이장훈은 오전/무관 슬롯만 적재. 무관은 오전 시간대 포함이므로 허용., W1 이장훈은 오전/무관 슬롯만 적재. 무관은 오전 시간대 포함이므로 허용., autonomous → 제외, locked-in → 'locked-in' wave. Input Shipment 비변경 (idempotent)., autonomous → 제외, locked-in → 'locked-in' wave. Input Shipment 비변경 (idempotent). (+18 more)
 
 ### Community 242 - "Community 242"
 Cohesion: 0.06
 Nodes (32): 10. Out of Scope (이번 전략 범위 외), 11. 관련 문서, 12.1 사용자 결정 사항 (2026-05-27), 12.2 Backtest 결과 (2026-05-27, 26년 1,640건 sample 100건), 12.3 ROI 재추정 (이전 보수 → v3 개선), 12.4 Sub-Spec 5개 구조 (v3 최종), 12.5 SAP 글로벌 표준 비교 (사용자 질문 답), 12. Addendum v3 (2026-05-27 후반) — 자동 시스템 결정 + Backtest 통합 + 새 조건 (+24 more)
 
 ### Community 243 - "Community 243"
-Cohesion: 0.06
-Nodes (33): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+25 more)
+Cohesion: 0.08
+Nodes (26): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+18 more)
 
 ### Community 244 - "Community 244"
-Cohesion: 0.08
-Nodes (28): assert_week_in_window(), Date to settle: today KST, but yesterday if we've crossed midnight (cron delay g, settlement_target_kst(), today_kst(), assert_week_in_window(), Date to settle: today KST, but yesterday if we've crossed midnight (cron delay g, settlement_target_kst(), today_kst() (+20 more)
+Cohesion: 0.07
+Nodes (30): assert_week_in_window(), Date to settle: today KST, but yesterday if we've crossed midnight (cron delay g, settlement_target_kst(), today_kst(), assert_week_in_window(), Date to settle: today KST, but yesterday if we've crossed midnight (cron delay g, settlement_target_kst(), today_kst() (+22 more)
 
 ### Community 245 - "Community 245"
 Cohesion: 0.06
@@ -2034,32 +2094,32 @@ Cohesion: 0.08
 Nodes (32): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+24 more)
 
 ### Community 247 - "Community 247"
-Cohesion: 0.11
-Nodes (27): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+19 more)
+Cohesion: 0.08
+Nodes (32): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+24 more)
 
 ### Community 248 - "Community 248"
 Cohesion: 0.08
 Nodes (32): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+24 more)
 
 ### Community 249 - "Community 249"
-Cohesion: 0.11
-Nodes (27): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+19 more)
+Cohesion: 0.06
+Nodes (45): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+37 more)
 
 ### Community 250 - "Community 250"
-Cohesion: 0.07
-Nodes (30): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+22 more)
+Cohesion: 0.06
+Nodes (32): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+24 more)
 
 ### Community 251 - "Community 251"
-Cohesion: 0.12
-Nodes (16): SettlementItem, _assert_readback(), _build_patch_fields(), Settlement write layer — verify → PATCH → read-back → checkpoint.  Sequence per, Verify PATCH response contains the values we intended to write., Verify all items, abort if blocked ratio exceeds threshold, then write., write_batch(), WriteResult (+8 more)
+Cohesion: 0.11
+Nodes (17): SettlementItem, _assert_readback(), _build_patch_fields(), Settlement write layer — verify → PATCH → read-back → checkpoint.  Sequence per, Verify PATCH response contains the values we intended to write., Verify all items, abort if blocked ratio exceeds threshold, then write., write_batch(), WriteResult (+9 more)
 
 ### Community 252 - "Community 252"
 Cohesion: 0.05
-Nodes (40): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+32 more)
+Nodes (44): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+36 more)
 
 ### Community 254 - "Community 254"
-Cohesion: 0.08
-Nodes (32): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+24 more)
+Cohesion: 0.15
+Nodes (17): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+9 more)
 
 ### Community 255 - "Community 255"
 Cohesion: 0.08
@@ -2083,7 +2143,7 @@ Nodes (26): next_id(), _next_seq(), SAP-style sequential document number generat
 
 ### Community 260 - "Community 260"
 Cohesion: 0.11
-Nodes (27): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+19 more)
+Nodes (26): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+18 more)
 
 ### Community 261 - "Community 261"
 Cohesion: 0.07
@@ -2098,8 +2158,8 @@ Cohesion: 0.07
 Nodes (29): 1. 목표, 2. 아키텍처, 3. 4축 Scorecard, 4. KPI 3종, 5. JSONL 스냅샷 스키마, 6. Slack DM 포맷 (상세형 B), 7. Validation Contract, 8. Out of Scope (P5) (+21 more)
 
 ### Community 264 - "Community 264"
-Cohesion: 0.07
-Nodes (30): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+22 more)
+Cohesion: 0.05
+Nodes (37): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+29 more)
 
 ### Community 265 - "Community 265"
 Cohesion: 0.07
@@ -2110,8 +2170,8 @@ Cohesion: 0.07
 Nodes (30): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+22 more)
 
 ### Community 267 - "Community 267"
-Cohesion: 0.16
-Nodes (13): estimate_all(), 각 shipment 가정 OTIF 계산 → JSONL append + list 반환., 각 shipment 가정 OTIF 계산 → JSONL append + list 반환., Tests for otif_estimator — Contract C4 (OTIF 4케이스) / C5 (JSONL append)., Contract C5 — JSONL append-only, 2회 호출 시 2배 줄수., Contract C4 — 배송방식별 가정 OTIF., Contract C4 — 배송방식별 가정 OTIF., Contract C5 — JSONL append-only, 2회 호출 시 2배 줄수. (+5 more)
+Cohesion: 0.10
+Nodes (25): estimate_all(), _estimate_one(), _first(), otif_summary_by_wave(), OtifResult, Sub-Spec 4 가정 OTIF 추정 — 배송방식별 가정 POD + 납기 준수 예측.  실제 OTIF는 Airtable OTIF 테이블(for, record_id → wave 역매핑 후 wave별 on_time / at_risk 집계.      on_time=None (측정불가/POD확인, record_id → wave 역매핑 후 wave별 on_time / at_risk 집계.      on_time=None (측정불가/POD확인 (+17 more)
 
 ### Community 268 - "Community 268"
 Cohesion: 0.12
@@ -2166,8 +2226,8 @@ Cohesion: 0.28
 Nodes (8): _log_agent_event(), Phase E — 자재출고요청 자동화 에이전트.  Trigger: sap.mat_document 중 movement_type='261'이고, Send material release requests for movement_type=261 documents. Returns count pr, run(), _log_agent_event(), Phase E — 자재출고요청 자동화 에이전트.  Trigger: sap.mat_document 중 movement_type='261'이고, Send material release requests for movement_type=261 documents. Returns count pr, run()
 
 ### Community 284 - "Community 284"
-Cohesion: 0.11
-Nodes (27): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+19 more)
+Cohesion: 0.08
+Nodes (32): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+24 more)
 
 ### Community 285 - "Community 285"
 Cohesion: 0.28
@@ -2182,8 +2242,8 @@ Cohesion: 0.07
 Nodes (26): 1. 2026년 최종 WMS M/H 산출 (W01–W21), ① 글로벌 검증된 표준 직접 적용 가능, 2.1 두 방식의 정의, 2.2 실측 비교 결과 (2026-05, N=632건 유효), 2. CBM-Driven vs Cycle Time 비교 분석, ② 물리적 작업량과 직접 비례, 3.1 장점, 3.2 단점 (결정적 제약) (+18 more)
 
 ### Community 288 - "Community 288"
-Cohesion: 0.10
-Nodes (21): aggregate_score(), 해당 월의 월~금 영업일 수 (공휴일 미제외)., working_days_in_month(), Unit tests for scorecard score functions — pure functions, no Airtable., Cost N/A → 나머지 3축 재정규화 (0.35+0.20+0.15=0.70)., Cost+Reliability 모두 N/A → capacity+damage만 (0.20+0.15=0.35)., actual == target → 100점., actual < target (우리가 싸게 쓴 경우) → 100 cap. (+13 more)
+Cohesion: 0.09
+Nodes (26): 해당 월의 월~금 영업일 수 (공휴일 미제외)., 가동률(자체기사) 또는 처리량 추세(외주) → 0~100., score_capacity(), working_days_in_month(), Unit tests for scorecard score functions — pure functions, no Airtable., actual == target → 100점., actual < target (우리가 싸게 쓴 경우) → 100 cap., actual > target (초과 지출) → 비례 감점. (+18 more)
 
 ### Community 289 - "Community 289"
 Cohesion: 0.25
@@ -2194,8 +2254,8 @@ Cohesion: 0.08
 Nodes (25): 1.1 회사 우선원칙 → 분석 제약, 1.2 3H × Operating Leverage 하이브리드, 1.3 핵심 가정, 1. 분석 프레임, 2026 SCM실 재무 KPI 연계 — 물류팀 전략 프로젝트 후보 분석, 2.1 슬라이드 명시 비목 × 통제권 매트릭스, 2.2 임팩트 가시성 (CRVS 193.9억 기준), 2. 비용구조 분해 (물류팀 통제권 매핑) (+17 more)
 
 ### Community 291 - "Community 291"
-Cohesion: 0.13
-Nodes (24): _airtable_headers(), _build_shipment(), fetch_auto_targets(), _first(), _format_digest(), _get(), _load_snapshot(), main() (+16 more)
+Cohesion: 0.08
+Nodes (34): _airtable_headers(), _build_shipment(), fetch_auto_targets(), _first(), _format_digest(), _get(), _load_snapshot(), main() (+26 more)
 
 ### Community 292 - "Community 292"
 Cohesion: 0.08
@@ -2218,8 +2278,8 @@ Cohesion: 0.08
 Nodes (26): W12, 수량이슈, 운영이슈, 품질이슈, cat_counts, issue_cnt, total_cnt, qc (+18 more)
 
 ### Community 297 - "Community 297"
-Cohesion: 0.18
-Nodes (10): cnt, in_qty, 2026-W13, by_week, not_recv_by_partner, 강천FNT, 개미기획, 서울디지털인쇄협동조합 (+2 more)
+Cohesion: 0.11
+Nodes (18): cnt, in_qty, 2026-W13, inbound, by_date, by_week, not_recv_by_partner, summary (+10 more)
 
 ### Community 298 - "Community 298"
 Cohesion: 0.08
@@ -2258,8 +2318,8 @@ Cohesion: 0.15
 Nodes (14): ChangeReport, detect(), _first(), _normalize(), Sub-Spec 4 Change Detection — 직전 스캔 대비 신규/취소/변경 감지.  snapshot 포맷: {record_id: {", multipleLookupValues 또는 plain 값 → 첫 번째 문자열., Airtable 원시 레코드 → 스냅샷용 normalized dict., 스냅샷 vs 현재 레코드 비교 → (ChangeReport, new_snapshot).      new_snapshot은 caller가 arti (+6 more)
 
 ### Community 307 - "Community 307"
-Cohesion: 0.25
-Nodes (10): _get_carrier(), Step 06 — TMS Shipment creation + POD simulation.  For each posted outbound_deli, run(), SimContext, StepResult, _get_carrier(), Step 06 — TMS Shipment creation + POD simulation.  For each posted outbound_deli, run() (+2 more)
+Cohesion: 0.13
+Nodes (12): Chain A — 대시보드 forecast 패널 데이터 (A3 적재율 / B3 입하 / 출하 14d) 테스트., TestInboundPanel, TestLoadRatePanel, TestOutboundPanel, inbound_panel(), _latest_snapshot(), load_rate_panel(), outbound_panel() (+4 more)
 
 ### Community 308 - "Community 308"
 Cohesion: 0.19
@@ -2274,28 +2334,28 @@ Cohesion: 0.23
 Nodes (12): _period_str(), _prior_period(), Step 08 — Month-end Period Close.  Runs only on the 1st of the month. Closes the, run(), SimContext, StepResult, _period_str(), _prior_period() (+4 more)
 
 ### Community 311 - "Community 311"
-Cohesion: 0.12
-Nodes (17): cnt, in_qty, 2026-W12, inbound, by_date, by_week, not_recv_by_partner, summary (+9 more)
+Cohesion: 0.08
+Nodes (25): cbm, cnt, completed, cost, in_qty, pending, revenue, cnt (+17 more)
 
 ### Community 312 - "Community 312"
-Cohesion: 0.14
-Nodes (13): generated_at, kpi, completion_rate, defect_rate, issue_total, picking_total, period, end (+5 more)
+Cohesion: 0.08
+Nodes (24): cbm, cnt, completed, cost, pending, revenue, 2026-05-04, 2026-05-06 (+16 more)
 
 ### Community 313 - "Community 313"
 Cohesion: 0.08
 Nodes (25): W17, 품질이슈, cat_counts, issue_cnt, total_cnt, qc, by_week, defect_by_item (+17 more)
 
 ### Community 314 - "Community 314"
-Cohesion: 0.08
-Nodes (25): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+17 more)
+Cohesion: 0.07
+Nodes (30): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+22 more)
 
 ### Community 315 - "Community 315"
 Cohesion: 0.15
 Nodes (17): _bom_table_id(), BomRow, build_bom_rows(), dedupe_rows(), fetch_orders(), _first(), main(), map_parttype_to_component() (+9 more)
 
 ### Community 316 - "Community 316"
-Cohesion: 0.13
-Nodes (16): build_crosswalk(), collect_keys(), _crosswalk_table_id(), main(), Crosswalk 2-tier 빌드.  Tier A 굿즈: 굿즈명 → TMS Product(견적코드/CBM) name-match (match, order에서 굿즈명·PT#### 수집., extract_pt(), 텍스트 내 첫 PT#### 코드. 없으면 None. (+8 more)
+Cohesion: 0.26
+Nodes (11): build_crosswalk(), collect_keys(), _crosswalk_table_id(), main(), Crosswalk 2-tier 빌드.  Tier A 굿즈: 굿즈명 → TMS Product(견적코드/CBM) name-match (match, order에서 굿즈명·PT#### 수집., _lookup(), Crosswalk 2-tier 빌드 테스트 (순수 변환). (+3 more)
 
 ### Community 317 - "Community 317"
 Cohesion: 0.08
@@ -2322,28 +2382,28 @@ Cohesion: 0.09
 Nodes (22): 신시어리 (이장훈), 2026-03-03, 2026-03-04, 2026-03-05, 2026-03-06, 2026-03-09, 2026-03-10, 2026-03-11 (+14 more)
 
 ### Community 324 - "Community 324"
-Cohesion: 0.08
-Nodes (32): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+24 more)
+Cohesion: 0.11
+Nodes (27): capacity, pct, total_cbm, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), 신시어리 (박종성), 신시어리 (이장훈) (+19 more)
 
 ### Community 325 - "Community 325"
 Cohesion: 0.12
 Nodes (15): 1. Think Before Coding, 2. Simplicity First, 3. Surgical Changes, 4. Goal-Driven Execution, Claude Code 글로벌 지침, code:block1 (1. [Step] → verify: [check]), Coding Principles (Karpathy), 공통 데이터 원칙 (+7 more)
 
 ### Community 326 - "Community 326"
-Cohesion: 0.12
-Nodes (15): generated_at, kpi, completion_rate, defect_rate, issue_total, picking_total, period, end (+7 more)
-
-### Community 327 - "Community 327"
-Cohesion: 0.09
-Nodes (21): generated_at, by_type, total, usage_total, kpi, completion_rate, defect_rate, issue_total (+13 more)
-
-### Community 328 - "Community 328"
 Cohesion: 0.14
 Nodes (13): generated_at, kpi, completion_rate, defect_rate, issue_total, picking_total, period, end (+5 more)
 
+### Community 327 - "Community 327"
+Cohesion: 0.12
+Nodes (15): generated_at, kpi, completion_rate, defect_rate, issue_total, picking_total, period, end (+7 more)
+
+### Community 328 - "Community 328"
+Cohesion: 0.09
+Nodes (21): generated_at, by_type, total, usage_total, kpi, completion_rate, defect_rate, issue_total (+13 more)
+
 ### Community 329 - "Community 329"
-Cohesion: 0.22
-Nodes (9): not_recv_by_partner, \"HEFEI WORLD BAG CO., LTD\, \"XIAMEN HONGJIA INDUSTRY CO.,LTD\, \"ZHEJIANG CHUANCHENG PACKAGING PRODUCTS CO.,LIMITED\, 성우무역, 주식회사 디비더블유디(구.디자인방위대), 주식회사 모아패키지, 주식회사 에벤에셀기업 (+1 more)
+Cohesion: 0.09
+Nodes (21): 1.1 현재 체인의 실체, 1.2 결론 명제, 1.3 노출 요구 스펙 초안 (NEST팀 전달용), 1.4 검증 계획 [확인 필요], 1.5 노출 후 전환 시나리오, 2.1 NEST에 요구할 것, 2.2 NEST에 요구하지 않을 것 (대체 SSOT 확정 유지), 2.3 Fallback — 요구 미수용 시의 "다른 SSOT 방향" (+13 more)
 
 ### Community 330 - "Community 330"
 Cohesion: 0.13
@@ -2354,8 +2414,8 @@ Cohesion: 0.17
 Nodes (11): run_id, totals, changed, new, unchanged, units, 끊김, 부분 (+3 more)
 
 ### Community 333 - "Community 333"
-Cohesion: 0.16
-Nodes (21): Airtable WMS Base (appLui4ZR5HWcQRri), AX/DX Transformation Scope (AX1-4, DX1-4), Douzone Amaranth10 ERP (K-IFRS Accounting), SCM Financial KPI Tree (KPI-1 Labor Ratio, KPI-2 Fees, KPI-3 Productivity), SCM OKR: 7-FTE 1.5x Productivity by 2026, Railway FastAPI PDF Server, Sincerely SCM Dashboard (React/Vercel/Supabase), SCM Team Realignment Strategy Mission (strategy-design-20260515) (+13 more)
+Cohesion: 0.12
+Nodes (28): Airtable Barcode Base (app4LvuNIDiqTmhnv), Airtable WMS Base (appLui4ZR5HWcQRri), AutoResearch Weekly Pipeline, AX/DX Transformation Scope (AX1-4, DX1-4), Douzone Amaranth10 ERP (K-IFRS Accounting), Immutable Ledger Principle (INSERT ONLY), SCM Financial KPI Tree (KPI-1 Labor Ratio, KPI-2 Fees, KPI-3 Productivity), SCM OKR: 7-FTE 1.5x Productivity by 2026 (+20 more)
 
 ### Community 334 - "Community 334"
 Cohesion: 0.12
@@ -2366,20 +2426,20 @@ Cohesion: 0.10
 Nodes (20): 8구간 스토리 컨텍스트, EP71 "Jason Applies for Promotion", EP72 "Day Extends the Contract", EP73 "The Third Summer", EP74 "Language Milestone", EP75 "David Visits", EP76 "The Parents Question", EP77 "The Career Conversation" (+12 more)
 
 ### Community 336 - "Community 336"
-Cohesion: 0.18
-Nodes (15): calc_routing(), _geocode(), get_period_range(), _kakao_headers(), last_week_range(), prev_month_range(), Sincerely SCM 통합 리포트 생성기 ======================================================, 카카오 길찾기 API -> (km, minutes) 튜플 반환. 실패시 (0.0, 0). (+7 more)
+Cohesion: 0.33
+Nodes (7): calc_routing(), _geocode(), _kakao_headers(), 카카오 길찾기 API -> (km, minutes) 튜플 반환. 실패시 (0.0, 0)., 카카오 길찾기 API -> (km, minutes) 튜플 반환. 실패시 (0.0, 0)., 카카오 길찾기 API -> (km, minutes) 튜플 반환. 실패시 (0.0, 0)., _route_km()
 
 ### Community 337 - "Community 337"
-Cohesion: 0.10
-Nodes (33): analyze_inbound(), analyze_picking(), analyze_qc(), _c(), _calc_weekly_km_breakdown(), fetch_additional_usage(), _fetch_all(), fetch_box_cbm_live() (+25 more)
+Cohesion: 0.16
+Nodes (15): _fetch_all(), fetch_box_cbm_live(), fetch_movement(), fetch_picking(), fetch_product_cbm(), fetch_shipments_tms(), _get_with_retry(), view_type: "project" | "a1_to_partner"     project:       이동목적=조립투입 + 자재투입현황=자재 (+7 more)
 
 ### Community 338 - "Community 338"
 Cohesion: 0.10
 Nodes (20): 9구간 스토리 컨텍스트, EP81 "The Promotion", EP82 "Day's Big Project", EP83 "Marcus Gets Engaged", EP84 "Cooking Together", EP85 "The Korean Community", EP86 "Teaching Sana Korean", EP87 "Kenji Moves Away" (+12 more)
 
 ### Community 339 - "Community 339"
-Cohesion: 0.22
-Nodes (10): analyze_tms(), _bigram_dice(), _find_product_cbm(), get_cbm_tms(), match_cbm_from_product(), parse_box_cbm(), Sørensen–Dice bigram overlap. 0.0~1.0., 3단 캐스케이드 — A: substring, B: 역방향 substring(변형 평균), C: bigram fuzzy. (+2 more)
+Cohesion: 0.12
+Nodes (18): analyze_tms(), _bigram_dice(), _find_product_cbm(), get_cbm_tms(), match_cbm_from_product(), parse_box_cbm(), Sørensen–Dice bigram overlap. 0.0~1.0., Sørensen–Dice bigram overlap. 0.0~1.0. (+10 more)
 
 ### Community 340 - "Community 340"
 Cohesion: 0.10
@@ -2387,11 +2447,11 @@ Nodes (19): CBM Backbone P2a Implementation Plan (출고 상시화 + pkg hop), c
 
 ### Community 341 - "Community 341"
 Cohesion: 0.10
-Nodes (21): boxes, 대, 소, 중, 중대, cbm, d, h (+13 more)
+Nodes (21): boxes, 극소, 대, 소, 중대, cbm, d, h (+13 more)
 
 ### Community 342 - "Community 342"
-Cohesion: 0.10
-Nodes (21): cnt, in_qty, 2026-W15, inbound, by_date, by_week, not_recv_by_partner, summary (+13 more)
+Cohesion: 0.15
+Nodes (20): CascadeContext, latest_ledger_by_pid(), run_unit이 소비하는 전부-사전적재 데이터 (순수성 보장)., 전파ID별 최신행 (createdTime max) — 소비자 계약 spec §3.1., 전파ID별 최신행 (createdTime max) — 소비자 계약 spec §3.1., run_unit이 소비하는 전부-사전적재 데이터 (순수성 보장)., test_latest_ledger_by_pid_picks_max_created(), build_jisu_context() (+12 more)
 
 ### Community 343 - "Community 343"
 Cohesion: 0.13
@@ -2410,8 +2470,8 @@ Cohesion: 0.17
 Nodes (8): append_series(), idempotent append — 같은 snapshot_date 항목 교체, 날짜순 정렬., make_snap(), capacity_snapshot 테스트 (P4) — 윈도우/커버리지/트랙분리/append idempotency., Gate: 1주문 트랙간 중복 0 — 트랙 간 합산 필드 부재 + boundary 태깅., TestAppendSeries, TestOccupancy, TestSnapshotTrackSeparation
 
 ### Community 347 - "Community 347"
-Cohesion: 0.21
-Nodes (18): aggregate_shortages(), build_digest(), P6b Slack digest 빌더 — 순수 함수만 (발송 IO는 scripts/backbone/order_cascade.py).  spec §, new/changed 행의 부족자재_요약 → PT별 부족분 합산, 내림차순., new/changed 행 중 입하 후 staging 적재율 100% 초과 예상 (전파ID, after%)., tick digest 텍스트. 신규 주문 0이면 None (발송 안 함 — spec §3.2)., staging_warnings(), P6b Slack digest 빌더 테스트 (순수 — IO 없음).  spec §3.2: 신규 주문 ≥1건인 tick만 digest (주문 수· (+10 more)
+Cohesion: 0.19
+Nodes (22): aggregate_shortages(), build_digest(), P6b Slack digest 빌더 — 순수 함수만 (발송 IO는 scripts/backbone/order_cascade.py).  spec §, new/changed 행의 부족자재_요약 → PT별 부족분 합산, 내림차순., new/changed 행 중 입하 후 staging 적재율 100% 초과 예상 (전파ID, after%)., tick digest 텍스트. 신규 주문 0이면 None (발송 안 함 — spec §3.2).      d1: weekly_outbound_f, staging_warnings(), _d1() (+14 more)
 
 ### Community 348 - "Community 348"
 Cohesion: 0.13
@@ -2442,32 +2502,32 @@ Cohesion: 0.13
 Nodes (14): 1. 개요 (Meeting Overview), [260619] 물류파트 이니셔티브 현황 공유 회의 (PMP Standard), 2. 진척도 & KPI 업데이트 (Monitor/Control), 3. 안건별 논의 및 의사결정 (Key Discussions & Decisions), 4. 이슈 & 리스크 관리 (Risks & Issues), 5-A. 이전 Action Items 진행 현황 (Backward), 5-B. 신규 Action Items (Forward), 5. 실행 계획 (Direct & Manage Project Work) (+6 more)
 
 ### Community 355 - "Community 355"
-Cohesion: 0.16
-Nodes (6): StructuredLogger, AirtableViewRegistry, Verify all registered view IDs still exist in the Airtable metadata., Paginated fetch by view ID with silent-zero-record detection., SilentDropError, ViewNotFoundError
+Cohesion: 0.09
+Nodes (23): settlement_usage, 2026-05, 2026-06, 2026-07, linked_shipments_total, months_2026_05_07, 정산상태_hist, 정산월_raw_hist (+15 more)
 
 ### Community 356 - "Community 356"
-Cohesion: 0.16
-Nodes (5): order/shipment row → (견적코드, 출처). 우선순위: order.굿즈코드 → pkg_schedule 폴백 → None., resolve_goods_code(), TestIsService, TestResolveGoodsCode, TestResolveGoodsCodePkgFallback
+Cohesion: 0.23
+Nodes (4): order/shipment row → (견적코드, 출처). 우선순위: order.굿즈코드 → pkg_schedule 폴백 → None., resolve_goods_code(), TestResolveGoodsCode, TestResolveGoodsCodePkgFallback
 
 ### Community 357 - "Community 357"
 Cohesion: 0.15
 Nodes (16): aggregate_occupied(), fetch(), main(), P3' Task 3 — 보관 occupied CBM 분자 리포트 (report-only, 쓰기 0).  WMS_InventoryLedger.Cu, parse_pt_from_ledger_key(), storage — 보관 트랙 occupied CBM 분자 집계 (P3' T3, pure logic).  occupied = Σ(Current_S, PT0510|BW01-ST-A01|UNRESTRICTED' → 'PT0510'. PT 아닌 키는 None., InventoryLedger 행 → Warehouse별 occupied CBM.      ledger_rows: {pt, stock, wareh (+8 more)
 
 ### Community 358 - "Community 358"
-Cohesion: 0.23
-Nodes (6): add_logen_days(), 출하확정일 + N일 (일요일만 skip). 로젠 SLA 기준 — 월~토 배송., 출하확정일 + N일 (일요일만 skip). 로젠 SLA 기준 — 월~토 배송., Tests for add_logen_days — 로젠 SLA (월~토, 일요일 skip)., Contract C3 — 일요일 skip, 토요일 포함., TestAddLogenDays
+Cohesion: 0.05
+Nodes (57): _apply_withholding(), calc_cho(), calc_lee(), calc_park(), _is_outsource(), _is_pna(), _make_item(), _parse_unload_fee() (+49 more)
 
 ### Community 359 - "Community 359"
-Cohesion: 0.14
-Nodes (6): _ids(), Tests for Multi-PNA consolidation + Tier→Wave routing (Contract C3·C4)., Contract C3 — 같은 (slot, region) 그룹 + PNA cluster 정확 그룹화., Contract C3 — Tier별 후보 wave 정확., TestMultiPNAConsolidation, TestTierRouting
+Cohesion: 0.11
+Nodes (8): _ids(), Tests for Multi-PNA consolidation + Tier→Wave routing (Contract C3·C4)., Contract C3 — 같은 (slot, region) 그룹 + PNA cluster 정확 그룹화., Contract C3 — Tier별 후보 wave 정확., TestMultiPNAConsolidation, TestTierRouting, TestW1SlotFilter, Shipment
 
 ### Community 360 - "Community 360"
 Cohesion: 0.11
 Nodes (19): 고객물품, 생산산출, 생산샘플, 생산투입, 재고생산, 재고이동, by_purpose, cnt (+11 more)
 
 ### Community 361 - "Community 361"
-Cohesion: 0.11
-Nodes (19): cnt, in_qty, 2026-W17, inbound, by_date, by_week, not_recv_by_partner, summary (+11 more)
+Cohesion: 0.09
+Nodes (23): wave_adoption_30d, engine_last_update, wave_hist, wave_locked_n, 발송상태_hist, claim_id, definition, denominator (+15 more)
 
 ### Community 362 - "Community 362"
 Cohesion: 0.11
@@ -2490,8 +2550,8 @@ Cohesion: 0.11
 Nodes (17): 6a. 구간유형 커버리지 (2026-05-04 백필 기준), 6b. 내부 소화율 갭 분석 (CBM 기준), ⚡ Action Items, Iteration 1: 배송 볼륨 패턴, Iteration 2: 배송 효율 (내부 소화율 + 차량이용률), Iteration 3: 배송방식 분포, Iteration 4: OTIF 실측 전환, Iteration 5: 다음 주 배송 볼륨 예측 (+9 more)
 
 ### Community 367 - "Community 367"
-Cohesion: 0.13
-Nodes (20): CascadeContext, latest_ledger_by_pid(), run_unit이 소비하는 전부-사전적재 데이터 (순수성 보장)., 전파ID별 최신행 (createdTime max) — 소비자 계약 spec §3.1., 전파ID별 최신행 (createdTime max) — 소비자 계약 spec §3.1., run_unit이 소비하는 전부-사전적재 데이터 (순수성 보장)., build_context(), build_project_board() (+12 more)
+Cohesion: 0.14
+Nodes (21): build_context(), build_d1_outbound_section(), build_project_board(), fetch(), _get_with_retry(), _iso_date(), main(), P6a — order-trigger 캐스케이드 orchestrator (S0~S7, dry-run 기본).  주문(PNA,굿즈) 1단위 → S1 (+13 more)
 
 ### Community 368 - "Community 368"
 Cohesion: 0.11
@@ -2510,16 +2570,16 @@ Cohesion: 0.19
 Nodes (17): _airtable_headers(), calc_all_carriers(), _fetch_all(), fetch_otif_all(), fetch_partners(), fetch_prev_month_claims(), fetch_prev_month_shipments(), fetch_rate_card() (+9 more)
 
 ### Community 375 - "Community 375"
-Cohesion: 0.16
-Nodes (26): collect_units(), order 미러 → (PNA, 굿즈) 단위 그룹핑. forward-only: createdTime 윈도우 내만., (PNA, 굿즈)의 BOM — PT별 검증완료행 우선, 없으면 order 유도 폴백.      Returns (rows [{소품목_PT, 소요량, (PNA, 굿즈)의 BOM — PT별 검증완료행 우선, 없으면 order 유도 폴백.      Returns (rows [{소품목_PT, 소, order 미러 → (PNA, 굿즈) 단위 그룹핑. forward-only: createdTime 윈도우 내만., select_bom_rows(), _ctx(), _order() (+18 more)
+Cohesion: 0.10
+Nodes (21): cnt, in_qty, 2026-W16, inbound, by_date, by_week, not_recv_by_partner, summary (+13 more)
 
 ### Community 377 - "Community 377"
 Cohesion: 0.11
 Nodes (18): cbm, cnt, completed, cost, pending, revenue, cbm, cnt (+10 more)
 
 ### Community 378 - "Community 378"
-Cohesion: 0.13
-Nodes (18): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-09 (+10 more)
+Cohesion: 0.53
+Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
 
 ### Community 379 - "Community 379"
 Cohesion: 0.11
@@ -2555,11 +2615,11 @@ Nodes (15): _append(), log_anomaly(), log_transition(), Sub-Spec 2 audit logging
 
 ### Community 387 - "Community 387"
 Cohesion: 0.11
-Nodes (13): estimate_shipment_cbm(), Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, C4 time-branching: 실측 / 임가공_후 / 임가공_전 / no_text., C3: estimated_cbm computation via n_boxes ceil × cbm_per_box. (+5 more)
+Nodes (14): estimate_shipment_cbm(), Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, Shipment 1건 → 예상 CBM. Returns dict with estimated_cbm·confidence·mode·matched·un, C4 time-branching: 실측 / 임가공_후 / 임가공_전 / no_text. (+6 more)
 
 ### Community 388 - "Community 388"
-Cohesion: 0.11
-Nodes (15): business_days_forward(), is_business_day(), Scheduling utilities for Sub-Spec 3 (quiet hours + business-day rolling window)., 공휴일 데이터 없는 연도 계산 시 1회 경고 — 휴일이 영업일로 오계산되는 silent bug 방지., start부터 영업일 n개 list (start 포함하지 않음). C8 7일 rolling 계산용., today 기준 영업일 n일 후 (마지막 영업일)., start부터 영업일 n개 list (start 포함하지 않음). C8 7일 rolling 계산용., today 기준 영업일 n일 후 (마지막 영업일). (+7 more)
+Cohesion: 0.10
+Nodes (23): add_logen_days(), business_days_forward(), is_business_day(), Scheduling utilities for Sub-Spec 3 (quiet hours + business-day rolling window)., 공휴일 데이터 없는 연도 계산 시 1회 경고 — 휴일이 영업일로 오계산되는 silent bug 방지., start부터 영업일 n개 list (start 포함하지 않음). C8 7일 rolling 계산용., today 기준 영업일 n일 후 (마지막 영업일)., 출하확정일 + N일 (일요일만 skip). 로젠 SLA 기준 — 월~토 배송. (+15 more)
 
 ### Community 389 - "Community 389"
 Cohesion: 0.12
@@ -2586,8 +2646,8 @@ Cohesion: 0.12
 Nodes (17): box_parse, manual, product_match, unmatched, avg_leadtime_days, missing_box_qty, missing_rate, same_day_create (+9 more)
 
 ### Community 395 - "Community 395"
-Cohesion: 0.11
-Nodes (19): cbm, cnt, completed, cost, in_qty, pending, revenue, cnt (+11 more)
+Cohesion: 0.08
+Nodes (16): AirtableClient, AuditTableMissingError, _RateLimiter, 10건씩 batch POST. records=[{'fields': {...}}, ...]., In-process 3 req/s sliding-window limiter (thread-safe).      Cross-process fi, SchemaError, WriteForbiddenError, AuthError (+8 more)
 
 ### Community 396 - "Community 396"
 Cohesion: 0.13
@@ -2674,8 +2734,8 @@ Cohesion: 0.12
 Nodes (16): 고객물품, 생산산출, 생산샘플, 재고생산, 재고이동, by_purpose, cnt, qty (+8 more)
 
 ### Community 443 - "Community 443"
-Cohesion: 0.12
-Nodes (15): generated_at, kpi, completion_rate, defect_rate, issue_total, picking_total, period, end (+7 more)
+Cohesion: 0.09
+Nodes (22): autonomy_level, CBM, contract_type, daily_fixed_cost, lock_in_reason, max_daily_orders, OTIF목표, SLA코드 (+14 more)
 
 ### Community 444 - "Community 444"
 Cohesion: 0.12
@@ -2686,8 +2746,8 @@ Cohesion: 0.12
 Nodes (16): 고객물품, 생산산출, 생산샘플, 재고생산, 재고이동, by_purpose, cnt, qty (+8 more)
 
 ### Community 446 - "Community 446"
-Cohesion: 0.12
-Nodes (15): generated_at, kpi, completion_rate, defect_rate, issue_total, picking_total, period, end (+7 more)
+Cohesion: 0.08
+Nodes (23): generated_at, by_type, total, usage_total, kpi, completion_rate, defect_rate, issue_total (+15 more)
 
 ### Community 447 - "Community 447"
 Cohesion: 0.12
@@ -2718,8 +2778,8 @@ Cohesion: 0.13
 Nodes (14): generated_at, kpi, accuracy, completion_rate, defect_rate, neg_avail_cnt, material, period (+6 more)
 
 ### Community 456 - "Community 456"
-Cohesion: 0.53
-Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
+Cohesion: 0.08
+Nodes (16): assert_domain(), assert_state_path(), LocalProdWriteForbidden, Refuse writes that land outside the gitignored state/ tree.      Also blocks any, state_dir(), BatchedRunner, IdempotentRunner, Checkpoint at batch granularity using a hash of batch contents. (+8 more)
 
 ### Community 459 - "Community 459"
 Cohesion: 0.15
@@ -2734,12 +2794,12 @@ Cohesion: 0.15
 Nodes (15): counts, pct, total, 극소, 대, 중, 중대, 특대 (+7 more)
 
 ### Community 462 - "Community 462"
-Cohesion: 0.13
-Nodes (15): 기타, 이동수량부족, 임가공미숙, 재제작추가투입, 지시서누락, 품목추가, 품질불량, by_type (+7 more)
+Cohesion: 0.18
+Nodes (11): 기타, 이동수량부족, 임가공미숙, 재제작추가투입, 지시서누락, 품목추가, 품질불량, by_type (+3 more)
 
 ### Community 463 - "Community 463"
-Cohesion: 0.13
-Nodes (19): _actual_weekly_shipments(), analyze_iter7_forecast_mape(), analyze_iter7_internal_rate_3way_roi(), analyze_iter7_lane_cbm(), analyze_iter7_v1_v2_shadow(), main(), _parse_forecast_total(), _pearson_r() (+11 more)
+Cohesion: 0.11
+Nodes (18): 10. 의사결정 포인트 & 다음 단계, 1. 결론 먼저 — 무엇을 하고 싶은가, 2. 배경 — 왜 지금인가, 3. 최종 비전 — cascade 예시로 (완성되면 이렇게 된다), 4. 어디서부터? — 기초공사 5단계 (SSOT-first) ★핵심, 5. SSOT 경계 & 소유 — 계층형 소유 + 계약 심(seam), 5. 이해관계자 & RACI ★오늘 확정, 6. 로드맵 순서 ★오늘 확정 (+10 more)
 
 ### Community 464 - "Community 464"
 Cohesion: 0.15
@@ -2778,12 +2838,12 @@ Cohesion: 0.14
 Nodes (14): box_size_str, cbm_match_median, cbm_per_box, cbm_validation, inferred_box_type, inferred_qty_per_box, matched_names, n_clean_box_evidence (+6 more)
 
 ### Community 474 - "Community 474"
-Cohesion: 0.10
-Nodes (32): analyze_iter1_volume(), analyze_iter3_cost(), analyze_iter4_otif(), analyze_iter5_forecast(), analyze_iter6_post_backfill(), _compute_week_label(), _delta(), get_all_records() (+24 more)
+Cohesion: 0.14
+Nodes (18): as_number(), fetch(), _get(), main(), metric(), nonblank(), norm_rollup(), preflight() (+10 more)
 
 ### Community 475 - "Community 475"
-Cohesion: 0.29
-Nodes (7): _build_report(), analyze_iter2_dispatch_efficiency(), analyze_iter6_absorption_gap(), classify_partner(), 배송파트너 이름 → 'internal' / 'gogox' / 'external, Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일), Iteration 6b: 고고엑스 내부 흡수 가능성 갭 분석 (CBM 기준)
+Cohesion: 0.11
+Nodes (25): analyze_iter2_dispatch_efficiency(), Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일), Iteration 2: 배송 효율 (내부 소화율 + 기사별 운행일), utils.vehicle_util 순수 로직 테스트 (P2 A3 — 차량 적재율 SSOT)., test_aggregate_capacity_takes_max_and_ignores_zero_none(), test_bare_driver_extracts_paren_token(), test_capacities_from_shipments_empty_falls_back(), test_capacities_from_shipments_extracts_lookup_records() (+17 more)
 
 ### Community 476 - "Community 476"
 Cohesion: 0.14
@@ -2842,8 +2902,8 @@ Cohesion: 0.14
 Nodes (14): counts, pct, total, 극소, 대, 중, 중대, 특대 (+6 more)
 
 ### Community 490 - "Community 490"
-Cohesion: 0.11
-Nodes (18): 기타, 외주임가공용샘플, 이동누락, 이동수량부족, 임가공미숙, 재제작, 재제작추가투입, 지시서누락 (+10 more)
+Cohesion: 0.14
+Nodes (14): 기타, 외주임가공용샘플, 이동누락, 이동수량부족, 임가공미숙, 재제작, 재제작추가투입, 지시서누락 (+6 more)
 
 ### Community 491 - "Community 491"
 Cohesion: 0.14
@@ -2874,16 +2934,16 @@ Cohesion: 0.16
 Nodes (14): 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), driver_work_days, driver_work_days, count, dates, labels (+6 more)
 
 ### Community 498 - "Community 498"
-Cohesion: 0.12
-Nodes (17): analyze_cbm_balance(), analyze_cbm_dts_corr(), analyze_cbm_weekly(), analyze_dock_to_stock(), analyze_inventory_accuracy(), analyze_qc_defect(), analyze_qc_pareto(), _compute_week_label() (+9 more)
+Cohesion: 0.11
+Nodes (18): analyze_cbm_dts_corr(), analyze_cbm_weekly(), analyze_inventory_accuracy(), analyze_qc_defect(), analyze_qc_pareto(), _compute_week_label(), main(), 이동목적(생산산출/재고생산) × 이슈카테고리 multiSelect 기반 QC proxy (+10 more)
 
 ### Community 499 - "Community 499"
 Cohesion: 0.16
 Nodes (14): 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), driver_work_days, driver_work_days, count, dates, labels (+6 more)
 
 ### Community 500 - "Community 500"
-Cohesion: 0.16
-Nodes (14): 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), driver_work_days, driver_work_days, count, dates, labels (+6 more)
+Cohesion: 0.11
+Nodes (18): claim, dispatch, event_30d, event_latest, otif, partner, product, rate (+10 more)
 
 ### Community 501 - "Community 501"
 Cohesion: 0.16
@@ -2946,28 +3006,28 @@ Cohesion: 0.17
 Nodes (11): run_id, totals, changed, new, unchanged, units, 끊김, 부분 (+3 more)
 
 ### Community 516 - "Community 516"
-Cohesion: 0.25
-Nodes (19): summary, summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, completion_rate (+11 more)
+Cohesion: 0.46
+Nodes (13): summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, cost, pending (+5 more)
 
 ### Community 517 - "Community 517"
 Cohesion: 0.15
 Nodes (13): 생산산출, 생산샘플, 재고생산, 재고이동, by_purpose, cnt, qty, cnt (+5 more)
 
 ### Community 518 - "Community 518"
-Cohesion: 0.25
-Nodes (19): summary, summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, completion_rate (+11 more)
-
-### Community 519 - "Community 519"
 Cohesion: 0.46
 Nodes (13): summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, cost, pending (+5 more)
+
+### Community 519 - "Community 519"
+Cohesion: 0.25
+Nodes (19): summary, summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, completion_rate (+11 more)
 
 ### Community 520 - "Community 520"
 Cohesion: 0.46
 Nodes (13): summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, cost, pending (+5 more)
 
 ### Community 522 - "Community 522"
-Cohesion: 0.46
-Nodes (13): summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, cost, pending (+5 more)
+Cohesion: 0.25
+Nodes (19): summary, summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, completion_rate (+11 more)
 
 ### Community 523 - "Community 523"
 Cohesion: 0.15
@@ -2998,8 +3058,8 @@ Cohesion: 0.46
 Nodes (13): summary, summary, summary, cbm_per_shipment, cbm_unit_cost, completed, cost, pending (+5 more)
 
 ### Community 531 - "Community 531"
-Cohesion: 0.14
-Nodes (17): fetch_park_records(), main(), parse_unload_fee(), patch_record(), 박종성 상하차비용 + Total_CBM 소급 백필.  대상: 박종성 담당 전체 Shipment (2024-01~현재) 중 상하차비용=0 또는, run(), _str(), main() (+9 more)
+Cohesion: 0.16
+Nodes (15): fetch_park_records(), main(), parse_unload_fee(), patch_record(), 박종성 상하차비용 + Total_CBM 소급 백필.  대상: 박종성 담당 전체 Shipment (2024-01~현재) 중 상하차비용=0 또는, run(), _str(), main() (+7 more)
 
 ### Community 532 - "Community 532"
 Cohesion: 0.60
@@ -3014,8 +3074,8 @@ Cohesion: 0.67
 Nodes (3): _detect_carrier(), 택배추적로그 주간 백필 - 조건: 출하확정일이 대상 주간이고, 운송장번호 있으나 택배추적로그 없음 - 동작: 택배사/운송장번호 기반 초기 추, run()
 
 ### Community 535 - "Community 535"
-Cohesion: 0.23
-Nodes (8): extract_pts(), 텍스트 내 모든 PT#### 코드 (중복 제거, 등장 순서 유지)., fetch(), main(), post_batch(), P2b Task 2b.1 — MES↔PT/굿즈코드 크로스워크.  MES read-only: [sync]파츠별_자재이동.파츠코드(PT hop) +, 10건 이하 batch INSERT. Returns (ok, err)., TestExtractPts
+Cohesion: 0.03
+Nodes (119): fld1jlMmF2KCGgg8w, fld2VyRh7aYABFfx3, fld35PJQc26gy9VES, fld49nE4wd5PpWUl8, fld4CKw36qFtB2IWl, fld67JyUmbGD8Jaog, fld6YfTxCYNlod7sC, fld6Z0GXkrmxBoVBv (+111 more)
 
 ### Community 536 - "Community 536"
 Cohesion: 0.17
@@ -3074,8 +3134,8 @@ Cohesion: 0.17
 Nodes (11): run_id, totals, changed, new, unchanged, units, 끊김, 부분 (+3 more)
 
 ### Community 555 - "Community 555"
-Cohesion: 0.13
-Nodes (10): estimate_shipment_cbm_deterministic(), 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트(9, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 비물리 서비스라인(SSSV 신시어리서비스·CSPR 고객입고물품)은 matched/unmatched     confidence 계산에서 제외 —, TestDeterministicKitFallback (+2 more)
+Cohesion: 0.11
+Nodes (12): estimate_shipment_cbm_deterministic(), 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트(9, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트, 결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.      다차 출하 프로젝트 (+4 more)
 
 ### Community 556 - "Community 556"
 Cohesion: 0.17
@@ -3134,8 +3194,8 @@ Cohesion: 0.16
 Nodes (5): #3 (2026-06-22) — PATCH 재시도/무크래시 + Slack ok 확인 + snapshot dry-run 안전., _Resp, test_patch_airtable_survives_batch_failure(), test_slack_detects_not_ok(), test_slack_ok_true()
 
 ### Community 570 - "Community 570"
-Cohesion: 0.22
-Nodes (9): 기타, 외주임가공용샘플, 이동수량부족, 재제작, 품질불량, by_type, total, usage_total (+1 more)
+Cohesion: 0.15
+Nodes (13): 기타, 외주임가공용샘플, 이동수량부족, 재제작, 품질불량, by_type, total, usage_total (+5 more)
 
 ### Community 571 - "Community 571"
 Cohesion: 0.22
@@ -3150,8 +3210,8 @@ Cohesion: 0.18
 Nodes (10): 🔴 1순위 — sync_parts 치수 입력 (입하 CBM, 갭의 77%), 🟡 2순위 — 신규 SKU 박스데이터 (출하 CBM, 진짜 신규 4~5종만), 🟡 3순위 — ★ 재제작/추가제작 주문 "주문수량=0" 결정 (신규 발견·중요), 🟡 4순위 — BOM 검증 신뢰도 (V3, 6.9% 정체), ⚪ 5순위 — 창고 보관 Max_CBM 실측 (V4), 사용자 입력·확인 체크리스트 — CBM/BOM 100% 완결 (다음 세션 진행용), 📋 사용자 작업 — 우선순위 순, ✅ 이미 끝낸 것 (코드 — 내가 처리) (+2 more)
 
 ### Community 574 - "Community 574"
-Cohesion: 0.31
-Nodes (13): fuzzy_write_decision(), per-shipment 퍼지 추정을 estimated_cbm 으로 쓸지 결정. (est, conf) 또는 None.      fz: esti, per-shipment 퍼지 추정을 estimated_cbm 으로 쓸지 결정. (est, conf) 또는 None.      완전매칭(fuz, _fz(), A-2 (2026-06-22) — per-shipment 퍼지 추정 PATCH 결정.  결정론 실패(다차출하·no_order·unmatched), test_below_min_conf_not_written(), test_full_match_is_auto_eligible(), test_full_match_is_capped_below_floor() (+5 more)
+Cohesion: 0.28
+Nodes (14): fuzzy_write_decision(), per-shipment 퍼지 추정을 estimated_cbm 으로 쓸지 결정. (est, conf) 또는 None.      fz: esti, per-shipment 퍼지 추정을 estimated_cbm 으로 쓸지 결정. (est, conf) 또는 None.      완전매칭(fuz, per-shipment 퍼지 추정을 estimated_cbm 으로 쓸지 결정. (est, conf) 또는 None.      완전매칭(fuz, _fz(), A-2 (2026-06-22) — per-shipment 퍼지 추정 PATCH 결정.  결정론 실패(다차출하·no_order·unmatched), test_below_min_conf_not_written(), test_full_match_is_auto_eligible() (+6 more)
 
 ### Community 575 - "Community 575"
 Cohesion: 0.17
@@ -3159,7 +3219,7 @@ Nodes (11): run_id, totals, changed, new, unchanged, units, 끊김, 부분 (+3 m
 
 ### Community 576 - "Community 576"
 Cohesion: 0.10
-Nodes (21): cbm, cnt, completed, cost, in_qty, pending, revenue, cnt (+13 more)
+Nodes (20): BOM, Box, InventoryLedger, ItemMaster, KeyCrosswalk, Location, material, movement (+12 more)
 
 ### Community 608 - "Community 608"
 Cohesion: 0.18
@@ -3182,8 +3242,8 @@ Cohesion: 0.15
 Nodes (13): status, 끊김, 부분, 완결, build_pt_report(), _min_p50(), _rate_p50(), (qty, min) 쌍 목록 → 분/100개 p50. 쌍이 없으면 None. (+5 more)
 
 ### Community 613 - "Community 613"
-Cohesion: 0.10
-Nodes (20): cbm, cnt, completed, cost, in_qty, pending, revenue, cnt (+12 more)
+Cohesion: 0.09
+Nodes (21): BOM, Box, InventoryLedger, ItemMaster, KeyCrosswalk, Location, material, movement (+13 more)
 
 ### Community 614 - "Community 614"
 Cohesion: 0.20
@@ -3214,8 +3274,8 @@ Cohesion: 0.20
 Nodes (10): achievable, projected, target, achievable, projected, target, kpi_assessment, completion (+2 more)
 
 ### Community 621 - "Community 621"
-Cohesion: 0.23
-Nodes (8): is_quiet_hour(), 22:00 ~ 06:59 KST → True (Slack 발송 금지)., 22:00 ~ 06:59 KST → True (Slack 발송 금지)., Tests for Slack 다이제스트 quiet hours (Contract C6)., Contract C6 — 22:00 ~ 07:00 KST 발송 금지., test_business_hours_pass(), test_quiet_hours_block(), TestQuietHours
+Cohesion: 0.18
+Nodes (10): format_alert(), main(), _match_driver(), Chain C — 배차 재분배 overbook Alert (조희선 과적 → 박종성/이장훈 무비용 흡수).  2026-06-24 진단(`배차적재율, compute_overbook 결과 → Slack/CLI 텍스트 라인. 아티팩트는 별도 분리 표기., live Shipment records → {ship_date: [Shipment]} (운영자 실배정 assigned_partner 보존)., 배송파트너 표기(어떤 형식이든) → 내부 3기사명. 외부 퀵·미상은 None(집계 제외)., send_slack() (+2 more)
 
 ### Community 622 - "Community 622"
 Cohesion: 0.20
@@ -3250,12 +3310,12 @@ Cohesion: 0.25
 Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-23
 
 ### Community 630 - "Community 630"
-Cohesion: 0.22
-Nodes (9): fldFweNu3dASPv93N, fldW0FL9FEwORntbi, fldXkYWphutV4Epc7, name, name, type, name, type (+1 more)
+Cohesion: 0.17
+Nodes (12): fld3LvWGzX35b7OfK, fldFweNu3dASPv93N, fldPSt3IcKxnk2HSL, fldw8Hmw4ihD8nfM9, name, type, name, name (+4 more)
 
 ### Community 631 - "Community 631"
-Cohesion: 0.19
-Nodes (8): build_kit_cbm_lookup(), CBM 추정 엔진 (Sub-Spec 2).  Shipment 출하 품목 텍스트 → 라인별 (품목, 본수량+여분, 여분) 추출 → Produc, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields:, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, TestBuildKitCbmLookup
+Cohesion: 0.16
+Nodes (10): build_kit_cbm_lookup(), CBM 추정 엔진 (Sub-Spec 2).  Shipment 출하 품목 텍스트 → 라인별 (품목, 본수량+여분, 여분) 추출 → Produc, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields:, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields, {(PNA, 견적코드): (kit_cbm_per_unit, confidence)} — kit-CBM 폴백 룩업.      bom_fields (+2 more)
 
 ### Community 632 - "Community 632"
 Cohesion: 0.22
@@ -3350,16 +3410,16 @@ Cohesion: 0.39
 Nodes (8): AX-based Productivity 50% Improvement Goal, Sprint 3 AX/DX Scope Matrix (MECE), Sincerely M/H Design Brief (Claude AI Artifact Brief), Sincerely M/H Integrated Brief (AX Strategy Alignment), pkg_resource Table (Resource Pool M/H), pkg_schedule Table (SERPA Base Production M/H), pkg_task Table (Task-level M/H), SERPA Airtable Base (appkRWtF2j99XgBTq)
 
 ### Community 655 - "Community 655"
-Cohesion: 0.36
-Nodes (4): goods_base(), 재제작/추가제작 접미 + [n] 인덱스 제거한 베이스 굿즈명 (V3.1 BOM 매칭용).      normalize_goods와 달리 (.., V3.1 — 재제작/추가제작 접미·[n] 제거 베이스 굿즈명 (BOM 매칭용)., TestGoodsBase
+Cohesion: 0.13
+Nodes (16): goods_base(), 재제작/추가제작 접미 + [n] 인덱스 제거한 베이스 굿즈명 (V3.1 BOM 매칭용).      normalize_goods와 달리 (.., analyze(), at_fetch(), _at_get(), flatten_goods(), main(), NestClient (+8 more)
 
 ### Community 656 - "Community 656"
 Cohesion: 0.39
 Nodes (7): build_mov_spec_by_pt(), fetch(), main(), patch_batch(), P3' Task 2 — WMS_ItemMaster 파츠(PT) CBM_개당_m3 백필.  part_cbm tier 사다리(치수파싱 0.55 >, 10건 이하 batch PATCH. Returns (ok, err).      typecast: 출처 singleSelect 신규 choice(, movement → PT별 최신(실제입하일) 제품규격.
 
 ### Community 657 - "Community 657"
-Cohesion: 0.13
-Nodes (18): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-05-06 (+10 more)
+Cohesion: 0.12
+Nodes (17): claim_id, definition, denominator, numerator, raw, status, value, window (+9 more)
 
 ### Community 658 - "Community 658"
 Cohesion: 0.25
@@ -3590,8 +3650,8 @@ Cohesion: 0.25
 Nodes (8): 후드스트링, cbm_per_box, cbm_validation, inferred_box_type, inferred_qty_per_box, n_shipments, n_single_box_type, qty_per_box_observations
 
 ### Community 715 - "Community 715"
-Cohesion: 0.17
-Nodes (12): not_recv_by_partner, 강천FNT, 개미기획, 고객물품(직접입고), 서울디지털인쇄협동조합, (주)상일씨앤씨, (주)홍기씨앤디, 주식회사 꾸띠잔홀딩스 (+4 more)
+Cohesion: 0.09
+Nodes (23): cbm, cnt, completed, cost, in_qty, pending, revenue, cnt (+15 more)
 
 ### Community 716 - "Community 716"
 Cohesion: 0.39
@@ -3678,12 +3738,12 @@ Cohesion: 0.25
 Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-30
 
 ### Community 737 - "Community 737"
-Cohesion: 0.17
-Nodes (12): cbm, cnt, completed, cost, in_qty, pending, revenue, by_date (+4 more)
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-31
 
 ### Community 738 - "Community 738"
-Cohesion: 0.25
-Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-01
+Cohesion: 0.14
+Nodes (13): 1. 자동화 ① "테스트 results" 스크립트를 아래로 교체, 2. 자동화 ②에서 "Run a script" 스텝 삭제, Barcode 베이스 — 라벨링작업 → 문서출력 자동 복사 (2026-07-15), code:js (let pickingListTable = base.getTable("피킹리스트");), code:js (const { triggerRecordId, newDocRecordId } = input.config();), code:js (let pickingListTable = base.getTable("피킹리스트");), 검증, 대상 베이스 (+5 more)
 
 ### Community 739 - "Community 739"
 Cohesion: 0.25
@@ -3822,8 +3882,8 @@ Cohesion: 0.17
 Nodes (11): 4-1. 표준시간 정확도, 4-2. 실측 데이터 연계, 4-3. 미설계 공정, Appendix A — 신시어리 적용 상수 블록, Appendix B — 글로벌 벤치마크 수치, Appendix C — 참조, Chapter 4 — GAP: 글로벌 기준 대비 개선 포인트, code:python (PFD_ALLOWANCE = 1.15              # 15% Personal+Fatigue+Del) (+3 more)
 
 ### Community 773 - "Community 773"
-Cohesion: 0.25
-Nodes (10): get_all_records(), wms_weekly_runner.py ───────────────────────────────────────────────────────────, WMS_GoodsReceipt / WMS_InventoryLedger / WMS_Wave / WMS_PickingTask Pull, step_pull_data(), step_pull_sap_data(), get_all_records(), wms_weekly_runner.py ───────────────────────────────────────────────────────────, WMS_GoodsReceipt / WMS_InventoryLedger / WMS_Wave / WMS_PickingTask Pull (+2 more)
+Cohesion: 0.40
+Nodes (5): get_all_records(), WMS_GoodsReceipt / WMS_InventoryLedger / WMS_Wave / WMS_PickingTask Pull, WMS_GoodsReceipt / WMS_InventoryLedger / WMS_Wave / WMS_PickingTask Pull, step_pull_data(), step_pull_sap_data()
 
 ### Community 774 - "Community 774"
 Cohesion: 0.43
@@ -3922,16 +3982,16 @@ Cohesion: 0.22
 Nodes (8): code:block1 (입하완료처리시간 ─┬─→ 시안검수완료시간  (검수 interval)), code:block2 (RECEIVING_MIN_PER_CBM   = 4.0  min/CBM), PT코드별 cycle-time 집계 (검수·입고), WMS M/H 이중 방식 비교 — 2026 W01–W21, 공정 흐름, 상수 (이번 버전), 운영 방식 요약, 주차별 집계 (검수·입고: cycle-time 실측 | 입하: CBM-driven)
 
 ### Community 799 - "Community 799"
-Cohesion: 0.13
-Nodes (17): cbm, cnt, completed, cost, in_qty, pending, revenue, counts (+9 more)
+Cohesion: 0.18
+Nodes (15): counts, pct, total, box_parse, manual, product_match, unmatched, box_type (+7 more)
 
 ### Community 800 - "Community 800"
-Cohesion: 0.25
-Nodes (8): mh_for_inbound(), 입하 1건(입하+검수+입고) 표준 M/H — mh_backfill_to_ibsa v2026-05-iter22 동일식., 부족분 PT별 입하 CBM·M/H. CBM 미산출 PT는 uncovered로 마킹 후 계속., 입하 1건(입하+검수+입고) 표준 M/H — mh_backfill_to_ibsa v2026-05-iter22 동일식., 부족분 PT별 입하 CBM·M/H. CBM 미산출 PT는 uncovered로 마킹 후 계속., stage_inbound(), test_mh_for_inbound_pinned_constants(), test_stage_inbound_cbm_mh_and_uncovered()
+Cohesion: 0.12
+Nodes (15): 📦 EXPRESSION BANK — EP01, FreshLine Stories — EP01 "Welcome Home", Scene 1 — The Descent, Scene 1 — 착륙 직전, Scene 2 — Baggage Claim, Scene 2 — 수하물 찾기, Scene 3 — The Empty Apartment, Scene 3 — 빈 아파트 (+7 more)
 
 ### Community 801 - "Community 801"
-Cohesion: 0.27
-Nodes (10): count_active_shipments(), PNA별 *활성*(미종료) shipment 수.      종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_s, PNA별 *활성*(미종료) shipment 수.      종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_s, PNA별 *활성*(미종료) shipment 수.      종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_s, 레버1 (2026-06-22) — 활성 출하만 카운트해 가짜 partial_skip(다차출하) 제거.  과거 '출하 완료'가 신규 1건 프로젝트, _s(), test_blank_project_skipped(), test_genuine_multi_active_still_counted() (+2 more)
+Cohesion: 0.24
+Nodes (11): count_active_shipments(), PNA별 *활성*(미종료) shipment 수.      종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_s, PNA별 *활성*(미종료) shipment 수.      종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_s, PNA별 *활성*(미종료) shipment 수.      종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_s, PNA별 *활성*(미종료) shipment 수.      종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_s, 레버1 (2026-06-22) — 활성 출하만 카운트해 가짜 partial_skip(다차출하) 제거.  과거 '출하 완료'가 신규 1건 프로젝트, _s(), test_blank_project_skipped() (+3 more)
 
 ### Community 802 - "Community 802"
 Cohesion: 0.29
@@ -3956,6 +4016,10 @@ Nodes (7): 6-1. 외주임가공 준비 M/H (다영기획 Prep), 6-2. 상차 M/H 
 ### Community 807 - "Community 807"
 Cohesion: 0.29
 Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-04-10
+
+### Community 808 - "Community 808"
+Cohesion: 0.12
+Nodes (17): cnt, in_qty, 2026-W14, inbound, by_date, by_week, not_recv_by_partner, summary (+9 more)
 
 ### Community 809 - "Community 809"
 Cohesion: 0.29
@@ -3986,44 +4050,44 @@ Cohesion: 0.33
 Nodes (5): business_partner, gl_account, material, plant, storage_location
 
 ### Community 817 - "Community 817"
-Cohesion: 0.19
-Nodes (3): BatchedRunner, IdempotentRunner, Checkpoint at batch granularity using a hash of batch contents.
+Cohesion: 0.12
+Nodes (15): EXPRESSION BANK — EP04, FreshLine Stories — EP04 "Grocery Run", Scene 1: The List, Scene 1: The List, Scene 2: Linh와의 우연한 만남, Scene 2: Running Into Linh, Scene 3: What's Missing, Scene 3: 없는 것 (+7 more)
 
 ### Community 818 - "Community 818"
-Cohesion: 0.21
-Nodes (8): normalize_goods(), 매칭률 향상용 정규화: [n] 인덱스·(...) 괄호·_접미 제거., fetch(), main(), P3' Task 6 — MES 납기일 → 입하 CBM forecast (read-only, 쓰기 0).  MES ver.2.0(primary), TestNormalizeGoods, load_name2code(), sync_item 굿즈명(normalize)→굿즈코드. 정산 상하차비 CBM을 캐스케이드와 동일하게     코드+alias로 해소하기 위한 브
+Cohesion: 0.13
+Nodes (15): product_cbm_master, claim_id, definition, denominator, numerator, raw, status, value (+7 more)
 
 ### Community 819 - "Community 819"
-Cohesion: 0.53
-Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
+Cohesion: 0.13
+Nodes (14): 📦 EXPRESSION BANK, FreshLine Stories — EP06 "At the Mall" (말하기 연습), Scene 1 — 준비, Scene 1 — 준비, Scene 2 — 갤러리아 쇼핑몰, Scene 2 — 갤러리아 쇼핑몰, Scene 3 — 아기 옷 가게, Scene 3 — 아기 옷 가게 (+6 more)
 
 ### Community 820 - "Community 820"
-Cohesion: 0.53
-Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
+Cohesion: 0.27
+Nodes (10): box_parse, manual, product_match, unmatched, cbm_sources, by_date, cbm_sources, confidence (+2 more)
 
 ### Community 821 - "Community 821"
 Cohesion: 0.53
 Nodes (9): _plans(), 운영자 소유 필드 보호 회귀 테스트 (2026-06-22).  #4: wave_locked 는 운영자 입력 — 추천기 PATCH 에 절대 포함, _run(), _ship(), test_recommendation_fields_always_present(), test_slot_not_overwritten_when_operator_set(), test_slot_not_written_when_locked(), test_slot_written_when_current_empty_and_unlocked() (+1 more)
 
 ### Community 822 - "Community 822"
-Cohesion: 0.13
-Nodes (18): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-28 (+10 more)
+Cohesion: 0.19
+Nodes (3): BatchedRunner, IdempotentRunner, Checkpoint at batch granularity using a hash of batch contents.
 
 ### Community 823 - "Community 823"
 Cohesion: 0.17
 Nodes (11): run_id, totals, changed, new, unchanged, units, 끊김, 부분 (+3 more)
 
 ### Community 824 - "Community 824"
-Cohesion: 0.53
-Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
+Cohesion: 0.10
+Nodes (20): cbm, cnt, completed, cost, in_qty, pending, revenue, cbm (+12 more)
 
 ### Community 825 - "Community 825"
 Cohesion: 0.33
 Nodes (6): 7-3. 장기 개선 (3~12개월), code:block14 (외주임가공 (다영기획) 단가 vs), 사이클 카운팅 M/H 추가, 생산성 KPI 대시보드 연동, 서비스 단가 공수 원가화, 외주 vs 내재화 의사결정 근거
 
 ### Community 826 - "Community 826"
-Cohesion: 0.36
-Nodes (3): build_mes_crosswalk_rows(), MES 키 → WMS_KeyCrosswalk 신규행 + 매칭 stats. INSERT-only(기존 표준키 스킵).      mes_good, TestBuildMesCrosswalkRows
+Cohesion: 0.19
+Nodes (18): _arg(), build(), C(), half(), live(), main(), of(), _open() (+10 more)
 
 ### Community 827 - "Community 827"
 Cohesion: 0.33
@@ -4041,6 +4105,10 @@ Nodes (6): code:bash (cd "c:/Users/yjisu/Desktop/SCM_WORK" && python -c "), code
 Cohesion: 0.33
 Nodes (6): code:python (import json), code:python (from harness._core.airtable import AirtableClient), code:python (def create_records(self, records: list[dict]) -> list[dict]:), code:bash (AIRTABLE_WMS_PAT=$AIRTABLE_WMS_PAT python -c "), code:bash (git add harness/backbone/bom_bootstrap.py harness/_core/airt), Task 5: bom_bootstrap I/O — order 읽기 → WMS_BOM 쓰기
 
+### Community 831 - "Community 831"
+Cohesion: 0.30
+Nodes (5): compute_overbook(), dispatch-day 별 조희선 과적 감지 → flagged-date dict 리스트.      조희선 실적재율 > threshold 인 날만, Chain C — 배차 재분배 overbook alert tests.  조희선(W2) 과적 감지 → 박종성(W3)/이장훈(W1) 동일일 흡수 여, _ship(), TestComputeOverbook
+
 ### Community 832 - "Community 832"
 Cohesion: 0.33
 Nodes (6): OTIF On_Time 비율 → 0~100. 레코드 없으면 None., score_reliability(), 레코드 없음 → None (otif_estimator 가정값 사용 신호)., test_score_reliability_half(), test_score_reliability_perfect(), test_score_reliability_zero_records()
@@ -4054,8 +4122,8 @@ Cohesion: 0.67
 Nodes (5): ContractResult, main(), Sub-Spec 3 Validation Contract C1~C8 self-check.  Runs all verifiable contracts, run_pytest(), run_script()
 
 ### Community 835 - "Community 835"
-Cohesion: 0.18
-Nodes (11): 가동률(자체기사) 또는 처리량 추세(외주) → 0~100., score_capacity(), 자체 기사: max_daily=3, 20영업일, 실제=60 → 100점., 자체 기사: max_daily=3, 20영업일, 실제=30 → 50점., 외주: 전월 20건, 이번달 30건 → min(100, 30/20*50) = 75., 외주: 전월 10건, 이번달 100건 → min(100, 500) = 100., test_score_capacity_external_capped(), test_score_capacity_external_first_month() (+3 more)
+Cohesion: 0.09
+Nodes (30): analyze_inbound(), analyze_picking(), analyze_qc(), _c(), _calc_weekly_km_breakdown(), fetch_additional_usage(), fetch_issue_list(), get_period_range() (+22 more)
 
 ### Community 836 - "Community 836"
 Cohesion: 0.70
@@ -4078,8 +4146,8 @@ Cohesion: 0.60
 Nodes (5): 6-Layer Claude Code Architecture (L1-L6), 6-Layer MECE Audit Findings Report, 6-Layer Final Summary (Post L1 Restructure), L1 CLAUDE.md Final (2026-05-17 Restructure), Rationale: L1 CLAUDE.md Hybrid Structure (Rules + References, -45% Lines)
 
 ### Community 841 - "Community 841"
-Cohesion: 0.40
-Nodes (5): _manual_reason(), Read-only 자동배차 진단 드라이버 — 특정 출하확정일에 대한 wave 배정 결과를 확인.  wave_recommender 의 fetch/, 수동/스킵 사유 추정 (assign_waves_greedy 분기 순서 그대로)., run(), compute_utilization()
+Cohesion: 0.10
+Nodes (24): _b3_from_snapshot(), _b3_slack_from_snapshot(), b3_slack_summary(), _build_b3_inbound_section(), _build_cbm_section(), _build_sap_section(), _notify_slack_b3(), B3 입하 14d 사전계획 컴팩트 요약을 Slack DM 발송 (Chain A). 데이터/토큰 부재 시 생략. (+16 more)
 
 ### Community 842 - "Community 842"
 Cohesion: 0.50
@@ -4202,8 +4270,8 @@ Cohesion: 0.40
 Nodes (5): [2026-05-15] WEEKLY | 주간 분석 2026-W19, Iter6 갭분석, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 873 - "Community 873"
-Cohesion: 0.20
-Nodes (10): 이동누락, 이동수량부족, 재제작추가투입, 지시서누락, 품목추가, 품질불량, by_type, total (+2 more)
+Cohesion: 0.14
+Nodes (14): 이동누락, 이동수량부족, 재제작추가투입, 지시서누락, 품목추가, 품질불량, by_type, total (+6 more)
 
 ### Community 874 - "Community 874"
 Cohesion: 0.40
@@ -4242,16 +4310,16 @@ Cohesion: 0.50
 Nodes (4): class, freq, goods, DSKT
 
 ### Community 883 - "Community 883"
-Cohesion: 0.18
-Nodes (11): cbm, cnt, completed, cost, pending, revenue, 2026-05-04, 2026-05-06 (+3 more)
+Cohesion: 0.22
+Nodes (6): existing(), _hdr(), main(), _pat(), Build the unified CBM/BOM sandbox base 지수_테스트 (apptJBFsVRGaeUvLW).  Creates ~20, _req()
 
 ### Community 884 - "Community 884"
 Cohesion: 0.12
 Nodes (17): class, freq, goods, class, freq, goods, class, freq (+9 more)
 
 ### Community 885 - "Community 885"
-Cohesion: 0.24
-Nodes (10): wms-inventory Agent (SK-03), Airtable Barcode Base (app4LvuNIDiqTmhnv), AutoResearch Weekly Pipeline, Cycle Counting (ABC-frequency inventory), Immutable Ledger Principle (INSERT ONLY), Storno Reverse Entry (Correction Method), WMS Movement Table (Immutable Ledger), WMS Backfill + AutoResearch Iter1 Implementation Plan (+2 more)
+Cohesion: 0.19
+Nodes (18): _arg(), build(), C(), half(), live(), main(), of(), _open() (+10 more)
 
 ### Community 886 - "Community 886"
 Cohesion: 0.50
@@ -4262,12 +4330,12 @@ Cohesion: 0.50
 Nodes (4): class, freq, goods, SMMP
 
 ### Community 888 - "Community 888"
-Cohesion: 0.29
-Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-05-12
+Cohesion: 0.12
+Nodes (16): 1. 개요 (Meeting Overview), [260709] 물류파트 주간 운영 회의 (PMP Standard), 2. 진척도 & KPI 업데이트 (Monitor/Control), 3. 안건별 논의 및 의사결정 (Key Discussions & Decisions), 4. 이슈 & 리스크 관리 (Risks & Issues), 5-A. 이전 Action Items 진행 현황 (Backward), 5-B. 신규 Action Items (Forward), 5. 실행 계획 (Direct & Manage Project Work) (+8 more)
 
 ### Community 889 - "Community 889"
-Cohesion: 0.18
-Nodes (11): 기타, 지시서누락, 품질불량, by_type, total, usage_total, material, issues (+3 more)
+Cohesion: 0.14
+Nodes (13): as_of_date, base_id, fetched_at, metrics, pod_capture_90d, claim_id, definition, denominator (+5 more)
 
 ### Community 890 - "Community 890"
 Cohesion: 0.50
@@ -4282,12 +4350,12 @@ Cohesion: 0.50
 Nodes (4): class, freq, goods, TCMP
 
 ### Community 893 - "Community 893"
-Cohesion: 0.33
-Nodes (3): Task 1.7 — wave 자동배차 신뢰도 floor 0.8.  slot_confidence * cbm_confidence < CONFIDEN, _ship(), TestWaveConfidenceFloor
+Cohesion: 0.42
+Nodes (8): _agg(), _f(), fetch(), _iso(), main(), _pat(), rollup_jisu.py — weekly/monthly logistics forecast from the jisu PropagationLedg, Bucket ledger rows by keyfn(date) → metric sums.
 
 ### Community 894 - "Community 894"
-Cohesion: 0.25
-Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-24
+Cohesion: 0.23
+Nodes (8): is_quiet_hour(), 22:00 ~ 06:59 KST → True (Slack 발송 금지)., 22:00 ~ 06:59 KST → True (Slack 발송 금지)., Tests for Slack 다이제스트 quiet hours (Contract C6)., Contract C6 — 22:00 ~ 07:00 KST 발송 금지., test_business_hours_pass(), test_quiet_hours_block(), TestQuietHours
 
 ### Community 895 - "Community 895"
 Cohesion: 0.50
@@ -4302,8 +4370,8 @@ Cohesion: 0.50
 Nodes (4): 4-1. 시스템 구성, 4-3. 현재 종합 결과 (W21: 2026-04-18 ~ 05-18), 4-4. Iteration 진화 이력, 4. 현재 신시어리에 적용한 TMS·WMS M/H 측정 방식
 
 ### Community 898 - "Community 898"
-Cohesion: 0.25
-Nodes (8): matched_names, n_clean_box_evidence, n_multi_product_shipments, n_single_product_shipments, recommendation, 견적코드, 굿즈명, OFMP
+Cohesion: 0.23
+Nodes (5): existing(), _hdr(), main(), Build the unified CBM/BOM sandbox base 지수_테스트 (apptJBFsVRGaeUvLW).  Creates ~20, _req()
 
 ### Community 899 - "Community 899"
 Cohesion: 0.50
@@ -4410,12 +4478,12 @@ Cohesion: 0.67
 Nodes (3): in_window(), main(), W22 Cycle-Time M/H — 2026-05-25(월) ~ 2026-05-29(금)  mh_dual_analysis.py 의 검증된 fe
 
 ### Community 925 - "Community 925"
-Cohesion: 0.50
-Nodes (4): analyze_iter5_forecast(), 2026-W18', '화' → 해당 주 그 요일의 date 반환 (공휴일 필터링용), Iteration 5: 다음 주 배송 볼륨 예측 (요일 패턴 기반), _week_day_date()
+Cohesion: 0.24
+Nodes (8): _plans(), AUDIT (2026-06-23) — _spillover_target 성수기/소형 라우팅 + _ensure_minimum_load 외부퀵 가드., TestMinLoadQuickGuard, _ensure_minimum_load(), W1(이장훈)·W2(조희선) 영업일 최소 1건 보장.      active shipments ≥ 2건일 때 W1·W2 중 0건인 wave가 있으, W1(이장훈)·W2(조희선) 영업일 최소 1건 보장.      active shipments ≥ 2건일 때 W1·W2 중 0건인 wave가 있으, W1(이장훈)·W2(조희선) 영업일 최소 1건 보장.      active shipments ≥ 2건일 때 W1·W2 중 0건인 wave가 있으, W1(이장훈)·W2(조희선) 영업일 최소 1건 보장.      active shipments ≥ 2건일 때 W1·W2 중 0건인 wave가 있으
 
 ### Community 926 - "Community 926"
-Cohesion: 0.50
-Nodes (4): _delta(), _load_prior_kpis(), 직전 주 리포트에서 KPI 수치를 추출해 delta 계산용으로 반환., step_save_report()
+Cohesion: 0.12
+Nodes (6): compute_soyoryang(), 품목 1개당 소요량 = 주문수량 / 굿즈수량. 산출 불가 시 None., V5.1 (H1 분석 발견) — 공백 변형 + 10~12월 날짜형 보강., TestComputeSoyoryang, TestIsService, TestIsServiceV51
 
 ### Community 927 - "Community 927"
 Cohesion: 0.50
@@ -4426,48 +4494,48 @@ Cohesion: 0.33
 Nodes (5): Phase 2 타겟 보드 (⚠️ → ✅ 전환 로드맵), WMS M/H Phase 2 추적 보드 — 2026-06-19, ✅ 운영 기준 달성 PT코드, 입고 타임스탬프 커버리지 갭 진단, 현황 요약
 
 ### Community 929 - "Community 929"
-Cohesion: 0.25
-Nodes (8): patch_airtable(), _patch_batch(), batch 10건 PATCH → Shipment table (wave 4 fields + 배송슬롯)., batch 10건 PATCH → Shipment table (wave 4 fields + 배송슬롯)., wave 4 fields + 배송슬롯 → Airtable PATCH (batch 10). Returns diff list., wave 추천 필드 + (조건부) 배송슬롯 → Airtable PATCH (batch 10). Returns diff list.      운영자, batch 10건 PATCH → Shipment table. 성공 True / 실패 False., wave 추천 필드 + (조건부) 배송슬롯 → Airtable PATCH (batch 10). Returns diff list.      운영자
+Cohesion: 0.14
+Nodes (14): claim_id, definition, denominator, numerator, raw, status, value, window (+6 more)
 
 ### Community 930 - "Community 930"
-Cohesion: 0.25
-Nodes (8): summary, actual_qc_cnt, defect_rate, qc_cnt, sample_rate, target_met, total_defect, total_qc_qty
+Cohesion: 0.15
+Nodes (13): float:0.02, float:0.021, float:0.049, float:0.098, float:0.107, float:0.213, float:0.263, float:0.283 (+5 more)
 
 ### Community 931 - "Community 931"
-Cohesion: 0.13
-Nodes (18): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-25 (+10 more)
+Cohesion: 0.15
+Nodes (13): claim_id, definition, denominator, numerator, raw, status, value, window (+5 more)
 
 ### Community 932 - "Community 932"
 Cohesion: 0.50
 Nodes (4): [2026-04-20] WEEKLY | 주간 분석 20260420, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 933 - "Community 933"
-Cohesion: 0.25
-Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-16
+Cohesion: 0.21
+Nodes (10): main(), Sub-Spec 2 Task 0 Step 3 — Pre-flight sample 30 dry-run.  Loads Product lookup (, calc_from_products(), parse_product_lines(), 출하 품목+수량 텍스트 → [(품목명, 수량), ...].     수량 없으면 0 반환.     예: "굿이너프 비치타월×40 / Solid, 품목+수량 텍스트 → {"unload_fee", "total_cbm", "matched", "unmatched"}.      qty_hint, _lookup(), calc_from_products 공유 리졸버 통합 (D — 정산 CBM을 코드+alias로 통일).  핵심: 이름만으론 Jaccard<0. (+2 more)
 
 ### Community 934 - "Community 934"
-Cohesion: 0.25
-Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-18
+Cohesion: 0.14
+Nodes (11): build_mes_crosswalk_rows(), extract_pts(), 텍스트 내 모든 PT#### 코드 (중복 제거, 등장 순서 유지)., MES 키 → WMS_KeyCrosswalk 신규행 + 매칭 stats. INSERT-only(기존 표준키 스킵).      mes_good, fetch(), main(), post_batch(), P2b Task 2b.1 — MES↔PT/굿즈코드 크로스워크.  MES read-only: [sync]파츠별_자재이동.파츠코드(PT hop) + (+3 more)
 
 ### Community 935 - "Community 935"
-Cohesion: 0.54
-Nodes (8): depot, route, stops, total_km, total_min, 2026-03-27, 2026-03-27, 2026-03-27
+Cohesion: 0.33
+Nodes (6): analyze_iter5_forecast(), 2026-W18', '화' → 해당 주 그 요일의 date 반환 (공휴일 필터링용), Iteration 5: 다음 주 배송 볼륨 예측 (요일 패턴 기반), 2026-W18', '화' → 해당 주 그 요일의 date 반환 (공휴일 필터링용), Iteration 5: 다음 주 배송 볼륨 예측 (요일 패턴 기반), _week_day_date()
 
 ### Community 936 - "Community 936"
-Cohesion: 0.25
-Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-07
+Cohesion: 0.40
+Nodes (4): Shared record builder for tms_settlement calc tests.  All tests use raw dict rec, Build a minimal fake Airtable Shipment record for unit tests., rec(), Shared record builder for tms_settlement calc tests.  All tests use raw dict rec
 
 ### Community 937 - "Community 937"
-Cohesion: 0.50
-Nodes (4): [2026-04-27] WEEKLY | 주간 분석 2026-W17, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.25
+Nodes (8): UMUG, matched_names, n_clean_box_evidence, n_multi_product_shipments, n_single_product_shipments, recommendation, 견적코드, 굿즈명
 
 ### Community 938 - "Community 938"
-Cohesion: 0.25
-Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-23
+Cohesion: 0.50
+Nodes (5): calc_routing(), _geocode(), _kakao_headers(), 카카오 길찾기 API -> (km, minutes) 튜플 반환. 실패시 (0.0, 0)., _route_km()
 
 ### Community 939 - "Community 939"
-Cohesion: 0.43
-Nodes (3): compute_soyoryang(), 품목 1개당 소요량 = 주문수량 / 굿즈수량. 산출 불가 시 None., TestComputeSoyoryang
+Cohesion: 0.17
+Nodes (12): not_recv_by_partner, 강천FNT, 개미기획, 고객물품(직접입고), 서울디지털인쇄협동조합, (주)상일씨앤씨, (주)홍기씨앤디, 주식회사 꾸띠잔홀딩스 (+4 more)
 
 ### Community 940 - "Community 940"
 Cohesion: 0.50
@@ -4518,8 +4586,8 @@ Cohesion: 0.67
 Nodes (3): fld3Cxd10mDiNABfo, name, type
 
 ### Community 956 - "Community 956"
-Cohesion: 0.50
-Nodes (4): [2026-05-04] WEEKLY | 주간 분석 2026-W18, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.25
+Nodes (8): by_date, count, view, material, picking, usage, a1_to_partner, cumulative_2026
 
 ### Community 957 - "Community 957"
 Cohesion: 0.67
@@ -4805,6 +4873,10 @@ Nodes (3): fldlFvaLyJ5UNoEgE, name, type
 Cohesion: 0.67
 Nodes (3): fldLSolmI1mlGwK7x, name, type
 
+### Community 1028 - "Community 1028"
+Cohesion: 0.40
+Nodes (5): 중, cbm, d, h, w
+
 ### Community 1029 - "Community 1029"
 Cohesion: 0.67
 Nodes (3): fldmWbC4e9ILBpcmg, name, type
@@ -4854,16 +4926,16 @@ Cohesion: 0.50
 Nodes (3): Order Cascade Report — 20260623-1452, 단위별 상세 (전파ID), 프로젝트별 진행 보드 (P1·P3)
 
 ### Community 1041 - "Community 1041"
-Cohesion: 0.67
-Nodes (3): fldPSt3IcKxnk2HSL, name, type
+Cohesion: 0.17
+Nodes (12): rate_card, claim_id, definition, denominator, numerator, raw, status, value (+4 more)
 
 ### Community 1042 - "Community 1042"
 Cohesion: 0.67
 Nodes (3): fldPxrD8wOIoOC9BI, name, type
 
 ### Community 1043 - "Community 1043"
-Cohesion: 0.67
-Nodes (3): fldPyEuPoB8dYb1DI, name, type
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-01
 
 ### Community 1044 - "Community 1044"
 Cohesion: 0.67
@@ -4874,8 +4946,8 @@ Cohesion: 0.67
 Nodes (3): fldQezevh20FuNvAM, name, type
 
 ### Community 1046 - "Community 1046"
-Cohesion: 0.29
-Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-05-19
+Cohesion: 0.43
+Nodes (7): fetch_orders(), goods_name(), headers(), is_service(), main(), BOM·CBM 수량전파 백본 — Phase-1 검증 dry-run (read-only).  §4 검증 게이트 3종 측정:   1. 키 매칭률, 심볼아크릴트로피 125' -> ('심볼아크릴트로피', 125). qty 없으면 0.
 
 ### Community 1047 - "Community 1047"
 Cohesion: 0.67
@@ -4942,8 +5014,8 @@ Cohesion: 0.67
 Nodes (3): fldT9T3WQF0R2J3Pa, name, type
 
 ### Community 1063 - "Community 1063"
-Cohesion: 0.67
-Nodes (3): fldUBp6lxtDAFoHpc, name, type
+Cohesion: 0.33
+Nodes (6): aggregate_score(), Cost N/A → 나머지 3축 재정규화 (0.35+0.20+0.15=0.70)., Cost+Reliability 모두 N/A → capacity+damage만 (0.20+0.15=0.35)., test_aggregate_all_axes(), test_aggregate_both_optional_na(), test_aggregate_cost_na()
 
 ### Community 1064 - "Community 1064"
 Cohesion: 0.67
@@ -4994,12 +5066,12 @@ Cohesion: 0.67
 Nodes (3): fldVtovROZNlSc6jn, name, type
 
 ### Community 1076 - "Community 1076"
-Cohesion: 0.13
-Nodes (19): fetch_orders(), goods_name(), headers(), is_service(), main(), BOM·CBM 수량전파 백본 — Phase-1 검증 dry-run (read-only).  §4 검증 게이트 3종 측정:   1. 키 매칭률, 심볼아크릴트로피 125' -> ('심볼아크릴트로피', 125). qty 없으면 0., fetch() (+11 more)
+Cohesion: 0.60
+Nodes (4): fetch(), main(), n(), Total_CBM>0 Shipment를 결정론 재계산과 비교 — 오염(기계추정) 추정치 측정. READ-ONLY (쓰기 0).  판정:   -
 
 ### Community 1077 - "Community 1077"
-Cohesion: 0.29
-Nodes (7): 수량이슈, 운영이슈, 품질이슈, cat_counts, issue_cnt, total_cnt, issue_summary
+Cohesion: 0.22
+Nodes (8): 1. V-게이트 실측치, 2.5 추가 발견 — NEST 마스터 DB에 박스 스펙(CBM 원천) 존재 (사용자 제보, 2026-07-10), 2. S0~S7 단계별 — NEST가 채우는 것 / 못 채우는 것, 3. 부수 발견 (프로브 부산물), 4. 다음 단계 권고 (후속 세션), 5. NEST팀 질의 목록 (V6 — 서면 확인 필요), NEST Production Specification API — 읽기 전용 PoC 프로브 리포트, 결론: **가능 — BOM/CBM cascade 전개 가능 (신규 주문 forward 기준, 크로스워크 매개)**
 
 ### Community 1078 - "Community 1078"
 Cohesion: 0.67
@@ -5022,8 +5094,8 @@ Cohesion: 0.67
 Nodes (3): fldXdfXin1vazZluM, name, type
 
 ### Community 1083 - "Community 1083"
-Cohesion: 0.29
-Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-04-02
+Cohesion: 0.20
+Nodes (9): 1. 표본과 커버리지 (도입 곡선), 2. 레벨 깊이 분포 (200 OK 488건), 3. 변동성 — 업계 클래스 정량 근거, 4. 옵션 다양성, 5. 단품박스째 vs 알맹이 (핵심 질문) — 현행 데이터로는 구분 불가, 6. 정합성 점검 (문제없는지), 7. 설계 시사점, NEST × WMS 키트/굿즈 레벨 BOM 시뮬레이션 — 2026-03~06 4개월 표본 (+1 more)
 
 ### Community 1084 - "Community 1084"
 Cohesion: 0.67
@@ -5114,64 +5186,60 @@ Cohesion: 0.67
 Nodes (3): code:python ("""Phase-1 검증 게이트 (§7) 실측. read-only.), code:bash (git add harness/backbone/verify_phase1.py), Task 10: verify_phase1.py — 검증 게이트 실측 (read-only)
 
 ### Community 1154 - "Community 1154"
-Cohesion: 0.29
-Nodes (7): decide_insert(), spec §5 — 전파ID별 최신행 대비 상태·수치 변동 시에만 신규 INSERT.      Airtable은 빈 문자열 필드를 응답에서 누락, spec §5 — 전파ID별 최신행 대비 상태·수치 변동 시에만 신규 INSERT.      Airtable은 빈 문자열 필드를 응답에서 누, P6b VC-2 실측 — Airtable은 빈 문자열 필드를 응답에서 누락.      '' 기입 행을 다시 읽으면 키 자체가 없음(None) →, P6b VC-2 실측 — Airtable은 빈 문자열 필드를 응답에서 누락.      '' 기입 행을 다시 읽으면 키 자체가 없음(None) →, test_decide_insert_empty_string_equals_absent(), test_decide_insert_new_changed_unchanged()
+Cohesion: 0.17
+Nodes (12): int:1, raw, caveat, in_full_rate, in_full_valid_n, latest_실제배송일, on_time_rate, on_time_valid_n (+4 more)
 
 ### Community 1155 - "Community 1155"
-Cohesion: 0.48
-Nodes (7): depot, route, stops, total_km, total_min, 2026-04-10, 2026-04-10
+Cohesion: 0.40
+Nodes (5): [2026-05-15] WEEKLY | 주간 분석 2026-W19, Iter6 갭분석, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 1156 - "Community 1156"
 Cohesion: 0.18
 Nodes (4): Fire-and-forget INSERT into public.ops_event via Supabase REST API.      Never r, SupabaseSink, Fire-and-forget INSERT into public.ops_event via Supabase REST API.      Never r, SupabaseSink
 
 ### Community 1157 - "Community 1157"
-Cohesion: 0.50
-Nodes (4): [2026-04-20] WEEKLY | 주간 분석 20260420, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.25
+Nodes (8): summary, actual_qc_cnt, defect_rate, qc_cnt, sample_rate, target_met, total_defect, total_qc_qty
 
 ### Community 1158 - "Community 1158"
-Cohesion: 0.50
-Nodes (4): [2026-04-21] WEEKLY | 주간 분석 2026-W16, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.20
+Nodes (11): _clone(), _neighbor(), 무작위 swap 또는 move. spillover_로젠 ↔ W1/W2/W3 양방향 허용 (capacity 회수)., 무작위 swap 또는 move. spillover_로젠 ↔ W1/W2/W3 양방향 허용 (capacity 회수)., 무작위 swap 또는 move. spillover_로젠 ↔ W1/W2/W3 양방향 허용 (capacity 회수)., 무작위 swap 또는 move. spillover_로젠 ↔ W1/W2/W3 양방향 허용 (capacity 회수)., Simulated Annealing local search. Deterministic via seed., Simulated Annealing local search. Deterministic via seed. (+3 more)
 
 ### Community 1159 - "Community 1159"
 Cohesion: 0.50
 Nodes (4): [2026-04-27] WEEKLY | 주간 분석 2026-W17, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 1160 - "Community 1160"
-Cohesion: 0.50
-Nodes (4): [2026-05-08] WMS | Slack 이슈 교차검증 완료, 교차검증 요약, 다음 포커스, 산출물
+Cohesion: 0.53
+Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
 
 ### Community 1161 - "Community 1161"
 Cohesion: 0.50
 Nodes (4): [2026-04-21] WEEKLY | 주간 분석 2026-W16, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 1162 - "Community 1162"
-Cohesion: 0.50
-Nodes (4): [2026-05-11] WEEKLY | 주간 분석 2026-W19, KPI 스냅샷, 다음 주 포커스, 산출물
-
-### Community 1163 - "Community 1163"
-Cohesion: 0.67
-Nodes (3): fldqHPpgLRSIf7Aic, name, type
+Cohesion: 0.25
+Nodes (10): _get_carrier(), Step 06 — TMS Shipment creation + POD simulation.  For each posted outbound_deli, run(), SimContext, StepResult, _get_carrier(), Step 06 — TMS Shipment creation + POD simulation.  For each posted outbound_deli, run() (+2 more)
 
 ### Community 1164 - "Community 1164"
-Cohesion: 0.67
-Nodes (3): fldOhibgxg6LIpRTi, name, type
+Cohesion: 0.50
+Nodes (4): [2026-04-20] WEEKLY | 주간 분석 20260420, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 1165 - "Community 1165"
-Cohesion: 0.29
-Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-05-20
+Cohesion: 0.18
+Nodes (11): 기타, 지시서누락, 품질불량, by_type, total, usage_total, material, issues (+3 more)
 
 ### Community 1166 - "Community 1166"
-Cohesion: 0.67
-Nodes (3): fldr2D14xHgSNjWpW, name, type
+Cohesion: 0.18
+Nodes (11): claim_id, definition, denominator, numerator, raw, status, value, window (+3 more)
 
 ### Community 1167 - "Community 1167"
-Cohesion: 0.29
-Nodes (7): analyze_supplier_lead_time(), analyze_supplier_ontime(), analyze_volume_trend(), parse_date(), movement.이동목적 × 생성일자 주간 집계, 미입하 발생이력 checkbox 기반 공급사별 미입하 건수 + 입하예상일 vs 실제입하일 diff, WMS_GoodsReceipt.promised_date vs received_at 기반 공급사 납기 준수율
+Cohesion: 0.20
+Nodes (10): analyze_supplier_lead_time(), analyze_supplier_ontime(), analyze_volume_trend(), parse_date(), movement.이동목적 × 생성일자 주간 집계, movement.이동목적 × 생성일자 주간 집계, 미입하 발생이력 checkbox 기반 공급사별 미입하 건수 + 입하예상일 vs 실제입하일 diff, 미입하 발생이력 checkbox 기반 공급사별 미입하 건수 + 입하예상일 vs 실제입하일 diff (+2 more)
 
 ### Community 1168 - "Community 1168"
-Cohesion: 0.29
-Nodes (7): analyze_supplier_lead_time(), analyze_supplier_ontime(), analyze_volume_trend(), parse_date(), movement.이동목적 × 생성일자 주간 집계, 미입하 발생이력 checkbox 기반 공급사별 미입하 건수 + 입하예상일 vs 실제입하일 diff, WMS_GoodsReceipt.promised_date vs received_at 기반 공급사 납기 준수율
+Cohesion: 0.50
+Nodes (4): [2026-04-21] WEEKLY | 주간 분석 2026-W16, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 1169 - "Community 1169"
 Cohesion: 0.40
@@ -5182,8 +5250,8 @@ Cohesion: 0.67
 Nodes (3): fldtEykbFxkO31FZP, name, type
 
 ### Community 1171 - "Community 1171"
-Cohesion: 0.67
-Nodes (3): fldw8Hmw4ihD8nfM9, name, type
+Cohesion: 0.18
+Nodes (11): partner_policy, claim_id, definition, denominator, numerator, raw, status, value (+3 more)
 
 ### Community 1172 - "Community 1172"
 Cohesion: 0.29
@@ -5202,20 +5270,16 @@ Cohesion: 0.50
 Nodes (3): Order Cascade Report — 20260623-1225, 단위별 상세 (전파ID), 프로젝트별 진행 보드 (P1·P3)
 
 ### Community 1176 - "Community 1176"
-Cohesion: 0.29
-Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-05-22
-
-### Community 1177 - "Community 1177"
-Cohesion: 0.33
-Nodes (6): summary, defect_rate, qc_cnt, target_met, total_defect, total_qc_qty
+Cohesion: 0.50
+Nodes (4): [2026-04-21] WEEKLY | 주간 분석 2026-W16, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 1178 - "Community 1178"
 Cohesion: 0.53
 Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
 
 ### Community 1179 - "Community 1179"
-Cohesion: 0.40
-Nodes (5): [2026-05-27] WEEKLY | 주간 분석 2026-W21, Iter6 갭분석, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.27
+Nodes (5): extract_pt(), 텍스트 내 첫 PT#### 코드. 없으면 None., TestExtractPt, main(), Phase-1 검증 게이트 (§7) 실측. read-only.  Gate1 Tier A 굿즈 매칭률(목표 ≥85%, Phase-1 마스터 한
 
 ### Community 1180 - "Community 1180"
 Cohesion: 0.50
@@ -5229,45 +5293,41 @@ Nodes (3): Order Cascade Report — 20260622-1432, 단위별 상세 (전파ID), 
 Cohesion: 0.50
 Nodes (3): Order Cascade Report — 20260622-1434, 단위별 상세 (전파ID), 프로젝트별 진행 보드 (P1·P3)
 
-### Community 1183 - "Community 1183"
-Cohesion: 0.40
-Nodes (5): 극소, cbm, d, h, w
-
 ### Community 1184 - "Community 1184"
-Cohesion: 0.50
-Nodes (4): [2026-04-27] WEEKLY | 주간 분석 2026-W17, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.17
+Nodes (16): box_parse, manual, product_match, unmatched, 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), driver_weekly_max (+8 more)
 
 ### Community 1185 - "Community 1185"
-Cohesion: 0.33
-Nodes (6): [2026-05-18] WEEKLY+ITER7 | 2026-W20 (full), Iter6 갭분석, Iter7 확장 분석 (6주 W14~W19), KPI 스냅샷 (W20 표준 분석), 다음 주 포커스, 산출물
+Cohesion: 0.40
+Nodes (5): 특대, cbm, d, h, w
 
 ### Community 1186 - "Community 1186"
-Cohesion: 0.40
-Nodes (5): _build_cbm_section(), _build_sap_section(), Iter 4~7 SAP EWM 섹션 마크다운 빌드, Iter 8~11 CBM 섹션 마크다운 빌드., step_save_report()
+Cohesion: 0.20
+Nodes (10): pod_capture_alltime, claim_id, definition, denominator, numerator, raw, status, value (+2 more)
 
 ### Community 1187 - "Community 1187"
 Cohesion: 0.40
 Nodes (5): _build_cbm_section(), _build_sap_section(), Iter 4~7 SAP EWM 섹션 마크다운 빌드, Iter 8~11 CBM 섹션 마크다운 빌드., step_save_report()
 
 ### Community 1188 - "Community 1188"
-Cohesion: 0.40
-Nodes (5): W13, cnt, defect, defect_rate, qc_qty
+Cohesion: 0.20
+Nodes (10): sla_population, rows, claim_id, definition, denominator, numerator, raw, status (+2 more)
 
 ### Community 1189 - "Community 1189"
-Cohesion: 0.50
-Nodes (4): [2026-04-15] WEEKLY | 주간 분석 20260415, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.20
+Nodes (10): schema_validation, mismatches, select_options_live, tblf0BClxZtnQfOJL:정산상태, tblI4ZXrte7WyhXyd:autonomy_level, tblI4ZXrte7WyhXyd:contract_type, tblI4ZXrte7WyhXyd:wave_pattern, tblIZ9kco1QDpUz0u:처리상태 (+2 more)
 
 ### Community 1190 - "Community 1190"
-Cohesion: 0.40
-Nodes (5): 특대, cbm, d, h, w
+Cohesion: 0.50
+Nodes (4): [2026-04-27] WEEKLY | 주간 분석 2026-W17, KPI 스냅샷, 다음 주 포커스, 산출물
 
 ### Community 1191 - "Community 1191"
 Cohesion: 0.60
 Nodes (4): _airtable_get_all(), _first(), main(), Contract C2 verification — 배송슬롯 자동 결정 정확도 ≥ 80%.  25-01~26-05-27 7,588건 역사 데이터 기
 
 ### Community 1192 - "Community 1192"
-Cohesion: 0.50
-Nodes (4): class, freq, goods, UMUG
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-25
 
 ### Community 1193 - "Community 1193"
 Cohesion: 0.67
@@ -5278,52 +5338,280 @@ Cohesion: 0.50
 Nodes (3): Order Cascade Report — 20260623-1641, 단위별 상세 (전파ID), 프로젝트별 진행 보드 (P1·P3)
 
 ### Community 1195 - "Community 1195"
-Cohesion: 0.50
-Nodes (4): [2026-04-15] WEEKLY | 주간 분석 20260415, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.29
+Nodes (7): 수량이슈, 운영이슈, 품질이슈, cat_counts, issue_cnt, total_cnt, issue_summary
 
 ### Community 1196 - "Community 1196"
-Cohesion: 0.50
-Nodes (4): [2026-04-15] WEEKLY | 주간 분석 20260415, KPI 스냅샷, 다음 주 포커스, 산출물
-
-### Community 1197 - "Community 1197"
-Cohesion: 0.50
-Nodes (4): [2026-04-15] WEEKLY | 주간 분석 20260415, KPI 스냅샷, 다음 주 포커스, 산출물
+Cohesion: 0.29
+Nodes (7): decide_insert(), spec §5 — 전파ID별 최신행 대비 상태·수치 변동 시에만 신규 INSERT.      Airtable은 빈 문자열 필드를 응답에서 누락, spec §5 — 전파ID별 최신행 대비 상태·수치 변동 시에만 신규 INSERT.      Airtable은 빈 문자열 필드를 응답에서 누, P6b VC-2 실측 — Airtable은 빈 문자열 필드를 응답에서 누락.      '' 기입 행을 다시 읽으면 키 자체가 없음(None) →, P6b VC-2 실측 — Airtable은 빈 문자열 필드를 응답에서 누락.      '' 기입 행을 다시 읽으면 키 자체가 없음(None) →, test_decide_insert_empty_string_equals_absent(), test_decide_insert_new_changed_unchanged()
 
 ### Community 1198 - "Community 1198"
-Cohesion: 0.50
-Nodes (4): [2026-04-21] SETUP | program.md 초기화 + 주간 러너 구성, 다음 단계, 분석 대상 확정, 완료 항목
+Cohesion: 0.53
+Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
 
 ### Community 1199 - "Community 1199"
-Cohesion: 0.67
-Nodes (3): fld3LvWGzX35b7OfK, name, type
+Cohesion: 0.33
+Nodes (6): summary, defect_rate, qc_cnt, target_met, total_defect, total_qc_qty
 
 ### Community 1200 - "Community 1200"
 Cohesion: 0.67
 Nodes (3): fldpO0JKUP1rmP9o4, name, type
 
 ### Community 1201 - "Community 1201"
+Cohesion: 0.33
+Nodes (3): Task 1.7 — wave 자동배차 신뢰도 floor 0.8.  slot_confidence * cbm_confidence < CONFIDEN, _ship(), TestWaveConfidenceFloor
+
+### Community 1202 - "Community 1202"
+Cohesion: 0.25
+Nodes (3): Tests for partner locked-in handling (Contract C5)., Contract C5 — locked-in 9 records recommender override 0건., TestLockedIn
+
+### Community 1203 - "Community 1203"
+Cohesion: 0.67
+Nodes (3): fldUBp6lxtDAFoHpc, name, type
+
+### Community 1204 - "Community 1204"
+Cohesion: 0.53
+Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
+
+### Community 1205 - "Community 1205"
+Cohesion: 0.67
+Nodes (3): fldPyEuPoB8dYb1DI, name, type
+
+### Community 1206 - "Community 1206"
+Cohesion: 0.67
+Nodes (3): fldW0FL9FEwORntbi, name, type
+
+### Community 1207 - "Community 1207"
+Cohesion: 0.29
+Nodes (6): TO00016958, createdTime, id, TO00016969, createdTime, id
+
+### Community 1208 - "Community 1208"
+Cohesion: 0.29
+Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-05-15
+
+### Community 1209 - "Community 1209"
+Cohesion: 0.53
+Nodes (5): fetch(), get_pat(), main(), pick_date(), WMS 생산투입 프리패키징 M/H — 6/1~현재(7/9) 주차별.  베이스 app6DGHCPI3Yh3IFS / sync_movement / 뷰
+
+### Community 1210 - "Community 1210"
+Cohesion: 0.53
+Nodes (5): fetch(), get_pat(), main(), WMS 생산투입 프리패키징 M/H — 6/1~7/9 주차별.  베이스 appLui4ZR5HWcQRri / ⚡movement / 이동목적='생산투, wdate()
+
+### Community 1211 - "Community 1211"
+Cohesion: 0.29
+Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-05-19
+
+### Community 1212 - "Community 1212"
+Cohesion: 0.54
+Nodes (8): depot, route, stops, total_km, total_min, 2026-03-20, 2026-03-20, 2026-03-20
+
+### Community 1213 - "Community 1213"
+Cohesion: 0.67
+Nodes (3): fldqHPpgLRSIf7Aic, name, type
+
+### Community 1214 - "Community 1214"
+Cohesion: 0.50
+Nodes (4): class, freq, goods, UMUG
+
+### Community 1215 - "Community 1215"
+Cohesion: 0.50
+Nodes (4): fldEFxg2T9EnhN95c, email, id, name
+
+### Community 1216 - "Community 1216"
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-23
+
+### Community 1217 - "Community 1217"
+Cohesion: 0.50
+Nodes (4): [2026-05-04] WEEKLY | 주간 분석 2026-W18, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1218 - "Community 1218"
+Cohesion: 0.33
+Nodes (6): [2026-05-18] WEEKLY+ITER7 | 2026-W20 (full), Iter6 갭분석, Iter7 확장 분석 (6주 W14~W19), KPI 스냅샷 (W20 표준 분석), 다음 주 포커스, 산출물
+
+### Community 1219 - "Community 1219"
+Cohesion: 0.67
+Nodes (3): fldOhibgxg6LIpRTi, name, type
+
+### Community 1220 - "Community 1220"
+Cohesion: 0.67
+Nodes (3): fld0CIlRajFFjERc0, label, url
+
+### Community 1221 - "Community 1221"
+Cohesion: 0.67
+Nodes (3): fld2Zsnvtgwt1vZhI, label, url
+
+### Community 1222 - "Community 1222"
+Cohesion: 0.67
+Nodes (3): fldPSt3IcKxnk2HSL, label, url
+
+### Community 1223 - "Community 1223"
+Cohesion: 0.67
+Nodes (3): fldSToJ73MZKFQYmP, label, url
+
+### Community 1224 - "Community 1224"
+Cohesion: 0.67
+Nodes (3): fldW0FL9FEwORntbi, label, url
+
+### Community 1225 - "Community 1225"
+Cohesion: 0.67
+Nodes (3): fldYNdQSqBGGjW73K, label, url
+
+### Community 1227 - "Community 1227"
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-03-30
+
+### Community 1229 - "Community 1229"
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-13
+
+### Community 1230 - "Community 1230"
+Cohesion: 0.16
+Nodes (11): cnt, in_qty, 2026-W18, by_week, not_recv_by_partner, 고객물품(직접입고), 미쓰비시연필한국판매 주식회사, 신명인쇄 (+3 more)
+
+### Community 1231 - "Community 1231"
+Cohesion: 0.50
+Nodes (4): [2026-04-15] WEEKLY | 주간 분석 20260415, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1232 - "Community 1232"
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-15
+
+### Community 1233 - "Community 1233"
+Cohesion: 0.25
+Nodes (8): cbm, cnt, completed, cost, in_qty, pending, revenue, 2026-04-16
+
+### Community 1234 - "Community 1234"
+Cohesion: 0.17
+Nodes (11): at_fetch(), _at_get(), main(), nest_fetch(), NEST × WMS 키트/굿즈 레벨 BOM 시뮬레이션 — 2026-03~06 4개월 표본 (읽기 전용).  L0(프로젝트)→L1(키트/단품 포장, normalize_goods(), 매칭률 향상용 정규화: [n] 인덱스·(...) 괄호·_접미 제거., fetch() (+3 more)
+
+### Community 1235 - "Community 1235"
+Cohesion: 0.09
+Nodes (24): analyze_iter1_volume(), analyze_iter2_dispatch_efficiency(), analyze_iter3_cost(), analyze_iter4_otif(), analyze_iter6_absorption_gap(), analyze_iter6_post_backfill(), classify_partner(), _compute_week_label() (+16 more)
+
+### Community 1236 - "Community 1236"
+Cohesion: 0.50
+Nodes (4): [2026-04-15] WEEKLY | 주간 분석 20260415, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1237 - "Community 1237"
+Cohesion: 0.50
+Nodes (4): [2026-04-20] WEEKLY | 주간 분석 2026-W16, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1238 - "Community 1238"
+Cohesion: 0.50
+Nodes (4): [2026-05-11] WEEKLY | 주간 분석 2026-W19, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1239 - "Community 1239"
+Cohesion: 0.50
+Nodes (4): [2026-05-11] WEEKLY | 주간 분석 2026-W19, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1240 - "Community 1240"
+Cohesion: 0.54
+Nodes (8): depot, route, stops, total_km, total_min, 2026-04-21, 2026-04-21, 2026-04-21
+
+### Community 1241 - "Community 1241"
+Cohesion: 0.67
+Nodes (3): fldr2D14xHgSNjWpW, name, type
+
+### Community 1242 - "Community 1242"
+Cohesion: 0.67
+Nodes (3): fldXkYWphutV4Epc7, name, type
+
+### Community 1243 - "Community 1243"
+Cohesion: 0.54
+Nodes (8): depot, route, stops, total_km, total_min, 2026-04-23, 2026-04-23, 2026-04-23
+
+### Community 1244 - "Community 1244"
+Cohesion: 0.25
+Nodes (8): raw, Total_CBM|alltime, matrix, n, non_null, non_null_pct, non_zero, non_zero_pct
+
+### Community 1245 - "Community 1245"
+Cohesion: 0.29
+Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-04-20
+
+### Community 1246 - "Community 1246"
+Cohesion: 0.29
+Nodes (7): cbm, cnt, completed, cost, pending, revenue, 2026-05-19
+
+### Community 1247 - "Community 1247"
+Cohesion: 0.40
+Nodes (5): _manual_reason(), Read-only 자동배차 진단 드라이버 — 특정 출하확정일에 대한 wave 배정 결과를 확인.  wave_recommender 의 fetch/, 수동/스킵 사유 추정 (assign_waves_greedy 분기 순서 그대로)., run(), compute_utilization()
+
+### Community 1249 - "Community 1249"
+Cohesion: 0.53
+Nodes (6): box_parse, manual, product_match, unmatched, cbm_sources, cbm_sources
+
+### Community 1250 - "Community 1250"
+Cohesion: 0.33
+Nodes (6): n, non_null, non_null_pct, non_zero, non_zero_pct, CBM_유효|90d
+
+### Community 1251 - "Community 1251"
+Cohesion: 0.33
+Nodes (6): n, non_null, non_null_pct, non_zero, non_zero_pct, CBM_유효|alltime
+
+### Community 1252 - "Community 1252"
+Cohesion: 0.33
+Nodes (6): n, non_null, non_null_pct, non_zero, non_zero_pct, estimated_cbm|90d
+
+### Community 1253 - "Community 1253"
+Cohesion: 0.33
+Nodes (6): n, non_null, non_null_pct, non_zero, non_zero_pct, estimated_cbm|alltime
+
+### Community 1254 - "Community 1254"
+Cohesion: 0.33
+Nodes (6): Total_CBM|90d, n, non_null, non_null_pct, non_zero, non_zero_pct
+
+### Community 1255 - "Community 1255"
+Cohesion: 0.40
+Nodes (5): W13, cnt, defect, defect_rate, qc_qty
+
+### Community 1256 - "Community 1256"
+Cohesion: 0.60
+Nodes (5): 신시어리 (박종성), 신시어리 (이장훈), 신시어리 (조희선), driver_weekly, driver_weekly
+
+### Community 1257 - "Community 1257"
+Cohesion: 0.40
+Nodes (5): value, 2026-04, 2026-05, 2026-06, 2026-07
+
+### Community 1258 - "Community 1258"
+Cohesion: 0.50
+Nodes (4): analyze_iter5_forecast(), 2026-W18', '화' → 해당 주 그 요일의 date 반환 (공휴일 필터링용), Iteration 5: 다음 주 배송 볼륨 예측 (요일 패턴 기반), _week_day_date()
+
+### Community 1259 - "Community 1259"
+Cohesion: 0.50
+Nodes (4): [2026-04-15] WEEKLY | 주간 분석 20260415, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1260 - "Community 1260"
+Cohesion: 0.50
+Nodes (4): [2026-04-27] WEEKLY | 주간 분석 2026-W17, KPI 스냅샷, 다음 주 포커스, 산출물
+
+### Community 1261 - "Community 1261"
 Cohesion: 0.67
 Nodes (3): fldvQQkrDNflD41nv, name, type
 
+### Community 1262 - "Community 1262"
+Cohesion: 0.67
+Nodes (3): analyze_dock_to_stock(), WMS_GoodsReceipt.dock_to_stock_min 기반 Dock-to-Stock KPI, WMS_GoodsReceipt.dock_to_stock_min 기반 Dock-to-Stock KPI
+
 ## Knowledge Gaps
-- **5855 isolated node(s):** `type`, `command`, `args`, `description`, `schema_version` (+5850 more)
+- **6316 isolated node(s):** `type`, `command`, `args`, `description`, `id` (+6311 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **148 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **151 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `build_context()` connect `Community 367` to `Community 357`, `Community 305`, `Community 818`, `Community 1076`, `Community 213`, `Community 87`, `Community 631`, `Community 215`?**
-  _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **Why does `rates_for()` connect `Community 87` to `Community 320`, `Community 348`, `Community 367`?**
-  _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **Why does `estimate_shipment_cbm_deterministic()` connect `Community 555` to `Community 849`, `Community 99`, `Community 508`, `Community 631`?**
-  _High betweenness centrality (0.002) - this node is a cross-community bridge._
+- **Why does `rates_for()` connect `Community 358` to `Community 320`, `Community 621`, `Community 367`, `Community 342`, `Community 348`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **Why does `build_context()` connect `Community 367` to `Community 357`, `Community 358`, `Community 305`, `Community 1234`, `Community 531`, `Community 213`, `Community 342`, `Community 631`, `Community 215`?**
+  _High betweenness centrality (0.005) - this node is a cross-community bridge._
+- **Why does `main()` connect `Community 621` to `Community 358`, `Community 291`, `Community 475`, `Community 831`?**
+  _High betweenness centrality (0.004) - this node is a cross-community bridge._
 - **Are the 35 inferred relationships involving `StructuredLogger` (e.g. with `UnregisteredDriverError` and `Airtable fetch for settlement — uses field IDs in filterByFormula (via returnFie`) actually correct?**
   _`StructuredLogger` has 35 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 34 inferred relationships involving `assign_waves()` (e.g. with `main()` and `main()`) actually correct?**
-  _`assign_waves()` has 34 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `type`, `command`, `args` to the rest of the system?**
-  _7162 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _7759 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07231638418079096 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07130333138515488 - nodes in this community are weakly interconnected._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.0597567424643046 - nodes in this community are weakly interconnected._

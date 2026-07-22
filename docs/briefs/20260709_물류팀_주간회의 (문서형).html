@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>260709 물류파트 주간 운영 회의록 (문서형)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+/* ─────────────────────────────────────────────────────────
+   DOC STYLE · "문서형" 에디토리얼 레이아웃 / 가이드라인 / 레퍼런스
+   Editorial layout: left nav · article · right TOC
+   Fonts: Newsreader (serif) + Pretendard (sans) + JetBrains Mono
+   ───────────────────────────────────────────────────────── */
+
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#fbfbfa;
+  --surface-3:#f4f4f2;
+  --ink:#1a1a1a;
+  --ink-2:#3a3a38;
+  --muted:#75756f;
+  --muted-2:#a8a8a2;
+  --line:#ebebe6;
+  --line-2:#f2f2ee;
+  --accent:#3b3b6e;
+  --accent-soft:#f2f2fb;
+  --highlight:#fff7c2;
+  --warn:#8a3a00;
+  --warn-soft:#fff3e6;
+  --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;
+}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+.topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+.topbar .sep{color:var(--muted-2)}
+.topbar .doc-name{color:var(--muted);font-size:13px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+.topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+
+/* ── 3-COL LAYOUT ────────────────────────────────────── */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+
+/* ── LEFT NAV ────────────────────────────────────────── */
+aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+aside.side h4:first-child{margin-top:0}
+aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+aside.side li a{display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);border-left:1px solid transparent;transition:color .12s,border-color .12s;line-height:1.45}
+aside.side li a:hover{color:var(--ink);text-decoration:none}
+aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+
+/* ── ARTICLE ─────────────────────────────────────────── */
+article{min-width:0;max-width:720px;margin:0 auto}
+article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+article h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;color:var(--ink)}
+article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+article .byline .k{color:var(--muted-2);margin-right:4px}
+
+article h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;display:flex;align-items:baseline;gap:12px;position:relative}
+article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+
+article h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px}
+article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+
+article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+article p strong{color:var(--ink);font-weight:600}
+article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+
+article code,code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+pre.code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:14px 18px;color:var(--ink-2);line-height:1.65;overflow-x:auto;max-width:640px;margin:18px 0}
+pre.code .c{color:var(--accent);font-weight:500}
+pre.code .h{color:var(--muted);font-style:italic}
+
+article ul,article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+article ul li,article ol li{margin:6px 0;line-height:1.75}
+article ul li::marker{color:var(--muted-2)}
+article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+/* ── COMPONENTS ──────────────────────────────────────── */
+.pullquote{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;max-width:640px}
+.pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+.pullquote cite::before{content:"— "}
+
+.note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+.note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+.note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+.note .body strong{color:var(--ink)}
+.note.warn{border-top-color:var(--warn)}
+.note.warn .tag{color:var(--warn)}
+.note.accent{border-top-color:var(--accent)}
+.note.accent .tag{color:var(--accent)}
+
+dl.def{margin:0 0 24px;max-width:680px}
+dl.def > div{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+dl.def > div:first-child{border-top:1px solid var(--ink)}
+dl.def > div:last-child{border-bottom:1px solid var(--line)}
+dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+
+.formula{max-width:640px;margin:24px 0;padding:18px 22px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:13.5px;color:var(--ink);line-height:1.7;position:relative}
+.formula::before{content:"FORMULA";position:absolute;top:-10px;left:14px;background:#fff;padding:2px 8px;font-size:9.5px;letter-spacing:0.12em;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.formula .c{color:var(--accent);font-weight:500}
+.formula .em{background:var(--highlight);padding:0 4px;border-radius:2px}
+
+.tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:680px;font-size:13.5px}
+.tbl .r{display:grid;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.tbl .r:last-child{border-bottom:0}
+.tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;padding-bottom:8px}
+.tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+.tbl.c3 .r{grid-template-columns:140px 160px 1fr;gap:18px}
+.tbl.c3-wide .r{grid-template-columns:170px 1fr 1fr;gap:18px}
+.tbl.c3-num .r{grid-template-columns:1.4fr 80px 80px;gap:16px}
+.tbl.c4 .r{grid-template-columns:140px 140px 1fr 130px;gap:14px}
+.tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.tbl strong{color:var(--ink);font-weight:600}
+.tbl .num{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--ink-2)}
+.tbl .total{font-family:var(--mono);font-weight:600;color:var(--ink);border-top:1px solid var(--ink);padding-top:11px}
+
+.tag-pill{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:#fff;letter-spacing:0.03em}
+.tag-pill.solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-pill.warn{background:var(--warn-soft);color:var(--warn);border-color:#e8c8a8}
+.tag-pill.accent{background:var(--accent-soft);color:var(--accent);border-color:#d8d8ee}
+
+.concepts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:24px 0;max-width:720px}
+.concept{border:1px solid var(--line);border-radius:4px;padding:18px;background:var(--surface-2);position:relative;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.concept .n{position:absolute;top:14px;right:18px;font-family:var(--serif);font-size:36px;font-weight:600;color:var(--ink);opacity:0.1;line-height:1}
+.concept .t{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);line-height:1.3;padding-right:28px}
+.concept .t .sub{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+
+.roadmap{margin:24px 0;max-width:720px;display:grid;gap:8px}
+.road-row{display:grid;grid-template-columns:100px 1fr;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.road-row .v{background:var(--ink);color:#fff;padding:14px 16px;font-family:var(--mono);font-size:11.5px;letter-spacing:0.05em;font-weight:500;display:flex;align-items:center}
+.road-row .d{padding:14px 18px;font-size:14px;color:var(--ink-2);line-height:1.6}
+.road-row .d strong{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+
+.src{max-width:640px;margin-top:6px;padding:10px 14px;border:1px dashed var(--muted-2);border-radius:3px;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--surface-2)}
+.src strong{color:var(--ink-2)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px;margin:24px 0}
+.stat{border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:var(--surface-2)}
+.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat .v{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+.stat .v .unit{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px;font-family:var(--mono)}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+.flow{max-width:640px;margin:20px 0;padding:18px 22px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+.flow .arr{color:var(--accent);font-weight:500}
+.flow strong{color:var(--ink);font-weight:600}
+
+.tree{max-width:640px;margin:20px 0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:18px 22px}
+.tree strong{color:var(--ink);font-weight:600}
+.tree .l{color:var(--muted-2)}
+
+/* ── RIGHT TOC ────────────────────────────────────────── */
+aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+aside.toc ul{list-style:none;padding:0;margin:0}
+aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+aside.toc li a:hover{color:var(--ink);text-decoration:none}
+aside.toc li a.active{color:var(--ink)}
+aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+
+.dropcap::first-letter{font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;float:left;padding:6px 10px 0 0;color:var(--ink)}
+
+footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+@media print{
+  .topbar,aside.side,aside.toc{display:none}
+  .layout{display:block;padding:0}
+  article{max-width:100%}
+  article h2{break-after:avoid}
+  .formula,.concept,.road-row,.tbl,.stat,.flow,.tree,pre.code{break-inside:avoid}
+}
+@media (max-width:1040px){
+  .layout{grid-template-columns:220px minmax(0,1fr)}
+  aside.toc{display:none}
+}
+@media (max-width:720px){
+  .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+  aside.side{position:static;height:auto}
+  .topbar{padding:12px 20px}
+  article h1{font-size:34px}
+  article h2{font-size:24px;margin-top:48px}
+  .topbar .doc-name{display:none}
+  .concepts,.stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- 1. TOP BAR -->
+<div class="topbar">
+  <div class="mark"><div class="dot">SC</div> Sincerely SCM</div>
+  <span class="sep">/</span>
+  <span class="doc-name">물류파트 주간 운영 회의록</span>
+  <div class="right">
+    <span>MOM-260709</span>
+    <span class="ver">v1.0 · 26.07.09</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- 2. LEFT SIDE NAV -->
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch0">I · 회의 개요</a></li>
+      <li><a href="#chA">II · 진척도 및 KPI</a></li>
+      <li><a href="#chB">III · 안건별 논의 및 의사결정</a></li>
+      <li><a href="#chC">IV · 이슈 및 리스크</a></li>
+      <li><a href="#chD">V · 실행 계획</a></li>
+      <li><a href="#chE">VI · 보류 및 펜딩</a></li>
+      <li><a href="#chF">VII · 차기 회의</a></li>
+      <li><a href="#chG">VIII · PMP 요약</a></li>
+    </ul>
+    <div class="cross">
+      <a href="#">feature_list.json <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <!-- 3. ARTICLE -->
+  <article>
+
+    <div class="eyebrow">MEETING MINUTES · WEEKLY OPERATIONS · PMP STANDARD</div>
+    <h1>물류파트 주간 운영 회의록</h1>
+    <p class="lede">A1센터 공간 제약, 파츠 관리 프로세스 전환, 부자재 담당 구분 등 7개 안건을 논의하고 6건의 신규 Action Item을 확정한 물류파트 주간 운영 회의 기록.</p>
+    <div class="byline">
+      <span><span class="k">작성일</span>2026.07.09</span>
+      <span><span class="k">회의유형</span>주간 운영 회의</span>
+      <span><span class="k">참석자</span>윤지수, 문경선, 김영준</span>
+      <span><span class="k">작성자</span>윤지수</span>
+    </div>
+
+    <!-- ─── I. 회의 개요 ─── -->
+    <h2 id="ch0"><span class="nm">I</span>회의 개요</h2>
+    <p class="dropcap">본 회의는 2026년 7월 9일 목요일 오전 11시부터 30분간, 에이원센터에서 윤지수(물류파트장), 문경선(물류파트원), 김영준(SCM실장) 3인 참석으로 진행되었다. A1센터 공간·파츠 관리 이슈 점검, 파츠 생성 프로세스 전환(SCM 직접 담당) 공유, 월간 이니셔티브 완료 보고, 신제품 사전정보 공유 프로세스 및 부자재 담당구분 정리가 목적이었다.</p>
+    <p>정량 KPI 리포트 없이 운영 이슈 중심으로 논의가 이루어졌으며, 총 7개 안건에서 5건은 확정, 1건은 완료 보고, 1건은 보류로 처리되었다.</p>
+
+    <div class="pullquote">
+      파츠 생성 업무는 이제 SCM이 직접 담당한다 — MD → DI 요청 체계를 정승윤·안나 직접 담당 체계로 전환.
+      <cite>물류파트 주간 운영 회의, 2026-07-09</cite>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">CAUTION</div>
+      <div class="body">근거 데이터 누락 — STT 화자 분리 정확도가 낮아 전체 참석자 명단(정승윤·안나 참석 여부 포함)을 텍스트만으로 확정하기 어렵다. <strong>추후 확인 필요.</strong></div>
+    </div>
+
+    <!-- ─── II. 진척도 및 KPI ─── -->
+    <h2 id="chA"><span class="nm">II</span>진척도 및 KPI</h2>
+    <p>이번 회의는 정량 KPI 리포트 없이 운영 이슈 중심으로 진행되었다. 아래 수치는 공식 KPI 지표가 아닌 회의 문서 구조상의 건수 요약이며, 목표 대비 달성도 역시 해당 없음으로 다음 회의 시 필요하면 별도 보고할 예정이다.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">논의 안건</div>
+        <div class="v">7<span class="unit">건</span></div>
+        <div class="sub">확정 5건 · 완료 보고 1건 · 보류 1건</div>
+      </div>
+      <div class="stat">
+        <div class="k">이슈 / 리스크 등록</div>
+        <div class="v">5<span class="unit">건</span></div>
+        <div class="sub">High 1건 · Medium 3건 · Low 1건</div>
+      </div>
+      <div class="stat">
+        <div class="k">신규 Action Items</div>
+        <div class="v">6<span class="unit">건</span></div>
+        <div class="sub">5-B 참조 · 기한 전건 미정</div>
+      </div>
+    </div>
+
+    <div class="tbl c2">
+      <div class="r h"><div>참고 사례 (공식 집계 아님)</div><div>내용</div></div>
+      <div class="r">
+        <div><strong>대량 입고 단위</strong></div>
+        <div>50 ~ 60개 단위 — 개별 사례 언급</div>
+      </div>
+      <div class="r">
+        <div><strong>입고 오차 사례</strong></div>
+        <div>요청 100개 대비 입고 600개 — 개별 사례 언급, 공식 집계 지표 아님</div>
+      </div>
+    </div>
+
+    <!-- ─── III. 안건별 논의 및 의사결정 ─── -->
+    <h2 id="chB"><span class="nm">III</span>안건별 논의 및 의사결정</h2>
+    <p>이번 회의에서 7건의 안건을 논의하였다. 5건은 방향을 확정하였고, 1건(안건 5)은 완료 보고, 1건(안건 6)은 보류 처리되었다.</p>
+
+    <div class="note accent">
+      <div class="tag">안건 1 · 입고 / 출고 / 보관 공간 혼재 문제 (A1센터 공간 제약)</div>
+      <div class="body">
+        <strong>배경:</strong> A1센터 공간이 제한적이어서 입고·출고·자재 보관 구역이 명확히 분리되지 않아 피킹 시 비효율 발생. 대량 입고(50 ~ 60개 단위) 시 프리패키징 잔여 자재가 출고 좌표에 혼재되는 사례 확인. 즉시실시 생산구역용 하단 두 좌표 중 하나는 자재 재고 부족으로 회수해 자재용으로 전환, 현재 한 좌표만 생산품용으로 운영 중.<br><br>
+        <strong>결정:</strong> 공간 문제는 장기 관점에서 계속 논의. 신규 임대(112호 검토)보다 기존 공간 재배치 및 불용재고 처분을 우선 검토. 문경선과 별도 논의한 결과는 다음 회의에서 공유 예정.<br><br>
+        <strong>근거 및 기대 효과:</strong> 신규 임대는 비용 대비 효과가 불확실한 반면, 불용재고 처분은 즉시 실행 가능한 저비용 대안.
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 2 · 파츠(부속품) 분리 관리 이슈 — 결합상품 트레이드오프</div>
+      <div class="body">
+        <strong>배경:</strong> 오아시스 마사지기, 텀블러 등 결합상품은 박스·본품·설명서 등 구성요소를 얼마나 세분화해 파츠로 관리할지가 재고관리 복잡도에 직접 영향. 과거 설명서까지 별도 파츠로 관리했던 사례는 관리 부담으로 폐지된 이력.<br><br>
+        <strong>결정:</strong> 파츠는 필요한 만큼만 나누고 과도하게 쪼개지 않는 것을 원칙으로 함. 신제품·리뉴얼 기획 단계에서 협력사 이슈(별도 인쇄 등) 가능성을 사전 고려해 파츠 분리 여부를 결정. 원가 이슈로 설명서 등을 별도 파츠로 분리할 필요는 없음을 확인(원가 흡수 가능).<br><br>
+        <strong>근거 및 기대 효과:</strong> 파츠 과다 분리 시 물류팀 수작업 관리 부담 급증, 파츠 간 수량 불일치 리스크 확대. 협력사 사전 고려 없이 결정된 텀블러 리뉴얼 건에서 이미 비효율이 발생한 경험이 있어 사전 검토 프로세스 필요성 확인.
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 3 · 여분 / 불량 재고 관리 (자석 등 부자재 여분 보관)</div>
+      <div class="body">
+        <strong>배경:</strong> 박스 파손, 인쇄 불량 등으로 결합상품 구성요소(자석, 파우치, 박스 등) 여분이 발생하며 파츠번호 없이 별도 보관 중. 유기농 케이블키트 관련 파츠번호 없는 플레이트 입고 건이 사례로 언급됨.<br><br>
+        <strong>결정:</strong> 부자재 여분 관리 기준(리스트 / 시트 관리) 필요성 인식. 좌표(로케이션) 없이 장기(약 2개월 이상) 보관하지 않는 것을 원칙으로 검토.<br><br>
+        <strong>근거 및 기대 효과:</strong> 현재 개인 기억에 의존해 여분 재고를 추적 중이며, 신제품 증가에 따라 관리 대상이 늘어날수록 추적 실패 리스크 확대. 리스트화로 좌표 미배정 장기재고를 사전 식별 가능.
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 4 · 파츠 생성 프로세스 전환 — MD → DI 요청에서 SCM 직접 담당으로</div>
+      <div class="body">
+        <strong>배경:</strong> 기존에는 MD가 신제품 출시 시 DI에 파츠 생성을 요청하는 프로세스였으나, 파츠 개수만큼 반복 신청이 필요한 등 절차적 비효율이 있었던 것으로 파악됨.<br><br>
+        <strong>결정:</strong> 정승윤·안나가 SCM에서 파츠 생성을 직접(주기적으로) 담당하는 것으로 전환 확정(현재 안나가 파츠 샘플링 진행 중). 파츠 생성에 대한 명확한 기준을 세워야 한다는 데 공감대 형성(구체 기준은 추후 논의).<br><br>
+        <strong>근거 및 기대 효과:</strong> SCM이 파츠 관리와 직접적 연관도가 높아 시스템적 보완이 가능하다는 판단(정승윤 의견). MD → DI 경유 대비 절차 단순화 기대.
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 5 · 월간 이니셔티브 완료 보고 (총 3건)</div>
+      <div class="body">
+        <strong>배경:</strong> 물류팀 월간 이니셔티브 발표 자료 공유 차원에서 완료 건 보고.<br><br>
+        <strong>결정:</strong> 완료 보고 3건 — ① 비스포크 관련 이니셔티브, ② 기존 수동 입력(OX 등)이었던 항목의 자동화 배치 전환 완료, ③ 자동화 배치 추천 기능 구축 완료. 3건 모두 완료로 확인·보고.<br><br>
+        <strong>근거 및 기대 효과:</strong> 완료 보고 사안으로 별도 의사결정 불요. 세부 진행률·지표 관련 문의는 안나·품질혁신파트와 논의 예정.
+      </div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">CAUTION</div>
+      <div class="body">근거 데이터 누락 — ① 비스포크 관련 이니셔티브의 구체적 내용이 STT에서 명확하지 않다. <strong>추후 보완 필요.</strong></div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 6 · 신제품 사전 정보 공유 프로세스</div>
+      <div class="body">
+        <strong>배경:</strong> 신제품 출시 전 물류팀에 사전 정보가 공유되어야 하나 현재 이루어지지 않고 있음. 원래는 SCM Final 단계에서 결정·공유되어야 할 사항들이 사후에(출시 임박 시점) 다시 논의되는 문제가 반복됨(텀블러 리뉴얼 파츠 분리 이슈 등 사례 존재).<br><br>
+        <strong>결정:</strong> 이번 회의에서 구체적 재발방지 대책은 확정되지 않음 — 문제 인식만 공유. <strong>보류 항목으로 이동(VI 참조).</strong><br><br>
+        <strong>근거 및 기대 효과:</strong> 해당 없음(보류).
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">안건 7 · 부자재(즉시실시 항목) 담당 구분 — 자재팀 vs 발주 / 구매팀</div>
+      <div class="body">
+        <strong>배경:</strong> 즉시실시 항목 리스트 상 "부자재" 항목의 담당 구분이 모호하여 물류팀이 전담하는 것으로 오인될 소지가 있었음.<br><br>
+        <strong>결정:</strong> 자재팀 관리 자재는 물류팀(자재지원) 담당, 그 외 발주·구매 관련 부자재는 발주팀 / 구매팀 담당으로 구분하는 방향에 합의(김영준 확인, 승희님도 동일 취지 의견 제시한 것으로 언급됨).<br><br>
+        <strong>근거 및 기대 효과:</strong> 업무 범위를 명확화하여 책임소재 혼선을 방지.
+      </div>
+    </div>
+
+    <!-- ─── IV. 이슈 및 리스크 ─── -->
+    <h2 id="chC"><span class="nm">IV</span>이슈 및 리스크</h2>
+    <p>이번 회의에서 식별된 5건의 이슈 및 리스크를 우선순위별로 정리한다. A1센터 공간 부족 1건이 High 영향도로 등록되었다.</p>
+
+    <div class="tbl c4">
+      <div class="r h"><div>#</div><div>이슈 / 리스크</div><div>영향도</div><div>담당 / 조치</div></div>
+      <div class="r">
+        <div><strong>1</strong></div>
+        <div>A1센터 공간 부족 → 입고 / 출고 / 자재구역 혼재로 업무 비효율 지속</div>
+        <div><span class="tag-pill solid">High</span></div>
+        <div>윤지수 · 장기 논의, 다음 회의 시 문경선 논의 결과 공유</div>
+      </div>
+      <div class="r">
+        <div><strong>2</strong></div>
+        <div>결합상품 파츠 과다 분리 시 관리부담 급증 리스크</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>정승윤, 안나 · 파츠 생성 명확 기준 수립</div>
+      </div>
+      <div class="r">
+        <div><strong>3</strong></div>
+        <div>부자재 여분 재고가 파츠번호 없이 비체계적으로 보관 중</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>문경선 · 리스트 / 시트 관리 기준 수립</div>
+      </div>
+      <div class="r">
+        <div><strong>4</strong></div>
+        <div>신제품 사전정보 공유 프로세스 미작동 (SCM Final 단계 → 사후 재논의 반복)</div>
+        <div><span class="tag-pill warn">Medium</span></div>
+        <div>미정 · 프로세스 정비 필요(보류)</div>
+      </div>
+      <div class="r">
+        <div><strong>5</strong></div>
+        <div>즉시실시 항목 중 생산구역 좌표 부족 (하단 2좌표 중 1개만 사용, 대형품목 수용 곤란)</div>
+        <div><span class="tag-pill accent">Low</span></div>
+        <div>문경선 · 프리패키징 후 상단 이관 등 대안 모색</div>
+      </div>
+    </div>
+
+    <!-- ─── V. 실행 계획 ─── -->
+    <h2 id="chD"><span class="nm">V</span>실행 계획</h2>
+    <p>이번 회의에서 완료 보고된 이전 Action Items 3건과 신규로 확정된 Action Items 6건을 정리한다.</p>
+
+    <h3 id="chD-1">이전 Action Items 진행 현황</h3>
+    <p>이번 회의에서 완료 보고된 월간 이니셔티브 3건(안건 5 참조).</p>
+
+    <div class="tbl c4">
+      <div class="r h"><div>NO</div><div>업무</div><div>담당 / 기한</div><div>진행현황</div></div>
+      <div class="r">
+        <div class="mono">1</div>
+        <div>비스포크 관련 이니셔티브</div>
+        <div class="mono">미정 · —</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+      <div class="r">
+        <div class="mono">2</div>
+        <div>수동 입력(OX) → 자동화 배치 전환</div>
+        <div class="mono">미정 · —</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+      <div class="r">
+        <div class="mono">3</div>
+        <div>자동화 배치 추천 기능 구축</div>
+        <div class="mono">미정 · —</div>
+        <div><span class="tag-pill accent">완료</span></div>
+      </div>
+    </div>
+
+    <h3 id="chD-2">신규 Action Items</h3>
+
+    <div class="roadmap">
+      <div class="road-row">
+        <div class="v">High</div>
+        <div class="d">
+          <strong>A1센터 공간 재배치 · 불용재고 처분 방안 수립</strong>
+          문경선과 논의 후 결과 공유 · 담당: 윤지수 · 기한: 미정
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">High</div>
+        <div class="d">
+          <strong>파츠 생성 명확한 기준 수립 (과다 분리 방지)</strong>
+          담당: 정승윤, 안나 · 기한: 미정 · 연계: SK-01
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Medium</div>
+        <div class="d">
+          <strong>부자재 여분 재고 리스트 / 시트 관리 기준 수립</strong>
+          담당: 문경선 · 기한: 미정 · 연계: SK-03 <span class="tag-pill warn">Medium</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Medium</div>
+        <div class="d">
+          <strong>신제품 사전정보 공유 프로세스 정비 (SCM Final 단계 공유 체계화)</strong>
+          담당: 미정 · 기한: 미정 · 연계: D3 <span class="tag-pill warn">Medium</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Low</div>
+        <div class="d">
+          <strong>부자재(자재팀 vs 발주 / 구매팀) 담당 구분 결과 관련 부서 공지</strong>
+          담당: 미정 · 기한: 미정 <span class="tag-pill accent">Low</span>
+        </div>
+      </div>
+      <div class="road-row">
+        <div class="v">Low</div>
+        <div class="d">
+          <strong>즉시실시 생산구역 좌표 부족 대안 검토</strong>
+          담당: 문경선 · 기한: 미정 · 연계: SK-01 <span class="tag-pill accent">Low</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── VI. 보류 및 펜딩 ─── -->
+    <h2 id="chE"><span class="nm">VI</span>보류 및 펜딩</h2>
+    <p>다음 3건은 구체 대책 또는 기준 미확정으로 이번 회의에서 결정을 유보하였다.</p>
+
+    <div class="note warn">
+      <div class="tag">PENDING · 1</div>
+      <div class="body"><strong>신제품 사전정보 공유 프로세스 재정비 (안건 6)</strong> — SCM Final 단계 공유 미흡의 근본 원인 파악 및 구체적 대책 미확정. 재논의 예정: 미정(차기 정기회의).</div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">PENDING · 2</div>
+      <div class="body"><strong>A1센터 공간 확보 방안 (신규 임대 vs 재배치)</strong> — 비용 대비 효과 불확실, 추가 검토 필요. 재논의 예정: 미정(차기 정기회의).</div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">PENDING · 3</div>
+      <div class="body"><strong>파츠 생성 명확 기준 수립</strong> — 구체적 기준 항목 미확정. 재논의 예정: 미정(차기 정기회의).</div>
+    </div>
+
+    <!-- ─── VII. 차기 회의 ─── -->
+    <h2 id="chF"><span class="nm">VII</span>차기 회의</h2>
+
+    <div class="note">
+      <div class="tag">NEXT MEETING</div>
+      <div class="body">
+        <strong>일정:</strong> 미정 (기록 없음)<br><br>
+        <strong>예정 안건:</strong><br>
+        1. A1센터 공간 문제 — 윤지수·문경선 논의 결과 공유<br>
+        2. 파츠 생성 명확 기준 확정 (정승윤·안나)<br>
+        3. 부자재(자재팀 vs 발주 / 구매팀) 담당구분 관련 부서 공지 확인<br><br>
+        <strong>특이 사항:</strong> 없음
+      </div>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">CAUTION</div>
+      <div class="body">근거 데이터 누락 — 차기 회의 일정 미기재. <strong>추후 보완 필요.</strong></div>
+    </div>
+
+    <!-- ─── VIII. PMP 요약 ─── -->
+    <h2 id="chG"><span class="nm">VIII</span>PMP 관점 요약</h2>
+
+    <div class="note accent">
+      <div class="tag">IMPORTANT</div>
+      <div class="body">PMP Standard 관점에서 이번 회의의 핵심 내용을 <strong>Scope · Schedule · Risk · Financial Impact</strong> 4개 영역으로 요약한다.</div>
+    </div>
+
+    <div class="concepts">
+      <div class="concept">
+        <span class="n">01</span>
+        <div class="t">Scope<span class="sub">범위</span></div>
+        <p style="margin:0;font-size:13.5px">파츠 생성 업무가 MD → DI 요청 체계에서 SCM(정승윤·안나) 직접 담당으로 이관되며 물류팀 업무 범위 재정의. 부자재 담당 범위도 자재팀 관리 자재(물류팀) vs 그 외(발주 / 구매팀)로 명확화.</p>
+      </div>
+      <div class="concept">
+        <span class="n">02</span>
+        <div class="t">Schedule<span class="sub">일정</span></div>
+        <p style="margin:0;font-size:13.5px">A1센터 공간 문제는 장기 과제로 지속 논의 예정(구체 일정 미정). 파츠 생성 기준 수립, 여분재고 관리기준 수립 모두 기한 미정 — 다음 회의에서 구체화 필요.</p>
+      </div>
+      <div class="concept">
+        <span class="n">03</span>
+        <div class="t">Risk<span class="sub">리스크</span></div>
+        <p style="margin:0;font-size:13.5px">A1센터 공간 제약이 신제품 증가에 따라 지속 압박 요인으로 작용. 파츠 과다 분리 시 관리 리스크, 여분재고 비체계적 관리로 인한 추적 누락 위험, 신제품 사전정보 공유 프로세스 공백으로 인한 사후 재논의 반복 리스크 상존.</p>
+      </div>
+      <div class="concept">
+        <span class="n">04</span>
+        <div class="t">Financial Impact<span class="sub">재무 영향</span></div>
+        <p style="margin:0;font-size:13.5px">신규 공간 임대 시 비용 대비 효과가 크지 않을 것이라는 판단(윤지수) — 불용재고 처분을 통한 저비용 공간 확보가 우선 검토 대상. 여분재고 관리 부실 시 파악되지 않은 재고 손실 리스크 존재하나 구체 금액은 산출되지 않음.</p>
+      </div>
+    </div>
+
+    <footer class="end">
+      <span>MOM-260709 · v1.0</span>
+      <span>END OF DOCUMENT</span>
+    </footer>
+
+  </article>
+
+  <!-- 4. RIGHT TOC -->
+  <aside class="toc" id="toc">
+    <h5>이 문서 안에서</h5>
+    <ul>
+      <li><a href="#ch0">I · 회의 개요</a></li>
+      <li><a href="#chA">II · 진척도 및 KPI</a></li>
+      <li><a href="#chB">III · 안건별 논의</a></li>
+      <li><a href="#chC">IV · 이슈 및 리스크</a></li>
+      <li><a href="#chD">V · 실행 계획</a></li>
+      <li class="sub"><a href="#chD-1">이전 Action Items</a></li>
+      <li class="sub"><a href="#chD-2">신규 Action Items</a></li>
+      <li><a href="#chE">VI · 보류 및 펜딩</a></li>
+      <li><a href="#chF">VII · 차기 회의</a></li>
+      <li><a href="#chG">VIII · PMP 요약</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<script>
+  (function(){
+    const navLinks = document.querySelectorAll('#nav a[href^="#"], #toc a[href^="#"]');
+    const sections = [...document.querySelectorAll('article h2[id], article h3[id]')];
+    function setActive(){
+      const y = window.scrollY + 100;
+      let current = sections[0];
+      for(const s of sections){ if(s.offsetTop <= y) current = s; }
+      if(!current) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current.id));
+    }
+    window.addEventListener('scroll', setActive, {passive:true});
+    setActive();
+  })();
+</script>
+
+</body>
+</html>
