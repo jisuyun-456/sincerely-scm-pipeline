@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>물류 실행 SSOT — 물류가 세우는 3가지 (Lv3·번역기·전개엔진)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+:root{
+  --bg:#fbfbfa; --surface:#ffffff; --ink:#1a1a1a; --ink-2:#3a3a38;
+  --muted:#75756f; --muted-2:#a8a8a2; --line:#e7e7e2; --line-2:#f0f0ec;
+  --sales:#8a6d3b; --sales-soft:#fbf5e9; --sales-line:#e6d5b0;
+  --logi:#3b5b6e; --logi-soft:#eef4f7; --logi-line:#c3d7e2;
+  --accent:#3b3b6e; --accent-soft:#f2f2fb;
+  --go:#2f7d4f; --go-soft:#eaf5ee; --fill:#b06a15; --fill-soft:#fbf1e2;
+  --serif:'Newsreader', ui-serif, Georgia, serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 32px 100px}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(251,251,250,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:13px 32px;display:flex;align-items:center;gap:16px;font-size:13px}
+.topbar .mark{display:flex;align-items:center;gap:9px;font-family:var(--serif);font-weight:600;font-size:16px}
+.topbar .dot{width:21px;height:21px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:9px}
+.topbar .sep{color:var(--muted-2)}
+.topbar .nm{color:var(--muted)}
+.topbar .right{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;gap:10px}
+.topbar .ver{border:1px solid var(--line);border-radius:4px;padding:2px 8px}
+
+/* hero */
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:6px 0 12px}
+h1{font-family:var(--serif);font-weight:600;font-size:40px;line-height:1.12;letter-spacing:-.02em;margin:0 0 18px}
+.thesis{background:var(--ink);color:#ededea;border-radius:8px;padding:26px 28px;margin:0 0 12px;font-size:17px;line-height:1.6}
+.thesis b{color:#fff}
+.thesis .big{font-family:var(--serif);font-size:21px;display:block;margin-bottom:10px;color:#fff}
+.thesis .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.thesis .pill{font-family:var(--mono);font-size:11.5px;padding:5px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.22);color:#e7e7e2}
+.thesis .pill.s{background:rgba(190,150,80,.22);border-color:rgba(190,150,80,.4)}
+.thesis .pill.l{background:rgba(120,170,200,.2);border-color:rgba(120,170,200,.4)}
+
+h2{font-family:var(--serif);font-weight:600;font-size:25px;letter-spacing:-.01em;margin:56px 0 6px;display:flex;align-items:baseline;gap:11px}
+h2 .n{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600}
+.sub{color:var(--muted);font-size:14px;margin:0 0 22px}
+
+/* ===== MAIN FLOW DIAGRAM ===== */
+.flow{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:26px 24px;margin:8px 0 4px}
+.lane-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+
+.nest-bar{border:1.5px solid var(--sales-line);background:var(--sales-soft);border-radius:9px;padding:15px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.nest-bar .tag{font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;background:var(--sales);padding:4px 10px;border-radius:5px;white-space:nowrap}
+.nest-bar .txt{font-size:14.5px;color:var(--ink-2)}
+.nest-bar .txt b{color:var(--ink)}
+.nest-bar .chips{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:11px;background:#fff;border:1px solid var(--sales-line);border-radius:5px;padding:3px 8px;color:var(--sales)}
+
+.down{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0 8px}
+.down .lbl{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.down .arr{font-size:20px;color:var(--muted-2);line-height:1}
+
+.logi-frame{border:1.5px dashed var(--logi-line);background:var(--logi-soft);border-radius:11px;padding:14px 16px 18px;position:relative}
+.logi-frame .frame-tag{position:absolute;top:-11px;left:18px;background:var(--logi);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 12px;border-radius:5px}
+.logi-frame .frame-note{position:absolute;top:-10px;right:16px;font-family:var(--mono);font-size:10.5px;color:var(--logi);background:var(--logi-soft);padding:2px 6px}
+
+.pipe{display:grid;grid-template-columns:1fr 26px 1fr 26px 1fr;align-items:stretch;gap:0;margin-top:10px}
+.stage{background:#fff;border:1px solid var(--logi-line);border-radius:9px;padding:15px 15px 14px;display:flex;flex-direction:column}
+.stage .num{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--logi);display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.stage .num .b{font-family:var(--mono);font-size:11px;background:var(--logi);color:#fff;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-weight:600}
+.stage .t{font-weight:600;font-size:15px;margin:0 0 5px;color:var(--ink)}
+.stage .d{font-size:12.5px;color:var(--ink-2);line-height:1.5;flex:1}
+.stage .st{margin-top:10px;font-family:var(--mono);font-size:10.5px;padding:3px 8px;border-radius:20px;align-self:flex-start}
+.st.go{background:var(--go-soft);color:var(--go)}
+.st.fill{background:var(--fill-soft);color:var(--fill)}
+.pipe .ar{display:grid;place-items:center;font-family:var(--mono);font-size:18px;color:var(--logi);font-weight:600}
+
+.out-bar{margin-top:16px;border:1.5px solid var(--go);background:var(--go-soft);border-radius:9px;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.out-bar .tag{font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;background:var(--go);padding:4px 10px;border-radius:5px}
+.out-bar .steps{font-family:var(--mono);font-size:12.5px;color:var(--go);letter-spacing:.01em}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.legend .i{display:flex;align-items:center;gap:6px}
+.legend .sw{width:22px;height:12px;border-radius:3px;display:inline-block}
+
+/* ===== 3 CARDS ===== */
+.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:10px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:20px 20px 18px;position:relative}
+.card .big-n{position:absolute;top:14px;right:18px;font-family:var(--serif);font-size:44px;font-weight:600;color:var(--logi);opacity:.12;line-height:1}
+.card .cap{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--logi);font-weight:600;margin-bottom:6px}
+.card h3{font-family:var(--serif);font-size:19px;font-weight:600;margin:0 0 10px;padding-right:34px;line-height:1.25}
+.card .q{font-size:13.5px;color:var(--ink-2);line-height:1.55;margin:0 0 12px}
+.card dl{margin:0;border-top:1px solid var(--line-2);padding-top:11px}
+.card dl div{display:flex;gap:8px;padding:3px 0;font-size:12.5px}
+.card dt{font-family:var(--mono);font-size:10.5px;color:var(--muted);min-width:44px;padding-top:2px}
+.card dd{margin:0;color:var(--ink-2);line-height:1.5}
+.card dd b{color:var(--ink)}
+.card .badge{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:20px;margin-top:12px}
+.badge.go{background:var(--go-soft);color:var(--go)}
+.badge.fill{background:var(--fill-soft);color:var(--fill)}
+
+/* ===== KITCHEN ANALOGY ===== */
+.kitchen{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 0;margin:8px 0;overflow:hidden}
+.krow{display:grid;grid-template-columns:150px 1fr;gap:0;border-bottom:1px solid var(--line-2);align-items:center}
+.krow:last-child{border-bottom:0}
+.krow .k-sys{padding:15px 20px;font-family:var(--mono);font-size:12.5px;font-weight:600;border-right:1px solid var(--line-2);height:100%;display:flex;align-items:center;gap:8px}
+.krow .k-sys.sales{background:var(--sales-soft);color:var(--sales)}
+.krow .k-sys.logi{background:var(--logi-soft);color:var(--logi)}
+.krow .k-body{padding:14px 22px;font-size:14px;color:var(--ink-2);line-height:1.55}
+.krow .k-body b{color:var(--ink);font-family:var(--serif);font-size:15px}
+.krow .k-emoji{font-size:15px}
+
+/* ===== STATUS ===== */
+.status{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+.scol{border:1px solid var(--line);border-radius:11px;padding:18px 20px;background:var(--surface)}
+.scol.done{border-left:3px solid var(--go)}
+.scol.todo{border-left:3px solid var(--fill)}
+.scol h4{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 12px;font-weight:600}
+.scol.done h4{color:var(--go)}
+.scol.todo h4{color:var(--fill)}
+.scol ul{margin:0;padding:0;list-style:none}
+.scol li{font-size:13.5px;color:var(--ink-2);padding:6px 0 6px 20px;position:relative;line-height:1.5;border-top:1px solid var(--line-2)}
+.scol li:first-child{border-top:0}
+.scol li b{color:var(--ink)}
+.scol.done li::before{content:"●";position:absolute;left:0;color:var(--go);font-size:11px;top:8px}
+.scol.todo li::before{content:"◍";position:absolute;left:0;color:var(--fill);font-size:11px;top:8px}
+
+.close{margin:44px 0 0;padding:22px 26px;border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:8px;background:var(--surface);font-family:var(--serif);font-size:18px;line-height:1.5;color:var(--ink)}
+
+.cross{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;gap:18px;flex-wrap:wrap}
+.cross a{color:var(--logi);text-decoration:none}
+.cross a:hover{text-decoration:underline}
+footer{margin-top:22px;font-family:var(--mono);font-size:11px;color:var(--muted-2);display:flex;justify-content:space-between}
+
+@media (max-width:820px){
+  .pipe{grid-template-columns:1fr}
+  .pipe .ar{transform:rotate(90deg);padding:6px 0}
+  .cards{grid-template-columns:1fr}
+  .status{grid-template-columns:1fr}
+  .krow{grid-template-columns:110px 1fr}
+  h1{font-size:30px}
+}
+@media print{
+  .topbar{display:none}
+  body{background:#fff;font-size:10pt}
+  .wrap{padding:0}
+  .flow,.card,.kitchen,.scol,.thesis{break-inside:avoid}
+  .cards,.status{break-inside:avoid}
+  h2{break-after:avoid}
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark"><div class="dot">SC</div> Sincerely SCM</div>
+  <span class="sep">/</span>
+  <span class="nm">물류 실행 SSOT — 물류가 세우는 3가지</span>
+  <div class="right"><span>SCM-NEST-SSOT-3PARTS</span><span class="ver">v1.0 · 26.07</span></div>
+</div>
+
+<div class="wrap">
+
+  <div class="eyebrow">킥오프 시각 자료 · NEST 데이터 기반 물류 BOM·CBM 체계</div>
+  <h1>NEST가 안 해주는 것을,<br>물류가 세 덩어리로 세운다</h1>
+
+  <div class="thesis">
+    <span class="big">NEST = "무엇을 팔았나"만 준다 (세일즈·CPQ 시스템).</span>
+    거기서 <b>번역기</b>로 코드를 우리 자재코드에 연결하고 → <b>Lv3</b>로 굿즈를 실제 부품으로 터뜨리고 → <b>전개엔진</b>이 발주·부피·배차·운임으로 자동 계산한다. 이 셋을 합친 것이 <b>물류 실행 SSOT</b>.
+    <div class="row">
+      <span class="pill s">NEST · 세일즈/마케팅용 데이터</span>
+      <span class="pill l">WMS·TMS · 물류 실행용 데이터</span>
+      <span class="pill l">크로스워크 · 두 세계의 번역기</span>
+    </div>
+  </div>
+
+  <!-- ===== MAIN DIAGRAM ===== -->
+  <h2><span class="n">01</span>핵심 그림 — 주문 하나가 물류로 흐르는 길</h2>
+  <p class="sub">위(세일즈)에서 확정된 주문이, 아래(물류)의 3단계를 거쳐 실행 가능한 지시로 바뀐다.</p>
+
+  <div class="flow">
+    <div class="lane-label">▲ 세일즈 SSOT — 이미 있음, 물류는 "수용"만</div>
+    <div class="nest-bar">
+      <span class="tag">NEST</span>
+      <span class="txt"><b>주문서</b> — 무엇을 몇 개, 어떤 키트로 팔기로 했나</span>
+      <span class="chips"><span class="chip">굿즈·옵션</span><span class="chip">수량</span><span class="chip">키트 구성</span></span>
+    </div>
+
+    <div class="down"><span class="lbl">주문서를 물류로 넘김 (API 조회)</span><span class="arr">▼</span></div>
+
+    <div class="logi-frame">
+      <span class="frame-tag">물류 실행 SSOT — 물류가 세운다</span>
+      <span class="frame-note">NEST엔 없는 영역</span>
+      <div class="pipe">
+        <div class="stage">
+          <div class="num"><span class="b">②</span> 번역기</div>
+          <div class="t">코드를 맞춘다</div>
+          <div class="d">NEST <code style="font-family:var(--mono);font-size:11px">DRCG</code> = TMS <code style="font-family:var(--mono);font-size:11px">SOLB</code> = WMS <code style="font-family:var(--mono);font-size:11px">PT0555…</code> — 시스템마다 다른 이름을 1:1로 잇는 대조표(크로스워크).</div>
+          <div class="st fill">◐ 테이블 있음 · 채우는 중</div>
+        </div>
+        <div class="ar">→</div>
+        <div class="stage">
+          <div class="num"><span class="b">①</span> Lv3 자재</div>
+          <div class="t">부품으로 터뜨린다</div>
+          <div class="d">"컬러펜 1개 = 잉크+펜대+단품박스 …8종". 굿즈→자재(PT) 명세. 발주·재고·입하가 도는 단위.</div>
+          <div class="st fill">◐ 데이터 있음 · 검증·치수 보강</div>
+        </div>
+        <div class="ar">→</div>
+        <div class="stage">
+          <div class="num"><span class="b">③</span> 전개엔진</div>
+          <div class="t">자동 계산한다</div>
+          <div class="d">주문 → 부족자재 발주, 부피, 배차 wave, 운임까지 산출하는 로직 (cascade S0~S7).</div>
+          <div class="st go">● 가동 중 · 하루 3회</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="down"><span class="lbl">실행 가능한 지시로 변환 완료</span><span class="arr">▼</span></div>
+
+    <div class="out-bar">
+      <span class="tag">물류 실행</span>
+      <span class="steps">발주 · 입하 CBM · 창고 적재 · 배차(베스트원/에이원 이동) · 운임 마감</span>
+    </div>
+
+    <div class="legend">
+      <span class="i"><span class="sw" style="background:var(--sales-soft);border:1px solid var(--sales-line)"></span> 세일즈 (NEST 소유)</span>
+      <span class="i"><span class="sw" style="background:var(--logi-soft);border:1px solid var(--logi-line)"></span> 물류가 세우는 것</span>
+      <span class="i">● 가동 중 &nbsp; ◐ 보강 중</span>
+    </div>
+  </div>
+
+  <!-- ===== 3 CARDS ===== -->
+  <h2><span class="n">02</span>세 덩어리 — 무엇을·왜·지금 상태</h2>
+  <p class="sub">"세운다"의 실체. 순서는 ①자재 → ②번역기 → ③엔진이지만, 흐름상 번역기가 먼저 작동한다.</p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="big-n">①</span>
+      <div class="cap">Lv3 · 자재 계층</div>
+      <h3>굿즈 하나가<br>무슨 부품인가</h3>
+      <p class="q">NEST는 "컬러펜 100개"까지만 안다. 그 1개가 PT1197(잉크)+PT1201(펜대)+PT1468(박스)… 로 이루어진다는 명세는 NEST에 없다.</p>
+      <dl>
+        <div><dt>왜 물류</dt><dd>발주·재고·입하가 전부 <b>자재(PT) 단위</b>로 돈다</dd></div>
+        <div><dt>SSOT</dt><dd>WMS_BOM · sync_parts · 재고</dd></div>
+        <div><dt>현재</dt><dd>데이터 1,702행 있음 — <b>검증 7%·치수 결손</b>이 실병목</dd></div>
+      </dl>
+      <span class="badge fill">채운다 / 검증한다</span>
+    </div>
+
+    <div class="card">
+      <span class="big-n">②</span>
+      <div class="cap">번역기 · 크로스워크</div>
+      <h3>시스템마다 다른<br>이름을 잇는 사전</h3>
+      <p class="q">NEST는 DRCG, TMS는 SOLB, WMS는 PT0555… 같은 물건인데 이름이 다르다. 이걸 안 이어서 지금 이름 텍스트로 억지 매칭 → 53%만 붙는다.</p>
+      <dl>
+        <div><dt>왜 물류</dt><dd>두 세계를 잇는 <b>번역 계층</b> — 물류 소유</dd></div>
+        <div><dt>SSOT</dt><dd>WMS_KeyCrosswalk (기존 테이블)</dd></div>
+        <div><dt>현재</dt><dd>테이블 있으나 미소비 → <b>NEST로 채우면 95.8% 연결</b></dd></div>
+      </dl>
+      <span class="badge fill">채운다 / cascade가 읽게</span>
+    </div>
+
+    <div class="card">
+      <span class="big-n">③</span>
+      <div class="cap">전개엔진 · cascade</div>
+      <h3>주문을 발주·부피·<br>배차·운임으로</h3>
+      <p class="q">번역기로 코드 맞추고 Lv3로 자재 알면 → "컬러펜 100개 = 잉크 부족 발주, 0.07m³, W1 배차, 6.4만원"을 자동 산출하는 기계.</p>
+      <dl>
+        <div><dt>왜 물류</dt><dd>주문→실행 <b>계산 로직</b> = 물류 실행 SSOT의 본체</dd></div>
+        <div><dt>SSOT</dt><dd>cascade S0~S7 (harness/backbone)</dd></div>
+        <div><dt>현재</dt><dd><b>이미 가동 중</b> — 하루 3회 cron</dd></div>
+      </dl>
+      <span class="badge go">가동 중 · 레벨 태깅만 추가</span>
+    </div>
+  </div>
+
+  <!-- ===== KITCHEN ANALOGY ===== -->
+  <h2><span class="n">03</span>비유 — 주방으로 보면</h2>
+  <p class="sub">NEST는 홀(주문 받는 곳). 요리는 주방(물류)이 한다. 주문서만으로는 요리가 안 된다.</p>
+
+  <div class="kitchen">
+    <div class="krow">
+      <div class="k-sys sales"><span class="k-emoji">📝</span> NEST</div>
+      <div class="k-body"><b>주문서</b> — "이 손님이 컬러펜 100개 시켰다". 여기까지가 홀(세일즈)의 일. 이걸론 요리 못 함.</div>
+    </div>
+    <div class="krow">
+      <div class="k-sys logi"><span class="k-emoji">🔤</span> 번역기</div>
+      <div class="k-body"><b>메뉴명↔재료명 대조표</b> — 주문서의 "컬러펜"을 창고 재료명(잉크·펜대)으로 바꿔주는 사전.</div>
+    </div>
+    <div class="krow">
+      <div class="k-sys logi"><span class="k-emoji">📖</span> Lv3 자재</div>
+      <div class="k-body"><b>레시피</b> — 컬러펜 1개 = 잉크 1 + 펜대 1 + 박스 1. 무슨 재료가 몇 개 드는지의 명세.</div>
+    </div>
+    <div class="krow">
+      <div class="k-sys logi"><span class="k-emoji">🍳</span> 전개엔진</div>
+      <div class="k-body"><b>주방 시스템</b> — 주문 들어오면 레시피 펼쳐 "재료 이만큼 필요·부족분 발주·차는 이걸로" 자동 산출.</div>
+    </div>
+  </div>
+
+  <!-- ===== STATUS ===== -->
+  <h2><span class="n">04</span>지금 상태 — 제로에서 시작이 아니다</h2>
+  <p class="sub">뼈대(전개엔진)는 이미 돌고 있다. 남은 건 데이터 품질과 번역 계층을 채우는 일.</p>
+
+  <div class="status">
+    <div class="scol done">
+      <h4>이미 있는 것</h4>
+      <ul>
+        <li><b>전개엔진(cascade)</b> S0~S7 하루 3회 가동 중</li>
+        <li><b>NEST 수용</b> — API 검증 완료 (수량 괴리 0% · 키 연결 95.8% · CBM 도달 96.9%)</li>
+        <li><b>레벨 구조 확정</b> — 1,265 프로젝트 전수, L0~L3 4계층 상한 문제없음</li>
+        <li><b>크로스워크 테이블·BOM 1,702행</b> 존재</li>
+      </ul>
+    </div>
+    <div class="scol todo">
+      <h4>채워야 할 것</h4>
+      <ul>
+        <li><b>PT 치수 입력</b> — 완결률 최대 레버 (S3 입하 CBM 병목)</li>
+        <li><b>BOM 검증율 7%→↑</b> · 구성유형 공백 63% 백필</li>
+        <li><b>크로스워크</b> NEST 증거로 채우고 cascade가 읽게</li>
+        <li><b>NEST에 요구</b> — 박스스펙 API 노출 · 견적 버전 신호</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="close">
+    "세일즈 SSOT(NEST)는 이미 있다. 없는 것은 <b style="font-style:normal">물류 실행 SSOT — Lv3 + 번역기 + 전개엔진</b>이다. 그걸 우리가 세운다."
+  </div>
+
+  <div class="cross">
+    <span>함께 보기:</span>
+    <a href="2026-07-14-nest-cbm-bom-cascade-design.md">CBM·BOM 설계 브리프 (3문항)</a>
+    <a href="../nest-poc-probe-20260710.md">NEST PoC 프로브 리포트</a>
+    <a href="../nest-level-sim-202603-06.md">4개월 레벨 시뮬레이션</a>
+    <a href="2026-06-24-bom-cbm-anna-kickoff-handoff.html">BOM·CBM 킥오프 핸드오프</a>
+  </div>
+
+  <footer>
+    <span>작성: 물류파트 · 킥오프 시각 자료 · SCM-NEST-SSOT-3PARTS · v1.0</span>
+    <span>END</span>
+  </footer>
+
+</div>
+</body>
+</html>
