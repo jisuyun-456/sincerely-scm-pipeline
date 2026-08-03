@@ -18,6 +18,8 @@ on:
 jobs:
   scorecard:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # scorecard_history.jsonl commit push
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +32,7 @@ jobs:
 
       - name: Run scorecard
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_API_KEY_TMS }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
         run: |
