@@ -44,14 +44,16 @@ jobs:
           SLACK_DM_USER_ID: ${{ secrets.SLACK_DM_USER_ID }}
         run: python scripts/tms_weekly_runner.py
 
-      # ── Step 3: WMS SAP 백필 ─────────────────────────────────────────────
+      # ── Step 3: WMS SAP 백필 (폐기 예정 합성 레이어 — 재설계로 stale 테이블 ID, 실패해도 파이프라인 계속) ──
       - name: WMS SAP Weekly Backfill
+        continue-on-error: true
         env:
           AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
         run: python scripts/wms_sap_weekly.py
 
-      # ── Step 4: WMS AutoResearch ─────────────────────────────────────────
+      # ── Step 4: WMS AutoResearch (구 SAP 테이블 의존 — 실패해도 파이프라인 계속. 실측 KPI는 Phase 2에서 재배선) ──
       - name: WMS Weekly AutoResearch
+        continue-on-error: true
         env:
           AIRTABLE_WMS_PAT: ${{ secrets.AIRTABLE_API_KEY_WMS }}
         run: python scripts/wms_weekly_runner.py
