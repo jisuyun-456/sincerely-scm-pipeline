@@ -69,9 +69,7 @@ FLD_MOV_ACT_DATE   = "flduN8khmYwdn7uVD"  # 실제입하일 (date)
 FLD_MOV_SUPPLIER   = "fldqGAjPo0SHxx2qW"  # (파트너)발주협력사명 텍스트
 
 # SAP GoodsReceipt 필드 ID
-FLD_GR_SUPPLIER    = "fldaxIoZHjqyvTEpm"  # supplier_name
 FLD_GR_STATUS      = "fldBdtbA9xyH8INvZ"  # status (singleSelect)
-FLD_GR_PROMISED    = "fldArJVYkAO3kTN4j"  # promised_date (date)
 FLD_GR_RECEIVED    = "fldOoesot79LX4YEg"  # received_at (dateTime)
 FLD_GR_DOCK_MIN    = "fldcfP2SIzTtTZzZp"  # dock_to_stock_min (number)
 FLD_GR_QC_RESULT   = "fldtvkxQelsElZTL9"  # qc_result (singleSelect)
@@ -101,6 +99,15 @@ DTS_TARGET_MIN = 480
 AIRTABLE_PAT = os.environ.get("AIRTABLE_WMS_PAT", os.environ.get("AIRTABLE_PAT", ""))
 HEADERS = {
     "Authorization": f"Bearer {AIRTABLE_PAT}",
+    "Content-Type": "application/json",
+}
+
+# ── IBSA sync_movement (Dock-to-Stock 실측 소스, 2026-08-04 전환) ──────────────
+BASE_ID_IBSA      = "app6DGHCPI3Yh3IFS"
+TBL_SYNC_MOVEMENT = "tblhzYiltSBm6vxBz"
+AIRTABLE_IBSA_PAT = os.environ.get("AIRTABLE_IBSA_PAT", "")
+HEADERS_IBSA = {
+    "Authorization": f"Bearer {AIRTABLE_IBSA_PAT}",
     "Content-Type": "application/json",
 }
 
@@ -140,6 +147,30 @@ def get_all_records(
     return records
 
 
+def get_all_records_ibsa(fields: list[str], formula: str | None = None) -> list[dict]:
+    """IBSA sync_movement 전용 fetch (별도 base/PAT, 필드명 기반 — 이 base는 field ID를 별도 확보하지 않음)"""
+    records, offset = [], None
+    while True:
+        params: dict = {"fields[]": fields, "pageSize": 100}
+        if offset:
+            params["offset"] = offset
+        if formula:
+            params["filterByFormula"] = formula
+        resp = requests.get(
+            f"https://api.airtable.com/v0/{BASE_ID_IBSA}/{TBL_SYNC_MOVEMENT}",
+            headers=HEADERS_IBSA,
+            params=params,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        records.extend(data.get("records", []))
+        offset = data.get("offset")
+        if not offset:
+            break
+        time.sleep(0.2)
+    return records
+
+
 def parse_date(val: str | None) -> date | None:
     if not val:
         return None
@@ -147,6 +178,13 @@ def parse_date(val: str | None) -> date | None:
         return date.fromisoformat(val[:10])
     except ValueError:
         return None
+
+
+def _week_bounds(week_id: str) -> tuple[date, date]:
+    """'2026-W31' → (해당 주 월요일, 금요일)"""
+    year_str, wk_str = week_id.split("-W")
+    monday = date.fromisocalendar(int(year_str), int(wk_str), 1)
+    return monday, monday + timedelta(days=4)
 
 
 # ── STEP 1-B: SAP 데이터 Pull ─────────────────────────────────────────────────
@@ -157,7 +195,7 @@ def step_pull_sap_data() -> dict:
     # GoodsReceipt — CONFIRMED/QC_FAIL/PARTIAL 전체
     gr_recs = get_all_records(
         TBL_GR,
-        fields=[FLD_GR_SUPPLIER, FLD_GR_STATUS, FLD_GR_PROMISED,
+        fields=[FLD_GR_STATUS,
                 FLD_GR_RECEIVED, FLD_GR_DOCK_MIN, FLD_GR_QC_RESULT, FLD_GR_DEFECT_CODE],
     )
 
@@ -365,24 +403,44 @@ def analyze_supplier_lead_time(data: dict) -> dict:
     }
 
 
-# ── Iter 4: Dock-to-Stock KPI ─────────────────────────────────────────────────
-def analyze_dock_to_stock(sap_data: dict) -> dict:
-    """WMS_GoodsReceipt.dock_to_stock_min 기반 Dock-to-Stock KPI"""
-    gr_recs = sap_data["gr_recs"]
-
+# ── Iter 4: Dock-to-Stock KPI (IBSA sync_movement 실측, 2026-08-04 전환) ───────
+def analyze_dock_to_stock(week_id: str) -> dict:
+    """IBSA sync_movement.입하완료처리시간→입고수량입력시간 실측 기반 Dock-to-Stock KPI (해당 주간 스코프)"""
     dts_values: list[float] = []
     within_target = 0
+    excluded_negative = 0  # 입고수량입력시간이 입하완료처리시간보다 앞선 타임스탬프 역전 레코드 (2026-08 W31 기준 182건 중 29건, ~16% — 무시 못 할 비중이라 별도 노출)
 
-    for rec in gr_recs:
-        f = rec["fields"]
-        if f.get(FLD_GR_STATUS) not in {"CONFIRMED", "QC_PASS"}:
-            continue
-        dts = f.get(FLD_GR_DOCK_MIN)
-        if dts is None:
-            continue
-        dts_values.append(float(dts))
-        if dts <= DTS_TARGET_MIN:
-            within_target += 1
+    if AIRTABLE_IBSA_PAT:
+        monday, friday = _week_bounds(week_id)
+        formula = (
+            f"AND(IS_AFTER({{입하완료처리시간}}, DATEADD('{monday.isoformat()}', -1, 'days')), "
+            f"IS_BEFORE({{입하완료처리시간}}, DATEADD('{friday.isoformat()}', 1, 'days')))"
+        )
+        try:
+            recs = get_all_records_ibsa(["입하완료처리시간", "입고수량입력시간"], formula=formula)
+        except requests.exceptions.RequestException:
+            recs = []  # IBSA PAT 미보급/네트워크 이슈 시 KPI 부재로 degrade (전체 리포트는 계속 진행)
+
+        for rec in recs:
+            f = rec["fields"]
+            start = f.get("입하완료처리시간")
+            end = f.get("입고수량입력시간")
+            if not start or not end:
+                continue
+            try:
+                t0 = datetime.fromisoformat(start.replace("Z", "+00:00"))
+                t1 = datetime.fromisoformat(end.replace("Z", "+00:00"))
+            except ValueError:
+                continue
+            mins = (t1 - t0).total_seconds() / 60
+            if mins < 0:
+                excluded_negative += 1
+                continue
+            if mins > 2000:  # 이상치 제외 (sanity bound)
+                continue
+            dts_values.append(mins)
+            if mins <= DTS_TARGET_MIN:
+                within_target += 1
 
     total = len(dts_values)
     avg_dts   = round(sum(dts_values) / total, 0) if total else None
@@ -397,6 +455,7 @@ def analyze_dock_to_stock(sap_data: dict) -> dict:
         "max_dts":      max_dts,
         "within_target": within_target,
         "target_pct":   target_pct,
+        "excluded_negative": excluded_negative,
     }
 
 
@@ -472,19 +531,27 @@ def analyze_qc_pareto(sap_data: dict) -> dict:
     }
 
 
-# ── Iter 7: 공급사 납기 준수율 ─────────────────────────────────────────────────
-def analyze_supplier_ontime(sap_data: dict) -> dict:
-    """WMS_GoodsReceipt.promised_date vs received_at 기반 공급사 납기 준수율"""
-    gr_recs = sap_data["gr_recs"]
+# ── Iter 7: 공급사 납기 준수율 (WMS movement 실측, 2026-08-04 전환) ────────────
+def analyze_supplier_ontime(week_id: str) -> dict:
+    """WMS movement.입하예상일 vs 실제입하일 실측 기반 공급사 납기 준수율 (해당 주간 스코프, 미입하 이력 여부 무관 전체)"""
+    monday, friday = _week_bounds(week_id)
+    formula = (
+        f"AND({{입하예상일}} != '', {{실제입하일}} != '', "
+        f"{{실제입하일}} >= '{monday.isoformat()}', {{실제입하일}} <= '{friday.isoformat()}')"
+    )
+    recs = get_all_records(
+        TBL_MOVEMENT,
+        fields=[FLD_MOV_EXP_DATE, FLD_MOV_ACT_DATE, FLD_MOV_SUPPLIER],
+        formula=formula,
+    )
 
     supplier_stats: dict[str, dict] = {}
 
-    for rec in gr_recs:
+    for rec in recs:
         f = rec["fields"]
-        supplier = (f.get(FLD_GR_SUPPLIER) or "미기재").strip()
-        promised = parse_date(f.get(FLD_GR_PROMISED))
-        received_raw = f.get(FLD_GR_RECEIVED)
-        received = parse_date(received_raw) if received_raw else None
+        supplier = (f.get(FLD_MOV_SUPPLIER) or "미기재").strip() or "미기재"
+        promised = parse_date(f.get(FLD_MOV_EXP_DATE))
+        received = parse_date(f.get(FLD_MOV_ACT_DATE))
 
         if supplier not in supplier_stats:
             supplier_stats[supplier] = {"total": 0, "ontime": 0, "late": 0}
@@ -691,7 +758,7 @@ def step_save_report(
     report = f"""# WMS Weekly — {week_str}  ({date_range})
 
 > 자동 생성: {date.today().isoformat()} | 볼륨: movement 최근 30일 / QC·납기: 전체 누적
-> [AS-IS] 스키마 변경 없음 - 정밀도 제한 있음 | [SAP EWM] 가상 백필 데이터 기반
+> [AS-IS] 스키마 변경 없음 - 정밀도 제한 있음 | [SAP EWM] QC 불합격률·피킹 정확도는 가상 백필 데이터 기반 (Dock-to-Stock·공급사 납기는 2026-08-04부터 IBSA/WMS movement 실측 전환)
 
 ---
 
@@ -702,10 +769,10 @@ def step_save_report(
 | QC 이슈 proxy | {qc_rate_str} | 생산산출+재고생산 중 이슈카테고리 발생률 |
 | 이번 주 입출고 볼륨 | {vol['this_total']}건 (전주 {vol['last_total']}건, WoW {'+' if vol['wow_change'] >= 0 else ''}{vol['wow_change']}건) | movement.이동목적 기준 |
 | 미입하 발생이력 | {sup['no_arrive_total']}건 (diff 측정 {sup['measured_count']}건) | 미입하 발생이력 checkbox 기준 |
-| **Dock-to-Stock** | **{dts_snap}** | WMS_GoodsReceipt SAP EWM |
+| **Dock-to-Stock** | **{dts_snap}** | IBSA sync_movement 실측 (주간) |
 | **피킹 정확도** | **{inv_snap}** | WMS_PickingTask SAP EWM |
 | **QC 불합격률** | **{qcp_snap}** | WMS_GoodsReceipt SAP EWM |
-| **공급사 납기** | **{sot_snap}** | WMS_GoodsReceipt SAP EWM |
+| **공급사 납기** | **{sot_snap}** | WMS movement 실측 (주간, 입하예상일 vs 실제입하일) |
 | **주간 입하 CBM** | **{cbm_snap}** | movement.생산산출 × 제품 규격 |
 | **창고 Running Balance** | **{bal_snap}** | 입하 CBM − 출하 CBM |
 
@@ -786,15 +853,24 @@ def _build_sap_section(dts, inv, qcp, sot) -> str:
     lines = []
 
     # Iter 4: Dock-to-Stock
-    if dts:
-        lines.append("## Iter 4: Dock-to-Stock KPI (SAP EWM)")
+    if dts and dts["total"]:
+        lines.append("## Iter 4: Dock-to-Stock KPI (IBSA sync_movement 실측)")
         lines.append("")
-        lines.append(f"- 분석 대상 GR: **{dts['total']}건** (CONFIRMED 기준)")
+        lines.append(f"- 분석 대상: **{dts['total']}건** (IBSA 입하완료처리 기준, 해당 주간)")
         lines.append(f"- 평균 Dock-to-Stock: **{dts['avg_dts']:.0f}분**")
         lines.append(f"- 목표(≤{DTS_TARGET_MIN}분) 달성: **{dts['within_target']}건 ({dts['target_pct']}%)**")
         lines.append(f"- 범위: 최소 {dts['min_dts']:.0f}분 ~ 최대 {dts['max_dts']:.0f}분")
+        if dts.get("excluded_negative"):
+            lines.append(f"- ⚠️ 타임스탬프 역전(입고수량입력시간 < 입하완료처리시간) 제외: **{dts['excluded_negative']}건** — 분석 대상에서 제외, 원인 미조사")
         status = "✅ 목표 달성" if (dts['target_pct'] or 0) >= 90 else "⚠️ 목표 미달 (목표: ≥90%)"
         lines.append(f"- 판정: **{status}**")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+    elif dts is not None:
+        lines.append("## Iter 4: Dock-to-Stock KPI (IBSA sync_movement 실측)")
+        lines.append("")
+        lines.append("> 데이터 부족 — IBSA PAT 미보급 또는 해당 주간 레코드 없음")
         lines.append("")
         lines.append("---")
         lines.append("")
@@ -837,7 +913,7 @@ def _build_sap_section(dts, inv, qcp, sot) -> str:
 
     # Iter 7: 공급사 납기 준수율
     if sot:
-        lines.append("## Iter 7: 공급사 납기 준수율 (SAP EWM)")
+        lines.append("## Iter 7: 공급사 납기 준수율 (WMS movement 실측, 해당 주간)")
         lines.append("")
         lines.append(f"- 전체 납기 준수율: **{sot['overall_pct']}%** ({sot['total_on']}/{sot['total_gr']}건)")
         lines.append("")
@@ -978,6 +1054,8 @@ def _build_cbm_section(cbm_week: dict | None, cbm_bal: dict | None, cbm_corr: di
     # Iter 10: D2S × CBM 상관
     if cbm_corr and cbm_corr["top3"]:
         lines.append("## Iter 10: Dock-to-Stock × 입하 CBM 상관 (M-03)")
+        lines.append("")
+        lines.append("> ⚠️ 이 섹션의 D2S는 아직 WMS_GoodsReceipt SAP EWM 가상 백필 데이터 기반 — Iter 4(실측)와 다른 소스, 직접 비교 불가")
         lines.append("")
         lines.append("CBM 상위 3일 vs 하위 3일 D2S 평균:")
         lines.append("")
@@ -1146,10 +1224,10 @@ def main(dry_run: bool, override_week: str | None = None) -> None:
     print(f"  미입하 발생이력: {sup['no_arrive_total']}건 (diff 측정 {sup['measured_count']}건)")
 
     print("\n[STEP 2-SAP] SAP EWM KPI 분석")
-    dts = analyze_dock_to_stock(sap_data)
+    dts = analyze_dock_to_stock(week_id)
     inv = analyze_inventory_accuracy(sap_data)
     qcp = analyze_qc_pareto(sap_data)
-    sot = analyze_supplier_ontime(sap_data)
+    sot = analyze_supplier_ontime(week_id)
     print(f"  Dock-to-Stock: 평균 {dts['avg_dts']}분, 목표 달성 {dts['target_pct']}%")
     print(f"  피킹 정확도: {inv['picking_acc_pct']}% (SHORT {inv['task_short']}건)")
     print(f"  QC 불합격률: {qcp['fail_rate']}% ({qcp['qc_fail']+qcp['qc_partial']}/{qcp['total_inspected']}건)")
