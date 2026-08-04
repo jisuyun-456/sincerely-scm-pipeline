@@ -109,14 +109,58 @@ def split_by_driver(
 
 
 def load_cbm_lookup(pat: str) -> dict | None:
-    """Load CBM product lookup for 박종성 unload fee (optional — failure is non-fatal)."""
+    """Load CBM product lookup for 박종성 unload fee (optional — failure is non-fatal).
+
+    캐스케이드 build_context와 동일하게 inject_synthetic까지 적용 → 코드 해소 경로 parity.
+    """
     try:
-        import os
-        import sys
-        from pathlib import Path
+        from harness.backbone.product_alias import inject_synthetic
         from harness.settlement.cbm_calc import load_product_lookup
         headers = {"Authorization": f"Bearer {pat}"}
-        return load_product_lookup(headers)
+        lookup = load_product_lookup(headers)
+        inject_synthetic(lookup)   # Product 미등록 신규 SKU(TWKF 등) 런타임 주입 (쓰기 0)
+        return lookup
     except Exception as exc:
         _log.warning("CBM lookup failed (unload fallback disabled)", error=str(exc))
         return None
+
+
+# sync_item (WMS) — 정산 공유 리졸버용 굿즈명→코드 브릿지
+_WMS_BASE = "appLui4ZR5HWcQRri"
+_SYNC_ITEM_TABLE = "tblwnNgHQxZ0WhDBh"
+
+
+def load_name2code(wms_pat: str | None) -> dict:
+    """sync_item 굿즈명(normalize)→굿즈코드. 정산 상하차비 CBM을 캐스케이드와 동일하게
+    코드+alias로 해소하기 위한 브릿지. WMS PAT 미설정/실패 시 {} 반환(이름 Jaccard 폴백 유지)."""
+    if not wms_pat:
+        _log.warning("AIRTABLE_WMS_PAT 미설정 — name2code 생략 (정산 이름 Jaccard 폴백 유지)")
+        return {}
+    try:
+        import requests
+        from harness.backbone.keys import normalize_goods
+        url = f"https://api.airtable.com/v0/{_WMS_BASE}/{_SYNC_ITEM_TABLE}"
+        headers = {"Authorization": f"Bearer {wms_pat}"}
+        out: dict[str, str] = {}
+        offset = None
+        while True:
+            params = {"pageSize": 100, "fields[]": ["굿즈명", "굿즈코드"]}
+            if offset:
+                params["offset"] = offset
+            r = requests.get(url, headers=headers, params=params, timeout=30)
+            r.raise_for_status()
+            d = r.json()
+            for rec in d.get("records", []):
+                f = rec["fields"]
+                nm = normalize_goods(str(f.get("굿즈명") or ""))
+                cd = str(f.get("굿즈코드") or "").strip().upper()
+                if nm and cd:
+                    out[nm] = cd
+            offset = d.get("offset")
+            if not offset:
+                break
+        _log.info("name2code loaded", count=len(out))
+        return out
+    except Exception as exc:
+        _log.warning("name2code load failed (정산 이름 Jaccard 폴백 유지)", error=str(exc))
+        return {}

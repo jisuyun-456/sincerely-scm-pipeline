@@ -2,7 +2,29 @@
 from harness.backbone.keys import (
     extract_pt, parse_goods, normalize_goods, is_service, compute_soyoryang,
     resolve_goods_code, build_pkg_goods_map, extract_pts, build_mes_crosswalk_rows,
+    goods_base,
 )
+
+
+class TestGoodsBase:
+    """V3.1 — 재제작/추가제작 접미·[n] 제거 베이스 굿즈명 (BOM 매칭용)."""
+
+    def test_strip_repro_suffix(self):
+        assert goods_base("미스트워터보틀_재제작") == "미스트워터보틀"
+        assert goods_base("아트워크레더다이어리_재재제작") == "아트워크레더다이어리"
+        assert goods_base("미르(MiiR)텀블러_추가제작") == "미르(MiiR)텀블러"
+        assert goods_base("스탠드-업칫솔_재제작") == "스탠드-업칫솔"
+
+    def test_keeps_variant_parens(self):
+        # (표준)/(고급) 변형은 보존 — 다른 BOM이므로 교차매칭 금지
+        assert goods_base("레더스킨다이어리(표준)_재제작") == "레더스킨다이어리(표준)"
+
+    def test_strip_index(self):
+        assert goods_base("오아시스미니마사지건[1]") == "오아시스미니마사지건"
+
+    def test_no_suffix_unchanged(self):
+        assert goods_base("시그니처다이어리") == "시그니처다이어리"
+        assert goods_base("커넥트 6in1 케이블키트") == "커넥트 6in1 케이블키트"
 
 
 class TestExtractPt:
@@ -50,6 +72,91 @@ class TestIsService:
 
     def test_real_goods(self):
         assert is_service("심볼아크릴트로피") is False
+
+
+class TestIsServiceNonPhysical:
+    """V5 (CBM-CAP-P5) — 비실물/placeholder/날짜형 굿즈명 필터 확장.
+    근거: data/order_cascade/report_20260616-1040.json 실측 (끊김 8 + 부분 노이즈 87)."""
+
+    # 끊김 고정 placeholder (8단위 전부 — 굿즈코드 미해소로 S1 끊김)
+    def test_placeholder_input_field(self):
+        assert is_service("00 추가 데이터 입력란") is True
+
+    # S5 서비스코드 노이즈 굿즈명 (SSSV 계열 — 박스CBM 산출 불가)
+    def test_discount(self):
+        assert is_service("할인") is True
+
+    def test_design_proof(self):
+        assert is_service("시안") is True
+
+    def test_design(self):
+        assert is_service("디자인") is True
+
+    def test_kit_packaging(self):
+        assert is_service("키트포장") is True
+
+    def test_urgent_production(self):
+        assert is_service("긴급제작") is True
+
+    # 고객 지급물(CSPR) — "고객 물품 : <임의 품명>" 접두
+    def test_customer_supplied_goods(self):
+        assert is_service("고객 물품 : 텀블러") is True
+        assert is_service("고객 물품 : Kaco 계산기") is True
+
+    # 날짜형 placeholder(STCK) — MMDD 0XXX (04~06월 = 0으로 시작)
+    def test_date_form_placeholder(self):
+        assert is_service("0428") is True
+        assert is_service("0601") is True
+        assert is_service("0615") is True
+
+    # ── 과필터 가드: 실물 굿즈는 절대 제외하지 않는다 (⚠️ report 완결 80 불변) ──
+    def test_real_cable_kit_kept(self):
+        # '키트포장'은 서비스이나 '케이블키트'는 실물 — bare '키트'로 잡으면 안 됨
+        assert is_service("커넥트 6in1 케이블키트") is False
+
+    def test_real_seed_kit_kept(self):
+        assert is_service("스타트 씨드키트_추가제작") is False
+
+    def test_real_named_goods_kept(self):
+        assert is_service("시그니처 다이어리") is False
+        assert is_service("클리어리유저블컵") is False
+
+    def test_non_date_number_not_filtered(self):
+        # 날짜형은 유효 MMDD만 — 임의 숫자/수량은 placeholder 아님
+        assert is_service("1234") is False   # 12월 34일 = 무효 → 실품/수량 보호
+        assert is_service("12345") is False
+
+
+class TestIsServiceV51:
+    """V5.1 (H1 분석 발견) — 공백 변형 + 10~12월 날짜형 보강."""
+
+    # 공백 변형 (sync_item 굿즈명이 "키트 포장"처럼 띄어쓰기 포함)
+    def test_kit_packaging_with_space(self):
+        assert is_service("키트 포장") is True
+        assert is_service("키트 포장 [1]") is True
+
+    def test_urgent_production_with_space(self):
+        assert is_service("긴급 제작") is True
+
+    def test_customer_goods_compact_and_spaced(self):
+        assert is_service("고객 물품 : 텀블러") is True
+        assert is_service("고객물품:텀블러") is True
+
+    # 10~12월 날짜형 (STCK MMDD 1XXX)
+    def test_q4_date_forms(self):
+        assert is_service("1222") is True   # 12-22
+        assert is_service("1231") is True   # 12-31
+        assert is_service("1001") is True   # 10-01
+
+    def test_invalid_mmdd_not_filtered(self):
+        assert is_service("1299") is False  # 12월 99일 무효
+        assert is_service("0000") is False  # 00월 무효
+        assert is_service("1350") is False  # 13월 무효
+
+    # 과필터 가드 유지 (공백 제거 후에도 실물 보호)
+    def test_real_kit_goods_still_kept(self):
+        assert is_service("커넥트 6in1 케이블키트") is False
+        assert is_service("스타트 씨드키트_추가제작") is False
 
 
 class TestComputeSoyoryang:

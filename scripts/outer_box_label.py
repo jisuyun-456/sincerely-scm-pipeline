@@ -163,7 +163,24 @@ def _check_box_sum_internal(box_sum_str: str) -> tuple[bool, int, int]:
 def _clean_item_name(s: str) -> str:
     if re.search(r'\d\+[가-힣A-Za-z]', s):
         return s.strip()
-    return re.sub(r"\s*\d+$", "", s).strip()
+    cleaned = re.sub(r"\s*\d+개$", "", s)
+    cleaned = re.sub(r"\s*\d+$", "", cleaned)
+    if cleaned.strip() != s.strip():
+        print(f"  ⚠️  item name cleaned: {s.strip()!r} → {cleaned.strip()!r}", file=sys.stderr)
+    return cleaned.strip()
+
+
+_SIZE_ALIASES: dict = {
+    "소형": "소", "중형": "중", "대형": "대", "특대형": "특대",
+    "중데": "중대",
+}
+
+def _normalize_size(raw: str) -> str:
+    s = raw.strip()
+    normalized = _SIZE_ALIASES.get(s, s)
+    if normalized != s:
+        print(f"  ⚠️  size alias: {s!r} → {normalized!r}", file=sys.stderr)
+    return normalized
 
 
 def _format_qty(qty_str: str) -> str:
@@ -214,7 +231,7 @@ def parse_packing_detail(text: str) -> list[dict]:
                 box_num += 1
                 boxes.append({
                     "box_num":        box_num,
-                    "size":           m.group(4).strip(),
+                    "size":           _normalize_size(m.group(4)),
                     "item":           _clean_item_name(current_item),
                     "qty":            qty_str,
                     "remainder_items": _parse_remainder(qty_str),
@@ -228,7 +245,7 @@ def parse_packing_detail(text: str) -> list[dict]:
                     box_num += 1
                     boxes.append({
                         "box_num":        box_num,
-                        "size":           mi.group(4).strip(),
+                        "size":           _normalize_size(mi.group(4)),
                         "item":           _clean_item_name(current_item),
                         "qty":            qty_str,
                         "remainder_items": _parse_remainder(qty_str),
@@ -242,7 +259,7 @@ def parse_packing_detail(text: str) -> list[dict]:
                         box_num += 1
                         boxes.append({
                             "box_num":         box_num,
-                            "size":            mc.group(4).strip(),
+                            "size":            _normalize_size(mc.group(4)),
                             "item":            current_item,
                             "qty":             qty_str,
                             "remainder_items": [],

@@ -15,6 +15,8 @@ def build_propagation_row(project_code: str, goods_name: str, order_qty: int,
                           wave_preview: str | None = None,
                           fare_range: str | None = None,
                           cascade_run_id: str | None = None,
+                          production_due: str | None = None,
+                          ship_request_date: str | None = None,
                           status: str | None = None) -> dict:
     mat = [f"{b['소품목_PT']}×{int((b.get('소요량_개당') or 0) * order_qty)}"
            for b in bom_rows]

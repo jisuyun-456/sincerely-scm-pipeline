@@ -1,0 +1,25 @@
+로딩: Product 룩업...
+로딩: sync_item 브릿지 + pkg_schedule 폴백...
+[RETRY 1/4] tblwnNgHQxZ0WhDBh ReadTimeout — 2s 후 재시도
+로딩: WMS_BOM + ItemMaster (MRP·kit·part CBM)...
+로딩: InventoryLedger + Location (재고·staging·Max_CBM)...
+로딩: TMS Shipment count...
+로딩: MES ver2.0 (납기 forecast)...
+로딩: order 미러 + PropagationLedger 최신행...
+[RETRY 1/4] tblJslWg8sYEdCkXw ReadTimeout — 2s 후 재시도
+
+=== 캐스케이드 795단위 (order 21463행, 윈도우 46d, ledger 기존 247 전파ID) ===
+
+  완결 80 / 부분 707 / 끊김 8 | INSERT 대상 560 (unchanged skip 235)
+
+[DRY-RUN] Slack digest (미발송):
+📦 Order Cascade 20260616-1040 (윈도우 46d)
+신규 548 / 변경 12 / 변동없음 235 · 완결 80 / 부분 707 / 끊김 8
+부족자재 top 5:
+  · PT3708×18020
+  · PT1263×17980
+  · PT2481×16800
+  · PT0600×16785
+  · PT2373×16700
+
+[DRY-RUN] Airtable write 0 (VC-5). 리포트: data\order_cascade/report_20260616-1040.md

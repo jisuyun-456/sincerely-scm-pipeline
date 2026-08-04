@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
@@ -14,6 +15,7 @@ from harness.backbone.keys import (
     PNA_RE,
     compute_soyoryang,
     extract_pts,
+    goods_base,
     is_service,
     normalize_goods,
     parse_goods,
@@ -22,8 +24,9 @@ from harness.backbone.keys import (
 from harness.backbone.ledger import build_propagation_row
 from harness.backbone.mes_forecast import build_inbound_forecast
 from harness.backbone.mrp import net_requirements
+from harness.backbone.product_alias import remap_lines
 from harness.backbone.storage import STOCK_TYPE_INCLUDE, ZONE_TYPE_INCLUDE
-from harness.dispatch.cbm_estimator import estimate_shipment_cbm_deterministic
+from harness.dispatch.cbm_estimator import SERVICE_CODES, estimate_shipment_cbm_deterministic
 from harness.dispatch.wave_assigner import DRIVER_LIMITS
 from harness.tms_settlement.config import round_up_500
 
@@ -60,6 +63,36 @@ def _n(x) -> float:
 
 def _first(v):
     return v[0] if isinstance(v, list) and v else ("" if isinstance(v, list) else v)
+
+
+_DATE_RE = re.compile(r"(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})")
+
+
+def _norm_date(v) -> str | None:
+    """다양한 포맷(2026.6.12 / 2026-06-12) → ISO YYYY-MM-DD. #ERROR!·비날짜는 None.
+
+    order 미러 '출고 요청일'은 수식 필드라 점구분·미패딩·'#ERROR!' 혼재 — 정규화 필수.
+    """
+    m = _DATE_RE.search(str(v))
+    if not m:
+        return None
+    y, mo, da = m.groups()
+    return f"{y}-{int(mo):02d}-{int(da):02d}"
+
+
+def _earliest_date(rows: list[dict], field_name: str) -> str | None:
+    """order 행들에서 가장 이른 날짜 (ISO YYYY-MM-DD). 포맷 정규화 + 에러값 제외 (P3).
+
+    값이 lookup(list)일 수 있어 평탄화 후 _norm_date로 정규화(실패분 제외) → min.
+    """
+    vals: list[str] = []
+    for f in rows:
+        v = f.get(field_name)
+        for x in (v if isinstance(v, list) else [v]):
+            d = _norm_date(x)
+            if d:
+                vals.append(d)
+    return min(vals) if vals else None
 
 
 @dataclass
@@ -180,22 +213,33 @@ def select_bom_rows(pna: str, goods_name: str, bom_fields: list[dict],
 
     Returns (rows [{소품목_PT, 소요량_개당}], n_verified).
     """
-    by_pt: dict[str, dict] = {}
-    verified: set[str] = set()
-    for f in bom_fields:
-        m = PNA_RE.search(str(f.get("프로젝트코드") or ""))
-        if not m or m.group(0) != pna:
-            continue
-        if str(f.get("모품목_굿즈명") or "") != goods_name:
-            continue
-        pt = str(f.get("소품목_PT") or "")
-        if not pt:
-            continue
-        is_verified = f.get("검증상태") == "검증완료"
-        if pt not in by_pt or (is_verified and pt not in verified):
-            by_pt[pt] = {"소품목_PT": pt, "소요량_개당": f.get("소요량_개당")}
-            if is_verified:
-                verified.add(pt)
+    def _collect(name_match) -> tuple[dict, set]:
+        by_pt: dict[str, dict] = {}
+        verified: set[str] = set()
+        for f in bom_fields:
+            m = PNA_RE.search(str(f.get("프로젝트코드") or ""))
+            if not m or m.group(0) != pna:
+                continue
+            if not name_match(str(f.get("모품목_굿즈명") or "")):
+                continue
+            pt = str(f.get("소품목_PT") or "")
+            if not pt:
+                continue
+            is_verified = f.get("검증상태") == "검증완료"
+            if pt not in by_pt or (is_verified and pt not in verified):
+                by_pt[pt] = {"소품목_PT": pt, "소요량_개당": f.get("소요량_개당")}
+                if is_verified:
+                    verified.add(pt)
+        return by_pt, verified
+
+    by_pt, verified = _collect(lambda nm: nm == goods_name)
+    if not by_pt:
+        # V3.1 — 재제작/추가제작 주문은 굿즈명에 접미가 붙어 베이스 BOM과 불일치.
+        # 베이스명 폴백 (검증 승급 없음 — 재제작 BOM이 베이스와 다를 수 있어 보수적).
+        base = goods_base(goods_name)
+        if base != goods_name:
+            by_pt, _v = _collect(lambda nm: goods_base(nm) == base)
+            verified = set()   # 베이스 매칭은 미검증 취급
     if by_pt:
         rows = [by_pt[pt] for pt in sorted(by_pt)]
         return rows, len(verified)
@@ -341,16 +385,24 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
     """
     reasons: list[str] = []
     lines_info = build_order_lines(unit, ctx.pkg_map)
+    # V2 견적코드 정합 — WMS sync_item 코드를 TMS Product 등록코드(권위 스펙)로 재매핑.
+    # alias(동일명 쌍둥이) + 사이즈군(굿즈명 사이즈 파싱). 미해소는 원본 유지 → S5 정직 미산출.
+    # ※ lines_info["code"]는 갱신하지 않음 — mes_timeline은 name_to_code(WMS코드 키스페이스)를
+    #    소비하므로 원본 WMS 코드 유지가 필요 (registered 코드로 덮으면 MES forecast 무음 실패).
+    lines_info["lines"] = remap_lines(lines_info["lines"], unit.goods_name,
+                                      ctx.product_lookup)
     oqty = unit.goods_qty or int(max(
         (_n(f.get("주문수량")) for f in unit.rows), default=0))
+    ship_req = _earliest_date(unit.rows, "출고 요청일")   # P3 출고 forward 앵커
 
     if not lines_info["lines"]:
         reasons.append("S1 키해소 실패 (굿즈코드 미해소 — direct·pkg 모두 없음)")
         row = build_propagation_row(unit.pna, unit.goods_name, oqty, [], None, "",
-                                    status="끊김", cascade_run_id=run_id)
+                                    status="끊김", cascade_run_id=run_id,
+                                    ship_request_date=ship_req)
         return {"row": row, "action": decide_insert(row, prior_fields),
                 "status": "끊김", "reasons": reasons, "mes_by_date": {},
-                "src_counts": lines_info["src_counts"]}
+                "src_counts": lines_info["src_counts"], "ship_req": ship_req}
 
     bom_rows, n_verified = select_bom_rows(unit.pna, unit.goods_name,
                                            ctx.bom_fields, unit=unit)
@@ -371,7 +423,7 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
 
     est = estimate_shipment_cbm_deterministic(
         unit.pna, {unit.pna: lines_info["lines"]}, ctx.product_lookup,
-        ctx.shipment_count, kit_lookup=ctx.kit_lookup)
+        ctx.shipment_count, kit_lookup=ctx.kit_lookup, service_codes=SERVICE_CODES)
     est_cbm = est["estimated_cbm"]
     if est_cbm <= 0:
         reasons.append(f"S5 출하CBM 미산출 (mode={est['mode']}, "
@@ -384,6 +436,7 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
 
     mes = mes_timeline(lines_info["code"], ctx.mes_rows, ctx.name_to_code,
                        ctx.product_by_code, ctx.today)
+    production_due = min(mes) if mes else None   # P3 생산 forward 앵커 (MES 최조 납기)
 
     status = "완결" if not reasons else "부분"
     cbm_per_unit = est_cbm / oqty if est_cbm > 0 and oqty > 0 else None
@@ -394,7 +447,8 @@ def run_unit(unit: CascadeUnit, prior_fields: dict | None, ctx: CascadeContext,
         inbound_cbm_m3=inb["inbound_cbm"] if bom_rows else None,
         mh_hours=inb["mh_hours"] if bom_rows else None,
         storage_projection=stag, wave_preview=wv, fare_range=fare,
+        production_due=production_due, ship_request_date=ship_req,
         cascade_run_id=run_id, status=status)
     return {"row": row, "action": decide_insert(row, prior_fields),
             "status": status, "reasons": reasons, "mes_by_date": mes,
-            "src_counts": lines_info["src_counts"]}
+            "src_counts": lines_info["src_counts"], "ship_req": ship_req}

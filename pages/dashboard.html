@@ -422,6 +422,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
           <div class="chart-wrap" style="height:140px"><canvas id="cCbmDaily"></canvas></div>
         </div>
       </div>
+      <div class="panel">
+        <div class="ph"><h3>입하 14d 사전계획 (B3)</h3><span class="badge b-info" id="b3-badge">—</span></div>
+        <div class="pb" id="b3-inbound"></div>
+      </div>
     </div>
 
     <!-- ── 검수 탭 ── -->
@@ -591,6 +595,16 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
         <div class="pb" id="ship-a1"></div>
       </div>
 
+      <div class="panel">
+        <div class="ph"><h3>차량 적재율 요약 (A3)</h3><span class="badge b-info" id="a3-badge">—</span></div>
+        <div class="pb" id="a3-loadrate"></div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><h3>출하 14d 사전계획</h3><span class="badge b-info" id="d1-badge">—</span></div>
+        <div class="pb" id="d1-outbound"></div>
+      </div>
+
       <div class="panel" id="ship-next-panel">
         <div class="ph"><h3>다음주 예고</h3><span class="badge" id="ship-nextwk">—</span></div>
         <div class="pb" id="ship-next"></div>
@@ -652,6 +666,24 @@ const MODE_CONFIG = {
 };
 
 // ── 데이터 적용 ──
+// Chain A — capacity_series 기반 14d forecast 트랙 렌더 (입하/출하 공용)
+function renderForecastTrack(el, badge, track, color){
+  if(!el) return;
+  if(!track || !track.by_date || !Object.keys(track.by_date).length){
+    el.innerHTML='<div style="color:#aaa;font-size:11px">capacity_series 데이터 없음 (capacity_snapshot 일배치)</div>';
+    if(badge) badge.textContent='—';
+    return;
+  }
+  if(badge) badge.textContent=`${track.total_cbm} m³`;
+  const dates=Object.entries(track.by_date).sort();
+  const maxC=Math.max(...dates.map(([,c])=>c),0.001);
+  const rows=dates.map(([d,c])=>`<div class="sr"><span class="sn" style="flex:0 0 90px;font-size:10px">${d}</span><div class="bbg"><div class="bf" style="width:${Math.round(c/maxC*100)}%;background:${color}"></div></div><span class="sv">${(c||0).toFixed(2)}m³</span></div>`).join('');
+  const cov=track.coverage_pct!=null?` · 커버 ${track.coverage_pct}%`:'';
+  const mesObj=track.mes_forecast||{};
+  const mes=Object.keys(mesObj).length?` · MES ${Object.entries(mesObj).map(([h,v])=>`${h}d ${v}`).join('/')}`:'';
+  el.innerHTML=`<div style="font-size:10px;color:#8C8375;margin-bottom:6px">스냅샷 ${track.snapshot_date||'?'} · ${track.horizon_days||14}d${cov}${mes}</div>${rows}`;
+}
+
 function applyData(data) {
   D = data;
   window._dashData = data;
@@ -1095,6 +1127,27 @@ function applyData(data) {
   } else if(a1El){
     a1El.innerHTML='<div style="color:#aaa;font-size:11px">이전주 데이터 없음</div>';
   }
+
+  // ── Chain A — CBM forecast 패널 (A3 적재율 함대요약 / B3 입하 14d / 출하 14d) ──
+  // cbm_forecast 키 사용 — 레거시 weekly_forecast 'forecast' 키와 분리 (충돌 방지).
+  const fc=data.cbm_forecast||{};
+  const a3El=document.getElementById('a3-loadrate');
+  const a3Badge=document.getElementById('a3-badge');
+  const lr=fc.load_rate;
+  if(a3El&&lr&&lr.summary&&lr.summary.n){
+    const s=lr.summary;
+    if(a3Badge) a3Badge.textContent=`median ${s.median}%`;
+    const rows=Object.entries(lr.per_driver||{}).map(([drv,pct])=>{
+      const color=pct>100?'#963E3E':pct<50?'#B08934':'#4A6741';
+      const name=String(drv).replace('신시어리 ','');
+      return `<div class="stat"><span class="sk">${name}</span><span class="sv2" style="color:${color}">${(pct||0).toFixed(1)}%</span></div>`;
+    }).join('');
+    a3El.innerHTML=`${rows}<div class="stat" style="margin-top:6px;border-top:1px solid #E5E1DA;padding-top:6px"><span class="sk">함대 median</span><span class="sv2">${s.median}% (저적재 ${s.n_under}·오버부킹 ${s.n_over})</span></div>`;
+  } else if(a3El){
+    a3El.innerHTML='<div style="color:#aaa;font-size:11px">적재율 데이터 없음</div>';
+  }
+  renderForecastTrack(document.getElementById('d1-outbound'),document.getElementById('d1-badge'),fc.outbound,'#85B7EB');
+  renderForecastTrack(document.getElementById('b3-inbound'),document.getElementById('b3-badge'),fc.inbound,'#5DCAA5');
 
   // 다음주 예고
   const nxtEl=document.getElementById('ship-next');

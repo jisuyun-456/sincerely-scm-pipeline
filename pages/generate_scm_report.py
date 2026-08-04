@@ -46,6 +46,10 @@ try:
 except ImportError:
     _CBM_AVAILABLE = False
 
+# P2 A3 — 차량 적재율 SSOT (하드코딩 정원 대신 라이브 차량한도)
+from utils.vehicle_util import capacities_from_shipments, capacity_for
+from utils.cbm_panels import inbound_panel, load_rate_panel, outbound_panel
+
 # ================================================================
 # 환경변수
 # ================================================================
@@ -139,10 +143,11 @@ TF_DEPARTURE   = "fldGZyp4KJNCSWWUr"
 TF_SLOT        = "fldcSrlxCngYQHtSV"
 TF_ADDRESS     = "fldyJHUh9gN44Ggnh"
 TF_WISH_TIME   = "fldFweNu3dASPv93N"
+TF_VEHICLE_CAP = "fld9ZixilQySf9taF"   # 차량한도 (lookup, m³) — A3 라이브 정원 SSOT
 
 TMS_SHIP_FIELDS = [TF_DATE,TF_ITEM,TF_BOX_PARSED,TF_BOX_MANUAL,TF_TOTAL_CBM,
                    TF_STATUS,TF_ITEM_DETAIL,TF_REVENUE,TF_COST,TF_PARTNER,TF_DEPARTURE,
-                   TF_ADDRESS,TF_SLOT,TF_WISH_TIME]  # 버그픽스: 라우팅 주소/슬롯 필드 추가
+                   TF_ADDRESS,TF_SLOT,TF_WISH_TIME,TF_VEHICLE_CAP]  # +차량한도(A3)
 TMS_BOX_FIELDS  = ["fldELrd8bBVjQCHnp","fldgvlGjLb4FTlQ0v","fldjFaXiYzeJ2Zt7M"]
 TMS_PROD_FIELDS = ["fldx01uKEnCd0J0nP","fldCeJ0RqSUGlfEw4","fld6W5ImO7UeBVMPI","fldN1JrkxIr5m6pXz"]
 
@@ -153,6 +158,8 @@ BOX_CBM = {
 }
 BOX_SIZE_ORDER = ["극소","소","중","중대","대","특대"]
 
+# 기사 로스터 (집계 대상). 값은 라이브 차량한도 미수신 시 last-resort fallback일 뿐 —
+# 권위 정원은 capacities_from_shipments()의 라이브 차량한도(이장훈 4.5 등). (P2 A3 2026-06-24)
 VEHICLE_CBM = {
     "신시어리 (이장훈)": 5.4,
     "신시어리 (조희선)": 7.6,
@@ -747,9 +754,11 @@ def analyze_tms(records, live_cbm, product_cbm=None, use_estimate=False):
         [{"name":k,"qty":v["qty"],"cbm":round(v["cbm"],3)} for k,v in item_agg.items() if v["cbm"]>0],
         key=lambda x:-x["cbm"])[:10]
 
-    # 기사님 달성율 (차량CBM x 실배차일수 기준)
+    # 기사님 달성율 (차량한도 x 실배차일수 기준) — 라이브 차량한도 SSOT (A3)
+    live_caps=capacities_from_shipments(records)
     driver_weekly_max={}; driver_pct={}; driver_work_days={}
-    for driver,cap in VEHICLE_CBM.items():
+    for driver in VEHICLE_CBM:
+        cap=capacity_for(driver,live_caps) or VEHICLE_CBM[driver]
         daily=dict(driver_daily.get(driver,{}))
         work_dates=sorted([d for d,c in daily.items() if c>0])
         work_cnt=len(work_dates)
@@ -1010,7 +1019,8 @@ def main():
             wact=prev_tms["driver_weekly"].get(driver,0)
             km=prev_routing.get("driver_weekly_km",{}).get(driver)
             name=driver.replace("신시어리","").strip()
-            print(f"  [{name}] CBM {wact:.2f}/{wmax}m3 ({VEHICLE_CBM[driver]}x{wd['count']}일)={pct}%" + (f" / {km}km" if km else ""))
+            cap_used = round(wmax / wd['count'], 3) if wd['count'] else '?'  # 라이브 차량한도(A3)
+            print(f"  [{name}] CBM {wact:.2f}/{wmax}m3 ({cap_used}x{wd['count']}일)={pct}%" + (f" / {km}km" if km else ""))
         a1=prev_tms.get("a1_utilization",{})
         if a1: print(f"  [에이원] {a1['total_cbm']}m3/{a1['capacity']}m3 = {a1['pct']}%")
 
@@ -1112,6 +1122,13 @@ def main():
             "usage":   usage_data,
         },
         "shipment":tms_data,
+        # Chain A — CBM forecast 패널 (A3 적재율 함대요약 / B3 입하 14d / 출하 14d)
+        # NOTE: 'cbm_forecast' 키 — 레거시 weekly_forecast 'forecast' 키와 충돌 회피 (dashboard.html).
+        "cbm_forecast": {
+            "load_rate": load_rate_panel(tms_data.get("driver_pct", {})),
+            "inbound":   inbound_panel(),
+            "outbound":  outbound_panel(),
+        },
         # weekly 섹션: 출하 탭에서 이전주/다음주/트렌드/품질/기사님 등 상세 표시용
         "weekly": {
             "this_week": {

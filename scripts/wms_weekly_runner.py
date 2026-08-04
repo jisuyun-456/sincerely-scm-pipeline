@@ -14,6 +14,7 @@ WMS 주간 AutoResearch 러너 (매주 월요일 실행)
 """
 
 import argparse
+import json
 import os
 import sys
 import time
@@ -677,6 +678,7 @@ def step_save_report(
     # SAP KPI 섹션 빌드
     sap_section = _build_sap_section(dts, inv, qcp, sot)
     cbm_section = _build_cbm_section(cbm_week, cbm_bal, cbm_corr)
+    b3_section = _build_b3_inbound_section()   # B3 입하 14d 사전계획 (capacity_series)
 
     # KPI 스냅샷 SAP 행 추가
     dts_snap = f"{dts['avg_dts']:.0f}분 (목표≤{DTS_TARGET_MIN}분 달성 {dts['target_pct']}%)" if dts and dts["avg_dts"] else "데이터 부족"
@@ -747,6 +749,8 @@ def step_save_report(
 ---
 {sap_section}
 {cbm_section}
+{b3_section}
+
 ## 다음 주 체크포인트
 
 - [ ] QC 불량 proxy 트렌드 추적 (이번 주 대비 개선/악화)
@@ -847,6 +851,83 @@ def _build_sap_section(dts, inv, qcp, sot) -> str:
         lines.append("")
 
     return "\n".join(lines)
+
+
+def _b3_from_snapshot(snap: dict) -> str:
+    """B3 — capacity_series 스냅샷의 입하 14d forward를 마크다운으로 (pure)."""
+    inb = (snap.get("tracks") or {}).get("inbound") or {}
+    by_date = inb.get("scheduled_by_date") or {}
+    lines = ["## B3 입하 14d 사전계획 (capacity_series 표면화)", "",
+             f"> 스냅샷 {snap.get('snapshot_date', '?')} · 호라이즌 "
+             f"{snap.get('horizon_days', '?')}d · movement.입하예상일 (capacity_snapshot 일배치)",
+             "",
+             f"- 입하 예정 합계: **{inb.get('scheduled_total_cbm', 0)} m³** "
+             f"({inb.get('n_rows_window', 0)}행, 규격 커버 {inb.get('coverage_pct', 0)}%)"]
+    if by_date:
+        lines += ["", "| 입하예상일 | 예정 CBM(m³) |", "|---|--:|"]
+        lines += [f"| {d} | {c} |" for d, c in sorted(by_date.items())]
+    staging = inb.get("staging") or {}
+    if staging:
+        lines += ["", "입하장 적재 피크 (Max 대비):"]
+        for ce, s in staging.items():
+            lines.append(f"  - {ce}: 피크 {s.get('peak_date', '—')} "
+                         f"{s.get('peak_day_cbm', 0)}m³ / {s.get('max_cbm', '?')}m³ "
+                         f"(**{s.get('peak_day_pct', 0)}%**)")
+    mes = inb.get("mes_forecast") or {}
+    bh = mes.get("by_horizon") or {}
+    if bh:
+        horizon = " / ".join(f"{h}d {v}m³"
+                             for h, v in sorted(bh.items(), key=lambda kv: int(kv[0])))
+        lines.append("")
+        lines.append(f"- MES 납기 forecast: {horizon} "
+                     f"(join {mes.get('n_joined', 0)}/{mes.get('n_total', 0)})")
+    lines += ["", "> 출하확정 14d(D1)·movement actual(Iter8)과 별개 — 외부입하 예정 트랙. "
+              "낮은 커버는 sync_parts 치수 미입력(inbound-bom-completion P0) 해소 시 상승.", ""]
+    return "\n".join(lines)
+
+
+def _build_b3_inbound_section(series_path: Path | None = None) -> str:
+    """data/capacity_series.json 최신 스냅샷 로드 → B3 섹션 (orphan 표면화)."""
+    path = series_path or (ROOT / "data" / "capacity_series.json")
+    if not path.exists():
+        return "## B3 입하 14d 사전계획\n\n> capacity_series.json 없음 — capacity_snapshot 미실행.\n"
+    try:
+        series = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return "## B3 입하 14d 사전계획\n\n> capacity_series.json 읽기 실패.\n"
+    if not series:
+        return "## B3 입하 14d 사전계획\n\n> capacity_series.json 비어있음.\n"
+    return _b3_from_snapshot(series[-1])
+
+
+def _b3_slack_from_snapshot(snap: dict) -> str:
+    """B3 — capacity_series 스냅샷 → Slack 컴팩트 요약 (pure, 전체 일자표 미포함)."""
+    inb = (snap.get("tracks") or {}).get("inbound") or {}
+    parts = [
+        "*WMS 주간 — B3 입하 14d 사전계획*",
+        f"  입하 예정: {inb.get('scheduled_total_cbm', 0)}m³ "
+        f"({inb.get('n_rows_window', 0)}행, 규격커버 {inb.get('coverage_pct', 0)}%)",
+    ]
+    bh = (inb.get("mes_forecast") or {}).get("by_horizon") or {}
+    if bh:
+        horizon = " / ".join(f"{h}d {v}m³"
+                             for h, v in sorted(bh.items(), key=lambda kv: int(kv[0])))
+        parts.append(f"  MES 납기 forecast: {horizon}")
+    return "\n".join(parts)
+
+
+def b3_slack_summary(series_path: Path | None = None) -> str | None:
+    """data/capacity_series.json 최신 스냅샷 → B3 Slack 요약. 없으면 None (발송 생략)."""
+    path = series_path or (ROOT / "data" / "capacity_series.json")
+    if not path.exists():
+        return None
+    try:
+        series = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not series:
+        return None
+    return _b3_slack_from_snapshot(series[-1])
 
 
 def _build_cbm_section(cbm_week: dict | None, cbm_bal: dict | None, cbm_corr: dict | None) -> str:
@@ -1021,6 +1102,26 @@ def _compute_week_label(override_week: str | None = None) -> tuple[str, str]:
 
 
 # ── 메인 ───────────────────────────────────────────────────────────────────────
+def _notify_slack_b3(week_id: str) -> None:
+    """B3 입하 14d 사전계획 컴팩트 요약을 Slack DM 발송 (Chain A). 데이터/토큰 부재 시 생략."""
+    summary = b3_slack_summary()
+    if not summary:
+        return
+    token = os.environ.get("SLACK_BOT_TOKEN", "")
+    user  = os.environ.get("SLACK_DM_USER_ID", "")
+    if not token or not user:
+        return
+    try:
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={"channel": user, "text": f"{summary}\n  (WMS Weekly {week_id})"},
+            timeout=10,
+        )
+    except Exception:
+        pass
+
+
 def main(dry_run: bool, override_week: str | None = None) -> None:
     if not AIRTABLE_PAT:
         print("[ERROR] AIRTABLE_WMS_PAT (또는 AIRTABLE_PAT) 환경변수 없음. .env 파일 확인")
@@ -1077,9 +1178,10 @@ def main(dry_run: bool, override_week: str | None = None) -> None:
     # 3. 리포트 저장
     report_path = step_save_report(results, week_id, date_range, dry_run)
 
-    # 4. log 업데이트
+    # 4. log 업데이트 + B3 Slack DM (Chain A)
     if not dry_run and report_path:
         step_update_log(results, report_path, week_id)
+        _notify_slack_b3(week_id)
 
     print(f"\n{'='*60}")
     print("WMS 주간 분석 완료")

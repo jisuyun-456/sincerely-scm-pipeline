@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>BOM·CBM 데이터 기초 공동설계 — 킥오프 핸드오프 (문서형)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+/* ─────────────────────────────────────────────────────────
+   DOC STYLE · "문서형" 에디토리얼 레이아웃
+   Editorial layout: left nav · article · right TOC
+   Fonts: Newsreader (serif) + Pretendard (sans) + JetBrains Mono
+   ───────────────────────────────────────────────────────── */
+
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#fbfbfa;
+  --surface-3:#f4f4f2;
+  --ink:#1a1a1a;
+  --ink-2:#3a3a38;
+  --muted:#75756f;
+  --muted-2:#a8a8a2;
+  --line:#ebebe6;
+  --line-2:#f2f2ee;
+  --accent:#3b3b6e;
+  --accent-soft:#f2f2fb;
+  --highlight:#fff7c2;
+  --warn:#8a3a00;
+  --warn-soft:#fff3e6;
+  --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;
+}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+.topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+.topbar .sep{color:var(--muted-2)}
+.topbar .doc-name{color:var(--muted);font-size:13px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+.topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+
+/* ── 3-COL LAYOUT ────────────────────────────────────── */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+
+/* ── LEFT NAV ────────────────────────────────────────── */
+aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+aside.side h4:first-child{margin-top:0}
+aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+aside.side li a{display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);border-left:1px solid transparent;transition:color .12s,border-color .12s;line-height:1.45}
+aside.side li a:hover{color:var(--ink);text-decoration:none}
+aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+
+/* ── ARTICLE ─────────────────────────────────────────── */
+article{min-width:0;max-width:720px;margin:0 auto}
+article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+article h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;color:var(--ink)}
+article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+article .byline .k{color:var(--muted-2);margin-right:4px}
+
+article h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;display:flex;align-items:baseline;gap:12px;position:relative}
+article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+
+article h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px}
+article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+
+article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+article p strong{color:var(--ink);font-weight:600}
+article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+
+article code,code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+pre.code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:14px 18px;color:var(--ink-2);line-height:1.65;overflow-x:auto;max-width:640px;margin:18px 0}
+pre.code .c{color:var(--accent);font-weight:500}
+pre.code .h{color:var(--muted);font-style:italic}
+
+article ul,article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+article ul li,article ol li{margin:6px 0;line-height:1.75}
+article ul li::marker{color:var(--muted-2)}
+article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+/* ── COMPONENTS ──────────────────────────────────────── */
+.pullquote{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;max-width:640px}
+.pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+.pullquote cite::before{content:"— "}
+
+.note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+.note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+.note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+.note .body strong{color:var(--ink)}
+.note.warn{border-top-color:var(--warn)}
+.note.warn .tag{color:var(--warn)}
+.note.accent{border-top-color:var(--accent)}
+.note.accent .tag{color:var(--accent)}
+
+dl.def{margin:0 0 24px;max-width:680px}
+dl.def > div{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+dl.def > div:first-child{border-top:1px solid var(--ink)}
+dl.def > div:last-child{border-bottom:1px solid var(--line)}
+dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+
+.formula{max-width:640px;margin:24px 0;padding:18px 22px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:13.5px;color:var(--ink);line-height:1.7;position:relative}
+.formula::before{content:"FORMULA";position:absolute;top:-10px;left:14px;background:#fff;padding:2px 8px;font-size:9.5px;letter-spacing:0.12em;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.formula .c{color:var(--accent);font-weight:500}
+.formula .em{background:var(--highlight);padding:0 4px;border-radius:2px}
+
+.tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:680px;font-size:13.5px}
+.tbl .r{display:grid;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.tbl .r:last-child{border-bottom:0}
+.tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;padding-bottom:8px}
+.tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+.tbl.c3 .r{grid-template-columns:140px 160px 1fr;gap:18px}
+.tbl.c3-wide .r{grid-template-columns:170px 1fr 1fr;gap:18px}
+.tbl.c3-num .r{grid-template-columns:1.4fr 80px 80px;gap:16px}
+.tbl.c4 .r{grid-template-columns:140px 140px 1fr 130px;gap:14px}
+.tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.tbl strong{color:var(--ink);font-weight:600}
+.tbl .num{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--ink-2)}
+.tbl .total{font-family:var(--mono);font-weight:600;color:var(--ink);border-top:1px solid var(--ink);padding-top:11px}
+
+.tag-pill{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:#fff;letter-spacing:0.03em}
+.tag-pill.solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-pill.warn{background:var(--warn-soft);color:var(--warn);border-color:#e8c8a8}
+.tag-pill.accent{background:var(--accent-soft);color:var(--accent);border-color:#d8d8ee}
+
+.concepts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:24px 0;max-width:720px}
+.concept{border:1px solid var(--line);border-radius:4px;padding:18px;background:var(--surface-2);position:relative;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.concept .n{position:absolute;top:14px;right:18px;font-family:var(--serif);font-size:36px;font-weight:600;color:var(--ink);opacity:0.1;line-height:1}
+.concept .t{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);line-height:1.3;padding-right:28px}
+.concept .t .sub{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+
+.roadmap{margin:24px 0;max-width:720px;display:grid;gap:8px}
+.road-row{display:grid;grid-template-columns:100px 1fr;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.road-row .v{background:var(--ink);color:#fff;padding:14px 16px;font-family:var(--mono);font-size:11.5px;letter-spacing:0.05em;font-weight:500;display:flex;align-items:center}
+.road-row .d{padding:14px 18px;font-size:14px;color:var(--ink-2);line-height:1.6}
+.road-row .d strong{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+
+.src{max-width:640px;margin-top:6px;padding:10px 14px;border:1px dashed var(--muted-2);border-radius:3px;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--surface-2)}
+.src strong{color:var(--ink-2)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px;margin:24px 0}
+.stat{border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:var(--surface-2)}
+.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat .v{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+.stat .v .unit{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px;font-family:var(--mono)}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+.flow{max-width:640px;margin:20px 0;padding:18px 22px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+.flow .arr{color:var(--accent);font-weight:500}
+.flow strong{color:var(--ink);font-weight:600}
+
+.tree{max-width:640px;margin:20px 0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:18px 22px}
+.tree strong{color:var(--ink);font-weight:600}
+.tree .l{color:var(--muted-2)}
+
+/* ── RIGHT TOC ────────────────────────────────────────── */
+aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+aside.toc ul{list-style:none;padding:0;margin:0}
+aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+aside.toc li a:hover{color:var(--ink);text-decoration:none}
+aside.toc li a.active{color:var(--ink)}
+aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+
+.dropcap::first-letter{font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;float:left;padding:6px 10px 0 0;color:var(--ink)}
+
+footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ── CUSTOM: HERO DARK BLOCK ──────────────────────────── */
+.hero-dark{
+  background:var(--ink);color:#e0e0dc;border-radius:6px;
+  padding:32px 28px;margin:32px 0;max-width:720px;
+}
+.hero-dark .hd-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
+  color:#888882;margin:0 0 20px;font-weight:600;
+}
+.hero-dark pre.code-dark{
+  font-family:var(--mono);font-size:11.5px;line-height:1.8;color:#c0c0ba;
+  background:transparent;border:none;padding:0;margin:0 0 28px;overflow-x:auto;white-space:pre;
+}
+.hero-dark pre.code-dark .cd-label{color:#8888cc;font-weight:600}
+.hero-dark pre.code-dark .cd-go{color:#6aaa6a;font-weight:600}
+.hero-dark pre.code-dark .cd-note{color:#888882;font-style:italic}
+.hero-dark pre.code-dark .cd-action{color:#c8a040;font-weight:500}
+.hero-dark .hd-grid-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  color:#666660;margin:0 0 10px;font-weight:600;
+}
+
+/* S0~S7 트랙 카드 그리드 */
+.track-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.track-card{
+  border:1px solid rgba(255,255,255,0.1);border-radius:4px;
+  padding:14px 16px;background:rgba(255,255,255,0.04);
+}
+.track-card .tc-id{
+  font-family:var(--mono);font-size:12.5px;color:#9898cc;font-weight:600;margin-bottom:4px;
+}
+.track-card .tc-body{font-size:13px;color:#c0c0ba;line-height:1.55;}
+.track-card .tc-formula{
+  font-family:var(--mono);font-size:11px;color:#8888aa;margin-top:6px;line-height:1.5;
+}
+
+/* ── CUSTOM: LAYER STACK (L0~L4 기초공사 5단계) ───────── */
+.layer-stack{margin:24px 0;max-width:720px;display:grid;gap:10px}
+.layer-row{display:grid;grid-template-columns:56px 1fr;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.layer-row .l-badge{background:var(--ink);color:#fff;font-family:var(--mono);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;letter-spacing:0.02em}
+.layer-row .l-body{padding:16px 20px}
+.layer-row .l-title{font-family:var(--sans);font-weight:600;font-size:15px;color:var(--ink);margin:0 0 6px}
+.layer-row .l-what{font-size:13.5px;color:var(--ink-2);line-height:1.65;margin:0 0 10px}
+.layer-row .l-what strong{color:var(--ink);font-weight:600}
+.layer-row .l-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+@media print{
+  .topbar,aside.side,aside.toc{display:none}
+  .layout{display:block;padding:0;margin:0}
+  article{max-width:100%;padding:0 8px}
+  body{font-size:9.5pt;line-height:1.5;margin:0}
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+
+  /* 섹션 헤더는 다음 내용과 항상 같은 페이지 */
+  article h2{break-after:avoid;margin-top:20px}
+  article h3{break-after:avoid}
+
+  /* 행 단위로만 분리 방지 — 테이블 전체는 분리 허용 */
+  .tbl tr{break-inside:avoid}
+  thead{display:table-header-group}
+
+  /* 작은 카드류는 통째로 유지 */
+  .stat,.formula,.concept,.flow{break-inside:avoid}
+
+  /* 트랙 카드: 2열 그리드를 단순 블록으로 */
+  .track-grid{display:block}
+  .track-card{break-inside:avoid;display:inline-block;width:48%;vertical-align:top;margin:2px}
+
+  /* 히어로 코드 블록 · 코드 블록: 페이지 분리 허용 (너무 길어서) */
+  .hero-dark{break-inside:auto}
+  pre.code{break-inside:auto;white-space:pre-wrap;word-break:break-all;font-size:7.5pt}
+
+  /* 로드맵 · 레이어 카드 행 */
+  .road-row,.layer-row{break-inside:avoid}
+
+  /* 통계 3카드 가로 유지 */
+  .stats{display:flex;gap:8px}
+
+  /* 공백 최소화 */
+  orphans:3;
+  widows:3;
+}
+@media (max-width:1040px){
+  .layout{grid-template-columns:220px minmax(0,1fr)}
+  aside.toc{display:none}
+}
+@media (max-width:720px){
+  .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+  aside.side{position:static;height:auto}
+  .topbar{padding:12px 20px}
+  article h1{font-size:34px}
+  article h2{font-size:24px;margin-top:48px}
+  .topbar .doc-name{display:none}
+  .concepts,.stats{grid-template-columns:1fr}
+  .layer-row{grid-template-columns:1fr}
+  .layer-row .l-badge{padding:6px 0}
+  .track-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="mark"><div class="dot">SC</div> Sincerely SCM</div>
+  <span class="sep">/</span>
+  <span class="doc-name">BOM·CBM 데이터 기초 공동설계 — 킥오프 핸드오프</span>
+  <div class="right">
+    <span>SCM-BOM-CBM-KICKOFF-01</span>
+    <span class="ver">v1.3 · 26.06.24</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT SIDE NAV -->
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch1">I · 결론 — 무엇을 하고 싶은가</a></li>
+      <li><a href="#ch2">II · 배경 — 왜 지금인가</a></li>
+      <li><a href="#ch3">III · 최종 비전 (cascade 예시)</a></li>
+      <li><a href="#ch4">IV · 기초공사 5단계 (L0~L4)</a></li>
+      <li><a href="#ch5">V · SSOT 경계 &amp; 소유</a></li>
+      <li><a href="#ch6">VI · 이해관계자 &amp; RACI</a></li>
+      <li><a href="#ch7">VII · 로드맵 순서</a></li>
+      <li><a href="#ch8">VIII · 스코프 (In / Out)</a></li>
+      <li><a href="#ch9">IX · 리스크 · 가정 · 의존성</a></li>
+      <li><a href="#ch10">X · 의사결정 &amp; 다음 단계</a></li>
+      <li><a href="#ch11">XI · 부록 — 확인 필요 항목</a></li>
+    </ul>
+    <div class="cross">
+      <a href="2026-06-22-cbm-bom-logistics-brief.html">BOM-CBM 물류 자동화 브리프 (06.22) <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <!-- ARTICLE -->
+  <article>
+
+    <div class="eyebrow">KICKOFF HANDOFF · BOM-CBM DATA FOUNDATION · 2026.06.24</div>
+    <h1>BOM·CBM 데이터 기초 공동설계 — 킥오프 핸드오프</h1>
+    <p class="lede">품질혁신파트(안나) × 물류파트 공식 협업 · 2026-06-24 킥오프</p>
+    <div class="byline">
+      <span><span class="k">작성일</span>2026.06.24</span>
+      <span><span class="k">참여</span>품질혁신파트(안나) × 물류파트</span>
+      <span><span class="k">용도</span>킥오프 공동 정렬 · 핸드오프 문서</span>
+      <span><span class="k">작성</span>물류파트 윤지수</span>
+    </div>
+
+    <div class="note warn">
+      <div class="tag">DB 백엔드 잠정 · TBD</div>
+      <div class="body">신규 SSOT의 DB 백엔드(Supabase 등)는 <strong>아직 미확정</strong>이다. 본 문서의 플랫폼 관련 내용은 전부 <strong>잠정(TBD)</strong> — 킥오프 이후 안나 주도 공동 결정 대상이다. 확정된 원칙은 <strong>"운영 데이터는 백엔드 선택과 무관하게 Airtable 유지"</strong> 하나뿐이다.</div>
+    </div>
+
+    <!-- ─── I. 결론 먼저 ─── -->
+    <h2 id="ch1"><span class="nm">I</span>결론 먼저 — 무엇을 하고 싶은가<span class="tag-pill solid">핵심</span></h2>
+
+    <div class="pullquote">
+      "프로젝트 등록 → 기사 운임마감까지 자동으로 흐르는 물류 프로세스를 구축한다."
+      <cite>이 킥오프의 결론</cite>
+    </div>
+
+    <p class="dropcap">그러려면 맨 밑바닥 — 아이템 정체성 SSOT — 부터 새로 기초공사를 시작해야 한다. 그 위에 순서대로 쌓는다.</p>
+
+    <div class="flow">
+<strong>1 정체성 SSOT</strong>
+  <span class="arr">→</span> 2 계층
+  <span class="arr">→</span> 3 BOM(소요량)
+  <span class="arr">→</span> 4 CBM(부피)
+  <span class="arr">→</span> <strong>5 수량전파(cascade)</strong>
+    </div>
+
+    <ul>
+      <li>물류가 혼자 테스트로 만든 <strong>cascade는 "이 최종 흐름이 실제로 가능하다"를 보여주는 증명 예시(프로토타입)</strong>일 뿐이다. 데이터 기초는 <strong>승윤, 안나님 의견을 반영</strong>한다.</li>
+      <li>이 킥오프의 핵심 질문 = <strong>"어디서부터 SSOT를 잡고, 데이터 구조를 짜고, BOM·CBM을 쌓을 것인가"</strong> → 5단계 기초공사 순서(<a href="#ch4">IV장</a>)로 답한다.</li>
+    </ul>
+
+    <div class="note accent">
+      <div class="tag">오늘 반드시 닫을 것</div>
+      <div class="body">로드맵 순서(<a href="#ch7">VII장</a>) + RACI(<a href="#ch6">VI장</a>).</div>
+    </div>
+
+    <!-- ─── II. 배경 ─── -->
+    <h2 id="ch2"><span class="nm">II</span>배경 — 왜 지금인가</h2>
+
+    <p class="dropcap">경영진이 BOM·CBM 공식 협업 + 안나-물류파트 공식 협업을 최종 승인했다.</p>
+
+    <p>현재 구조는 아래 순서 위에서 6개 모듈이 돌아간다.</p>
+
+    <div class="flow">
+SERPA 3.0 <span class="arr">→</span> sync <span class="arr">→</span> <strong>WMS/TMS(Airtable)</strong>
+    </div>
+
+    <div class="flow">
+<strong>project</strong> <span style="font-size:11px;color:var(--muted)">(고객주문)</span>
+  <span class="arr">→</span> order
+  <span class="arr">→</span> task <span style="font-size:11px;color:var(--muted)">(생산·임가공)</span>
+  <span class="arr">→</span> pkg <span style="font-size:11px;color:var(--muted)">(패키징)</span>
+  <span class="arr">→</span> movement <span style="font-size:11px;color:var(--muted)">(자재투입)</span>
+  <span class="arr">→</span> <strong>TMS</strong> <span style="font-size:11px;color:var(--muted)">(배송)</span>
+    </div>
+
+    <p>이 6개 모듈은 Airtable 네이티브 링크가 아니라 <strong>텍스트 키(프로젝트코드·아이템코드·파츠코드)로만 위태롭게</strong> 이어져 있다. 그 결과 아래 세 가지 구조적 문제가 발생한다.</p>
+
+    <h3 id="ch2-problem">구조적 문제</h3>
+
+    <div class="tbl c2">
+      <div class="r h"><div>문제</div><div>현상</div></div>
+      <div class="r">
+        <div><strong>BOM 마스터 부재</strong></div>
+        <div>구조화된 자재명세 테이블 0개. 사람이 프로젝트마다 BOM 로직을 머릿속으로 재실행.</div>
+      </div>
+      <div class="r">
+        <div><strong>CBM 마스터 반쪽</strong></div>
+        <div>신뢰 가능한 부피 숫자가 TMS Product에만. WMS/MES는 텍스트 규격 → 부피 계산 불가.</div>
+      </div>
+      <div class="r">
+        <div><strong>정체성 약점</strong></div>
+        <div>굿즈명 텍스트 조인 성공률 <span class="tag-pill warn">53%</span> — 이름이 조금만 달라도 연결이 끊긴다.</div>
+      </div>
+    </div>
+
+    <div class="pullquote">
+      정체성·계층(무엇인가)은 안나 도메인, BOM·CBM·전파(얼마나·어떤 부피로 흐르는가)는 물류 도메인.
+      <cite>기초부터 함께 세울 최적 타이밍</cite>
+    </div>
+
+    <!-- ─── III. 최종 비전 ─── -->
+    <h2 id="ch3"><span class="nm">III</span>최종 비전 — cascade 예시로</h2>
+
+    <p class="dropcap">한 프로젝트가 등록되는 순간 아래가 <strong>자동으로</strong> 흐른다. 물류 프로토타입이 이미 시연했으며, 아래는 2026-06-22 dry-run 스냅샷이다.</p>
+
+    <div class="hero-dark">
+      <div class="hd-label">Cascade 플로우 — PNA51684 (보령 프로젝트)</div>
+<pre class="code-dark"><span class="cd-note"># 입력 주문</span>
+<span class="cd-go">[WMS order]</span>   PNA51684 · 쇼핑백/G형박스/눈마사지기/미르텀블러 각 100 + 키트포장 100
+
+<span class="cd-note"># S0 ~ S7 자동 전파</span>
+<span class="cd-label">[S0 감지]</span>     (PNA, 굿즈) 단위 신규 주문 감지
+<span class="cd-label">[S1 키해소]</span>   PT#### ↔ WMS 아이템코드 ↔ TMS 견적코드 크로스워크 정합
+<span class="cd-label">[S2 MRP]</span>      자재 전개 (×100):
+                쇼핑백    4PT → 부족 4PT×100
+                G형박스   6PT → 부족 3PT×100
+                눈마사지기 6PT → 부족 6PT×100
+                미르텀블러 5PT → 부족 3PT×100
+                키트포장  1PT → 부족 1PT×100
+              ⇒ 총 17개 PT 발주 목록 자동 산출     <span class="cd-action">← 발주 액션</span>
+<span class="cd-label">[S3 입하예측]</span> 입하CBM ≈ 1.06m³ · M/H 1.31h       <span class="cd-action">← 도크/인력 준비</span>
+<span class="cd-label">[S4 창고투영]</span> staging 0.0% → 최대 1.6% (Max 57.6m³) — 여유 충분
+<span class="cd-label">[S5 배차]</span>     출하CBM 3.57m³ → W1/W2/W3 전부 가능 (max 4.5/7.6/9.5)
+<span class="cd-label">[S6 운임]</span>     ₩64,000~₩105,500 (수도권 거리대)
+<span class="cd-label">[S7 Ledger]</span>   PropagationLedger INSERT — 전파상태 "부분" + 끊김 사유 기록
+     ↓ TMS replay cron
+<span class="cd-go">[TMS Shipment]</span> estimated_cbm 3.572 ✓ (cascade 산출 3.57과 일치 — 교차검증 통과)
+<span class="cd-go">[배차]</span>         wave_recommendation · 차량이용률 KPI rollup 자동
+<span class="cd-go">[운임정산]</span>     CBM 구간 요율 → 정산 파이프라인 자동 소비</pre>
+
+      <div class="hd-grid-label">S0 ~ S7 트랙 상세</div>
+      <div class="track-grid">
+        <div class="track-card">
+          <div class="tc-id">S0 · 감지</div>
+          <div class="tc-body">(PNA, 굿즈) 단위 신규 주문 감지</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S1 · 키해소</div>
+          <div class="tc-body">PT#### ↔ WMS ↔ TMS 크로스워크 정합</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S2 · MRP</div>
+          <div class="tc-body">gross = 소요량_개당 × 주문수량</div>
+          <div class="tc-formula">shortfall = max(0, gross − floor(현재고))</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S3 · 입하CBM / M/H</div>
+          <div class="tc-body">부족 PT 입하 부피 + 인력 예측</div>
+          <div class="tc-formula">입하CBM ≈ 1.06m³ · M/H 1.31h</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S4 · 창고투영</div>
+          <div class="tc-body">staging % before / after</div>
+          <div class="tc-formula">0.0% → Max 1.6% (Max 57.6m³, 여유 충분)</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S5 · 배차프리뷰</div>
+          <div class="tc-body">W1 / W2 / W3 feasibility</div>
+          <div class="tc-formula">max 4.5 / 7.6 / 9.5 m³ — 전부 가능</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S6 · 운임프리뷰</div>
+          <div class="tc-body">도로거리 밴드 기반 요율 범위</div>
+          <div class="tc-formula">₩64,000 ~ ₩105,500 (수도권)</div>
+        </div>
+        <div class="track-card">
+          <div class="tc-id">S7 · Ledger INSERT</div>
+          <div class="tc-body">PropagationLedger idempotent INSERT</div>
+          <div class="tc-formula">전파상태 "부분" + 끊김 사유 기록</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note accent">
+      <div class="tag">핵심 통찰</div>
+      <div class="body">이 흐름이 지금 <strong>"부분(부족)"</strong>으로 도는 이유 = 밑바닥 데이터 기초(CBM)가 없어서다. 위 예시(PNA51684)도 17개 발주 대상 PT 중 <strong>11개가 CBM 미등록</strong>이라 입하 부피 계산이 불완전하다 — 쇼핑백(PT4253·PT4257·PT4279) · G형박스(PT3755) · 눈마사지기(PT0864·PT0865·PT2691·PT3583·PT3722) · 미르텀블러(PT2685·PT3729). → 기초(정체성·계층·BOM·CBM)를 세우면 이 그림이 <strong>"완결"</strong>로 돈다. 이게 우리가 함께 만들 목표다.</div>
+    </div>
+
+    <!-- ─── IV. 기초공사 5단계 ─── -->
+    <h2 id="ch4"><span class="nm">IV</span>어디서부터? — 기초공사 5단계 (SSOT-first)<span class="tag-pill solid">핵심</span></h2>
+
+    <p class="dropcap">밑에서 위로 순서대로 쌓는다. 각 층은 아래 층이 있어야 성립한다.</p>
+
+    <div class="layer-stack">
+      <div class="layer-row">
+        <div class="l-badge">L0</div>
+        <div class="l-body">
+          <div class="l-title">아이템 정체성 SSOT</div>
+          <div class="l-what">하나의 품목 = 하나의 표준 정체성. 원자 단위 2종(굿즈·PT####). <strong>코드 정합</strong>: 굿즈코드 ↔ PT#### ↔ 견적코드 ↔ SERPA → 1개 표준키.</div>
+          <div class="l-meta">
+            <span class="tag-pill">왜: 모든 것의 뿌리 — 없으면 굿즈명 조인 53% 약점 발생</span>
+            <span class="tag-pill solid">주도: 안나</span>
+            <span class="tag-pill warn">위치: 신규 SSOT (백엔드 잠정)</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="l-badge">L1</div>
+        <div class="l-body">
+          <div class="l-title">아이템 계층</div>
+          <div class="l-what">완제품(굿즈) → 키트 → 구성품 → 부자재 → 포장재. 품목유형 분류(산출물·서비스 PT 구분 포함).</div>
+          <div class="l-meta">
+            <span class="tag-pill">왜: 정체성 위 부모-자식 골격</span>
+            <span class="tag-pill solid">주도: 안나</span>
+            <span class="tag-pill warn">위치: 신규 SSOT (백엔드 잠정)</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="l-badge">L2</div>
+        <div class="l-body">
+          <div class="l-title">BOM (소요량)</div>
+          <div class="l-what">모품목 → 소품목 + 소요량_개당. order 그룹핑 부트스트랩 → 검증 승급.</div>
+          <div class="l-meta">
+            <span class="tag-pill">왜: 계층 엣지에 수량을 매김</span>
+            <span class="tag-pill solid">주도: 안나</span>
+            <span class="tag-pill warn">위치: 신규 SSOT (백엔드 잠정)</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="l-badge">L3</div>
+        <div class="l-body">
+          <div class="l-title">CBM (부피)</div>
+          <div class="l-what">각 아이템에 부피 속성. 굿즈 CBM(박스규격) · 파츠 CBM(치수).</div>
+          <div class="l-meta">
+            <span class="tag-pill">왜: 아이템 정체성에 부피 바인딩</span>
+            <span class="tag-pill accent">주도: 물류</span>
+            <span class="tag-pill">위치: Airtable (운영)</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="l-badge">L4</div>
+        <div class="l-body">
+          <div class="l-title">수량전파 (cascade)</div>
+          <div class="l-what">등록 → 폭발 → 소요 → CBM → 배차 → 운임마감 자동 흐름.</div>
+          <div class="l-meta">
+            <span class="tag-pill">왜: L0~L3 완비 시 <a href="#ch3">III장</a> 비전 완결</span>
+            <span class="tag-pill accent">주도: 물류</span>
+            <span class="tag-pill">위치: Airtable (운영)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── V. SSOT 경계 & 소유 ─── -->
+    <h2 id="ch5"><span class="nm">V</span>SSOT 경계 &amp; 소유 — 계층형 소유 + 계약 심(seam)</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── VI. RACI ─── -->
+    <h2 id="ch6"><span class="nm">VI</span>이해관계자 &amp; RACI<span class="tag-pill solid">핵심</span></h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── VII. 로드맵 ─── -->
+    <h2 id="ch7"><span class="nm">VII</span>로드맵 순서<span class="tag-pill solid">핵심</span></h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── VIII. 스코프 ─── -->
+    <h2 id="ch8"><span class="nm">VIII</span>스코프 (In / Out)</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── IX. 리스크 ─── -->
+    <h2 id="ch9"><span class="nm">IX</span>리스크 · 가정 · 의존성</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── X. 의사결정 & 다음 단계 ─── -->
+    <h2 id="ch10"><span class="nm">X</span>의사결정 포인트 &amp; 다음 단계</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <!-- ─── XI. 부록 ─── -->
+    <h2 id="ch11"><span class="nm">XI</span>부록 — 오늘 확정 필요 [확인] 항목</h2>
+
+    <div class="note">
+      <div class="tag">작성 예정</div>
+      <div class="body">킥오프 회의 완료 후 정리하여 작성합니다.</div>
+    </div>
+
+    <div class="src"><strong>출처</strong> · 물류 cascade dry-run 실측(<code class="inl">data/order_cascade/</code>), BOM·CBM 백본 스펙.</div>
+
+    <footer class="end">
+      <span>작성: 물류파트 윤지수 · 2026.06.24 · SCM-BOM-CBM-KICKOFF-01 · v1.3</span>
+      <span>END OF DOCUMENT</span>
+    </footer>
+
+  </article>
+
+  <!-- RIGHT TOC -->
+  <aside class="toc" id="toc">
+    <h5>이 문서 안에서</h5>
+    <ul>
+      <li><a href="#ch1">I. 결론 — 무엇을 하고 싶은가</a></li>
+      <li><a href="#ch2">II. 배경 — 왜 지금인가</a></li>
+      <li class="sub"><a href="#ch2-problem">구조적 문제</a></li>
+      <li><a href="#ch3">III. 최종 비전 (cascade 예시)</a></li>
+      <li><a href="#ch4">IV. 기초공사 5단계 (L0~L4)</a></li>
+      <li><a href="#ch5">V. SSOT 경계 &amp; 소유</a></li>
+      <li><a href="#ch6">VI. 이해관계자 &amp; RACI</a></li>
+      <li><a href="#ch7">VII. 로드맵 순서</a></li>
+      <li><a href="#ch8">VIII. 스코프 (In / Out)</a></li>
+      <li><a href="#ch9">IX. 리스크 · 가정 · 의존성</a></li>
+      <li><a href="#ch10">X. 의사결정 &amp; 다음 단계</a></li>
+      <li><a href="#ch11">XI. 부록 — 확인 필요 항목</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<script>
+  (function(){
+    const navLinks = document.querySelectorAll('#nav a[href^="#"], #toc a[href^="#"]');
+    const sections = [...document.querySelectorAll('article h2[id], article h3[id]')];
+    function setActive(){
+      const y = window.scrollY + 100;
+      let current = sections[0];
+      for(const s of sections){ if(s.offsetTop <= y) current = s; }
+      if(!current) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current.id));
+    }
+    window.addEventListener('scroll', setActive, {passive:true});
+    setActive();
+  })();
+</script>
+
+</body>
+</html>

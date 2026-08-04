@@ -27,7 +27,8 @@ from dotenv import load_dotenv
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 from harness.dispatch.cbm_estimator import (  # noqa: E402
-    estimate_shipment_cbm_deterministic, estimate_shipment_cbm, build_kit_cbm_lookup,
+    SERVICE_CODES, estimate_shipment_cbm_deterministic, estimate_shipment_cbm,
+    build_kit_cbm_lookup, count_active_shipments, fuzzy_write_decision,
 )
 from harness.backbone.keys import (  # noqa: E402
     resolve_goods_code, build_pkg_goods_map, normalize_goods,
@@ -167,13 +168,11 @@ def build_inputs():
           f"[Gate ≥85%]", flush=True)
     print("shipment 로딩...", flush=True)
     ships = fetch(TMS, SHIP, TP, ["project code", "Total_CBM", "estimated_cbm",
-                                  "최종 출고 품목 및 수량", "최종 출하 품목"])
-    shipment_count = collections.Counter()
-    for r in ships:
-        m = PNA.search(str(r["fields"].get("project code") or ""))
-        if m:
-            shipment_count[m.group(0)] += 1
-    return lk, order_by_project, dict(shipment_count), ships, kit
+                                  "estimation_confidence", "발송상태_TMS",
+                                  "최종 출고 품목 및 수량", "최종 출하 품목", "배송 품목"])
+    # 활성(미종료) 출하만 카운트 — 과거 '출하 완료'가 다차출하(partial_skip)를 오판하지 않도록. (레버1)
+    shipment_count = count_active_shipments(ships)
+    return lk, order_by_project, shipment_count, ships, kit
 
 
 def main():
@@ -201,6 +200,7 @@ def main():
     cbm_valid_after = 0                 # replay 반영 후 (deterministic only)
     cbm_valid_hybrid = 0                # deterministic + 퍼지 폴백 합산 (achievable ceiling)
     fuzzy_only_adds = 0                 # det 못 풀고 퍼지만 푸는 건수
+    fuzzy_patch = 0                     # A-2: capped-conf 로 PATCH 한 퍼지 추정 건수
     to_patch = []  # (rec_id, est, conf)
     for r in ships:
         f = r["fields"]
@@ -219,7 +219,8 @@ def main():
             blank += 1
         else:
             res = estimate_shipment_cbm_deterministic(m.group(0), obp, lk, scount,
-                                                      kit_lookup=kit)
+                                                      kit_lookup=kit,
+                                                      service_codes=SERVICE_CODES)
             mode = res["mode"]
             if mode == "partial_skip":
                 partial += 1
@@ -233,19 +234,30 @@ def main():
                     newly += 1
                 if res["confidence"] >= 0.7:
                     cur = n(f.get("estimated_cbm"))
-                    if abs(cur - res["estimated_cbm"]) > WRITE_TOL:
+                    cur_conf = n(f.get("estimation_confidence"))
+                    # 값 변동 OR confidence 변동 시 PATCH — 서비스라인 제외는 est 값은
+                    # 그대로(서비스=CBM 0)이고 confidence만 0.7→1.0 상승하므로 conf 비교 필수.
+                    if (abs(cur - res["estimated_cbm"]) > WRITE_TOL
+                            or abs(cur_conf - res["confidence"]) > 1e-9):
                         to_patch.append((r["id"], res["estimated_cbm"], res["confidence"]))
             else:  # deterministic but est==0 (전부 unmatched/qty0)
                 unmatched_only += 1
         if valid_now or det_est > 0:
             cbm_valid_after += 1
-        # 퍼지 폴백 (spec §6: 다차/blank/no_order → 기존 free-text estimator)
+        # 퍼지 폴백 (spec §6: 다차/blank/no_order → per-shipment free-text estimator)
         fuzzy_est = det_est
         if fuzzy_est <= 0 and not valid_now:
             fz = estimate_shipment_cbm(f, lk)
             fuzzy_est = fz["estimated_cbm"]
             if fuzzy_est > 0:
                 fuzzy_only_adds += 1
+                # A-2: per-shipment 텍스트 추정을 capped-conf(≤0.7, 자동 floor 미만)로 PATCH —
+                # 결정론 실패건 CBM 공백을 메우되 자동배차는 않고 수동 검토/정산 프리뷰 제공.
+                dec = fuzzy_write_decision(fz, n(f.get("estimated_cbm")),
+                                           n(f.get("estimation_confidence")))
+                if dec:
+                    fuzzy_patch += 1
+                    to_patch.append((r["id"], dec[0], dec[1]))
         if valid_now or det_est > 0 or fuzzy_est > 0:
             cbm_valid_hybrid += 1
 
@@ -263,7 +275,8 @@ def main():
     print(f"  no_order(PNA 매칭無 order)      : {no_order:>6} ({no_order/total*100:5.1f}%)  ← order 미러 커버리지 한계")
     print(f"  unmatched_only(코드/CBM 부재)   : {unmatched_only:>6} ({unmatched_only/total*100:5.1f}%)  ← Task 1.4 대상")
     print(f"  blank project code              : {blank:>6} ({blank/total*100:5.1f}%)")
-    print(f"\n  PATCH 대상(신규/변경 estimated_cbm, 결정론 conf≥0.7): {len(to_patch)}건", flush=True)
+    print(f"  └ 그 중 퍼지 폴백(A-2, capped conf≤0.7 수동): {fuzzy_patch:>6}건")
+    print(f"\n  PATCH 대상(결정론 conf≥0.7 + 퍼지 capped): {len(to_patch)}건", flush=True)
     resolvable = cbm_valid_hybrid
 
     if not args.write:

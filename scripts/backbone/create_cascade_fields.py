@@ -31,6 +31,12 @@ FIELDS = [
      "description": "S5 — capacity-feasibility (W1/W2/W3 가능 여부) (P6b 2026-06-12)"},
     {"name": "운임_예상범위", "type": "singleLineText",
      "description": "S6 — 수도권 거리대 요율 범위 (주소 미확정) (P6b 2026-06-12)"},
+    {"name": "생산_납기일", "type": "date",
+     "options": {"dateFormat": {"name": "iso", "format": "YYYY-MM-DD"}},
+     "description": "P3 — MES 최조 납기일 (생산 forward 앵커, 주차 버킷용) (2026-06-18)"},
+    {"name": "출고요청일", "type": "date",
+     "options": {"dateFormat": {"name": "iso", "format": "YYYY-MM-DD"}},
+     "description": "P3 — order 출고 요청일 (출고 forward 앵커, 주차 버킷용) (2026-06-18)"},
     {"name": "cascade_실행ID", "type": "singleLineText",
      "description": "run_id YYYYMMDD-HHMM KST — audit jsonl 조인 키 (P6b 2026-06-12)"},
 ]

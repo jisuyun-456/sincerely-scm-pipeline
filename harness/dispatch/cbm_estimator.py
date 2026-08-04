@@ -22,6 +22,65 @@ _KIT_SRC_CONF = {"TMS_Product": 1.0, "박스유도": 0.9, "MES_제품DB": 0.8, "
                  "치수파싱": 0.55, "QC버킷": 0.40}  # P3' part_cbm 백필 출처 (spec §6 2축치수·QC버킷)
 KIT_CONF_CAP = 0.8  # Product 직접조인(0.9~1.0)보다 항상 낮게 — 신뢰도 사다리 정렬 (spec §6-2)
 
+# 비물리 서비스/고객지급 굿즈코드 — 박스·CBM이 없어 confidence 산정에서 제외.
+# (코드 기반: keys.is_service 이름매칭은 '신시어리서비스'·'고객입고물품'을 못 잡고
+#  '퀵차지'(실물 보조배터리)를 오탐하므로, 정확도 위해 코드 집합으로 관리. 발견 시 확장.)
+# 진단(2026-06-19): SSSV가 6/23~30 미출고 71건 중 56건의 confidence를 0.7로 cap.
+# 진단(2026-06-25): LOPU·BSPK·BCTW·DSKT·CMWG — Product 테이블 미등록, 하차서비스·부자재 등 비물리.
+SERVICE_CODES: frozenset[str] = frozenset({"SSSV", "CSPR", "LOPU", "BSPK", "BCTW", "DSKT", "CMWG"})
+
+# 종료(비활성) 발송상태 — 다차출하(partial_skip) 카운트에서 제외. 과거 '출하 완료'가
+# 신규 1건짜리 프로젝트를 다차로 오판해 CBM을 통째 skip → 자동배차 수동화하던 문제 해소. (2026-06-22 레버1)
+TERMINAL_STATUS: frozenset[str] = frozenset({"출하 완료", "진행 취소"})
+
+
+# A-2 (2026-06-22): 결정론 실패(다차출하·no_order·unmatched) shipment 의 per-shipment 텍스트
+# 추정을 PATCH 할지 결정. CBM 공백을 메우되, 텍스트 파싱 신뢰도 한계를 감안해 confidence 를
+# 자동배차 floor(0.8) 미만으로 cap → 자동배차는 하지 않고 수동 검토/정산/용량 프리뷰에만 활용.
+FUZZY_MIN_CONF = 0.5         # 이 미만이면 라인 매칭이 너무 불완전 → 쓰지 않음(과소추정 위험)
+FUZZY_CONF_CAP = 0.7         # 부분매칭 fuzzy — 자동 floor 미만으로 cap (수동 유지)
+FUZZY_FULL_MATCH_CONF = 0.9  # A2-FULLAUTO: 완전매칭(전 라인 매칭) fuzzy 는 CBM 완전 → 자동 허용 conf
+
+
+def fuzzy_write_decision(fz: dict, cur_est: float, cur_conf: float,
+                         tol: float = 1e-4) -> tuple | None:
+    """per-shipment 퍼지 추정을 estimated_cbm 으로 쓸지 결정. (est, conf) 또는 None.
+
+    완전매칭(fuzzy conf≥1.0)은 shipment 자체 텍스트가 전부 product 매칭 → CBM 완전(과소추정
+    아님)이므로 자동배차 허용 conf(FUZZY_FULL_MATCH_CONF). 부분매칭은 과소추정 가능 → cap(수동).
+    fz: estimate_shipment_cbm() 결과. cur_est/cur_conf: 현재 Airtable 값(idempotency).
+    """
+    est = fz.get("estimated_cbm", 0.0)
+    fconf = fz.get("confidence", 0.0)
+    if est <= 0 or fconf < FUZZY_MIN_CONF:
+        return None
+    conf = FUZZY_FULL_MATCH_CONF if fconf >= 1.0 else min(fconf, FUZZY_CONF_CAP)
+    if abs(cur_est - est) <= tol and abs(cur_conf - conf) <= 1e-9:
+        return None  # 변동 없음 → skip
+    return (round(est, 4), round(conf, 2))
+
+
+def count_active_shipments(ships: list[dict], status_field: str = "발송상태_TMS") -> dict[str, int]:
+    """PNA별 *활성*(미종료) shipment 수.
+
+    종료건('출하 완료'·'진행 취소')을 제외해, 과거 완료 출하가 partial_skip(다차출하)를
+    오판하지 않게 한다. estimate_shipment_cbm_deterministic 의 shipment_count 입력용.
+    """
+    from collections import Counter
+    cnt: Counter = Counter()
+    for r in ships:
+        f = r.get("fields", r)
+        m = PNA_RE.search(str(f.get("project code") or ""))
+        if not m:
+            continue
+        status = f.get(status_field)
+        if isinstance(status, list):
+            status = status[0] if status else ""
+        if str(status or "") in TERMINAL_STATUS:
+            continue
+        cnt[m.group(0)] += 1
+    return dict(cnt)
+
 # Thousand-separator: '1,000' → '1000' (digit-comma-three-digits, not in larger run)
 _THOUSANDS_COMMA = re.compile(r"(\d),(?=\d{3}(?!\d))")
 
@@ -142,10 +201,19 @@ def estimate_shipment_cbm(shipment: dict, lookup: dict) -> dict:
             "unmatched": [],
         }
 
+    # '배송 품목'(multipleRecordLinks/list)은 다차출하 TO별 per-shipment 분할 수량 소스.
+    # '최종 출고 품목 및 수량'보다 granularity 높으므로 최우선 참조.
+    _bp_raw = f.get("배송 품목") or []
+    if isinstance(_bp_raw, list):
+        baesong_text = "; ".join(str(x) for x in _bp_raw if x and str(x).lower() != "none").strip()
+    else:
+        baesong_text = str(_bp_raw).strip()
     post_text = (f.get("최종 출고 품목 및 수량") or "").strip()
     pre_text = (f.get("최종 출하 품목") or "").strip()
-    text = post_text or pre_text
-    mode = "임가공_후_추정" if post_text else "임가공_전_추정"
+    text = baesong_text or post_text or pre_text
+    mode = ("배송품목_추정" if baesong_text
+            else "임가공_후_추정" if post_text
+            else "임가공_전_추정")
     if not text:
         return {
             "estimated_cbm": 0.0,
@@ -251,6 +319,7 @@ def estimate_shipment_cbm_deterministic(
     lookup: dict,
     shipment_count: dict[str, int],
     kit_lookup: dict | None = None,
+    service_codes: set[str] | None = None,
 ) -> dict:
     """결정론 출고 CBM. order.굿즈코드→Product[견적코드]→ceil(qty/qpb)*cbm. 퍼지 없음.
 
@@ -258,6 +327,9 @@ def estimate_shipment_cbm_deterministic(
     blank project_code/no order는 호출측에서 기존 퍼지 estimate_shipment_cbm 폴백.
     kit_lookup: {(PNA, 견적코드): (kit_cbm_per_unit, conf)} — Product CBM 부재 시만 적용
     (이중계상 가드: direct 우선). kit 사용 시 confidence ≤ 0.8.
+    service_codes: 비물리 서비스라인(예: SSSV 신시어리서비스·CSPR 고객입고물품) 코드 집합.
+    해당 라인은 박스/CBM이 없으므로 matched/unmatched 판정·CBM 합산에서 제외 —
+    실물이 전부 매칭이면 서비스 동반에도 confidence 1.0. (None=미적용, 기존 동작.)
     Returns dict: {estimated_cbm, confidence, mode, matched, unmatched, kit_used}.
     """
     if shipment_count.get(project_code, 0) > 1:
@@ -267,12 +339,15 @@ def estimate_shipment_cbm_deterministic(
     if not lines:
         return {"estimated_cbm": 0.0, "confidence": 0.0, "mode": "no_order",
                 "matched": [], "unmatched": [], "kit_used": []}
+    svc = {c.upper() for c in service_codes} if service_codes else None
     total = 0.0
     matched: list[str] = []
     unmatched: list[str] = []
     kit_used: list[str] = []
     kit_confs: list[float] = []
     for code, qty in lines:
+        if svc and str(code).upper() in svc:
+            continue  # 비물리 서비스라인 — confidence/CBM 산정 제외
         e = lookup.get(str(code).lower())
         if e and e["cbm_per_box"] > 0 and qty > 0:
             total += math.ceil(qty / e["qty_per_box"]) * e["cbm_per_box"]

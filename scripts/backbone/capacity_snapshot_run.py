@@ -14,6 +14,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -52,18 +53,42 @@ SYNC_ITEM = "tblwnNgHQxZ0WhDBh"
 SERIES_PATH = Path(__file__).resolve().parents[2] / "data" / "capacity_series.json"
 
 
+_FETCH_RETRIES = 4          # cron 무인 실행 transient 보강 (order_cascade._get_with_retry 이식)
+_RETRY_STATUS = {429, 500, 502, 503, 504}
+
+
+def _get_with_retry(url, pat, params):
+    """timeout·연결오류·429/5xx에 한해 지수 backoff 재시도, 소진 시 loud raise."""
+    for attempt in range(1, _FETCH_RETRIES + 1):
+        try:
+            r = requests.get(url, headers={"Authorization": f"Bearer {pat}"},
+                             params=params, timeout=60)
+            if r.status_code in _RETRY_STATUS:
+                raise requests.exceptions.RetryError(
+                    f"HTTP {r.status_code}: {r.text[:200]}")
+            r.raise_for_status()
+            return r
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.RetryError) as err:
+            if attempt == _FETCH_RETRIES:
+                raise
+            wait = 2 ** attempt
+            print(f"[RETRY {attempt}/{_FETCH_RETRIES}] {url.rsplit('/', 1)[-1]} "
+                  f"{type(err).__name__} — {wait}s 후 재시도", flush=True)
+            time.sleep(wait)
+
+
 def fetch(base, tid, pat, fields, formula=None):
     out, off = [], None
+    url = f"https://api.airtable.com/v0/{base}/{tid}"
     while True:
         p = {"pageSize": 100, "fields[]": fields}
         if off:
             p["offset"] = off
         if formula:
             p["filterByFormula"] = formula
-        r = requests.get(f"https://api.airtable.com/v0/{base}/{tid}",
-                         headers={"Authorization": f"Bearer {pat}"},
-                         params=p, timeout=60)
-        r.raise_for_status()
+        r = _get_with_retry(url, pat, p)
         d = r.json()
         out += d["records"]
         off = d.get("offset")

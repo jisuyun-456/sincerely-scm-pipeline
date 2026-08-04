@@ -10,6 +10,8 @@ import pytest
 
 from harness.backbone.cascade import (
     CascadeContext,
+    _earliest_date,
+    _norm_date,
     build_order_lines,
     collect_units,
     decide_insert,
@@ -35,6 +37,28 @@ def _order(pc, goods, part, oqty, code=None, created="2026-06-10T00:00:00.000Z")
     if code is not None:
         f["굿즈코드 (from sync_itemdb)"] = code
     return {"id": f"rec{pc}{part}", "createdTime": created, "fields": f}
+
+
+# ─── P3: forward 날짜 정규화 (출고요청일 수식필드 방어) ─────────────
+
+def test_norm_date_formats():
+    assert _norm_date("2026.6.12") == "2026-06-12"     # 점구분·미패딩
+    assert _norm_date("2026-06-17") == "2026-06-17"    # 이미 ISO
+    assert _norm_date("2026.12.5") == "2026-12-05"
+    assert _norm_date("#ERROR!") is None               # 수식 에러
+    assert _norm_date("") is None
+    assert _norm_date(None) is None
+
+
+def test_earliest_date_skips_errors_and_normalizes():
+    rows = [{"출고 요청일": "#ERROR!"}, {"출고 요청일": "2026.6.12"},
+            {"출고 요청일": "2026.3.19"}]
+    assert _earliest_date(rows, "출고 요청일") == "2026-03-19"   # 에러 제외, 최소
+    # lookup(list) 평탄화
+    assert _earliest_date([{"출고 요청일": ["2026.7.1", "#ERROR!", "2026.5.9"]}],
+                          "출고 요청일") == "2026-05-09"
+    # 전부 에러/공백 → None
+    assert _earliest_date([{"출고 요청일": "#ERROR!"}], "출고 요청일") is None
 
 
 # ─── S0: collect_units ───────────────────────────────────────────
@@ -170,6 +194,26 @@ def test_select_bom_rows_fallback_from_orders():
     rows, n_verified = select_bom_rows("PNA7", "굿즈", [], unit=unit)
     assert rows == [{"소품목_PT": "PT0700", "소요량_개당": 2.0}]   # 100/50
     assert n_verified == 0
+
+
+def test_select_bom_rows_repro_base_fallback():
+    # V3.1 — 재제작 주문(접미)은 베이스 굿즈명 BOM과 매칭
+    rows, n_verified = select_bom_rows("PNA50702", "심볼아크릴트로피_재제작", _BOM_FIELDS)
+    by_pt = {r["소품목_PT"]: r["소요량_개당"] for r in rows}
+    assert by_pt == {"PT4900": 1.0, "PT4906": 1.0}
+    assert n_verified == 0   # 베이스 폴백은 미검증 취급 (보수적)
+
+
+def test_select_bom_rows_exact_precedence_over_base():
+    # 정확매칭이 있으면 베이스 폴백 안 함 — 검증완료 카운트 유지
+    rows, n_verified = select_bom_rows("PNA50702", "심볼아크릴트로피", _BOM_FIELDS)
+    assert n_verified == 1
+
+
+def test_select_bom_rows_base_no_cross_variant():
+    # 변형(표준) 접미 주문이 베이스만 있는 BOM에 잘못 붙지 않음
+    rows, _ = select_bom_rows("PNA50702", "심볼아크릴트로피(고급)_재제작", _BOM_FIELDS)
+    assert rows == []   # '심볼아크릴트로피(고급)' != '심볼아크릴트로피'
 
 
 # ─── S3: 입하 CBM·M/H ────────────────────────────────────────────
@@ -335,3 +379,35 @@ def test_run_unit_idempotent_unchanged_skip():
     prior = dict(first["row"])
     again = run_unit(_sym_unit(), prior, _ctx(), run_id="20260611-1200")
     assert again["action"] == "unchanged"   # 실행ID 달라도 내용 동일 → INSERT 0
+
+
+# ── D1 출하CBM 주별 사전계획 (P2) ──────────────────────────────────────────────
+def test_weekly_outbound_forecast_buckets_by_iso_week():
+    from scripts.backbone.order_cascade import weekly_outbound_forecast
+
+    def wk(s):
+        y, w, _ = date.fromisoformat(s).isocalendar()
+        return f"{y}-W{w:02d}"
+
+    results = [
+        {"row": {"추정_CBM_m3": 10.0}, "ship_req": "2026-06-29"},   # 같은 주
+        {"row": {"추정_CBM_m3": 5.0}, "ship_req": "2026-07-01"},    # 같은 주
+        {"row": {"추정_CBM_m3": 3.0}, "ship_req": "2026-07-06"},    # 다음 주
+        {"row": {"추정_CBM_m3": 0}, "ship_req": "2026-07-06"},      # CBM 0 → 제외
+        {"row": {"추정_CBM_m3": 7.0}, "ship_req": None},            # 날짜 없음 → 미버킷
+        {"row": {"추정_CBM_m3": 2.0}, "ship_req": "#ERROR!"},       # 파싱 실패 → 미버킷
+    ]
+    f = weekly_outbound_forecast(results)
+    assert f["by_week"][wk("2026-06-29")] == {
+        "cbm": 15.0, "n": 2, "week_start": "2026-06-29"}
+    assert f["by_week"][wk("2026-07-06")]["cbm"] == 3.0
+    assert f["n_units"] == 5        # CBM>0 단위만 (0 제외)
+    assert f["dated_cbm"] == 18.0   # 10+5+3
+    assert f["total_cbm"] == 27.0   # 10+5+3+7+2
+    assert f["coverage_pct"] == round(18 / 27 * 100, 1)
+
+
+def test_weekly_outbound_forecast_empty():
+    from scripts.backbone.order_cascade import weekly_outbound_forecast
+    f = weekly_outbound_forecast([])
+    assert f["by_week"] == {} and f["total_cbm"] == 0.0 and f["coverage_pct"] == 0.0

@@ -211,4 +211,4 @@
 - [x] EP60 Notion page created (총복습 테이블 포함)
 - [x] 총복습 테이블 25개 표현 전부 채워짐 (EP57: the long way around / EP58: own a mistake)
 - [ ] Obsidian log.md 업데이트 (Obsidian offline — 다음 세션에서 소급)
-- [ ] git commit
+- [x] git commit (9b3cfc0)

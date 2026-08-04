@@ -64,15 +64,25 @@ def _apply_withholding(gross: int) -> tuple[int, int, int]:
 
 
 def _parse_unload_fee(box_text: object) -> int:
-    """Parse box counts from formula string → 상하차비용, capped at 50,000 KRW."""
+    """Parse box counts from formula string → 상하차비용. 요율·cap은 BOX_FEE_RULES SSOT.
+
+    중대/대/특대 박스 개수 → bucket별 (count // unit_size) × fee, MAX_UNLOAD_FEE로 cap.
+    (cbm_calc.calc_from_products와 동일 요율 테이블 공유 — 하드코딩 제거.)
+    """
     if not box_text:
         return 0
+    # lazy import: calc.py 모듈 레벨을 순수하게 유지 (calc_from_products와 동일 패턴)
+    from harness.settlement.cbm_calc import BOX_FEE_RULES, MAX_UNLOAD_FEE
     s = str(box_text)
     try:
-        heavy  = int(re.search(r"중대(\d+)", s).group(1)) if re.search(r"중대(\d+)", s) else 0
-        large  = int(re.search(r"(?<!중)(?<!특)대(\d+)", s).group(1)) if re.search(r"(?<!중)(?<!특)대(\d+)", s) else 0
-        xlarge = int(re.search(r"특대(\d+)", s).group(1)) if re.search(r"특대(\d+)", s) else 0
-        return min((heavy // 5) * 5_000 + (large // 3) * 5_000 + (xlarge // 3) * 5_000, 50_000)
+        counts = {
+            "heavy":  int(m.group(1)) if (m := re.search(r"중대(\d+)", s)) else 0,
+            "large":  int(m.group(1)) if (m := re.search(r"(?<!중)(?<!특)대(\d+)", s)) else 0,
+            "xlarge": int(m.group(1)) if (m := re.search(r"특대(\d+)", s)) else 0,
+        }
+        total = sum((counts[bucket] // unit) * fee
+                    for bucket, unit, fee in BOX_FEE_RULES.values())
+        return min(total, MAX_UNLOAD_FEE)
     except Exception:
         return 0
 
@@ -176,6 +186,7 @@ def calc_park(
     recs: list[dict],
     driver_id: str,
     product_lookup: dict | None = None,
+    name2code: dict | None = None,
 ) -> list[SettlementItem]:
     """박종성:
       일반건: haversine × road_factor × park_km + park_base (ceiling 500)
@@ -227,7 +238,8 @@ def calc_park(
             if items_text:
                 try:
                     from harness.settlement.cbm_calc import calc_from_products
-                    cbm_unload = calc_from_products(items_text, product_lookup)["unload_fee"]
+                    cbm_unload = calc_from_products(
+                        items_text, product_lookup, name2code=name2code)["unload_fee"]
                 except Exception:
                     pass
 

@@ -43,3 +43,24 @@ class TestBusinessDay:
         assert end > start
         # 결과는 영업일이어야 함
         assert is_business_day(end)
+
+
+class TestHoliday2027:
+    """2027 공휴일 등록 + 미등록 연도 coverage 가드 (2026-06-23)."""
+
+    def test_2027_new_year_excluded(self):
+        assert is_business_day(date(2027, 1, 1)) is False
+
+    def test_2027_chuseok_excluded(self):
+        assert is_business_day(date(2027, 9, 15)) is False
+
+    def test_2027_rolling_window_ok(self):
+        end = rolling_window_end(date(2027, 1, 4), days=5)  # Mon
+        assert is_business_day(end)
+
+    def test_uncovered_year_warns(self, capsys):
+        from harness.dispatch import scheduling
+        scheduling._warned_years.discard(2029)
+        business_days_forward(date(2029, 3, 2), n=2)  # 2029 미등록
+        err = capsys.readouterr().err
+        assert "2029" in err and "미등록" in err

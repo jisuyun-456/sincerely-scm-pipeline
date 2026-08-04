@@ -31,7 +31,7 @@ DRIVER_LIMITS: Dict[str, Dict] = {
            'pattern': '09:00_고정'},
     'W2': {'driver_id': 'CA-NEW-1', 'name': '조희선', 'max_cbm': 7.616, 'max_count': 6,
            'regions': frozenset({'tier1_seoul', 'tier2_이장훈_gyeonggi', 'tier3_gyeonggi_etc', 'tier4_incheon'}),
-           'preferred_slots': frozenset({'무관', '오전', '오후 1 (오후 2시 - 4시)'}),
+           'preferred_slots': frozenset({'무관', '오전', '오후 1 (오후 2시 - 4시)', '오후 2 (오후 4시 - 6시)'}),
            'pattern': '1회_99%_고정'},
     'W3': {'driver_id': 'CA-0003', 'name': '박종성', 'max_cbm': 9.486, 'max_count': 8,
            'regions': frozenset({'tier1_seoul', 'tier2_이장훈_gyeonggi', 'tier3_gyeonggi_etc',
@@ -55,11 +55,38 @@ WAVE_IDS = ('W1', 'W2', 'W3', 'spillover_고고엑스', 'spillover_로젠', 'loc
 # 결정론 CBM(conf 1.0) shipment만 자동 점등, 저신뢰(퍼지·기본값)는 사용자 검토.
 CONFIDENCE_FLOOR = 0.8
 
+# ── LEVER2 (2026-06-23, opt-in) — 부분매칭 conf 0.7 CBM 활용 ───────────────────
+# 부분매칭 deterministic CBM 은 매칭된 라인만 합산 = 과소추정 → 그대로 자동배차하면 차량 과적
+# 위험. 'separate' 모드는 slot/cbm 신뢰도를 분리 게이트하고, 용량 검사에서 저신뢰 CBM 을
+# effective_cbm = cbm/cbm_conf 로 인플레이트해 과소추정이 과적으로 이어지지 않게 한다.
+# 기본 'product' = 현행(곱 floor, 무변경). 운영 승인 후 'separate' 로 전환.
+CONF_GATE_MODE = 'product'    # 'product'(현행) | 'separate'(LEVER2 활성)
+SLOT_FLOOR = 0.8              # separate 모드: 슬롯 신뢰도 하한
+CBM_FLOOR = 0.7              # separate 모드: CBM 신뢰도 하한 (부분매칭 0.7 허용)
+CAPACITY_MARGIN_CAP = 1.6    # effective_cbm 인플레이션 상한 (과도한 spillover 방지)
+
+
+def _below_floor(s: 'Shipment', confidence_floor: float) -> bool:
+    """저신뢰 → 수동 분리 여부. product=곱 floor(현행) / separate=slot·cbm 분리 게이트(LEVER2)."""
+    if CONF_GATE_MODE == 'separate':
+        return s.slot_confidence < SLOT_FLOOR or s.cbm_confidence < CBM_FLOOR
+    return s.slot_confidence * s.cbm_confidence < confidence_floor
+
+
+def _effective_cbm(s: 'Shipment') -> float:
+    """용량 검사용 CBM. separate 모드에서 저신뢰(부분매칭) CBM 을 인플레이트해 과적 방지."""
+    if CONF_GATE_MODE == 'separate' and 0.0 < s.cbm_confidence < 1.0:
+        return min(s.cbm / s.cbm_confidence, s.cbm * CAPACITY_MARGIN_CAP)
+    return s.cbm
+
 
 QUICK_METHODS = frozenset({
     '퀵(수도권)', '퀵(지방)', '자체기사',
     '바로고', '고객직접퀵배차', '신시어리퀵',
 })
+# 외부 퀵 운송(고고엑스 등) — '자체기사'는 제외(W1/W2/W3 본인이 자체기사). min-load 시 자체기사
+# 트럭으로 끌어오면 SLA·운송수단이 맞지 않는 대상.
+EXTERNAL_QUICK_METHODS = QUICK_METHODS - frozenset({'자체기사'})
 
 
 @dataclass
@@ -113,16 +140,22 @@ def _region_ok(wave_id: str, region: str) -> bool:
     return region in DRIVER_LIMITS[wave_id]['regions']
 
 
-def _slot_filter_w1(candidates: List[str], slot: Optional[str]) -> List[str]:
-    """W1 이장훈은 오전/무관 슬롯만 적재. 무관은 오전 시간대 포함이므로 허용."""
-    if 'W1' in candidates and slot not in ('오전', '무관', None):
-        return [c for c in candidates if c != 'W1']
-    return candidates
+def _slot_ok(wave_id: str, slot: Optional[str]) -> bool:
+    """shipment 슬롯이 해당 기사 preferred_slots 내에 있는지 확인. 무관/None 슬롯 → 모두 허용."""
+    if not slot or slot == '무관':
+        return True
+    if wave_id not in DRIVER_LIMITS:
+        return True
+    return slot in DRIVER_LIMITS[wave_id]['preferred_slots']
 
 
 def _spillover_target(region: str, group_cbms: List[float], mode: str,
                       method: Optional[str] = None) -> str:
     if method in QUICK_METHODS:
+        return 'spillover_고고엑스'
+    # 성수기 소형(≤0.5 CBM) 화물은 고고엑스(택배 대체) — P3.5 문서 룰 활성화
+    # (기존엔 mode/group_cbms 가 무시돼 전부 로젠으로 갔음). (2026-06-23)
+    if mode == 'peak' and group_cbms and max(group_cbms) <= 0.5:
         return 'spillover_고고엑스'
     return 'spillover_로젠'
 
@@ -165,7 +198,7 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
     if confidence_floor > 0:
         confident = []
         for s in active:
-            if s.slot_confidence * s.cbm_confidence < confidence_floor:
+            if _below_floor(s, confidence_floor):
                 plans['수동'].shipments.append(s)  # 사용자 검토 대상
             else:
                 confident.append(s)
@@ -194,19 +227,20 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
         group.sort(key=lambda s: (s.project_code, -s.cbm))
 
         candidates = TIER_TO_CANDIDATES.get(region, [])
-        candidates = _slot_filter_w1(candidates, slot)
+        candidates = [c for c in candidates if _slot_ok(c, slot)]
 
         # Best-Fit Decreasing: shipment 하나씩 → 잔여 capacity 가장 작은 wave
         for ship in group:
             best_wave = None
             best_residual = math.inf
+            eff_cbm = _effective_cbm(ship)  # separate 모드: 저신뢰 CBM 인플레이트(과적 방지)
             for wid in candidates:
                 if not _region_ok(wid, region):
                     continue
-                if not _can_fit(wid, ship.cbm, 1, plans[wid]):
+                if not _can_fit(wid, eff_cbm, 1, plans[wid]):
                     continue
                 limits = DRIVER_LIMITS[wid]
-                residual = limits['max_cbm'] - (plans[wid].total_cbm + ship.cbm)
+                residual = limits['max_cbm'] - (plans[wid].total_cbm + eff_cbm)
                 if residual < best_residual:
                     best_residual = residual
                     best_wave = wid
@@ -245,7 +279,7 @@ def _score(plans: Dict[str, WavePlan]) -> float:
             for s in plan.shipments:
                 if not _region_ok(wid, s.region):
                     score -= REGION_VIOLATION_PENALTY
-                if wid == 'W1' and s.slot not in ('오전', '무관', None):
+                if not _slot_ok(wid, s.slot):
                     score -= REGION_VIOLATION_PENALTY
     return score
 
@@ -344,11 +378,15 @@ def _ensure_minimum_load(plans: Dict[str, WavePlan]) -> Dict[str, WavePlan]:
             if plans[donor].count == 0:
                 continue
             for i, ship in enumerate(plans[donor].shipments):
+                # 외부 퀵(고고엑스 등) 배송을 자체기사 트럭(W1/W2)으로 끌어오지 않음 — 운송수단 보존.
+                # ('자체기사' 화물의 W3→W1 재배치는 정상 허용). (2026-06-23)
+                if ship.method in EXTERNAL_QUICK_METHODS:
+                    continue
                 if not _region_ok(gw, ship.region):
                     continue
                 if not _can_fit(gw, ship.cbm, 1, plans[gw]):
                     continue
-                if gw == "W1" and ship.slot not in ("오전", "무관", None):
+                if not _slot_ok(gw, ship.slot):
                     continue
                 plans[donor].shipments.pop(i)
                 plans[gw].shipments.append(ship)

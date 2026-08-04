@@ -20,7 +20,12 @@ QUICK_METHODS = frozenset({
     '바로고', '고객직접퀵배차', '신시어리퀵',
 })
 
-HHMM_RANGE = re.compile(r'(\d{1,2})(?::(\d{2}))?\s*[~\-–]\s*(\d{1,2})(?::(\d{2}))?')
+# 시각 범위: 숫자(+선택적 '시')(+선택적 :분) [~ - – 에서 부터] 숫자(+'시')(+:분).
+# 한글 표기('2시~4시'·'10시에서 12시사이')도 잡도록 '시?' + '에서/부터' 구분자 허용. (2026-06-22 #6 fix)
+HHMM_RANGE = re.compile(
+    r'(\d{1,2})\s*시?(?::(\d{2}))?\s*(?:[~\-–]|에서|부터)\s*(\d{1,2})\s*시?(?::(\d{2}))?'
+)
+_SINGLE_HOUR = re.compile(r'(\d{1,2})\s*시')
 
 
 @dataclass(frozen=True)
@@ -34,23 +39,47 @@ def parse_time_window(text: Optional[str]) -> Optional[TimeWindow]:
     if not text:
         return None
 
+    has_colon = ':' in text
+    is_pm = ('오후' in text) and ('오전' not in text)
+
     matches = HHMM_RANGE.findall(text)
     if matches:
         ranges = []
         for h1, m1, h2, m2 in matches:
             start = int(h1) + (int(m1) / 60 if m1 else 0)
             end = int(h2) + (int(m2) / 60 if m2 else 0)
+            # 오후 명시 OR (오전/오후 무표기 + 한글 '시' + 콜론없음 + 두 시각 모두 1~7) → 배송관행상 오후 보정
+            apply_pm = is_pm or (
+                '오전' not in text and '시' in text and not has_colon
+                and int(h1) <= 7 and int(h2) <= 7
+            )
+            if apply_pm:
+                if start < 12:
+                    start += 12
+                if end < 12:
+                    end += 12
             ranges.append((start, end))
         if len(ranges) > 1:
             return TimeWindow(min(r[0] for r in ranges), max(r[1] for r in ranges), is_split=True)
         return TimeWindow(ranges[0][0], ranges[0][1])
 
+    # 야간 키워드는 단일 '시' 파싱보다 우선 ('저녁 6시'는 야간으로)
+    if any(k in text for k in ('저녁', '퇴근', '밤')):
+        return TimeWindow(18, 22)
+
+    # 단일 시각 + 오전/오후 → ±1h 윈도우 ('오후 3시' → 14~16)
+    if '오전' in text or '오후' in text:
+        m = _SINGLE_HOUR.search(text)
+        if m:
+            h = int(m.group(1))
+            if '오후' in text and h < 12:
+                h += 12
+            return TimeWindow(max(0.0, h - 1), min(24.0, h + 1))
+
     if '오전' in text:
         return TimeWindow(9, 12)
     if '오후' in text:
         return TimeWindow(13, 18)
-    if any(k in text for k in ('저녁', '퇴근', '밤')):
-        return TimeWindow(18, 22)
 
     return None
 

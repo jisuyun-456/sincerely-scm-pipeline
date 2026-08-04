@@ -1,0 +1,4 @@
+# 데모 데이터 = 로컬 생성 운영 스냅샷 (매 실행 변동) — 커밋 제외
+report.json
+capacity_series.json
+_check.js

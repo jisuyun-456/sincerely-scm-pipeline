@@ -1,0 +1,389 @@
+{
+  "n_targets": 16,
+  "fetched_shipments": 2500,
+  "proposals": {
+    "DRCG": {
+      "견적코드": "DRCG",
+      "굿즈명": "Solid 스탠다드 G형박스",
+      "n_single_product_shipments": 21,
+      "n_clean_box_evidence": 7,
+      "n_multi_product_shipments": 63,
+      "inferred_box_type": "대형",
+      "box_type_votes": {
+        "특대형": 1,
+        "중대형": 2,
+        "대형": 4
+      },
+      "inferred_qty_per_box": 12,
+      "qty_per_box_observations": [
+        11.2,
+        17.5,
+        10.0,
+        11.2
+      ],
+      "cbm_per_box": 0.1066,
+      "box_size_str": "510*510*410",
+      "cbm_validation": [
+        {
+          "sc_id": "SC00028545",
+          "expected_cbm": 0.9594,
+          "actual_cbm": 0.959,
+          "match_ratio": 1.0
+        }
+      ],
+      "cbm_match_median": 1.0,
+      "matched_names": [
+        "Solid 스탠다드 G형박스 키트",
+        "Solid스탠다드G형박스(L사이즈)키트",
+        "Solid스탠다드G형박스(M사이즈)키트"
+      ]
+    },
+    "STTB": {
+      "견적코드": "STTB",
+      "굿즈명": "스탠드-업 칫솔",
+      "n_single_product_shipments": 1,
+      "n_clean_box_evidence": 1,
+      "n_multi_product_shipments": 21,
+      "inferred_box_type": "중대형",
+      "box_type_votes": {
+        "중대형": 1
+      },
+      "inferred_qty_per_box": 94,
+      "qty_per_box_observations": [
+        94.0
+      ],
+      "cbm_per_box": 0.0493,
+      "box_size_str": "480*380*270",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "스탠드-업칫솔"
+      ]
+    },
+    "LOPU": {
+      "견적코드": "LOPU",
+      "굿즈명": "로고스트랩 파우치",
+      "n_single_product_shipments": 18,
+      "n_clean_box_evidence": 10,
+      "n_multi_product_shipments": 10,
+      "inferred_box_type": "대형",
+      "box_type_votes": {
+        "대형": 10
+      },
+      "inferred_qty_per_box": 127,
+      "qty_per_box_observations": [
+        201.0,
+        100.0,
+        100.0,
+        101.0,
+        101.0,
+        104.0,
+        151.0,
+        114.2,
+        146.0,
+        150.5
+      ],
+      "cbm_per_box": 0.1066,
+      "box_size_str": "510*510*410",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "로고스트랩 파우치",
+        "로고스트랩파우치(단품)"
+      ]
+    },
+    "BCTW": {
+      "견적코드": "BCTW",
+      "굿즈명": "굿이너프 비치타월",
+      "n_single_product_shipments": 7,
+      "n_clean_box_evidence": 6,
+      "n_multi_product_shipments": 9,
+      "inferred_box_type": "대형",
+      "box_type_votes": {
+        "중형": 2,
+        "대형": 4
+      },
+      "inferred_qty_per_box": 26,
+      "qty_per_box_observations": [
+        24.0,
+        30.5,
+        25.1,
+        23.7
+      ],
+      "cbm_per_box": 0.1066,
+      "box_size_str": "510*510*410",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "굿이너프 비치타월",
+        "굿이너프비치타월(300개이하)"
+      ]
+    },
+    "OFMP": {
+      "견적코드": "OFMP",
+      "굿즈명": "오피스 마우스패드",
+      "n_single_product_shipments": 1,
+      "n_clean_box_evidence": 0,
+      "n_multi_product_shipments": 4,
+      "matched_names": [
+        "오피스 마우스패드"
+      ],
+      "recommendation": "needs_user_input"
+    },
+    "TWKF": {
+      "견적코드": "TWKF",
+      "굿즈명": "Lite 스트랩 박스",
+      "n_single_product_shipments": 2,
+      "n_clean_box_evidence": 1,
+      "n_multi_product_shipments": 0,
+      "inferred_box_type": "대형",
+      "box_type_votes": {
+        "대형": 1
+      },
+      "inferred_qty_per_box": 11,
+      "qty_per_box_observations": [
+        11.2
+      ],
+      "cbm_per_box": 0.1066,
+      "box_size_str": "510*510*410",
+      "cbm_validation": [
+        {
+          "sc_id": "SC00028573",
+          "expected_cbm": 0.9594,
+          "actual_cbm": 0.959,
+          "match_ratio": 1.0
+        }
+      ],
+      "cbm_match_median": 1.0,
+      "matched_names": [
+        "Lite 스트랩 박스 키트"
+      ]
+    },
+    "BSPK": {
+      "견적코드": "BSPK",
+      "굿즈명": "비스포크",
+      "n_single_product_shipments": 0,
+      "n_clean_box_evidence": 0,
+      "n_multi_product_shipments": 0,
+      "matched_names": [],
+      "recommendation": "needs_user_input"
+    },
+    "SZBT": {
+      "견적코드": "SZBT",
+      "굿즈명": "Simple 슬라이드 지퍼백",
+      "n_single_product_shipments": 11,
+      "n_clean_box_evidence": 4,
+      "n_multi_product_shipments": 25,
+      "inferred_box_type": "중대형",
+      "box_type_votes": {
+        "중형": 1,
+        "중대형": 3
+      },
+      "inferred_qty_per_box": 46,
+      "qty_per_box_observations": [
+        36.0,
+        50.5,
+        50.5
+      ],
+      "cbm_per_box": 0.0493,
+      "box_size_str": "480*380*270",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "Simple슬라이드지퍼백(M)키트",
+        "Simple슬라이드지퍼백(S)키트"
+      ]
+    },
+    "UMUG": {
+      "견적코드": "UMUG",
+      "굿즈명": "컴포트 스텐머그",
+      "n_single_product_shipments": 0,
+      "n_clean_box_evidence": 0,
+      "n_multi_product_shipments": 5,
+      "matched_names": [
+        "잔여분(컴포트 스텐머그1",
+        "컴포트 스텐머그",
+        "컴포트스텐머그",
+        "컴포트스텐머그1)"
+      ],
+      "recommendation": "needs_user_input"
+    },
+    "SLVB": {
+      "견적코드": "SLVB",
+      "굿즈명": "Quality 슬리브박스",
+      "n_single_product_shipments": 28,
+      "n_clean_box_evidence": 9,
+      "n_multi_product_shipments": 31,
+      "inferred_box_type": "대형",
+      "box_type_votes": {
+        "중형": 1,
+        "특대형": 1,
+        "중대형": 1,
+        "대형": 6
+      },
+      "inferred_qty_per_box": 9,
+      "qty_per_box_observations": [
+        11.2,
+        11.2,
+        11.0,
+        10.0,
+        5.0,
+        5.0
+      ],
+      "cbm_per_box": 0.1066,
+      "box_size_str": "510*510*410",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "Quality 슬리브박스 키트",
+        "Quality슬리브박스 키트"
+      ]
+    },
+    "VMCB": {
+      "견적코드": "VMCB",
+      "굿즈명": "밸류 메모큐브",
+      "n_single_product_shipments": 3,
+      "n_clean_box_evidence": 1,
+      "n_multi_product_shipments": 14,
+      "inferred_box_type": "중형",
+      "box_type_votes": {
+        "중형": 1
+      },
+      "inferred_qty_per_box": 34,
+      "qty_per_box_observations": [
+        33.7
+      ],
+      "cbm_per_box": 0.0201,
+      "box_size_str": "350*250*230",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "밸류메모큐브(M)"
+      ]
+    },
+    "BMVS": {
+      "견적코드": "BMVS",
+      "굿즈명": "브릭 메모&캘린더 스탠드 2.0",
+      "n_single_product_shipments": 9,
+      "n_clean_box_evidence": 7,
+      "n_multi_product_shipments": 7,
+      "inferred_box_type": "중대형",
+      "box_type_votes": {
+        "중대형": 5,
+        "대형": 2
+      },
+      "inferred_qty_per_box": 20,
+      "qty_per_box_observations": [
+        20.0,
+        20.0,
+        20.0,
+        20.0,
+        20.0
+      ],
+      "cbm_per_box": 0.0493,
+      "box_size_str": "480*380*270",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "브릭 메모&캘린더 스탠드 2.0 키트"
+      ]
+    },
+    "RCPC": {
+      "견적코드": "RCPC",
+      "굿즈명": "Raw 코튼 파우치",
+      "n_single_product_shipments": 2,
+      "n_clean_box_evidence": 1,
+      "n_multi_product_shipments": 6,
+      "inferred_box_type": "중대형",
+      "box_type_votes": {
+        "중대형": 1
+      },
+      "inferred_qty_per_box": 101,
+      "qty_per_box_observations": [
+        101.0
+      ],
+      "cbm_per_box": 0.0493,
+      "box_size_str": "480*380*270",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "Raw 코튼 파우치"
+      ]
+    },
+    "DSKT": {
+      "견적코드": "DSKT",
+      "굿즈명": "데스크테리어 매트",
+      "n_single_product_shipments": 5,
+      "n_clean_box_evidence": 3,
+      "n_multi_product_shipments": 9,
+      "inferred_box_type": "대형",
+      "box_type_votes": {
+        "중형": 1,
+        "대형": 2
+      },
+      "inferred_qty_per_box": 25,
+      "qty_per_box_observations": [
+        25.2,
+        25.5
+      ],
+      "cbm_per_box": 0.1066,
+      "box_size_str": "510*510*410",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "데스크테리어 매트",
+        "데스크테리어매트(대형)"
+      ]
+    },
+    "CNPB": {
+      "견적코드": "CNPB",
+      "굿즈명": "컬러풀노트패드(블랙)",
+      "n_single_product_shipments": 4,
+      "n_clean_box_evidence": 4,
+      "n_multi_product_shipments": 9,
+      "inferred_box_type": "중대형",
+      "box_type_votes": {
+        "중형": 1,
+        "중대형": 3
+      },
+      "inferred_qty_per_box": 117,
+      "qty_per_box_observations": [
+        101.0,
+        125.6,
+        125.5
+      ],
+      "cbm_per_box": 0.0493,
+      "box_size_str": "480*380*270",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "컬러풀 노트패드",
+        "컬러풀노트패드",
+        "컬러풀노트패드(블랙)"
+      ]
+    },
+    "WCCV": {
+      "견적코드": "WCCV",
+      "굿즈명": "웹캠 커버",
+      "n_single_product_shipments": 2,
+      "n_clean_box_evidence": 2,
+      "n_multi_product_shipments": 2,
+      "inferred_box_type": "중형",
+      "box_type_votes": {
+        "중형": 2
+      },
+      "inferred_qty_per_box": 304,
+      "qty_per_box_observations": [
+        303.0,
+        305.0
+      ],
+      "cbm_per_box": 0.0201,
+      "box_size_str": "350*250*230",
+      "cbm_validation": [],
+      "cbm_match_median": null,
+      "matched_names": [
+        "웹캠커버"
+      ]
+    }
+  }
+}

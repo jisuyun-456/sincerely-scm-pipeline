@@ -1,0 +1,2307 @@
+{
+  "run_id": "20260617-1341",
+  "csv_used": false,
+  "stats": {
+    "product": 344,
+    "sync": 351,
+    "ship_distinct": 172,
+    "universe": 446,
+    "service_filtered": 1041
+  },
+  "buckets": {
+    "register_in_product": [
+      {
+        "code": "BSPK",
+        "freq": 67,
+        "in_sync": true,
+        "goods": [
+          "Quality 슬리브박스",
+          "Solid커스텀G형박스(L사이즈)",
+          "가챠머신"
+        ]
+      },
+      {
+        "code": "CMWG",
+        "freq": 16,
+        "in_sync": true,
+        "goods": [
+          "Carry me 와인잔"
+        ]
+      },
+      {
+        "code": "KSEP",
+        "freq": 7,
+        "in_sync": true,
+        "goods": [
+          "킵세이프 마그넷 배터리 Lite"
+        ]
+      },
+      {
+        "code": "ODHZ",
+        "freq": 17,
+        "in_sync": true,
+        "goods": [
+          "퍼 블랭킷",
+          "프리미엄 스트링 후드집업"
+        ]
+      },
+      {
+        "code": "OFMP",
+        "freq": 26,
+        "in_sync": true,
+        "goods": [
+          "오피스 마우스패드"
+        ]
+      }
+    ],
+    "alias_papered_over": [
+      {
+        "code": "BCTW",
+        "freq": 37,
+        "goods": [
+          "굿이너프 비치타월",
+          "굿이너프 비치타월 [1]",
+          "굿이너프 비치타월 [2]"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "BCTL"
+        }
+      },
+      {
+        "code": "BMVS",
+        "freq": 47,
+        "goods": [
+          "브릭 메모&캘린더 스탠드 2.0"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "BMCH"
+        }
+      },
+      {
+        "code": "CNPB",
+        "freq": 13,
+        "goods": [
+          "컬러풀 노트패드",
+          "컬러풀노트패드(블랙)"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "CNPG"
+        }
+      },
+      {
+        "code": "DRCG",
+        "freq": 97,
+        "goods": [
+          "Solid 스탠다드 G형박스",
+          "Solid 스탠다드 G형박스_추가제작",
+          "Solid스탠다드G형박스(L사이즈)"
+        ],
+        "alias": {
+          "kind": "size_family",
+          "targets": {
+            "S": "SOLA",
+            "M": "SOLB",
+            "L": "SOLC",
+            "__default__": "SOLB"
+          }
+        }
+      },
+      {
+        "code": "DSKT",
+        "freq": 37,
+        "goods": [
+          "데스크테리어 매트",
+          "데스크테리어 매트 [1]",
+          "데스크테리어 매트 [2]"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "DSKS"
+        }
+      },
+      {
+        "code": "LOPU",
+        "freq": 64,
+        "goods": [
+          "로고스트랩 파우치",
+          "로고스트랩 파우치 [1]",
+          "로고스트랩 파우치 [2]"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "LSPO"
+        }
+      },
+      {
+        "code": "RCPC",
+        "freq": 12,
+        "goods": [
+          "Raw 코튼 파우치"
+        ],
+        "alias": {
+          "kind": "size_family",
+          "targets": {
+            "S": "RWCL",
+            "M": "RWCL",
+            "L": "RWCL",
+            "XL": "RWCL",
+            "__default__": "RWCL"
+          }
+        }
+      },
+      {
+        "code": "SLVB",
+        "freq": 55,
+        "goods": [
+          "Quality 슬리브박스",
+          "Quality슬리브박스"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "SLVR"
+        }
+      },
+      {
+        "code": "STTB",
+        "freq": 140,
+        "goods": [
+          "스탠드-업 칫솔",
+          "스탠드-업칫솔"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "STNB"
+        }
+      },
+      {
+        "code": "SZBT",
+        "freq": 31,
+        "goods": [
+          "Simple 슬라이드 지퍼백",
+          "Simple슬라이드지퍼백(M)"
+        ],
+        "alias": {
+          "kind": "size_family",
+          "targets": {
+            "S": "SLZS",
+            "M": "SLZB",
+            "L": "SLZL",
+            "__default__": "SLZB"
+          }
+        }
+      },
+      {
+        "code": "VMCB",
+        "freq": 48,
+        "goods": [
+          "밸류 메모큐브",
+          "밸류 메모큐브_재제작",
+          "밸류메모큐브(M)_재제작"
+        ],
+        "alias": {
+          "kind": "size_family",
+          "targets": {
+            "S": "VMCS",
+            "M": "VMCM",
+            "__default__": "VMCM"
+          }
+        }
+      },
+      {
+        "code": "WCCV",
+        "freq": 4,
+        "goods": [
+          "웹캠 커버"
+        ],
+        "alias": {
+          "kind": "1:1",
+          "target": "WCV"
+        }
+      }
+    ],
+    "name_match_weak": [
+      {
+        "code": "ACTP",
+        "freq": 37,
+        "weak": [
+          {
+            "name": "심볼아크릴트로피",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "ALUM",
+        "freq": 69,
+        "weak": [
+          {
+            "name": "올웨이즈양우산",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "ATAU",
+        "freq": 41,
+        "weak": [
+          {
+            "name": "어드벤스3단자동우산",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "BCAK",
+        "freq": 56,
+        "weak": [
+          {
+            "name": "브랜드팝클리어키링[1]",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "BDTW",
+        "freq": 52,
+        "weak": [
+          {
+            "name": "브랜디드 타월",
+            "score": 1.0,
+            "matched_code": ""
+          },
+          {
+            "name": "브랜디드 타월[1]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "브랜디드 타월[2]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "브랜디드타월",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "BRDT",
+        "freq": 54,
+        "weak": [
+          {
+            "name": "브랜드-잇_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "BRPK",
+        "freq": 176,
+        "weak": [
+          {
+            "name": "브랜디드피규어키링",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "BRPR",
+        "freq": 268,
+        "weak": [
+          {
+            "name": "브랜디드피규어[1]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "브랜디드피규어[2]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "브랜디드피규어[3]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "브랜디드피규어[4]",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "BSMC",
+        "freq": 25,
+        "weak": [
+          {
+            "name": "브릭스탠드 멀티충전기",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "BSPB",
+        "freq": 4,
+        "weak": [
+          {
+            "name": "블랙쇼핑백",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "CCAF",
+        "freq": 81,
+        "weak": [
+          {
+            "name": "클래시차량용방향제",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "CCKT",
+        "freq": 88,
+        "weak": [
+          {
+            "name": "커넥트6in1케이블키트",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "CLIP",
+        "freq": 17,
+        "weak": [
+          {
+            "name": "클립아트펜",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "CLRU",
+        "freq": 36,
+        "weak": [
+          {
+            "name": "클리어 리유저블컵",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "클리어 리유저블컵_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "CPNF",
+        "freq": 81,
+        "weak": [
+          {
+            "name": "칠링패드냉각선풍기",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "CTPS",
+        "freq": 49,
+        "weak": [
+          {
+            "name": "카드트레이 피규어 세트",
+            "score": 1.0,
+            "matched_code": ""
+          },
+          {
+            "name": "카드트레이피규어세트",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "DBAG",
+        "freq": 24,
+        "weak": [
+          {
+            "name": "Passion 더스트백",
+            "score": 0.667,
+            "matched_code": "DBAM"
+          }
+        ]
+      },
+      {
+        "code": "DECO",
+        "freq": 27,
+        "weak": [
+          {
+            "name": "데코스티커",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "DLYG",
+        "freq": 154,
+        "weak": [
+          {
+            "name": "데일리짐색(단품)",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "DPFG",
+        "freq": 15,
+        "weak": [
+          {
+            "name": "디스플레이 피규어 세트",
+            "score": 0.5,
+            "matched_code": "BRPH"
+          }
+        ]
+      },
+      {
+        "code": "DTPL",
+        "freq": 36,
+        "weak": [
+          {
+            "name": "더블업 트래블 파우치",
+            "score": 1.0,
+            "matched_code": "DTPS"
+          }
+        ]
+      },
+      {
+        "code": "EMSG",
+        "freq": 21,
+        "weak": [
+          {
+            "name": "릴리프눈마사지기",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "FANC",
+        "freq": 91,
+        "weak": [
+          {
+            "name": "슬림 터보선풍기",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "슬림 터보선풍기 [1]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "슬림 터보선풍기 [2]",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "FCSN",
+        "freq": 70,
+        "weak": [
+          {
+            "name": "풀커버스티치노트(300개초과)",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "FTSH",
+        "freq": 58,
+        "weak": [
+          {
+            "name": "포시즌 티셔츠_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "FUBL",
+        "freq": 5,
+        "weak": [
+          {
+            "name": "퍼 블랭킷",
+            "score": 0.5,
+            "matched_code": "FUBM"
+          }
+        ]
+      },
+      {
+        "code": "GSSH",
+        "freq": 7,
+        "weak": [
+          {
+            "name": "굿스타트 슈즈백",
+            "score": 0.667,
+            "matched_code": "GSSK"
+          }
+        ]
+      },
+      {
+        "code": "HDRM",
+        "freq": 101,
+        "weak": [
+          {
+            "name": "핸디링미니선풍기",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "핸디링미니선풍기_재제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "HIKF",
+        "freq": 48,
+        "weak": [
+          {
+            "name": "하이킹 폴딩방석",
+            "score": 1.0,
+            "matched_code": ""
+          },
+          {
+            "name": "하이킹 폴딩방석_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "HLSZ",
+        "freq": 14,
+        "weak": [
+          {
+            "name": "HighLight 슬라이드 지퍼백",
+            "score": 0.5,
+            "matched_code": "SLZB"
+          }
+        ]
+      },
+      {
+        "code": "HNWT",
+        "freq": 5,
+        "weak": [
+          {
+            "name": "아너월넛트로피",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "HWDG",
+        "freq": 16,
+        "weak": [
+          {
+            "name": "해피웨이 런치백",
+            "score": 1.0,
+            "matched_code": "HWDK"
+          }
+        ]
+      },
+      {
+        "code": "IDTT",
+        "freq": 35,
+        "weak": [
+          {
+            "name": "아이덴티티 스티커팩_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "IIKP",
+        "freq": 15,
+        "weak": [
+          {
+            "name": "아이콘 펜",
+            "score": 0.5,
+            "matched_code": "ICCC"
+          }
+        ]
+      },
+      {
+        "code": "IPST",
+        "freq": 58,
+        "weak": [
+          {
+            "name": "임팩트 슬로건타월_재제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "ISGK",
+        "freq": 19,
+        "weak": [
+          {
+            "name": "미니가든 피규어 세트",
+            "score": 0.5,
+            "matched_code": "BRPH"
+          },
+          {
+            "name": "미니가든 피규어 세트 [1]",
+            "score": 0.4,
+            "matched_code": "BRPH"
+          },
+          {
+            "name": "미니가든 피규어 세트 [2]",
+            "score": 0.4,
+            "matched_code": "BRPH"
+          },
+          {
+            "name": "미니가든피규어세트[1]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "미니가든피규어세트[2]",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "KRDJ",
+        "freq": 26,
+        "weak": [
+          {
+            "name": "인마이백 피크닉매트",
+            "score": 0.667,
+            "matched_code": "KRDR"
+          }
+        ]
+      },
+      {
+        "code": "KSBM",
+        "freq": 80,
+        "weak": [
+          {
+            "name": "킵세이프마그넷배터리Max",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "KSMB",
+        "freq": 47,
+        "weak": [
+          {
+            "name": "킵세이프 마그넷 배터리 Slim",
+            "score": 1.0,
+            "matched_code": "KSBS"
+          },
+          {
+            "name": "킵세이프마그넷배터리Slim",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "LSKD",
+        "freq": 22,
+        "weak": [
+          {
+            "name": "레더스킨 다이어리",
+            "score": 0.667,
+            "matched_code": "LSKF"
+          },
+          {
+            "name": "레더스킨다이어리(표준)",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "LXMP",
+        "freq": 51,
+        "weak": [
+          {
+            "name": "라이트샤오미펜",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "MBST",
+        "freq": 5,
+        "weak": [
+          {
+            "name": "Motion 스탠다드박스",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "MGNC",
+        "freq": 55,
+        "weak": [
+          {
+            "name": "아이콘 케이블홀더 세트",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "MGOL",
+        "freq": 9,
+        "weak": [
+          {
+            "name": "모먼트 골드스파클",
+            "score": 1.0,
+            "matched_code": ""
+          },
+          {
+            "name": "모먼트 골드스파클 [1]",
+            "score": 0.667,
+            "matched_code": ""
+          },
+          {
+            "name": "모먼트 골드스파클 [2]",
+            "score": 0.667,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "MIRT",
+        "freq": 30,
+        "weak": [
+          {
+            "name": "미르텀블러",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "스탠다드박스",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "MOSL",
+        "freq": 26,
+        "weak": [
+          {
+            "name": "모바일오피스파우치2.0",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "MSFG",
+        "freq": 18,
+        "weak": [
+          {
+            "name": "팝업스토어 피규어 세트",
+            "score": 0.5,
+            "matched_code": "BRPH"
+          },
+          {
+            "name": "팝업스토어 피규어 세트_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "MSGC",
+        "freq": 57,
+        "weak": [
+          {
+            "name": "메시지 캐리어 파우치",
+            "score": 0.4,
+            "matched_code": "MSGA"
+          },
+          {
+            "name": "메시지 캐리어 파우치 [1]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "메시지 캐리어 파우치 [2]",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "MSTM",
+        "freq": 17,
+        "weak": [
+          {
+            "name": "미니멀스텐머그",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "OPPB",
+        "freq": 9,
+        "weak": [
+          {
+            "name": "Open 페이퍼박스",
+            "score": 0.667,
+            "matched_code": "OPPR"
+          }
+        ]
+      },
+      {
+        "code": "PKMK",
+        "freq": 25,
+        "weak": [
+          {
+            "name": "포켓 마켓백_재제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "PMPB",
+        "freq": 20,
+        "weak": [
+          {
+            "name": "프라우드 메모패드",
+            "score": 1.0,
+            "matched_code": "PMPC"
+          }
+        ]
+      },
+      {
+        "code": "PSCH",
+        "freq": 98,
+        "weak": [
+          {
+            "name": "페이퍼샤쉐[1]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "페이퍼샤쉐[2]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "페이퍼샤쉐[3]",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "페이퍼샤쉐[4]",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "PSGB",
+        "freq": 17,
+        "weak": [
+          {
+            "name": "프레젠트골프공3구",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "RMBT",
+        "freq": 38,
+        "weak": [
+          {
+            "name": "리멤버 탁상시계_재제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "SCGB",
+        "freq": 22,
+        "weak": [
+          {
+            "name": "Solid 커스텀 G형박스",
+            "score": 0.75,
+            "matched_code": "SOLD"
+          },
+          {
+            "name": "Solid커스텀G형박스(L사이즈)",
+            "score": 1.0,
+            "matched_code": "SOLD"
+          }
+        ]
+      },
+      {
+        "code": "SEED",
+        "freq": 89,
+        "weak": [
+          {
+            "name": "스타트 씨드키트_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "SORB",
+        "freq": 23,
+        "weak": [
+          {
+            "name": "솔리드 레디백_재제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "SPCP",
+        "freq": 215,
+        "weak": [
+          {
+            "name": "스펙트럼 컬러펜_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "스펙트럼컬러펜",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      },
+      {
+        "code": "SPTS",
+        "freq": 68,
+        "weak": [
+          {
+            "name": "액티브 스포츠 타월",
+            "score": 0.0,
+            "matched_code": null
+          },
+          {
+            "name": "액티브 스포츠 타월_재제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "STDL",
+        "freq": 4,
+        "weak": [
+          {
+            "name": "심볼릭 샤프&형광펜 세트 | 스테들러",
+            "score": 0.6,
+            "matched_code": "STDA"
+          }
+        ]
+      },
+      {
+        "code": "STLD",
+        "freq": 50,
+        "weak": [
+          {
+            "name": "스탠리데일리텀블러",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "TCMP",
+        "freq": 29,
+        "weak": [
+          {
+            "name": "테크 미니 파우치",
+            "score": 0.5,
+            "matched_code": "SMPC"
+          },
+          {
+            "name": "테크 미니 파우치 [1]",
+            "score": 0.4,
+            "matched_code": "SMPC"
+          },
+          {
+            "name": "테크 미니 파우치 [2]",
+            "score": 0.4,
+            "matched_code": "SMPC"
+          },
+          {
+            "name": "테크 미니 파우치_재제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "TMBS",
+        "freq": 57,
+        "weak": [
+          {
+            "name": "스테이텀블러",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "TRPC",
+        "freq": 36,
+        "weak": [
+          {
+            "name": "트리플컬러펜∣JETSTREAM",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "TTSK",
+        "freq": 13,
+        "weak": [
+          {
+            "name": "리멤버 타투스티커_추가제작",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "WWMA",
+        "freq": 50,
+        "weak": [
+          {
+            "name": "월드와이드멀티어댑터",
+            "score": 0.0,
+            "matched_code": null
+          }
+        ]
+      },
+      {
+        "code": "WWST",
+        "freq": 13,
+        "weak": [
+          {
+            "name": "셀렉티브 전동오프너&와인잔 세트",
+            "score": 1.0,
+            "matched_code": ""
+          }
+        ]
+      }
+    ],
+    "data_gap": [
+      {
+        "code": "FSPC",
+        "name": "펠트스트링 파우치",
+        "box_type": "",
+        "rec_id": "rec5mnw4kZ9LMBUhj"
+      },
+      {
+        "code": "FTBG",
+        "name": "펠트백",
+        "box_type": "",
+        "rec_id": "reczDgxMbzUCYViOt"
+      },
+      {
+        "code": "LNMS",
+        "name": "린넨 메쉬 파우치",
+        "box_type": "",
+        "rec_id": "recuOZV3pXqHzitjh"
+      },
+      {
+        "code": "OPPC",
+        "name": "Open 페이퍼박스(커스텀/비스포크사이즈)",
+        "box_type": "",
+        "rec_id": "recCnCCu9hiRV7u95"
+      },
+      {
+        "code": "RWCP",
+        "name": "Raw 코튼 파우치(S,M사이즈)",
+        "box_type": "",
+        "rec_id": "recfkti0oHoORtrV5"
+      },
+      {
+        "code": "SLZL",
+        "name": "Simple 슬라이드 지퍼백 (L)",
+        "box_type": "",
+        "rec_id": "recBtbTbfROoVtxty"
+      },
+      {
+        "code": "STSW",
+        "name": "스테인리스 빨대 세트",
+        "box_type": "",
+        "rec_id": "recC8uHb1eKBZ6gkW"
+      }
+    ],
+    "stale_unused": [
+      {
+        "code": "AHFF",
+        "name": "올데이 핸즈프리 선풍기"
+      },
+      {
+        "code": "ALBP",
+        "name": "올 블랙 펜"
+      },
+      {
+        "code": "ATCB",
+        "name": "어태치 보조배터리"
+      },
+      {
+        "code": "ATSB",
+        "name": "어텐션 스포츠 보틀"
+      },
+      {
+        "code": "ATSS",
+        "name": "어텐션 스포츠 보틀"
+      },
+      {
+        "code": "ATWO",
+        "name": "오토매틱 와인오프너"
+      },
+      {
+        "code": "AVBX",
+        "name": "Advent 굿즈박스"
+      },
+      {
+        "code": "AWAY",
+        "name": "어웨이 블루투스 스피커"
+      },
+      {
+        "code": "AXGR",
+        "name": "어썸 그립"
+      },
+      {
+        "code": "BCTF",
+        "name": "굿이너프 비치타월(빠른제작)"
+      },
+      {
+        "code": "BCTL",
+        "name": "굿이너프 비치타월"
+      },
+      {
+        "code": "BEAN",
+        "name": "커피 드립백(빈브라더스)"
+      },
+      {
+        "code": "BLTS",
+        "name": "로지텍 페블 블루투스 마우스"
+      },
+      {
+        "code": "BMCH",
+        "name": "브릭 메모&캘린더 스탠드"
+      },
+      {
+        "code": "BMMH",
+        "name": "베이직 무선충전 마우스패드"
+      },
+      {
+        "code": "BOXS",
+        "name": "BoXtand 슬리브박스"
+      },
+      {
+        "code": "BRDF",
+        "name": "브랜디파이 핸드스트랩"
+      },
+      {
+        "code": "BRDG",
+        "name": "브랜드-잇(Fruit edition)"
+      },
+      {
+        "code": "BROF",
+        "name": "마이오피스 피규어 세트"
+      },
+      {
+        "code": "BRPH",
+        "name": "펜홀더 피규어 세트"
+      },
+      {
+        "code": "BSKP",
+        "name": "바스켓 패키지"
+      },
+      {
+        "code": "BYCT",
+        "name": "브링유어컵 텀블러"
+      },
+      {
+        "code": "CFMS",
+        "name": "컬러핏 마스크 스트랩"
+      },
+      {
+        "code": "CFPC",
+        "name": "커피 펜슬"
+      },
+      {
+        "code": "CHSB",
+        "name": "클로저 휴대폰 스트랩 (블리스터)"
+      },
+      {
+        "code": "CLEC",
+        "name": "셀러브레이션 큐브"
+      },
+      {
+        "code": "CLRW",
+        "name": "클리어 리유저블컵_스트로우"
+      },
+      {
+        "code": "CMWC",
+        "name": "Carry me 와인잔(2입)"
+      },
+      {
+        "code": "CMWS",
+        "name": "Carry me 와인잔(1입)"
+      },
+      {
+        "code": "CNPG",
+        "name": "컬러풀 노트패드(블랙)"
+      },
+      {
+        "code": "COMB",
+        "name": "컴바인 머그"
+      },
+      {
+        "code": "CPLG",
+        "name": "인스타 피규어"
+      },
+      {
+        "code": "CPLK",
+        "name": "인스타 피규어 (키링)"
+      },
+      {
+        "code": "CPSY",
+        "name": "케어풀 포켓 새니타이저"
+      },
+      {
+        "code": "DBAM",
+        "name": "Passion 더스트백 (반투명)"
+      },
+      {
+        "code": "DCMS",
+        "name": "데코 무선 가습기"
+      },
+      {
+        "code": "DLYK",
+        "name": "데일리 짐색"
+      },
+      {
+        "code": "DMUG",
+        "name": "데일리 머그"
+      },
+      {
+        "code": "DRIV",
+        "name": "드라이버스 텀블러 | 락앤락"
+      },
+      {
+        "code": "DSKS",
+        "name": "데스크테리어 매트(기본형)"
+      },
+      {
+        "code": "DSKW",
+        "name": "데스크테리어 매트(대형)"
+      },
+      {
+        "code": "DTPK",
+        "name": "더블업 트래블 파우치 (S, 키트)"
+      },
+      {
+        "code": "DTPS",
+        "name": "더블업 트래블 파우치 (S)"
+      },
+      {
+        "code": "DUSB",
+        "name": "듀얼 USB 3.1"
+      },
+      {
+        "code": "ECPT",
+        "name": "Eco 페이퍼박스(T사이즈)"
+      },
+      {
+        "code": "EDCD",
+        "name": "에디트 캘린더"
+      },
+      {
+        "code": "ENGT",
+        "name": "에너제틱 목마사지기"
+      },
+      {
+        "code": "FCSF",
+        "name": "풀커버 스티치 노트(300개 이하)"
+      },
+      {
+        "code": "FING",
+        "name": "핑거팬"
+      },
+      {
+        "code": "FOLC",
+        "name": "폴더블 텀블러"
+      },
+      {
+        "code": "FRCL",
+        "name": "프레시 캘린더"
+      },
+      {
+        "code": "FSBM",
+        "name": "포시즌 블랭킷 (일반담요)"
+      },
+      {
+        "code": "FSMS",
+        "name": "패션 마스크 스트랩"
+      },
+      {
+        "code": "FSPC",
+        "name": "펠트스트링 파우치"
+      },
+      {
+        "code": "FTBG",
+        "name": "펠트백"
+      },
+      {
+        "code": "FUBM",
+        "name": "퍼 블랭킷 (일반담요)"
+      },
+      {
+        "code": "GDEB",
+        "name": "굿데이 볼캡"
+      },
+      {
+        "code": "GENC",
+        "name": "에센셜 장우산(풀컬러)"
+      },
+      {
+        "code": "GSSK",
+        "name": "굿스타트 슈즈백 (키트)"
+      },
+      {
+        "code": "GTVC",
+        "name": "젠틀 차량용 청소기"
+      },
+      {
+        "code": "HDPS",
+        "name": "핸디 파우더솝(1입)"
+      },
+      {
+        "code": "HDPT",
+        "name": "핸디 파우더솝(3입)"
+      },
+      {
+        "code": "HHTK",
+        "name": "하우스 핸드타월"
+      },
+      {
+        "code": "HLST",
+        "name": "HighLight 슬라이드지퍼백"
+      },
+      {
+        "code": "HONY",
+        "name": "허니 콤보(워커비)"
+      },
+      {
+        "code": "HWDK",
+        "name": "해피웨이 런치백"
+      },
+      {
+        "code": "IAOU",
+        "name": "인앤아웃 캠핑 폴딩박스"
+      },
+      {
+        "code": "ICCC",
+        "name": "아이콘 콜드컵"
+      },
+      {
+        "code": "ICUP",
+        "name": "아임낫어페이퍼 컵"
+      },
+      {
+        "code": "ILHC",
+        "name": "일러스트 손수건"
+      },
+      {
+        "code": "KRDR",
+        "name": "인마이백 피크닉매트 4인용"
+      },
+      {
+        "code": "KSBS",
+        "name": "킵세이프 마그넷 배터리 Slim"
+      },
+      {
+        "code": "LAMB",
+        "name": "라미 사파리 볼펜"
+      },
+      {
+        "code": "LAMS",
+        "name": "라미 사파리 샤프"
+      },
+      {
+        "code": "LNMS",
+        "name": "린넨 메쉬 파우치"
+      },
+      {
+        "code": "LSKF",
+        "name": "레더스킨 다이어리 (커스텀)"
+      },
+      {
+        "code": "LSPH",
+        "name": "로고스트랩 파우치 (키트)"
+      },
+      {
+        "code": "LSPO",
+        "name": "로고스트랩 파우치"
+      },
+      {
+        "code": "LTBV",
+        "name": "리틀빅 리유저블컵(블루,그린,옐로우,카키)"
+      },
+      {
+        "code": "LTCL",
+        "name": "라이트 캘린더"
+      },
+      {
+        "code": "LTLB",
+        "name": "레더라벨 캠핑체어"
+      },
+      {
+        "code": "LTLU",
+        "name": "레터링 유리머그"
+      },
+      {
+        "code": "MBCS",
+        "name": "Motion 커스텀박스 S"
+      },
+      {
+        "code": "MBCT",
+        "name": "Motion 커스텀박스 T"
+      },
+      {
+        "code": "MBCW",
+        "name": "Motion 커스텀박스 W"
+      },
+      {
+        "code": "MBSS",
+        "name": "Motion 스탠다드 S"
+      },
+      {
+        "code": "MBSW",
+        "name": "Motion 스탠다드 W"
+      },
+      {
+        "code": "MGNB",
+        "name": "킵세이프 마그넷 배터리"
+      },
+      {
+        "code": "MIRB",
+        "name": "미르 텀블러(16온즈)"
+      },
+      {
+        "code": "MKEC",
+        "name": "밀크 에코컵"
+      },
+      {
+        "code": "MODU",
+        "name": "모이스트 듀얼 가습기"
+      },
+      {
+        "code": "MOFP",
+        "name": "모바일 오피스 파우치"
+      },
+      {
+        "code": "MOLD",
+        "name": "몰스킨 2026 다이어리"
+      },
+      {
+        "code": "MRON",
+        "name": "크렘드마롱"
+      },
+      {
+        "code": "MSGA",
+        "name": "메세지 캐리어 파우치(실버)"
+      },
+      {
+        "code": "MSMO",
+        "name": "로지텍 라이트 마우스"
+      },
+      {
+        "code": "MSST",
+        "name": "메세지 스트랩"
+      },
+      {
+        "code": "NKPL",
+        "name": "트래블 2in1 목베개"
+      },
+      {
+        "code": "NMBP",
+        "name": "노마드 백팩"
+      },
+      {
+        "code": "OFMS",
+        "name": "오피스 마우스패드(스탠다드)"
+      },
+      {
+        "code": "OFMW",
+        "name": "오피스 마우스패드(와이드)"
+      },
+      {
+        "code": "OJCD",
+        "name": "위시 오브제 캔들"
+      },
+      {
+        "code": "OPPC",
+        "name": "Open 페이퍼박스(커스텀/비스포크사이즈)"
+      },
+      {
+        "code": "OPPL",
+        "name": "Open 페이퍼박스(커스텀/Large)"
+      },
+      {
+        "code": "OPPR",
+        "name": "Open 페이퍼박스(스탠다드)"
+      },
+      {
+        "code": "OPPT",
+        "name": "Open 페이퍼박스(커스텀/Thin)"
+      },
+      {
+        "code": "OPPW",
+        "name": "Open 페이퍼박스(커스텀/Wide)"
+      },
+      {
+        "code": "OSTR",
+        "name": "오픈 스트로우 세트"
+      },
+      {
+        "code": "OZIP",
+        "name": "오디너리 후드집업 (F/W)"
+      },
+      {
+        "code": "OZIQ",
+        "name": "오디너리 후드집업 (S/S)"
+      },
+      {
+        "code": "PCMT",
+        "name": "캔버스 피크닉 매트 (1인용)"
+      },
+      {
+        "code": "PCMU",
+        "name": "캔버스 피크닉 매트 (2인용)"
+      },
+      {
+        "code": "PDCG",
+        "name": "No Stress, PD충전기(PRO모델)"
+      },
+      {
+        "code": "PDCX",
+        "name": "No Stress, PD충전기(Lite 모델)"
+      },
+      {
+        "code": "PIPR",
+        "name": "페이퍼링 캘린더"
+      },
+      {
+        "code": "PITC",
+        "name": "포인트업 러그(원형)"
+      },
+      {
+        "code": "PITU",
+        "name": "포인트업 러그(반원형)"
+      },
+      {
+        "code": "PKIM",
+        "name": "파카 IM 만년필"
+      },
+      {
+        "code": "PMPC",
+        "name": "프라우드 메모패드"
+      },
+      {
+        "code": "PTBC",
+        "name": "포터블 캠핑 롤테이블"
+      },
+      {
+        "code": "PWOP",
+        "name": "프로페셔널 와인오프너"
+      },
+      {
+        "code": "QBRN",
+        "name": "퀵 버튼링 노트"
+      },
+      {
+        "code": "QIKB",
+        "name": "퀵차지 도킹형 보조배터리"
+      },
+      {
+        "code": "QTSH",
+        "name": "퀄리-티셔츠"
+      },
+      {
+        "code": "QWEC",
+        "name": "낫씽 설거지비누(200g커스텀)"
+      },
+      {
+        "code": "QWER",
+        "name": "낫씽 설거지비누(110g커스텀)"
+      },
+      {
+        "code": "QWES",
+        "name": "낫씽 설거지비누(레디메이드)"
+      },
+      {
+        "code": "RDGL",
+        "name": "레디고 런치박스"
+      },
+      {
+        "code": "RECP",
+        "name": "RE:CUP(리컵)_8oz"
+      },
+      {
+        "code": "RECQ",
+        "name": "RE:CUP(리컵)_12oz"
+      },
+      {
+        "code": "RECR",
+        "name": "RE:CUP(리컵)_16oz"
+      },
+      {
+        "code": "RUCD",
+        "name": "리유저블 캘린더"
+      },
+      {
+        "code": "RWCL",
+        "name": "Raw 코튼 파우치(L,XL사이즈)"
+      },
+      {
+        "code": "RWCP",
+        "name": "Raw 코튼 파우치(S,M사이즈)"
+      },
+      {
+        "code": "SCGL",
+        "name": "Solid 커스텀 G형 박스 (L사이즈)"
+      },
+      {
+        "code": "SCGM",
+        "name": "Solid 커스텀 G형 박스 (M사이즈)"
+      },
+      {
+        "code": "SFPP",
+        "name": "KeepSafe 안전봉투"
+      },
+      {
+        "code": "SGCT",
+        "name": "슈가케인 텀블러(빨대 포함)"
+      },
+      {
+        "code": "SGNG",
+        "name": "시그니처 다이어리 (그레이)"
+      },
+      {
+        "code": "SLGC",
+        "name": "슬로건 다이어리(커스텀,1000권 이상)"
+      },
+      {
+        "code": "SLVR",
+        "name": "Quality 슬리브박스(2022ver)"
+      },
+      {
+        "code": "SLZB",
+        "name": "Simple 슬라이드 지퍼백 (M)"
+      },
+      {
+        "code": "SLZL",
+        "name": "Simple 슬라이드 지퍼백 (L)"
+      },
+      {
+        "code": "SLZS",
+        "name": "Simple 슬라이드 지퍼백 (S)"
+      },
+      {
+        "code": "SMPC",
+        "name": "세이프 미니 파우치"
+      },
+      {
+        "code": "SMTM",
+        "name": "슬로건 맨투맨"
+      },
+      {
+        "code": "SOLA",
+        "name": "Solid 스탠다드 G형 박스 (S사이즈)"
+      },
+      {
+        "code": "SOLB",
+        "name": "Solid 스탠다드 G형 박스 (M사이즈)"
+      },
+      {
+        "code": "SOLC",
+        "name": "Solid 스탠다드 G형 박스 (L사이즈)"
+      },
+      {
+        "code": "SOLD",
+        "name": "Solid 커스텀 G형박스(S사이즈)"
+      },
+      {
+        "code": "SOLE",
+        "name": "아트워크 타월"
+      },
+      {
+        "code": "SOLL",
+        "name": "Solid 커스텀 G형박스(L사이즈)"
+      },
+      {
+        "code": "SOLM",
+        "name": "Solid 커스텀 G형박스(M사이즈)"
+      },
+      {
+        "code": "SOLT",
+        "name": "Solid G형박스 L (타월 2개입)"
+      },
+      {
+        "code": "SOLX",
+        "name": "Solid 커스텀 G형박스(XL/비스포크)"
+      },
+      {
+        "code": "SPAC",
+        "name": "스페이스 차량용 청소기"
+      },
+      {
+        "code": "SPKL",
+        "name": "스파클링 유리컵"
+      },
+      {
+        "code": "STCN",
+        "name": "스테이쿨 넥쿨러"
+      },
+      {
+        "code": "STDA",
+        "name": "심볼릭 스테들러 : 형광펜 세트"
+      },
+      {
+        "code": "STDS",
+        "name": "심볼릭 스테들러 : 파인라이너 세트"
+      },
+      {
+        "code": "STHD",
+        "name": "스트레치 사원증 홀더"
+      },
+      {
+        "code": "STLS",
+        "name": "스탠리 슬림 보틀"
+      },
+      {
+        "code": "STMC",
+        "name": "스트랩 마스크 케이스"
+      },
+      {
+        "code": "STNB",
+        "name": "스탠드-업 칫솔"
+      },
+      {
+        "code": "STSW",
+        "name": "스테인리스 빨대 세트"
+      },
+      {
+        "code": "TCFE",
+        "name": "트래블링 차량용 소화기"
+      },
+      {
+        "code": "TMLO",
+        "name": "투마일 오피스 슬리퍼"
+      },
+      {
+        "code": "TNCL",
+        "name": "썸네일 캘린더"
+      },
+      {
+        "code": "TNCS",
+        "name": "Start 틴케이스"
+      },
+      {
+        "code": "TRKF",
+        "name": "트루KF94 프린팅마스크"
+      },
+      {
+        "code": "TTCC",
+        "name": "톤앤톤 쿨러백 (키트)"
+      },
+      {
+        "code": "TUTH",
+        "name": "리프레쉬 고체치약"
+      },
+      {
+        "code": "TWOS",
+        "name": "Two-way 에코 쇼핑백 (L)"
+      },
+      {
+        "code": "TWOX",
+        "name": "Two-way 에코 쇼핑백 (XL)"
+      },
+      {
+        "code": "TWTB",
+        "name": "프라우드 투톤 명함지갑 (레디메이드)"
+      },
+      {
+        "code": "UVBR",
+        "name": "BLANK UV 칫솔살균기"
+      },
+      {
+        "code": "VABD",
+        "name": "밸류보드 다이어리"
+      },
+      {
+        "code": "VLMM",
+        "name": "밸류 메모큐브(M)"
+      },
+      {
+        "code": "VLMS",
+        "name": "밸류 메모큐브(S)"
+      },
+      {
+        "code": "VMCM",
+        "name": "밸류메모큐브 M"
+      },
+      {
+        "code": "VMCS",
+        "name": "밸류메모큐브 S"
+      },
+      {
+        "code": "VSPD",
+        "name": "비주얼 PD 고속충전기 65W"
+      },
+      {
+        "code": "WASH",
+        "name": "마일드 타블렛 세탁세제"
+      },
+      {
+        "code": "WCV",
+        "name": "웹캠 커버"
+      },
+      {
+        "code": "WLMM",
+        "name": "미니멀 무선충전 마우스패드(맥스)"
+      },
+      {
+        "code": "WLMP",
+        "name": "미니멀 무선충전 마우스패드(스플릿)"
+      },
+      {
+        "code": "WLMS",
+        "name": "미니멀 무선충전 마우스패드(스탠다드)"
+      },
+      {
+        "code": "WLMW",
+        "name": "미니멀 무선충전 마우스패드(와이드)"
+      },
+      {
+        "code": "WOFS",
+        "name": "월드 오브 피규어 Set"
+      },
+      {
+        "code": "XMOU",
+        "name": "샤오미 사일런트 마우스"
+      }
+    ],
+    "sync_only_unshipped": [
+      {
+        "code": "1234",
+        "goods": []
+      },
+      {
+        "code": "BMLT",
+        "goods": []
+      },
+      {
+        "code": "BNWV",
+        "goods": []
+      },
+      {
+        "code": "BTRE",
+        "goods": []
+      },
+      {
+        "code": "BTSZ",
+        "goods": []
+      },
+      {
+        "code": "CSTS",
+        "goods": []
+      },
+      {
+        "code": "CWTR",
+        "goods": []
+      },
+      {
+        "code": "DAHP",
+        "goods": []
+      },
+      {
+        "code": "DEAR",
+        "goods": []
+      },
+      {
+        "code": "DONE",
+        "goods": []
+      },
+      {
+        "code": "DP01",
+        "goods": []
+      },
+      {
+        "code": "DP02",
+        "goods": []
+      },
+      {
+        "code": "DP03",
+        "goods": []
+      },
+      {
+        "code": "DP04",
+        "goods": []
+      },
+      {
+        "code": "DP05",
+        "goods": []
+      },
+      {
+        "code": "DP06",
+        "goods": []
+      },
+      {
+        "code": "DP07",
+        "goods": []
+      },
+      {
+        "code": "DP08",
+        "goods": []
+      },
+      {
+        "code": "DP09",
+        "goods": []
+      },
+      {
+        "code": "DP10",
+        "goods": []
+      },
+      {
+        "code": "DP12",
+        "goods": []
+      },
+      {
+        "code": "DP13",
+        "goods": []
+      },
+      {
+        "code": "DP14",
+        "goods": []
+      },
+      {
+        "code": "DP15",
+        "goods": []
+      },
+      {
+        "code": "DP16",
+        "goods": []
+      },
+      {
+        "code": "DP17",
+        "goods": []
+      },
+      {
+        "code": "DP18",
+        "goods": []
+      },
+      {
+        "code": "DP19",
+        "goods": []
+      },
+      {
+        "code": "DP20",
+        "goods": []
+      },
+      {
+        "code": "DP21",
+        "goods": []
+      },
+      {
+        "code": "DP25",
+        "goods": []
+      },
+      {
+        "code": "DP26",
+        "goods": []
+      },
+      {
+        "code": "DP27",
+        "goods": []
+      },
+      {
+        "code": "DP28",
+        "goods": []
+      },
+      {
+        "code": "DP29",
+        "goods": []
+      },
+      {
+        "code": "DP30",
+        "goods": []
+      },
+      {
+        "code": "DP31",
+        "goods": []
+      },
+      {
+        "code": "DP32",
+        "goods": []
+      },
+      {
+        "code": "DP33",
+        "goods": []
+      },
+      {
+        "code": "DP34",
+        "goods": []
+      },
+      {
+        "code": "DP35",
+        "goods": []
+      },
+      {
+        "code": "DP37",
+        "goods": []
+      },
+      {
+        "code": "DP38",
+        "goods": []
+      },
+      {
+        "code": "DP40",
+        "goods": []
+      },
+      {
+        "code": "DP42",
+        "goods": []
+      },
+      {
+        "code": "DREL",
+        "goods": []
+      },
+      {
+        "code": "DRYB",
+        "goods": []
+      },
+      {
+        "code": "ESTD",
+        "goods": []
+      },
+      {
+        "code": "ETIM",
+        "goods": []
+      },
+      {
+        "code": "ETLG",
+        "goods": []
+      },
+      {
+        "code": "FLWO",
+        "goods": []
+      },
+      {
+        "code": "FSAN",
+        "goods": []
+      },
+      {
+        "code": "FULL",
+        "goods": []
+      },
+      {
+        "code": "GBBS",
+        "goods": []
+      },
+      {
+        "code": "GEND",
+        "goods": []
+      },
+      {
+        "code": "GRCH",
+        "goods": []
+      },
+      {
+        "code": "GWRP",
+        "goods": []
+      },
+      {
+        "code": "MIXM",
+        "goods": []
+      },
+      {
+        "code": "MSKT",
+        "goods": []
+      },
+      {
+        "code": "PDBX",
+        "goods": []
+      },
+      {
+        "code": "PICP",
+        "goods": []
+      },
+      {
+        "code": "QUIC",
+        "goods": []
+      },
+      {
+        "code": "SDPF",
+        "goods": []
+      },
+      {
+        "code": "SFMP",
+        "goods": []
+      },
+      {
+        "code": "SLGP",
+        "goods": []
+      },
+      {
+        "code": "SLVP",
+        "goods": []
+      },
+      {
+        "code": "SNBT",
+        "goods": []
+      },
+      {
+        "code": "SPBP",
+        "goods": []
+      },
+      {
+        "code": "TRAC",
+        "goods": []
+      },
+      {
+        "code": "TVLB",
+        "goods": []
+      },
+      {
+        "code": "TWKB",
+        "goods": []
+      },
+      {
+        "code": "TWKT",
+        "goods": []
+      },
+      {
+        "code": "URPD",
+        "goods": []
+      },
+      {
+        "code": "UTBT",
+        "goods": []
+      },
+      {
+        "code": "VIRC",
+        "goods": []
+      },
+      {
+        "code": "WARB",
+        "goods": []
+      },
+      {
+        "code": "WHTP",
+        "goods": []
+      },
+      {
+        "code": "WLMD",
+        "goods": []
+      },
+      {
+        "code": "WSPB",
+        "goods": []
+      },
+      {
+        "code": "WTWH",
+        "goods": []
+      },
+      {
+        "code": "ZETW",
+        "goods": []
+      }
+    ],
+    "service_codes": [
+      {
+        "code": "CSPR",
+        "freq": 0,
+        "goods": []
+      },
+      {
+        "code": "DP45",
+        "freq": 0,
+        "goods": []
+      },
+      {
+        "code": "SLGN",
+        "freq": 58,
+        "goods": [
+          "슬로건 다이어리"
+        ]
+      },
+      {
+        "code": "SSSV",
+        "freq": 4,
+        "goods": [
+          "Motion 스탠다드박스",
+          "긴급",
+          "데코 스티커"
+        ]
+      },
+      {
+        "code": "STCK",
+        "freq": 0,
+        "goods": []
+      }
+    ],
+    "drift_vs_master": []
+  }
+}

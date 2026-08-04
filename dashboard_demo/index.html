@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>물류 운영 컨트롤타워 — 신시어리 SCM</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#141a23; --panel2:#1b2230; --line:#283143;
+    --ink:#e6edf3; --mut:#8b97a7; --acc:#3b82f6;
+    --ok:#22c55e; --part:#f59e0b; --bad:#ef4444;
+    --in:#38bdf8; --out:#a78bfa; --mes:#f472b6; --kit:#34d399;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 -apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif}
+  header{padding:16px 24px 0;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#0e131c,#0b0e14);position:sticky;top:0;z-index:20}
+  .htop{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .meta{color:var(--mut);font-size:12px}
+  nav{display:flex;gap:4px;flex-wrap:wrap}
+  nav button{background:transparent;border:0;border-bottom:2px solid transparent;
+    color:var(--mut);padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0}
+  nav button:hover{color:var(--ink);background:var(--panel)}
+  nav button.on{color:var(--ink);border-bottom-color:var(--acc);background:var(--panel)}
+  nav button .tag{font-size:10px;color:var(--part);margin-left:5px;font-weight:700}
+  .hzbar{display:flex;align-items:center;gap:6px;padding:8px 0 10px;font-size:12px}
+  .hzlab{color:var(--mut);margin-right:4px}
+  .hzbar button{background:var(--panel2);border:1px solid var(--line);color:var(--mut);
+    padding:4px 12px;border-radius:999px;font-size:12px;cursor:pointer;font-weight:600}
+  .hzbar button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 24px 70px}
+  section.tab{display:none} section.tab.on{display:block}
+  .kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:16px}
+  .kpis4{grid-template-columns:repeat(4,1fr)}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .kpi .v{font-size:21px;font-weight:700}
+  .kpi .l{color:var(--mut);font-size:11px;margin-top:2px}
+  .weekstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .ws{background:linear-gradient(180deg,#16202c,#131922);border:1px solid var(--line);border-left:3px solid var(--acc);
+    border-radius:10px;padding:11px 14px}
+  .ws .v{font-size:20px;font-weight:700} .ws .l{color:var(--mut);font-size:11px} .ws .n{color:var(--mut);font-size:10px;margin-top:2px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card.full{grid-column:1 / -1}
+  .card h2{font-size:14px;margin:0 0 3px;font-weight:700}
+  .card h2 .pill{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:8px;vertical-align:middle}
+  .pill-real{background:rgba(34,197,94,.15);color:var(--ok)}
+  .pill-plan{background:rgba(245,158,11,.15);color:var(--part)}
+  .card .sub{color:var(--mut);font-size:11.5px;margin-bottom:12px}
+  .cap{color:var(--mut);font-size:11px;margin-top:8px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.click{cursor:pointer} tr.click:hover{background:var(--panel2)}
+  tr.click td:first-child{position:relative}
+  tr.click:hover td:first-child::before{content:'▸';position:absolute;left:-2px;color:var(--acc)}
+  .badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600}
+  .b-ok{background:rgba(34,197,94,.15);color:var(--ok)}
+  .b-part{background:rgba(245,158,11,.15);color:var(--part)}
+  .b-bad{background:rgba(239,68,68,.15);color:var(--bad)}
+  .bar-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+  .bar-row .lab{width:78px;color:var(--mut);font-size:11px;flex:none;text-align:right}
+  .bar-track{flex:1;height:16px;background:var(--panel2);border-radius:4px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px}
+  .bar-val{width:78px;flex:none;font-size:11px;font-variant-numeric:tabular-nums;text-align:right}
+  .legend{display:flex;gap:14px;font-size:11px;color:var(--mut);margin-bottom:8px;flex-wrap:wrap}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle}
+  .gauge{margin:12px 0}
+  .gauge .gh{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+  .gtrack{height:20px;background:var(--panel2);border-radius:6px;overflow:hidden;border:1px solid var(--line);position:relative}
+  .gfill{height:100%}
+  .gtrack .cap100{position:absolute;top:0;bottom:0;left:100%;width:2px;background:var(--ink);opacity:.35}
+  .small{font-size:11px;color:var(--mut)}
+  .alerts{display:flex;flex-direction:column;gap:8px}
+  .alert{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel2)}
+  .alert .ic{font-size:15px;line-height:1.2}
+  .alert.r{border-color:rgba(239,68,68,.5)} .alert.a{border-color:rgba(245,158,11,.45)}
+  .alert .t{font-size:12.5px;font-weight:600} .alert .d{font-size:11px;color:var(--mut)}
+  .statuscards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  .scard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s}
+  .scard:hover{border-color:var(--acc);transform:translateY(-2px)}
+  .scard .nm{font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  .scard .big{font-size:24px;font-weight:700;margin:6px 0 2px}
+  .scard .meta{font-size:11px;color:var(--mut)}
+  .rag{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .design-only{background:repeating-linear-gradient(45deg,#141a23,#141a23 10px,#161d28 10px,#161d28 20px);
+    border:1px dashed var(--line);border-radius:12px;padding:16px 18px;color:var(--mut);font-size:12px}
+  .design-only b{color:var(--ink)}
+  .ph{display:flex;align-items:center;justify-content:center;min-height:90px;border:1px dashed var(--line);
+    border-radius:8px;color:var(--mut);font-size:12px;text-align:center;padding:10px;background:var(--panel2)}
+  .err{background:rgba(239,68,68,.12);border:1px solid var(--bad);color:#fca5a5;padding:14px 18px;border-radius:10px;margin-bottom:16px}
+  code{background:var(--panel2);padding:1px 6px;border-radius:4px;color:#cbd5e1;font-size:11px}
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;color:var(--mut);margin:8px 0 16px}
+  .flow .st{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+  .flow .st.hl{border-color:var(--acc);color:var(--ink)}
+  .flow .st i{color:var(--part);font-style:normal;font-size:9px}
+  .flow .ar{color:var(--acc)}
+  /* modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;backdrop-filter:blur(2px)}
+  .modal-bg.on{display:block}
+  .modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(820px,94vw);max-height:88vh;overflow:auto;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;z-index:51;padding:0}
+  .modal-h{position:sticky;top:0;background:linear-gradient(180deg,#1a2230,#141a23);border-bottom:1px solid var(--line);
+    padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+  .modal-h h3{margin:0;font-size:16px} .modal-h .x{cursor:pointer;color:var(--mut);font-size:22px;line-height:1;border:0;background:0}
+  .modal-b{padding:16px 20px}
+  .trace{border:1px solid var(--line);border-radius:10px;margin-bottom:12px;overflow:hidden}
+  .trace-h{padding:10px 14px;background:var(--panel2);display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px}
+  .stage{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:7px 14px;border-top:1px solid var(--line);font-size:12.5px}
+  .stage .sl{color:var(--mut);font-weight:600;font-size:11px}
+  .stage.miss{background:rgba(239,68,68,.06)} .stage.miss .sv{color:#fca5a5}
+  @media(max-width:980px){.grid,.statuscards,.kpis,.weekstrip,.kpis4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="htop">
+    <h1>🗼 물류 운영 컨트롤타워 <span class="meta">신시어리 SCM · BOM·CBM 트레이싱</span></h1>
+    <div class="meta" id="runmeta">로딩 중…</div>
+  </div>
+  <nav id="nav">
+    <button data-tab="ov" class="on">통합운영</button>
+    <button data-tab="mes">생산 (MES)<span class="tag">설계</span></button>
+    <button data-tab="pkg">임가공 (pkg)<span class="tag">설계</span></button>
+    <button data-tab="wms">WMS 입하·검수</button>
+    <button data-tab="tms">TMS 출하·배차</button>
+  </nav>
+  <div class="hzbar" id="hzbar">
+    <span class="hzlab">📅 주간 기간</span>
+    <button data-hz="all" class="on">전체</button>
+    <button data-hz="w0">이번주</button>
+    <button data-hz="w1">+1주</button>
+    <button data-hz="w23">+2~3주</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="err"></div>
+
+  <!-- 통합운영 -->
+  <section class="tab on" id="tab-ov">
+    <div class="flow">
+      <span class="st">프로젝트(PNA)</span><span class="ar">→</span>
+      <span class="st">S2 BOM-MRP</span><span class="ar">→</span>
+      <span class="st hl">S3a 자재입하(WMS)</span><span class="ar">→</span>
+      <span class="st">S3b 생산·인쇄 <i>설계</i></span><span class="ar">→</span>
+      <span class="st">S3c 임가공 <i>설계</i></span><span class="ar">→</span>
+      <span class="st hl">S5 완제품 출하(TMS)</span><span class="ar">→</span>
+      <span class="st">S5b 배차/wave</span><span class="ar">→</span>
+      <span class="st">S6 운임 <i>CBM무관</i></span>
+    </div>
+    <div class="weekstrip" id="weekstrip"></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="statuscards" id="statuscards"></div>
+    <div class="grid">
+      <div class="card">
+        <h2>🔔 예외 알림 (RAG)</h2>
+        <div class="sub">임계 초과·낮은 커버리지·미산출 — exception-based</div>
+        <div class="alerts" id="alerts"></div>
+      </div>
+      <div class="card">
+        <h2>주간 통합 부하 — 입하(자재) vs 출하(완제품)</h2>
+        <div class="sub">forward m³ / 주 (월요일 버킷) · 상단 토글로 기간 필터</div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--in)"></span>입하(자재)</span>
+          <span><span class="dot" style="background:var(--out)"></span>출하(완제품)</span>
+        </div>
+        <div id="ov-week"></div>
+        <div class="cap" id="ov-weekcap"></div>
+      </div>
+      <div class="card full">
+        <h2>프로젝트별 진행 보드 <span class="pill pill-real">실데이터</span> <span class="small" style="font-weight:400">— 행 클릭 → 트레이싱 상세</span></h2>
+        <div class="sub">PropagationLedger 집계 · 자재 입하CBM ↔ 완제품 출하CBM · WMS M/H · 전파상태</div>
+        <div style="max-height:360px;overflow:auto">
+          <table id="board"><thead><tr>
+            <th>프로젝트</th><th class="num">굿즈</th><th>상태</th>
+            <th class="num">입하CBM</th><th class="num">출하CBM</th><th class="num">WMS M/H</th>
+            <th>출고요청일</th><th>생산납기</th><th class="num">미산출</th><th>대표 부족자재</th>
+          </tr></thead><tbody></tbody></table>
+        </div>
+        <div class="cap" id="boardcap"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 생산 MES -->
+  <section class="tab" id="tab-mes">
+    <div class="kpis kpis4" id="mes-kpi"></div>
+    <div class="grid">
+      <div class="card">
+        <h2>생산 forecast 부하 (납기일) <span class="pill pill-real">실데이터(부분)</span></h2>
+        <div class="sub">MES 납기일 → 입하도착 CBM, 7/14일 누적</div>
+        <div id="mes-week"></div>
+        <div class="cap" id="mes-cap"></div>
+      </div>
+      <div class="card"><h2>생산 진행률 <span class="pill pill-plan">설계만 v2</span></h2>
+        <div class="sub">출고수량 / 계획수량 — [sync]파츠별_자재이동</div>
+        <div class="ph">📐 현재 <code>파츠코드</code>만 read.<br>출고·계획 수량 적재 시 주간 진행률 게이지</div></div>
+      <div class="card"><h2>생산 M/H 부하 <span class="pill pill-plan">설계만 v2</span></h2>
+        <div class="sub">MES qty × 내부인쇄_제품 DB Cycle Time</div>
+        <div class="ph">📐 Cycle Time/리드타임 미read.<br>적재 시 주간 생산 인력수요</div></div>
+      <div class="card"><h2>생산 케파 가동률 <span class="pill pill-plan">설계만 v2</span></h2>
+        <div class="sub">일일 throughput 분모 대비</div>
+        <div class="ph">⚠ 케파 분모 미확보 — ops 확인 필요.<br>분모 확보 시 RAG 게이지</div></div>
+    </div>
+    <div class="design-only" style="margin-top:16px"><b>생산 파트 글로벌 표준:</b> 생산계획 vs 실적 · 라인/인쇄 케파 가동률 · WIP · 납기 준수율.
+      현 실데이터=납기 forecast CBM(join ~10%). 나머지 소스(<code>tbliMelPWs1epoMkK</code>, <code>tblvaQeb5NTP0iFng</code>) 적재 후 v2.</div>
+  </section>
+
+  <!-- 임가공 pkg -->
+  <section class="tab" id="tab-pkg">
+    <div class="kpis kpis4" id="pkg-kpi"></div>
+    <div class="grid">
+      <div class="card"><h2>kit CBM <span class="pill pill-real">실데이터(부분)</span></h2>
+        <div class="sub">WMS_BOM 키트 전개 CBM</div><div class="ph" id="pkg-kit">집계 중…</div></div>
+      <div class="card"><h2>임가공 작업률(공정률) <span class="pill pill-plan">설계만 v2</span></h2>
+        <div class="sub">Actual/Planned — SERPA pkg_resource</div>
+        <div class="ph">📐 SERPA <code>appkRWtF2j99XgBTq</code> 미적재.<br>작업률·예상/실측 M/H 보유, cascade 미연결</div></div>
+      <div class="card"><h2>임가공 M/H + 투입인원 <span class="pill pill-plan">설계만 v2</span></h2>
+        <div class="sub">pkg_schedule M/H + pkg_resource 인원</div>
+        <div class="ph">📐 외주임가공 준비 M/H 미측정.<br>주간 인력수요 = SERPA 적재 후</div></div>
+      <div class="card"><h2>임가공 예정일 주간 부하 <span class="pill pill-plan">설계만 v2</span></h2>
+        <div class="sub">SERPA pkg_schedule 임가공 예정일</div>
+        <div class="ph">📐 예정일 SERPA 존재, cascade는 WMS 미러만 read.<br>주간 키트조립 일정 = v2</div></div>
+    </div>
+    <div class="design-only" style="margin-top:16px"><b>임가공 2-base 주의:</b> 캐스케이드는 WMS 미러 <code>tblae2NqJaexwjN9R</code>(굿즈명 rollup)만.
+      진짜 진행/M-H/예정일은 SERPA <code>appkRWtF2j99XgBTq</code>. "키트포장" 주문라인은 service 필터(0 CBM).</div>
+  </section>
+
+  <!-- WMS -->
+  <section class="tab" id="tab-wms">
+    <div class="kpis kpis4" id="wms-kpi"></div>
+    <div class="grid">
+      <div class="card"><h2>주간 입하(자재) 부하 <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">부족PT × part-CBM, 입하예상일 기준 / 주</div>
+        <div id="wms-week"></div><div class="cap" id="wms-cap"></div></div>
+      <div class="card"><h2>창고 가동률 <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">staging(에이원) capa / storage(베스트원) 점유</div><div id="wms-gauge"></div></div>
+      <div class="card"><h2>WMS M/H 인력수요 (상위 12) <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">입하·검수·입고 표준 M/H (IBSA iter22)</div>
+        <div id="wms-mh"></div><div class="cap">⚠ TMS/생산/임가공 M/H 제외 — WMS만</div></div>
+      <div class="card"><h2>부족자재 발주 Top 12 <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">MRP 순소요 — 재고 0/소요 묶음</div>
+        <div style="max-height:240px;overflow:auto"><table id="wms-short"><thead><tr>
+          <th>PT</th><th class="num">소요</th><th class="num">프로젝트</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+  </section>
+
+  <!-- TMS -->
+  <section class="tab" id="tab-tms">
+    <div class="kpis kpis4" id="tms-kpi"></div>
+    <div class="grid">
+      <div class="card"><h2>주간 출하(완제품) 부하 <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">출하확정일 기준 forward m³ / 주</div>
+        <div id="tms-week"></div><div class="cap" id="tms-cap"></div></div>
+      <div class="card"><h2>차량/배차 capa <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">기사 CBM 한도 — W1 이장훈 / W2 조희선 / W3 박종성</div>
+        <div id="tms-driver"></div>
+        <div class="cap">운임은 거리/일당 — <b>CBM 무관</b>. CBM은 적재 feasibility 용도.</div></div>
+      <div class="card"><h2>출하CBM 미산출 (S5 갭) <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">multi-shipment partial_skip · 코드 미매칭</div>
+        <div style="max-height:240px;overflow:auto"><table id="tms-miss"><thead><tr>
+          <th>프로젝트</th><th>굿즈</th><th>사유</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="card"><h2>운임 예상범위 <span class="pill pill-real">실데이터</span></h2>
+        <div class="sub">수도권 거리밴드 프리뷰(정보용)</div><div class="ph" id="tms-fare">집계 중…</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- 드릴다운 모달 -->
+<div class="modal-bg" id="mbg"><div class="modal">
+  <div class="modal-h"><h3 id="m-title">—</h3><button class="x" id="m-x">×</button></div>
+  <div class="modal-b" id="m-body"></div>
+</div></div>
+
+<script>
+const F=n=>(n==null||isNaN(n))?"—":(Math.round(n*1000)/1000).toLocaleString();
+const F1=n=>(n==null||isNaN(n))?"—":(Math.round(n*10)/10).toLocaleString();
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+function weekStart(iso){const d=new Date(iso+'T00:00:00');const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);
+  return (d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0');}
+function weekly(byDate){const w={};for(const[d,v]of Object.entries(byDate||{})){const k=weekStart(d);w[k]=(w[k]||0)+v;}return w;}
+function barChart(host,rows,color){const mx=Math.max(1,...rows.map(r=>r[1]));
+  if(!rows.length){host.append(el('div','small','해당 기간 데이터 없음'));return;}
+  rows.forEach(([l,v])=>{const row=el('div','bar-row');
+    row.append(el('div','lab',l),(()=>{const t=el('div','bar-track');const f=el('div','bar-fill');
+      f.style.width=(v/mx*100)+'%';f.style.background=typeof color==='function'?color(v):color;t.append(f);return t;})(),
+      el('div','bar-val',F1(v)));host.append(row);});}
+function gauge(host,label,occ,max,unit){const pct=max?Math.round(occ/max*1000)/10:null;
+  const col=pct==null?'var(--mut)':pct>100?'var(--bad)':pct>80?'var(--part)':'var(--ok)';
+  const g=el('div','gauge');
+  g.innerHTML=`<div class="gh"><span>${label}</span><span style="color:${col};font-weight:700">${pct==null?'분모 미시드':pct+'%'}</span></div>`+
+    `<div class="gtrack"><div class="gfill" style="width:${pct==null?55:Math.min(pct,100)}%;background:${col}"></div><div class="cap100"></div></div>`+
+    `<div class="small" style="margin-top:4px">${F1(occ)} ${unit}${max?(' / '+max+' '+unit):' (capa 미확보)'}</div>`;
+  host.append(g);}
+function kpiTiles(host,items){host.innerHTML='';items.forEach(([l,v])=>{const k=el('div','kpi');
+  k.append(el('div','v',v),el('div','l',l));host.append(k);});}
+
+let DATA={}, WEEKFILTER='all', GLOBAL_WEEKS=[], BYP={}, TODAY='';
+function projForwardDate(rs){return rs.map(u=>(u.row||{})['출고요청일']).filter(Boolean).sort()[0]||null;}
+function projProdDate(rs){return rs.map(u=>(u.row||{})['생산_납기일']).filter(Boolean).sort()[0]||null;}
+function wkOffset(dateStr){if(!dateStr||!TODAY)return null;
+  const ws=x=>{const c=new Date(x+'T00:00:00');if(isNaN(c))return null;c.setDate(c.getDate()-((c.getDay()+6)%7));return c;};
+  const a=ws(dateStr),b=ws(TODAY);return(a&&b)?Math.round((a-b)/(7*86400000)):null;}
+function boardMatch(wk){if(WEEKFILTER==='all')return true;if(wk==null)return false;
+  if(WEEKFILTER==='w0')return wk===0;if(WEEKFILTER==='w1')return wk===1;if(WEEKFILTER==='w23')return wk===2||wk===3;return true;}
+function renderBoard(){
+  const tb=document.querySelector('#board tbody');tb.innerHTML='';
+  const projects=Object.keys(BYP).sort();let shown=0;const bk={w0:0,w1:0,w23:0,past:0,none:0};
+  for(const p of projects){const rs=BYP[p];const fwd=projForwardDate(rs),wk=wkOffset(fwd);
+    if(wk==null)bk.none++;else if(wk<0)bk.past++;else if(wk===0)bk.w0++;else if(wk===1)bk.w1++;else if(wk===2||wk===3)bk.w23++;
+    if(!boardMatch(wk))continue;shown++;
+    let i=0,o=0,m=0,unc=0,d=0,pa=0,br=0,short='';
+    for(const u of rs){const r=u.row||{};i+=+(r['입하CBM_예상_m3']||0);o+=+(r['추정_CBM_m3']||0);m+=+(r['MH_예상_h']||0);
+      if(u.reasons&&u.reasons.length)unc++;const s=r['전파상태'];if(s==='완결')d++;else if(s==='부분')pa++;else br++;
+      if(!short&&r['부족자재_요약'])short=String(r['부족자재_요약']).split('\n')[0];}
+    const badge=br?`<span class="badge b-bad">끊김 ${br}</span>`:pa?`<span class="badge b-part">부분 ${pa}</span>`:`<span class="badge b-ok">완결 ${d}</span>`;
+    const prod=projProdDate(rs);const tr=el('tr','click');tr.onclick=()=>openTrace(p);
+    tr.innerHTML=`<td><b>${p}</b></td><td class="num">${rs.length}</td><td>${badge}</td>`+
+      `<td class="num">${F(i)}</td><td class="num">${F(o)}</td><td class="num">${F1(m)}</td>`+
+      `<td class="small">${fwd||'—'}</td><td class="small">${prod||'—'}</td>`+
+      `<td class="num">${unc}</td><td class="small">${short||'—'}</td>`;
+    tb.append(tr);}
+  const lbl=WEEKFILTER==='all'?'전체':WEEKFILTER==='w0'?'이번주':WEEKFILTER==='w1'?'+1주':'+2~3주';
+  document.getElementById('boardcap').innerHTML=
+    `${lbl} 표시 <b>${shown}</b> 프로젝트 · 출고요청일 버킷(${TODAY} 기준) — 이번주 ${bk.w0} / +1주 ${bk.w1} / +2~3주 ${bk.w23} / 과거 ${bk.past} / 미정 ${bk.none} · 행 클릭→S2~S6 트레이스`;
+}
+function selectedWeekSet(){
+  if(WEEKFILTER==='w0')return new Set(GLOBAL_WEEKS.slice(0,1));
+  if(WEEKFILTER==='w1')return new Set(GLOBAL_WEEKS.slice(1,2));
+  if(WEEKFILTER==='w23')return new Set(GLOBAL_WEEKS.slice(2));
+  return new Set(GLOBAL_WEEKS);}
+function show(tab){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+tab));}
+
+async function load(){
+  let rep,ser;
+  try{rep=await(await fetch('./report.json')).json();ser=await(await fetch('./capacity_series.json')).json();}
+  catch(e){document.getElementById('err').innerHTML=
+    '<div class="err">데이터 로드 실패 — <code>python -m http.server</code> 로 이 폴더를 서빙해야 합니다.<br>'+e+'</div>';return;}
+  DATA={rep,snap:Array.isArray(ser)?ser[ser.length-1]:ser};
+  const wIn=weekly(DATA.snap.tracks.inbound.scheduled_by_date), wOut=weekly(DATA.snap.tracks.outbound.forward_by_date);
+  GLOBAL_WEEKS=[...new Set([...Object.keys(wIn),...Object.keys(wOut)])].sort();
+  render();
+  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+  document.querySelectorAll('#hzbar button').forEach(b=>b.onclick=()=>{
+    WEEKFILTER=b.dataset.hz;document.querySelectorAll('#hzbar button').forEach(x=>x.classList.toggle('on',x===b));
+    renderWeekly();renderStrip();renderBoard();});
+  document.getElementById('m-x').onclick=closeTrace;
+  document.getElementById('mbg').onclick=e=>{if(e.target.id==='mbg')closeTrace();};
+}
+
+function renderWeekly(){
+  const {snap}=DATA;const sel=selectedWeekSet();
+  const wIn=weekly(snap.tracks.inbound.scheduled_by_date), wOut=weekly(snap.tracks.outbound.forward_by_date);
+  const keys=GLOBAL_WEEKS.filter(k=>sel.has(k));
+  // overview grouped
+  const ov=document.getElementById('ov-week');ov.innerHTML='';
+  const mx=Math.max(1,...keys.map(k=>Math.max(wIn[k]||0,wOut[k]||0)));
+  if(!keys.length)ov.append(el('div','small','해당 기간 데이터 없음'));
+  keys.forEach(k=>{[['입하',wIn[k]||0,'var(--in)'],['출하',wOut[k]||0,'var(--out)']].forEach(([t,v,c],i)=>{
+    const row=el('div','bar-row');row.append(el('div','lab',i===0?('주 '+k):''),
+      (()=>{const tr=el('div','bar-track');const f=el('div','bar-fill');f.style.width=(v/mx*100)+'%';f.style.background=c;tr.append(f);return tr;})(),
+      el('div','bar-val',F1(v)+' m³'));ov.append(row);});});
+  // wms 입하
+  const ww=document.getElementById('wms-week');if(ww){ww.innerHTML='';barChart(ww,keys.map(k=>['주 '+k,wIn[k]||0]),'var(--in)');}
+  // tms 출하
+  const tw=document.getElementById('tms-week');if(tw){tw.innerHTML='';barChart(tw,keys.map(k=>['주 '+k,wOut[k]||0]),'var(--out)');}
+}
+
+function renderStrip(){
+  const {snap}=DATA;const sel=selectedWeekSet();
+  const wIn=weekly(snap.tracks.inbound.scheduled_by_date), wOut=weekly(snap.tracks.outbound.forward_by_date);
+  const keys=GLOBAL_WEEKS.filter(k=>sel.has(k));
+  const sumIn=keys.reduce((a,k)=>a+(wIn[k]||0),0), sumOut=keys.reduce((a,k)=>a+(wOut[k]||0),0);
+  const stg=Object.values(snap.tracks.inbound.staging||{})[0]||{};
+  const exN=document.querySelectorAll('#alerts .alert').length;
+  const label=WEEKFILTER==='all'?'전체기간':WEEKFILTER==='w0'?'이번주':WEEKFILTER==='w1'?'+1주':'+2~3주';
+  const ws=document.getElementById('weekstrip');ws.innerHTML='';
+  [[`입하(자재)`,F1(sumIn)+' m³',label],
+   [`출하(완제품)`,F1(sumOut)+' m³',label],
+   [`staging peak`,(stg.peak_day_pct||0)+'%',stg.peak_date?stg.peak_date.slice(5):''],
+   [`예외 알림`,exN+'건','RAG']]
+   .forEach(([l,v,n])=>{const c=el('div','ws');c.append(el('div','v',v),el('div','l',l),el('div','n',n));ws.append(c);});
+}
+
+function stage(sl,sv,miss){return `<div class="stage${miss?' miss':''}"><div class="sl">${sl}</div><div class="sv">${sv}</div></div>`;}
+function openTrace(pna){
+  const rs=BYP[pna]||[];
+  let d=0,pa=0,bk=0;rs.forEach(u=>{const s=(u.row||{})['전파상태'];if(s==='완결')d++;else if(s==='부분')pa++;else bk++;});
+  document.getElementById('m-title').innerHTML=`${pna} — ${rs.length}굿즈 · `+
+    `<span class="badge b-ok">완결 ${d}</span> <span class="badge b-part">부분 ${pa}</span> ${bk?`<span class="badge b-bad">끊김 ${bk}</span>`:''}`;
+  const body=document.getElementById('m-body');body.innerHTML='';
+  rs.forEach(u=>{const r=u.row||{};const reasons=(u.reasons||[]);
+    const badge=r['전파상태']==='완결'?'b-ok':r['전파상태']==='끊김'?'b-bad':'b-part';
+    const t=el('div','trace');
+    t.innerHTML=`<div class="trace-h"><span>${r['굿즈명']||'—'}</span><span class="badge ${badge}">${r['전파상태']}</span></div>`+
+      stage('S2 BOM-MRP', (String(r['부족자재_요약']||'—')).replace(/\n/g,' · '))+
+      stage('S3 입하(자재)', `입하CBM ${F(r['입하CBM_예상_m3'])} m³ · M/H ${F1(r['MH_예상_h'])} h`)+
+      stage('S4 창고적재', r['창고적재_예상']||'—')+
+      stage('S5 출하(완제품)', `출하CBM ${F(r['추정_CBM_m3'])} m³ · ${r['wave_프리뷰']||'—'}`)+
+      stage('S6 운임', (r['운임_예상범위']||'—')+' <span class="small">(CBM 무관·정보용)</span>')+
+      (reasons.length?stage('⚠ 미산출 사유', reasons.join('<br>'),true):'');
+    body.append(t);});
+  document.getElementById('mbg').classList.add('on');
+}
+function closeTrace(){document.getElementById('mbg').classList.remove('on');}
+
+function render(){
+  const {rep,snap}=DATA;
+  TODAY=snap.snapshot_date;
+  document.getElementById('runmeta').textContent=
+    `run ${rep.run_id} · 윈도우 ${rep.window_days}d · 보드=트레이스 / 부하=${snap.snapshot_date} 스냅샷`;
+  BYP={};for(const u of rep.units){const r=u.row||{};const p=r['프로젝트코드']||'—';(BYP[p]=BYP[p]||[]).push(u);}
+  const projects=Object.keys(BYP).sort();
+  let sin=0,sout=0,smh=0,done=0,part=0,broke=0;
+  for(const u of rep.units){const r=u.row||{};sin+=+(r['입하CBM_예상_m3']||0);sout+=+(r['추정_CBM_m3']||0);smh+=+(r['MH_예상_h']||0);
+    const s=r['전파상태'];if(s==='완결')done++;else if(s==='부분')part++;else broke++;}
+  const stg=Object.values(snap.tracks.inbound.staging||{})[0]||{};
+  const mf=snap.tracks.inbound.mes_forecast||{by_horizon:{},n_joined:0,n_total:1};
+  const sMiss=rep.units.filter(u=>(u.reasons||[]).some(x=>x.includes('S5'))).length;
+  const inTot=snap.tracks.inbound.scheduled_total_cbm, outTot=snap.tracks.outbound.forward_total_cbm;
+
+  kpiTiles(document.getElementById('kpis'),
+    [['프로젝트',projects.length],['단위',rep.totals.units],['완결',done],['부분',part],['끊김',broke],
+     ['Σ 입하CBM',F1(sin)+' m³'],['Σ 출하CBM',F1(sout)+' m³']]);
+
+  // status cards
+  const rag=c=>`<span class="rag" style="background:${c}"></span>`;
+  const cards=[
+    ['생산 (MES)','mes',rag('var(--part)'),F(mf.by_horizon['14'])+' m³','+14d forecast · join '+Math.round(mf.n_joined/mf.n_total*100)+'% · 진행률 설계만'],
+    ['임가공 (pkg)','pkg',rag('var(--part)'),'설계만','M/H·작업률·예정일 SERPA 미적재'],
+    ['WMS 입하·검수','wms',(stg.peak_day_pct>100?rag('var(--bad)'):rag('var(--ok)')),F1(inTot)+' m³','staging peak '+stg.peak_day_pct+'% · '+done+' 완결'],
+    ['TMS 출하·배차','tms',rag('var(--ok)'),F1(outTot)+' m³','출하 coverage '+snap.tracks.outbound.coverage_pct+'%'],
+  ];
+  const sc=document.getElementById('statuscards');sc.innerHTML='';
+  cards.forEach(([nm,tab,dot,big,meta])=>{const c=el('div','scard');c.onclick=()=>show(tab);
+    c.innerHTML=`<div class="nm">${nm} ${dot}</div><div class="big">${big}</div><div class="meta">${meta} →</div>`;sc.append(c);});
+
+  // alerts
+  const al=document.getElementById('alerts');al.innerHTML='';const A=[];
+  if(stg.peak_day_pct>100)A.push(['r','🛑',`staging 초과 — 에이원 ${stg.peak_date.slice(5)} ${stg.peak_day_pct}% (${F1(stg.peak_day_cbm)}/${stg.max_cbm} m³)`,'입하 lumpy — 분산 입고/3PL overflow 검토']);
+  if(sMiss)A.push(['a','⚠',`출하CBM 미산출 ${sMiss} 단위`,'multi-shipment partial_skip · 코드 미매칭']);
+  A.push(['a','⚠',`MES forecast join ${Math.round(mf.n_joined/mf.n_total*100)}% (${mf.n_joined}/${mf.n_total})`,'굿즈명→견적코드→Product CBM 체인 ~90% 드랍']);
+  const stoW=Object.values(snap.tracks.storage.by_warehouse||{})[0]||{};
+  if(stoW.max_cbm==null)A.push(['a','📐',`storage 분모 미시드 — 베스트원 ${F1(stoW.occupied_cbm)} m³`,'Max_CBM 권위값 확인 시 가동률%']);
+  A.forEach(([k,ic,t,d])=>{const a=el('div','alert '+k);a.innerHTML=`<div class="ic">${ic}</div><div><div class="t">${t}</div><div class="d">${d}</div></div>`;al.append(a);});
+
+  // board (rows clickable, week-filterable by 출고요청일)
+  renderBoard();
+
+  // part KPI tiles
+  const join=Math.round(mf.n_joined/mf.n_total*100);
+  kpiTiles(document.getElementById('mes-kpi'),
+    [['+7d forecast',F(mf.by_horizon['7'])+' m³'],['+14d forecast',F(mf.by_horizon['14'])+' m³'],['join 커버',join+'%'],['진행률','설계 v2']]);
+  kpiTiles(document.getElementById('pkg-kpi'),
+    [['연결 base','SERPA'],['작업률','설계 v2'],['임가공 M/H','설계 v2'],['예정일','설계 v2']]);
+  // shortage agg (also for WMS table + KPI)
+  const shAgg={};
+  for(const u of rep.units){String((u.row||{})['부족자재_요약']||'').split('\n').forEach(line=>{
+    const m=line.match(/^(PT\d+)×(\d+)/);if(m){shAgg[m[1]]=shAgg[m[1]]||{q:0,p:new Set()};shAgg[m[1]].q+=+m[2];shAgg[m[1]].p.add((u.row||{})['프로젝트코드']);}});}
+  kpiTiles(document.getElementById('wms-kpi'),
+    [['입하 window',F1(inTot)+' m³'],['staging peak',(stg.peak_day_pct||0)+'%'],['Σ WMS M/H',F1(smh)+' h'],['부족 PT',Object.keys(shAgg).length+'종']]);
+  kpiTiles(document.getElementById('tms-kpi'),
+    [['출하 window',F1(outTot)+' m³'],['출하 coverage',snap.tracks.outbound.coverage_pct+'%'],['차량 max','9.49 m³'],['미산출',sMiss+' 단위']]);
+
+  // MES week
+  const mw=document.getElementById('mes-week');mw.innerHTML='';
+  barChart(mw,[['~7일',mf.by_horizon['7']||0],['8~14일',(mf.by_horizon['14']||0)-(mf.by_horizon['7']||0)]],'var(--mes)');
+  document.getElementById('mes-cap').innerHTML=`join ${mf.n_joined}/${mf.n_total} (${join}%) · 일자별 미제공 → 7/14d 누적만`;
+
+  // pkg
+  document.getElementById('pkg-kit').innerHTML=`키트 전개 CBM은 WMS_BOM 기반 — Σ 출하CBM ${F1(sout)} m³에 반영.<br>임가공 단계 분리 집계는 SERPA 적재(v2) 후`;
+
+  // WMS gauges/mh/short
+  const wg=document.getElementById('wms-gauge');wg.innerHTML='';
+  gauge(wg,`staging · ${Object.keys(snap.tracks.inbound.staging)[0]} (peak ${stg.peak_date?stg.peak_date.slice(5):'—'})`,stg.peak_day_cbm,stg.max_cbm,'m³');
+  gauge(wg,`storage · ${Object.keys(snap.tracks.storage.by_warehouse)[0]}`,stoW.occupied_cbm,stoW.max_cbm,'m³');
+  const wm=document.getElementById('wms-mh');wm.innerHTML='';
+  barChart(wm,projects.map(p=>[p,BYP[p].reduce((a,u)=>a+ +((u.row||{})['MH_예상_h']||0),0)]).sort((a,b)=>b[1]-a[1]).slice(0,12),'var(--acc)');
+  const shTb=document.querySelector('#wms-short tbody');shTb.innerHTML='';
+  Object.entries(shAgg).sort((a,b)=>b[1].q-a[1].q).slice(0,12).forEach(([pt,o])=>{const tr=el('tr');
+    tr.innerHTML=`<td><b>${pt}</b></td><td class="num">${o.q.toLocaleString()}</td><td class="num">${o.p.size}</td>`;shTb.append(tr);});
+
+  // TMS driver/miss/fare
+  const td=document.getElementById('tms-driver');td.innerHTML='';
+  [['W1 이장훈',4.5],['W2 조희선',7.616],['W3 박종성',9.486]].forEach(([nm,cap])=>{const g=el('div','gauge');
+    g.innerHTML=`<div class="gh"><span>${nm}</span><span class="small">한도 ${cap} m³/회</span></div>`+
+      `<div class="gtrack"><div class="gfill" style="width:${Math.min(cap/9.486*100,100)}%;background:var(--out)"></div></div>`;td.append(g);});
+  const missTb=document.querySelector('#tms-miss tbody');missTb.innerHTML='';
+  const missRows=rep.units.filter(u=>(u.reasons||[]).some(x=>x.includes('S5'))).slice(0,40);
+  missRows.forEach(u=>{const r=u.row||{};const tr=el('tr');
+    tr.innerHTML=`<td>${r['프로젝트코드']}</td><td class="small">${r['굿즈명']||''}</td><td class="small">${(u.reasons||[]).filter(x=>x.includes('S5')).join('; ')}</td>`;missTb.append(tr);});
+  if(!missRows.length)missTb.innerHTML='<tr><td colspan=3 class="small">S5 미산출 없음 ✓</td></tr>';
+  const fareN=rep.units.filter(u=>(u.row||{})['운임_예상범위']).length;
+  document.getElementById('tms-fare').innerHTML=`운임범위 산출 ${fareN} / ${rep.units.length} 단위.<br>거리밴드(수도권 10~60km) 프리뷰 — 실정산은 기사별 거리/일당.`;
+
+  renderWeekly();renderStrip();
+}
+load();
+</script>
+</body>
+</html>

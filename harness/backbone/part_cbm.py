@@ -10,9 +10,10 @@ tier 사다리 (spec 2026-06-09 §6 정렬):
 from __future__ import annotations
 
 # ── 파싱 sanity bounds ───────────────────────────────────────────────────────
-MIN_AXIS_MM = 1.0        # sub-mm 노이즈 거부
+MIN_AXIS_MM = 1.0        # W/H 축 sub-mm 노이즈 거부
 MAX_AXIS_MM = 5000.0     # 5m 초과 축 = 파싱 사고로 간주
-MIN_THICKNESS_MM = 3.0   # 2D 규격(스티커 등) 기본 두께
+MIN_THICKNESS_MM = 3.0   # 2D 무두께 규격(스티커 등) 기본 두께
+MIN_THICKNESS_FLOOR_MM = 0.01  # 필름/봉투 두께 하한 — 실물 0.02~0.3mm 허용, 노이즈(0.001) 거부
 MAX_UNIT_CBM = 5.0       # 개당 5 m³ 초과 = 이상치 격리
 
 # ── QC 버킷 상수 (sync_parts 규격 파싱 가능 모집단 n=726 tertile, 2026-06-10 산출) ──
@@ -30,9 +31,11 @@ CONF_QC_BUCKET = 0.40    # spec §6 "QC버킷 0.40"
 
 
 def parse_dims_mm(raw: str) -> tuple[float, float, float] | None:
-    """'88x88x163', '248*190*33', '200x300', '55x160mm 펼침...' 파싱.
+    """'88x88x163', '248*190*33', '200x300', '135x195x0.04', '55x160mm 펼침...' 파싱.
 
-    Returns (W, H, D) mm, or None. 축이 [MIN_AXIS_MM, MAX_AXIS_MM] 밖이면 None.
+    Returns (W, H, D) mm, or None. W/H는 [MIN_AXIS_MM, MAX_AXIS_MM],
+    두께(3축, positional)는 [MIN_THICKNESS_FLOOR_MM, MAX_AXIS_MM] 밖이면 None.
+    필름/봉투 두께(예 0.04mm)는 두께 축에 한해 1mm 미만 허용.
     """
     import re
 
@@ -45,7 +48,10 @@ def parse_dims_mm(raw: str) -> tuple[float, float, float] | None:
         dims = (nums[0], nums[1], MIN_THICKNESS_MM)
     else:
         return None
-    if not all(MIN_AXIS_MM <= a <= MAX_AXIS_MM for a in dims):
+    w, h, t = dims
+    if not (MIN_AXIS_MM <= w <= MAX_AXIS_MM and MIN_AXIS_MM <= h <= MAX_AXIS_MM):
+        return None
+    if not (MIN_THICKNESS_FLOOR_MM <= t <= MAX_AXIS_MM):
         return None
     return dims
 

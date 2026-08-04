@@ -196,12 +196,17 @@ def calc_from_products(
     product_text: str,
     lookup: dict,
     qty_hint: int = 0,
+    name2code: dict | None = None,
 ) -> dict:
     """
     품목+수량 텍스트 → {"unload_fee", "total_cbm", "matched", "unmatched"}.
 
     qty_hint: 수량 정보가 텍스트에 없을 때 첫 번째 품목에 적용.
+    name2code: sync_item 굿즈명→굿즈코드. 주어지면 공유 리졸버(이름→코드→V2 alias→Product)로
+      캐스케이드와 동일 경로 해소, 실패 시 이름 Jaccard 폴백. None이면 현행 Jaccard 동작 보존.
     """
+    from harness.backbone.product_alias import resolve_product_entry
+
     lines = parse_product_lines(product_text)
     if not lines:
         return {"unload_fee": 0, "total_cbm": 0.0, "matched": [], "unmatched": []}
@@ -215,7 +220,7 @@ def calc_from_products(
     unmatched_list: list[str] = []
 
     for prod_name, qty in lines:
-        key, entry, score = match_product(prod_name, lookup)
+        entry, key, _method = resolve_product_entry(prod_name, None, name2code, lookup)
         if entry is None:
             unmatched_list.append(prod_name)
             continue
@@ -235,7 +240,7 @@ def calc_from_products(
         matched_list.append({
             "name":        prod_name,
             "matched_key": key,
-            "score":       score,
+            "method":      _method,
             "qty":         qty,
             "n_boxes":     n_boxes,
             "box_type":    box_type,

@@ -25,7 +25,10 @@
 - **Expression Bank**: `| 표현 | 의미 | 예문 |` 파이프 테이블
 
 ## 문법 요구사항 (Jason 턴마다)
-동사구 3개 이상 + 종속절(because / although / which / since / once / even if) 3개 이상
+동사구 3개 이상 + 종속절 3개 이상 — **23종 접속사 전체 혼합 사용**
+because / since / as / although / though / even though / even if / whereas /
+which / that / who / where / when / while / before / after / until / once / as soon as /
+if / unless / as long as / so that
 
 ---
 
@@ -173,23 +176,20 @@ earn it, you asked for it, pass it on, language transmission, I'm the one stayin
 
 ---
 
-## 완료된 Notion 페이지 IDs (2026-06-12)
+## 완료된 Notion 페이지 IDs (2026-06-12 재작성 — 종속절 23종 완전 채보)
 
 | EP | 제목 | Notion Page ID |
 |----|------|---------------|
-| EP81 | The Promotion | `37d4b750-152c-8150-9c0c-ef9240fe101b` |
-| EP82 | Day's Big Project | `37d4b750-152c-8187-b27f-fb7b910f5999` |
-| EP83 | Marcus Gets Engaged | `37d4b750-152c-8125-a354-de7f6bc9ab8f` |
-| EP84 | Cooking Together | `37d4b750-152c-81e3-a9dd-dc7e4b787898` |
-| EP85 | The Korean Community | `37d4b750-152c-8165-ac7b-dd2b0ee1cba9` |
-| EP86 | Teaching Sana Korean | `37d4b750-152c-81e4-93a2-c47995aa0fe5` |
-| EP87 | Kenji Moves Away | `37d4b750-152c-8163-961f-f708da7d91ae` |
-| EP88 | The FreshLine Future | `37d4b750-152c-81bf-8d23-e24252d63269` |
-| EP89 | Before the Visit | `37d4b750-152c-81b0-9d50-f20d92152a92` |
-| EP90 | Two Years In | `37d4b750-152c-81ba-b6c3-f0f1a7a39037` |
-
-> **Duplicate cleanup needed**: EP82-89 have duplicate pages from a partial first run.
-> Delete these 8 IDs from Notion: `37c4b750-152c-81bb`, `37c4b750-152c-8140`, `37c4b750-152c-8173`, `37c4b750-152c-81c8`, `37c4b750-152c-816f`, `37c4b750-152c-81de`, `37c4b750-152c-817f`, `37c4b750-152c-81c7`
+| EP81 | The Promotion | `37d4b750-152c-81a2-a76e-e4e4edbde135` |
+| EP82 | Day's Big Project | `37d4b750-152c-81bd-8de3-f8bfc2c382c6` |
+| EP83 | Marcus Gets Engaged | `37d4b750-152c-8192-ac47-cbfd462f5653` |
+| EP84 | Cooking Together | `37d4b750-152c-81d5-ad7f-e47f5e8774cf` |
+| EP85 | The Korean Community | `37d4b750-152c-81e4-9ba8-ca56abc55763` |
+| EP86 | Teaching Sana Korean | `37d4b750-152c-81a7-a76c-dcb85478cd57` |
+| EP87 | Kenji Moves Away | `37d4b750-152c-815b-adc1-ea1ebdc16678` |
+| EP88 | The FreshLine Future | `37d4b750-152c-81ca-93f1-eeb74d70fab7` |
+| EP89 | Before the Visit | `37d4b750-152c-81ad-83b5-f292e01dc7df` |
+| EP90 | Two Years In | `37d4b750-152c-8178-a22f-c693e60772f8` |
 
 ## 세션 완료 후 체크리스트
 

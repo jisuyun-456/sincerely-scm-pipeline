@@ -17,10 +17,15 @@ import argparse
 import math
 import os
 import re
+import sys
 import time
 from datetime import date, timedelta
+from pathlib import Path
 
 import requests
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from harness.tms_settlement.config import round_up_500  # noqa: E402  SSOT 요율 반올림
 
 # ── 상수 ─────────────────────────────────────────────────────────────────────
 
@@ -43,10 +48,6 @@ DAYOUNG_LNG, DAYOUNG_LAT = 127.1436, 37.4360
 PARK_BASE   = 55_421
 PARK_KM     = 831
 ROAD_FACTOR = 1.35   # haversine → 도로거리 환산 (현재)
-
-
-def round_up_500(x: float) -> int:
-    return math.ceil(x / 500) * 500
 
 
 # ── Airtable ─────────────────────────────────────────────────────────────────

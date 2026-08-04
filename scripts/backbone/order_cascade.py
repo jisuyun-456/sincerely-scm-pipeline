@@ -38,6 +38,7 @@ from harness.backbone.part_cbm import part_cbm_for_pt  # noqa: E402
 from harness.backbone.storage import parse_pt_from_ledger_key  # noqa: E402
 from harness.dispatch.cbm_estimator import build_kit_cbm_lookup  # noqa: E402
 from harness.backbone.keys import PNA_RE, build_pkg_goods_map  # noqa: E402
+from harness.backbone.product_alias import inject_synthetic  # noqa: E402
 from harness.settlement.cbm_calc import load_product_lookup  # noqa: E402
 from harness.tms_settlement.config import rates_for  # noqa: E402
 from utils.cbm_utils import load_sync_parts_lookup  # noqa: E402
@@ -105,6 +106,7 @@ def build_context(tp, wp, mp, today):
     """전 스테이지 입력 사전적재 → CascadeContext (cascade.py 순수 코어 소비)."""
     print("로딩: Product 룩업...", flush=True)
     lk = load_product_lookup({"Authorization": f"Bearer {tp}"})
+    inject_synthetic(lk)   # Product 미등록 신규 SKU(TWKF 등) 권위 스펙 런타임 주입 (쓰기 0)
     product_by_code = {}
     for e in lk.values():
         code = str(e.get("code") or "").strip().upper()
@@ -200,6 +202,107 @@ def build_context(tp, wp, mp, today):
         rates=rates_for(today.isoformat()), today=today)
 
 
+def build_project_board(results: list[dict]) -> list[str]:
+    """프로젝트(PNA)별 진행 롤업 보드 — BOM·CBM 트레이스 한눈에 (P1).
+
+    ledger row를 프로젝트코드로 묶어 자재 입하CBM ↔ 완제품 출하CBM,
+    WMS M/H, 상태 분포를 1행으로 요약. 굿즈 단위 상세는 아래 단위별 테이블 참조.
+    신규 연산 없음 — 기존 ledger row 필드만 집계.
+    """
+    by_pna: dict[str, list[dict]] = {}
+    for r in results:
+        pna = r["row"].get("프로젝트코드") or "—"
+        by_pna.setdefault(pna, []).append(r)
+
+    def _min_date(rs, field):
+        ds = [r["row"].get(field) for r in rs if r["row"].get(field)]
+        return min(ds) if ds else "—"
+
+    lines = ["", "## 프로젝트별 진행 보드 (P1·P3)", "",
+             f"- 프로젝트 {len(by_pna)}개 / 단위 {len(results)}개", "",
+             "| 프로젝트 | 굿즈 | 완결 | 부분 | 끊김 | 입하CBM | 출하CBM "
+             "| WMS M/H(h) | 출고요청일 | 생산납기 | 미산출 |",
+             "|---|--:|--:|--:|--:|--:|--:|--:|---|---|--:|"]
+    for pna in sorted(by_pna):
+        rs = by_pna[pna]
+        done = sum(1 for r in rs if r["row"]["전파상태"] == "완결")
+        part = sum(1 for r in rs if r["row"]["전파상태"] == "부분")
+        broke = sum(1 for r in rs if r["row"]["전파상태"] == "끊김")
+        in_cbm = round(sum(float(r["row"].get("입하CBM_예상_m3") or 0) for r in rs), 4)
+        out_cbm = round(sum(float(r["row"].get("추정_CBM_m3") or 0) for r in rs), 4)
+        mh = round(sum(float(r["row"].get("MH_예상_h") or 0) for r in rs), 2)
+        uncovered = sum(1 for r in rs if r["reasons"])
+        lines.append(
+            f"| {pna} | {len(rs)} | {done} | {part} | {broke} "
+            f"| {in_cbm} | {out_cbm} | {mh} "
+            f"| {_min_date(rs, '출고요청일')} | {_min_date(rs, '생산_납기일')} "
+            f"| {uncovered} |")
+    return lines
+
+
+def _iso_date(raw):
+    try:
+        return date.fromisoformat(str(raw or "")[:10])
+    except ValueError:
+        return None
+
+
+def weekly_outbound_forecast(results: list[dict]) -> dict:
+    """D1 — ship_req(출고요청일) ISO주차별 추정_CBM_m3 집계 (출하CBM 사전계획).
+
+    PropLedger 추정_CBM_m3는 날짜 미저장(cdb8d29) → cascade 결과 in-memory ship_req로
+    버킷. CBM 0(끊김·미산출)·날짜 없는 단위는 미산입 — coverage_pct로 투명화.
+    """
+    buckets: dict[str, dict] = {}
+    cbm_total = cbm_dated = 0.0
+    n_total = n_dated = 0
+    for r in results:
+        cbm = float(r["row"].get("추정_CBM_m3") or 0)
+        if cbm <= 0:
+            continue
+        n_total += 1
+        cbm_total += cbm
+        d = _iso_date(r.get("ship_req"))
+        if d is None:
+            continue
+        n_dated += 1
+        cbm_dated += cbm
+        y, w, _ = d.isocalendar()
+        label = f"{y}-W{w:02d}"
+        # week_start = 해당 주 월요일 (date.fromisocalendar W53/short-year ValueError 회피)
+        b = buckets.setdefault(label, {
+            "cbm": 0.0, "n": 0,
+            "week_start": (d - timedelta(days=d.weekday())).isoformat()})
+        b["cbm"] = round(b["cbm"] + cbm, 4)
+        b["n"] += 1
+    return {
+        "by_week": dict(sorted(buckets.items())),
+        "total_cbm": round(cbm_total, 4),
+        "dated_cbm": round(cbm_dated, 4),
+        "n_units": n_total,
+        "n_dated": n_dated,
+        "coverage_pct": round(cbm_dated / cbm_total * 100, 1) if cbm_total else 0.0,
+    }
+
+
+def build_d1_outbound_section(results: list[dict]) -> list[str]:
+    """D1 출하CBM 주별 사전계획 마크다운 섹션 (출하확정 14d보다 먼 사전수요)."""
+    f = weekly_outbound_forecast(results)
+    lines = ["", "## D1 출하CBM 주별 사전계획 (ship_req 출고요청일 기준)", "",
+             f"- 출하CBM 단위 {f['n_units']}개 / 날짜 확보 {f['n_dated']}개 "
+             f"(CBM 커버 {f['coverage_pct']}%) | 합계 {f['total_cbm']}m³ "
+             f"(날짜확보 {f['dated_cbm']}m³)", "",
+             "| ISO주차 | 주 시작 | 출하CBM(m³) | 단위 |",
+             "|---|---|--:|--:|"]
+    for label, b in f["by_week"].items():
+        lines.append(f"| {label} | {b['week_start']} | {b['cbm']} | {b['n']} |")
+    if not f["by_week"]:
+        lines.append("| (날짜 확보 단위 없음) | — | — | — |")
+    lines += ["", "> PropLedger 추정_CBM 기반 사전수요 — capacity_series outbound(출하확정 "
+              "14d)보다 먼 윈도우. D2 완전주문(OTIF×BOM)은 P5에서 결합."]
+    return lines
+
+
 def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
                  window_days: int):
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -215,16 +318,22 @@ def write_report(out_dir: Path, run_id: str, results: list[dict], totals: dict,
              f"(new {totals['new']} / changed {totals['changed']} / "
              f"unchanged {totals['unchanged']})",
              f"- 상태: 완결 {totals['완결']} / 부분 {totals['부분']} / "
-             f"끊김 {totals['끊김']}", "",
-             "| 전파ID | 상태 | action | 부족자재 | 입하CBM | M/H | wave | 사유 |",
-             "|---|---|---|---|---|---|---|---|"]
+             f"끊김 {totals['끊김']}"]
+    lines += build_project_board(results)
+    lines += build_d1_outbound_section(results)
+    lines += ["", "## 단위별 상세 (전파ID)", "",
+              "| 전파ID | 상태 | action | 부족자재 | 입하CBM | 출하CBM | M/H "
+              "| wave | 운임범위 | 사유 |",
+              "|---|---|---|---|--:|--:|--:|---|---|---|"]
     for r in results:
         row = r["row"]
         shortage = str(row.get("부족자재_요약") or "").replace("\n", "<br>")
         lines.append(
             f"| {row['전파ID']} | {row['전파상태']} | {r['action']} "
             f"| {shortage or '—'} | {row.get('입하CBM_예상_m3', '—')} "
+            f"| {row.get('추정_CBM_m3', '—')} "
             f"| {row.get('MH_예상_h', '—')} | {row.get('wave_프리뷰', '—')} "
+            f"| {row.get('운임_예상범위', '—')} "
             f"| {'; '.join(r['reasons']) or '—'} |")
     lines += ["", "> MRP 협력사별 부족분 묶음·Slack digest는 P6b.",
               "> 리포트는 영속 아님 — 영속 기록은 PropagationLedger (spec §3.2)."]
@@ -280,7 +389,8 @@ def main():
     print("로딩: order 미러 + PropagationLedger 최신행...", flush=True)
     orders = fetch(WMS, ORDER, wp, ["project_code", "굿즈 주문 수량 (자동)",
                                     "주문수량", "파츠명",
-                                    "굿즈코드 (from sync_itemdb)"])
+                                    "굿즈코드 (from sync_itemdb)",
+                                    "출고 요청일"])
     ledger_recs = fetch(WMS, LEDGER_TBL, wp)   # 신설 전 필드 미지정 (전 필드)
     latest = latest_ledger_by_pid(ledger_recs)
 
@@ -309,7 +419,11 @@ def main():
               f"끊김 {totals['끊김']} | INSERT 대상 {len(to_insert)} "
               f"(unchanged skip {totals['unchanged']})", flush=True)
 
-        digest = build_digest(results, totals, run_id, args.window)
+        d1 = weekly_outbound_forecast(results)
+        print(f"  D1 출하CBM 사전계획: {d1['total_cbm']}m³ / 주차 {len(d1['by_week'])}개 "
+              f"(날짜커버 {d1['coverage_pct']}%)", flush=True)
+
+        digest = build_digest(results, totals, run_id, args.window, d1=d1)
 
         if not args.write:
             write_report(out_dir, run_id, results, totals, args.window)

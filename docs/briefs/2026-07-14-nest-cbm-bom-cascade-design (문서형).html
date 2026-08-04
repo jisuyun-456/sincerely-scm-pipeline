@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>NEST CBM·BOM Cascade 설계 브리프 — 3문항 답변 (문서형)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+/* ─────────────────────────────────────────────────────────
+   DOC STYLE · "문서형" 에디토리얼 레이아웃
+   Editorial layout: left nav · article · right TOC
+   Fonts: Newsreader (serif) + Pretendard (sans) + JetBrains Mono
+   ───────────────────────────────────────────────────────── */
+
+:root{
+  --bg:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#fbfbfa;
+  --surface-3:#f4f4f2;
+  --ink:#1a1a1a;
+  --ink-2:#3a3a38;
+  --muted:#75756f;
+  --muted-2:#a8a8a2;
+  --line:#ebebe6;
+  --line-2:#f2f2ee;
+  --accent:#3b3b6e;
+  --accent-soft:#f2f2fb;
+  --highlight:#fff7c2;
+  --warn:#8a3a00;
+  --warn-soft:#fff3e6;
+  --serif:'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ── TOPBAR ─────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:rgba(255,255,255,.92);backdrop-filter:saturate(1.1) blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:14px 32px;display:flex;align-items:center;gap:20px;font-size:13px;
+}
+.topbar .mark{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:-0.01em}
+.topbar .mark .dot{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-size:10px}
+.topbar .sep{color:var(--muted-2)}
+.topbar .doc-name{color:var(--muted);font-size:13px}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--muted);font-family:var(--mono);font-size:11px}
+.topbar .right .ver{padding:2px 8px;border:1px solid var(--line);border-radius:4px}
+
+/* ── 3-COL LAYOUT ────────────────────────────────────── */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr) 220px;gap:40px;max-width:1240px;margin:0 auto;padding:32px 32px 120px}
+
+/* ── LEFT NAV ────────────────────────────────────────── */
+aside.side{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-right:12px}
+aside.side h4{font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:18px 0 8px;font-weight:600;font-family:var(--mono)}
+aside.side h4:first-child{margin-top:0}
+aside.side ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+aside.side li a{display:block;padding:5px 12px;margin-left:-1px;font-size:13.5px;color:var(--muted);border-left:1px solid transparent;transition:color .12s,border-color .12s;line-height:1.45}
+aside.side li a:hover{color:var(--ink);text-decoration:none}
+aside.side li a.active{color:var(--ink);border-left-color:var(--ink);font-weight:500}
+aside.side .cross{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+aside.side .cross a{display:flex;justify-content:space-between;align-items:center;padding:4px 0;color:var(--ink-2)}
+aside.side .cross .arr{color:var(--muted-2);font-family:var(--mono)}
+
+/* ── ARTICLE ─────────────────────────────────────────── */
+article{min-width:0;max-width:720px;margin:0 auto}
+article .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 14px}
+article h1{font-family:var(--serif);font-weight:600;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px;color:var(--ink)}
+article .lede{font-family:var(--serif);font-size:20px;line-height:1.55;color:var(--ink-2);margin:0 0 16px;font-weight:400;font-style:italic}
+article .byline{font-size:12.5px;color:var(--muted);margin-bottom:48px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono)}
+article .byline .k{color:var(--muted-2);margin-right:4px}
+
+article h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-0.015em;line-height:1.2;margin:64px 0 18px;color:var(--ink);scroll-margin-top:80px;display:flex;align-items:baseline;gap:12px;position:relative}
+article h2 .nm{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;letter-spacing:0.02em}
+article h2::before{content:"";display:block;width:40px;height:1px;background:var(--ink);position:absolute;margin-top:-22px;margin-left:0}
+
+article h3{font-family:var(--sans);font-weight:600;font-size:17px;letter-spacing:-0.005em;margin:40px 0 10px;color:var(--ink);scroll-margin-top:80px}
+article h4{font-size:13px;font-weight:600;margin:24px 0 8px;color:var(--ink-2);text-transform:uppercase;letter-spacing:0.06em;font-family:var(--mono)}
+
+article p{margin:0 0 16px;color:var(--ink-2);font-size:16px;line-height:1.75;max-width:640px}
+article p strong{color:var(--ink);font-weight:600}
+article p em{font-style:italic;color:var(--ink);font-family:var(--serif)}
+
+article code,code.inl{font-family:var(--mono);font-size:13.5px;background:var(--surface-3);padding:1px 6px;border-radius:3px;color:var(--ink);border:1px solid var(--line)}
+pre.code{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:14px 18px;color:var(--ink-2);line-height:1.65;overflow-x:auto;max-width:640px;margin:18px 0}
+pre.code .c{color:var(--accent);font-weight:500}
+pre.code .h{color:var(--muted);font-style:italic}
+
+article ul,article ol{margin:0 0 20px;padding-left:22px;color:var(--ink-2);max-width:640px}
+article ul li,article ol li{margin:6px 0;line-height:1.75}
+article ul li::marker{color:var(--muted-2)}
+article ol li::marker{color:var(--muted);font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+
+/* ── COMPONENTS ──────────────────────────────────────── */
+.pullquote{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink);border-left:2px solid var(--ink);padding:4px 0 4px 20px;margin:28px 0;font-style:italic;max-width:640px}
+.pullquote cite{display:block;font-size:12px;color:var(--muted);font-style:normal;font-family:var(--sans);margin-top:8px;font-weight:500}
+.pullquote cite::before{content:"— "}
+
+.note{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:14px 0 16px;margin:28px 0;max-width:640px}
+.note .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink);margin-bottom:6px;font-weight:600}
+.note .body{font-size:15px;line-height:1.65;color:var(--ink-2)}
+.note .body strong{color:var(--ink)}
+.note .body ul{margin:8px 0 0}
+.note.warn{border-top-color:var(--warn)}
+.note.warn .tag{color:var(--warn)}
+.note.accent{border-top-color:var(--accent)}
+.note.accent .tag{color:var(--accent)}
+
+dl.def{margin:0 0 24px;max-width:680px}
+dl.def > div{display:grid;grid-template-columns:200px 1fr;gap:20px;padding:12px 0;border-top:1px solid var(--line)}
+dl.def > div:first-child{border-top:1px solid var(--ink)}
+dl.def > div:last-child{border-bottom:1px solid var(--line)}
+dl.def dt{font-size:14px;font-weight:500;color:var(--ink);font-family:var(--mono)}
+dl.def dd{margin:0;font-size:14px;color:var(--ink-2);line-height:1.65}
+
+.formula{max-width:640px;margin:24px 0;padding:18px 22px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:13.5px;color:var(--ink);line-height:1.7;position:relative}
+.formula::before{content:"FORMULA";position:absolute;top:-10px;left:14px;background:#fff;padding:2px 8px;font-size:9.5px;letter-spacing:0.12em;color:var(--muted);border:1px solid var(--line);border-radius:3px}
+.formula .c{color:var(--accent);font-weight:500}
+.formula .em{background:var(--highlight);padding:0 4px;border-radius:2px}
+
+.tbl{margin:24px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);max-width:680px;font-size:13.5px}
+.tbl .r{display:grid;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.tbl .r:last-child{border-bottom:0}
+.tbl .h{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:500;padding-bottom:8px}
+.tbl.c2 .r{grid-template-columns:200px 1fr;gap:20px}
+.tbl.c3 .r{grid-template-columns:140px 160px 1fr;gap:18px}
+.tbl.c3-wide .r{grid-template-columns:170px 1fr 1fr;gap:18px}
+.tbl.c3-num .r{grid-template-columns:1.4fr 80px 80px;gap:16px}
+.tbl.c4 .r{grid-template-columns:140px 140px 1fr 130px;gap:14px}
+.tbl .mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:1.55}
+.tbl strong{color:var(--ink);font-weight:600}
+.tbl .num{font-family:var(--mono);font-size:12.5px;text-align:right;color:var(--ink-2)}
+.tbl .total{font-family:var(--mono);font-weight:600;color:var(--ink);border-top:1px solid var(--ink);padding-top:11px}
+.tbl .r > div{overflow-wrap:break-word}
+
+.tag-pill{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:#fff;letter-spacing:0.03em}
+.tag-pill.solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-pill.warn{background:var(--warn-soft);color:var(--warn);border-color:#e8c8a8}
+.tag-pill.accent{background:var(--accent-soft);color:var(--accent);border-color:#d8d8ee}
+
+.concepts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:24px 0;max-width:720px}
+.concept{border:1px solid var(--line);border-radius:4px;padding:18px;background:var(--surface-2);position:relative;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.concept .n{position:absolute;top:14px;right:18px;font-family:var(--serif);font-size:36px;font-weight:600;color:var(--ink);opacity:0.1;line-height:1}
+.concept .t{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line);line-height:1.3;padding-right:28px}
+.concept .t .sub{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
+
+.roadmap{margin:24px 0;max-width:720px;display:grid;gap:8px}
+.road-row{display:grid;grid-template-columns:100px 1fr;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.road-row .v{background:var(--ink);color:#fff;padding:14px 16px;font-family:var(--mono);font-size:11.5px;letter-spacing:0.05em;font-weight:500;display:flex;align-items:center}
+.road-row .d{padding:14px 18px;font-size:14px;color:var(--ink-2);line-height:1.6}
+.road-row .d strong{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+
+.src{max-width:640px;margin-top:6px;padding:10px 14px;border:1px dashed var(--muted-2);border-radius:3px;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--surface-2)}
+.src strong{color:var(--ink-2)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:680px;margin:24px 0}
+.stat{border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:var(--surface-2)}
+.stat .k{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat .v{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--ink);line-height:1;letter-spacing:-0.02em}
+.stat .v .unit{font-size:14px;color:var(--muted);font-weight:500;margin-left:4px;font-family:var(--mono)}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+.flow{max-width:640px;margin:20px 0;padding:18px 22px;background:#fff;border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+.flow .arr{color:var(--accent);font-weight:500}
+.flow strong{color:var(--ink);font-weight:600}
+
+.tree{max-width:640px;margin:20px 0;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:18px 22px}
+.tree strong{color:var(--ink);font-weight:600}
+.tree .l{color:var(--muted-2)}
+
+/* ── RIGHT TOC ────────────────────────────────────────── */
+aside.toc{position:sticky;top:64px;align-self:start;height:calc(100vh - 96px);overflow-y:auto;padding-left:12px;border-left:1px solid var(--line-2)}
+aside.toc h5{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+aside.toc ul{list-style:none;padding:0;margin:0}
+aside.toc li a{display:block;padding:3px 0;font-size:12.5px;color:var(--muted);line-height:1.5}
+aside.toc li a:hover{color:var(--ink);text-decoration:none}
+aside.toc li a.active{color:var(--ink)}
+aside.toc li.sub a{padding-left:12px;font-size:12px;color:var(--muted-2)}
+
+.dropcap::first-letter{font-family:var(--serif);font-size:56px;font-weight:600;line-height:.9;float:left;padding:6px 10px 0 0;color:var(--ink)}
+
+footer.end{max-width:720px;margin:80px auto 0;padding:24px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ── CUSTOM: GRADE TABLE (필수/권장/선택 등급표) ──────── */
+.tbl.grade .r{grid-template-columns:104px 1.05fr 1.05fr 1.2fr;gap:14px}
+.tbl.grade .r.essential{background:var(--surface-2)}
+
+@media print{
+  .topbar,aside.side,aside.toc{display:none}
+  .layout{display:block;padding:0;margin:0}
+  article{max-width:100%;padding:0 8px}
+  body{font-size:9.5pt;line-height:1.5;margin:0}
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+
+  /* 섹션 헤더는 다음 내용과 항상 같은 페이지 */
+  article h2{break-after:avoid;margin-top:20px}
+  article h3{break-after:avoid}
+
+  /* 행 단위로만 분리 방지 */
+  .tbl tr{break-inside:avoid}
+  .tbl .r{break-inside:avoid}
+  thead{display:table-header-group}
+
+  /* 작은 카드류는 통째로 유지 */
+  .stat,.formula,.concept,.flow,.road-row{break-inside:avoid}
+
+  /* 코드/다이어그램 블록: 페이지 분리 허용 (너무 길어서) */
+  pre.code{break-inside:auto;white-space:pre-wrap;word-break:break-all;font-size:7.5pt}
+
+  /* 통계 3카드 가로 유지 */
+  .stats{display:flex;gap:8px}
+
+  orphans:3;
+  widows:3;
+}
+@media (max-width:1040px){
+  .layout{grid-template-columns:220px minmax(0,1fr)}
+  aside.toc{display:none}
+}
+@media (max-width:720px){
+  .layout{grid-template-columns:1fr;gap:20px;padding:20px}
+  aside.side{position:static;height:auto}
+  .topbar{padding:12px 20px}
+  article h1{font-size:34px}
+  article h2{font-size:24px;margin-top:48px}
+  .topbar .doc-name{display:none}
+  .concepts,.stats{grid-template-columns:1fr}
+  .tbl.grade .r{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="mark"><div class="dot">SC</div> Sincerely SCM</div>
+  <span class="sep">/</span>
+  <span class="doc-name">NEST CBM·BOM Cascade 설계 브리프 — 3문항 답변</span>
+  <div class="right">
+    <span>SCM-NEST-CASCADE-DESIGN-01</span>
+    <span class="ver">v1.0 · 26.07.14</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT SIDE NAV -->
+  <aside class="side" id="nav">
+    <h4>목차</h4>
+    <ul>
+      <li><a href="#ch0">I · 요약 (3문항 → 3답변)</a></li>
+      <li><a href="#ch1">II · Part 1 — CBM 의존 체인</a></li>
+      <li><a href="#ch2">III · Part 2 — NEST 데이터 요구사항</a></li>
+      <li><a href="#ch3">IV · Part 3 — 자재팀 위치 액션 설계</a></li>
+      <li><a href="#ch4">V · 다음 단계</a></li>
+    </ul>
+    <div class="cross">
+      <a href="2026-06-24-bom-cbm-anna-kickoff-handoff.html">BOM-CBM 킥오프 핸드오프 <span class="arr">→</span></a>
+      <a href="../nest-poc-probe-20260710.md">NEST PoC 프로브 리포트 <span class="arr">→</span></a>
+    </div>
+  </aside>
+
+  <!-- ARTICLE -->
+  <article>
+
+    <div class="eyebrow">DESIGN BRIEF · NEST CBM·BOM CASCADE · 2026.07.14</div>
+    <h1>NEST CBM·BOM Cascade 설계 브리프 — 3문항 답변</h1>
+    <p class="lede">NEST API 읽기전용 PoC 실측(96.9%)과 WMS Location 실사를 근거로, CBM 체인의 구조적 요구·NEST 데이터 요구사항·자재팀 위치 액션을 설계한다.</p>
+    <div class="byline">
+      <span><span class="k">작성일</span>2026.07.14</span>
+      <span><span class="k">근거</span>NEST API PoC 32콜(07.10) + WMS Location 실사(07.14)</span>
+      <span><span class="k">용도</span>NEST팀 전달 · 안나 킥오프 안건</span>
+      <span><span class="k">작성</span>물류파트</span>
+    </div>
+
+    <!-- ─── I. 요약 ─── -->
+    <h2 id="ch0"><span class="nm">I</span>요약 (3문항 → 3답변)<span class="tag-pill solid">핵심</span></h2>
+
+    <p class="dropcap">아래 3문항에 대한 한 줄 답변을 먼저 제시하고, 각 답변의 근거는 Part 1~3에서 상세히 전개한다.</p>
+
+    <div class="tbl c3-wide">
+      <div class="r h"><div>문항</div><div>핵심 질문</div><div>한 줄 답변</div></div>
+      <div class="r">
+        <div><strong>Q1</strong></div>
+        <div>TMS Product 원본이 사실상 NEST 박스 CBM 등록이라면, 진짜 요구는 박스 CBM API 노출인가?</div>
+        <div><strong>그렇다.</strong> TMS 조인(현재 96.9% 도달)은 과도기 경로이고, 구조적 요구 = NEST 박스 스펙의 API 노출 (additive /v1.x로 가능). 노출 시 TMS Product는 대사 대상으로 강등.</div>
+      </div>
+      <div class="r">
+        <div><strong>Q2</strong></div>
+        <div>cascade 전개에 NEST가 더 줘야 하는 데이터는?</div>
+        <div><strong>필수 2건</strong>(박스 스펙 노출·견적 버전 신호) + 권장 3건 + 선택 2건. PT 자재 BOM·치수·재고·실측 CBM은 NEST 영역이 아님 — WMS가 SSOT 유지. 미수용 시 fallback = 크로스워크 사본 큐레이션.</div>
+      </div>
+      <div class="r">
+        <div><strong>Q3</strong></div>
+        <div>PT 치수 입력으로 MRP·입하 CBM이 완결되면 자재팀(베스트원/에이원)의 물류 액션은?</div>
+        <div>주문 등록 <strong>순간</strong> 발주 vs 거점간 이동(311) 분기 제안이 핵심. 3노드 네트워크(베스트원 버퍼 / 에이원 투입·임가공 / 외주 다영 등 동적 임가공지) 기준 S2.5 위치분기 레이어 설계. 선행 과제 3건 명시.</div>
+      </div>
+    </div>
+
+    <!-- ─── II. Part 1 ─── -->
+    <h2 id="ch1"><span class="nm">II</span>Part 1 — CBM 의존 체인: 진짜 요구는 "NEST 박스 CBM API 노출"</h2>
+
+    <p class="dropcap">NEST 마스터 DB에서 TMS Product를 거쳐 cascade S5까지 이어지는 현재 체인을 그대로 따라가 본다.</p>
+
+    <h3 id="ch1-1">1.1 현재 체인의 실체</h3>
+
+<pre class="code">NEST 마스터 DB                          ← 박스 스펙 "등록 원천" (사용자 확인)
+  옵션 레벨: 박스명칭(특대형 등 5종 어휘) + 박스단위(개당, 예 0.0625)
+  단품/키트 각각 별도 값 · MOQ · 견적 시점 차량 산정에 사용 중
+      │
+      │  [수기 사본 — drift 발생 지점]
+      ▼
+TMS Product 테이블                      ← cascade가 실제로 읽는 곳
+  견적코드별 박스명칭 + 박스당 제품수 (+ formula CBM ~98% 공백 → 표준표 폴백)
+      │
+      ▼
+cascade S5 출하 CBM 예측                ← 물리 굿즈 96.9% 도달 (PoC 실측)</pre>
+
+    <h4>사본 구조의 실증 (drift 증거)</h4>
+    <ul>
+      <li>단품/키트 박스 스펙을 TMS는 <strong>이름 접미로 임시 분리</strong> — <code class="inl">LSPO 로고스트랩 파우치 (대형/100)</code> vs <code class="inl">LSPH 로고스트랩 파우치 (키트) (중대형/25)</code>. NEST는 같은 것을 옵션 레벨 구조로 관리.</li>
+      <li>WMS↔TMS 코드 불일치 보정용 하드코딩 alias 8건 + 사이즈군 4건 (<code class="inl">product_alias.py</code>, "사용자 확정 2026-06-16").</li>
+      <li>TMS Product의 박스 CBM formula 필드는 ~98%가 0 (박스사이즈 미입력) — 코드의 표준표(<code class="inl">BOX_TYPE_TO_CBM_M3</code>)가 사실상 권위.</li>
+    </ul>
+
+    <h3 id="ch1-2">1.2 결론 명제</h3>
+
+    <div class="pullquote">
+      TMS Product 조인은 과도기 경로다. 구조적 요구는 NEST 박스 CBM의 API 노출이다.
+      <cite>Part 1 결론 명제</cite>
+    </div>
+
+    <p>현재 API v1.0 응답에는 부피 재료가 0개 (수량·옵션명·키트구성뿐). 옵션 문자열(<code class="inl">박스 사이즈 M</code>)로 표준 부피를 추정하는 우회도 <strong>박스당 입수량이 없어</strong> 출하 박스 수를 못 센다 — 이 빠진 조각이 정확히 NEST 마스터의 "박스단위(개당)"이다.</p>
+
+    <h3 id="ch1-3">1.3 노출 요구 스펙 초안 (NEST팀 전달용)</h3>
+
+    <p><code class="inl">quoteGoods[]</code> 각 항목에 additive 필드 추가 (하위호환 — /v1.x 배포 가능, 스키마 정책 §11 부합):</p>
+
+<pre class="code">{
+  "quoteGoodsInstanceId": "...",
+  "goodsCode": "DRCG",
+  "packaging": {
+    "standalone": { "boxName": "특대형", "boxUnitPerPiece": 0.0625 },
+    "inKit":      { "boxName": "특대형", "boxUnitPerPiece": 0.0625 }
+  }
+}</pre>
+
+    <ul>
+      <li><code class="inl">boxName</code>: 마스터의 박스 명칭 (극소형/중형/중대형/대형/특대형)</li>
+      <li><code class="inl">boxUnitPerPiece</code>: 마스터의 "박스단위(개당)" — <strong>의미론 확인 필요</strong>: 박스당 제품수의 역수(0.0625=16개/박스)인지 서면 확인</li>
+      <li><code class="inl">standalone</code>/<code class="inl">inKit</code>: 단품·키트 포장 구분 (마스터에 이미 분리 존재)</li>
+    </ul>
+
+    <h3 id="ch1-4">1.4 검증 계획 [확인 필요]</h3>
+
+    <div class="note warn">
+      <div class="tag">확인 필요 · 검증 계획</div>
+      <div class="body">
+        API 미노출 상태이므로 표본 대조는 수동으로 진행한다.
+        <ul>
+          <li>대표 굿즈 20종 — NEST 마스터 값 (NEST팀 export 또는 화면 대조) vs TMS Product 값</li>
+          <li>측정: 박스명칭 일치율 · 입수량 일치율 → <strong>drift율이 "SSOT를 NEST로 선언"의 정량 근거</strong></li>
+          <li>다른 접근: 노출이 먼저 수용되면 API로 자동 대조 가능 (검증 비용 소멸)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 id="ch1-5">1.5 노출 후 전환 시나리오</h3>
+
+    <div class="tbl c3-wide">
+      <div class="r h"><div>시점</div><div>CBM 소스</div><div>역할</div></div>
+      <div class="r">
+        <div><strong>T0 주문 등록</strong></div>
+        <div><strong>NEST packaging (노출 후)</strong> — 현재는 NEST 키 + TMS 박스스펙</div>
+        <div>S5 출하 CBM 예측 · 배차/창고 사전계획</div>
+      </div>
+      <div class="r">
+        <div><strong>T1 임가공·출하</strong></div>
+        <div>Shipment <code class="inl">최종 외박스 수량</code> (실측)</div>
+        <div><strong>확정</strong> — 정산·KPI·Total_CBM (불가침)</div>
+      </div>
+      <div class="r">
+        <div><strong>피드백</strong></div>
+        <div>실측 − 예측 오차</div>
+        <div>굿즈/키트별 포장 보정계수 학습 → 예측 수렴</div>
+      </div>
+    </div>
+
+    <p>TMS Product는 정산 레거시·대사 대상으로 강등 (즉시 폐기 아님 — 운임정산 이름매칭 경로가 소비 중).</p>
+
+    <!-- ─── III. Part 2 ─── -->
+    <h2 id="ch2"><span class="nm">III</span>Part 2 — NEST 데이터 요구사항 정의 (등급표)</h2>
+
+    <p class="dropcap">NEST에 요구할 것을 필수·권장·선택 3단계로 등급화하고, 반대로 요구하지 않을 것(대체 SSOT가 이미 확정된 영역)을 분명히 구분한다.</p>
+
+    <h3 id="ch2-1">2.1 NEST에 요구할 것</h3>
+
+    <div class="tbl grade">
+      <div class="r h"><div>등급</div><div>항목</div><div>용도</div><div>미수용 시 영향</div></div>
+      <div class="r essential">
+        <div><span class="tag-pill solid">필수 1</span></div>
+        <div><strong>박스 스펙 노출</strong> (Part 1.3 스펙)</div>
+        <div>S5 출하 CBM의 NEST 단독화</div>
+        <div>TMS 조인 유지 (96.9% — 운영 가능하나 사본 drift 상존)</div>
+      </div>
+      <div class="r essential">
+        <div><span class="tag-pill solid">필수 2</span></div>
+        <div><strong>견적 버전 신호</strong> (<code class="inl">updatedAt</code> 또는 version)</div>
+        <div>견적 변경 감지 → 재조회(T2)</div>
+        <div>콘텐츠 해시 자체 구현으로 대체 (비용↑, 이미 설계됨)</div>
+      </div>
+      <div class="r">
+        <div><span class="tag-pill accent">권장 3</span></div>
+        <div>벌크 굿즈 카탈로그 endpoint</div>
+        <div>크로스워크 자동 시딩, 프로젝트 단위 조회 한계 해소</div>
+        <div>프로젝트별 축적(accretion)으로 대체 — forward-only엔 지장 없음</div>
+      </div>
+      <div class="r">
+        <div><span class="tag-pill accent">권장 4</span></div>
+        <div>박스 마스터 (박스명칭→치수·부피)</div>
+        <div>표준표(<code class="inl">BOX_TYPE_TO_CBM_M3</code>) 이중화 제거</div>
+        <div>코드 표준표 유지 (관리 지점 2개)</div>
+      </div>
+      <div class="r">
+        <div><span class="tag-pill accent">권장 5</span></div>
+        <div><code class="inl">expectedReleaseDate</code> null 정책 확약</div>
+        <div>S5 출고 forward 앵커 보조</div>
+        <div>현행 order <code class="inl">출고 요청일</code> 유지</div>
+      </div>
+      <div class="r">
+        <div><span class="tag-pill">선택 6</span></div>
+        <div>견적 확정 웹훅</div>
+        <div>cron 대기 없이 즉시 트리거</div>
+        <div>cron 3×/day로 충분 (현행)</div>
+      </div>
+      <div class="r">
+        <div><span class="tag-pill">선택 7</span></div>
+        <div>MOQ 노출</div>
+        <div>참고 정보</div>
+        <div>영향 없음</div>
+      </div>
+    </div>
+
+    <h3 id="ch2-2">2.2 NEST에 요구하지 않을 것 (대체 SSOT 확정 유지)</h3>
+
+    <div class="tbl c3-wide">
+      <div class="r h"><div>데이터</div><div>SSOT</div><div>상태·과제</div></div>
+      <div class="r">
+        <div>PT 자재 BOM·소요량_개당</div>
+        <div><strong>WMS_BOM</strong></div>
+        <div>연쇄 성공률 90.8% · 검증완료 7% → 검증 캠페인 (안나 협업, NEST 키트 합계로 교차검증 가능)</div>
+      </div>
+      <div class="r">
+        <div>파츠(PT) 치수 → 입하 CBM</div>
+        <div><strong>sync_parts</strong></div>
+        <div>사용자 입력 진행 예정 — 완결률 9%의 병목, 갭의 77% (top-100 PT 우선)</div>
+      </div>
+      <div class="r">
+        <div>재고</div>
+        <div><strong>InventoryLedger</strong></div>
+        <div>운영 중</div>
+      </div>
+      <div class="r">
+        <div>실측 CBM</div>
+        <div><strong>Shipment 최종 외박스 수량</strong></div>
+        <div>운영 중 (임가공팀 기재) — 확정값</div>
+      </div>
+      <div class="r">
+        <div>주문 수량</div>
+        <div><strong>WMS order</strong></div>
+        <div>NEST 견적수량은 대사 신호로만 (실측 median Δ 0.0%)</div>
+      </div>
+    </div>
+
+    <h3 id="ch2-3">2.3 Fallback — 요구 미수용 시의 "다른 SSOT 방향"</h3>
+
+    <p>필수 1·2가 거절될 경우: <strong>경로 B — Airtable 큐레이션 레이어가 박스 스펙 SSOT</strong></p>
+    <ul>
+      <li>박스명칭·입수량을 WMS 크로스워크/ItemMaster에 사본 큐레이션 (기계 제안=미검증, 확정 승급=대사+안나 승인)</li>
+      <li>장점: 런타임 TMS 의존 제거, 우리 통제권. 단점: 수기 관리 부담이 물류로 이전 — NEST 마스터와의 drift를 우리가 떠안음</li>
+    </ul>
+
+    <div class="note accent">
+      <div class="tag">결정 필요</div>
+      <div class="body">킥오프 L0~L2 "신규 SSOT (백엔드 TBD)" 논의의 실질 안건 — <strong>안나 회의에서 경로 A(NEST 노출) vs B(큐레이션) 결정 필요</strong>.</div>
+    </div>
+
+    <!-- ─── IV. Part 3 ─── -->
+    <h2 id="ch3"><span class="nm">IV</span>Part 3 — 자재팀 위치 액션 설계 (베스트원/에이원)</h2>
+
+    <p class="dropcap">PT 치수 입력으로 MRP·입하 CBM이 완결되는 시점을 가정하고, 그 다음 물류 액션 — 발주 vs 이동 분기 — 을 3노드 네트워크 기준으로 설계한다.</p>
+
+    <h3 id="ch3-1">3.1 3노드 네트워크 모델 (사용자 확정 운영 규칙)</h3>
+
+<pre class="code">베스트원 (보관 버퍼)          에이원센터 (1차 투입 + ASSEMBLY)      외주 임가공지 (다영기획 등)
+STORAGE×2 · IB/OB staging     STORAGE · IB/OB staging · ASSEMBLY   Location 테이블 밖 (외부)
+QC_HOLD · QUARANTINE          Max_CBM: IB 57.6m³ (유일 실측)       프로젝트별 동적 지정
+      │                              │  ▲                                ▲
+      │ ③ 보충 이동(311) ──────────→ │  │                                │
+      │ ② 직입하 ────────────────────┼──┼────────────────────────────────┤
+      │                              │  └── ① 재이동 (투입분 회수) ──────┘</pre>
+
+    <ul>
+      <li>임가공지는 <strong>프로젝트별 동적</strong> — 에이원 지정 후 다영으로 변경되는 케이스 실존</li>
+      <li>이동 패턴 3종: ① 에이원→다영 재이동 (투입했던 자재 회수 이동) ② 베스트원→다영 <strong>직입하</strong> ③ 베스트원→에이원 보충</li>
+      <li>베스트원 = 보관창고(버퍼), 에이원 = 기본 투입지 (ASSEMBLY 보유)</li>
+    </ul>
+
+    <h3 id="ch3-2">3.2 S2.5 위치분기 레이어 스펙 (설계 — 구현은 후속 phase)</h3>
+
+    <h4>위치</h4>
+    <p>cascade S2(MRP) 직후, S3 앞. 순수 함수 레이어 — <code class="inl">CascadeContext</code> 주입 패턴 준수.</p>
+
+    <h4>입력</h4>
+    <ul>
+      <li><code class="inl">net_requirements</code> 결과: PT별 gross·재고·shortfall (기존)</li>
+      <li><code class="inl">stock_rows</code>의 <strong>warehouse별 분해</strong> — 데이터 이미 존재 (<code class="inl">order_cascade.py:147-167</code>이 Location→Warehouse 로드, 현재는 거점 합산 차감만 함)</li>
+      <li><strong>임가공 목적지</strong> (프로젝트별 입력값 — 기본 에이원, 변경 시 다영 등) [확인 필요: 이 정보가 pkg_schedule/order 어느 필드에 있는지 스키마 실사]</li>
+    </ul>
+
+    <h4>판정 로직 (PT별)</h4>
+    <div class="tbl c3">
+      <div class="r h"><div>케이스</div><div>조건</div><div>제안 액션</div></div>
+      <div class="r">
+        <div><strong>A</strong></div>
+        <div>전 거점 재고 0</div>
+        <div><strong>발주 제안</strong> (PT×수량 발주서 초안)</div>
+      </div>
+      <div class="r">
+        <div><strong>B</strong></div>
+        <div>목적지 부족 &amp; 타 거점 보유</div>
+        <div><strong>이동 제안</strong> (from→to×수량, 이동유형 311) — 패턴 ①②③ 중 해당</div>
+      </div>
+      <div class="r">
+        <div><strong>C</strong></div>
+        <div>분산 보유 &amp; 합계 충분</div>
+        <div>통합 이동 제안</div>
+      </div>
+      <div class="r">
+        <div><strong>D</strong></div>
+        <div>분산 보유 &amp; 합계 부족</div>
+        <div>통합 이동 + 잔여 발주 (혼합)</div>
+      </div>
+    </div>
+
+    <h4>출력</h4>
+    <p>1단계는 digest/리포트 텍스트만 — PropagationLedger 필드 추가 없음 (INSERT-only 원칙, 필드 신설은 검증 후 cutover 단계). 이동/발주의 실제 기표는 사람이 수행 (제안 자동화 → 기표 자동화는 별도 단계).</p>
+
+    <h3 id="ch3-3">3.3 자재팀 액션 카탈로그 (주문 등록 시점 타임라인)</h3>
+
+    <div class="tbl c4">
+      <div class="r h"><div>시점</div><div>액션</div><div>근거 데이터</div><div>상태</div></div>
+      <div class="r">
+        <div>주문 등록 즉시</div>
+        <div><strong>발주 vs 이동 분기 제안</strong> 수신 → 발주서/이동지시 초안 확정</div>
+        <div>S2.5 (신설)</div>
+        <div><span class="tag-pill">설계</span></div>
+      </div>
+      <div class="r">
+        <div>등록 +즉시</div>
+        <div>입하처 권고 (베스트원 vs 에이원)</div>
+        <div>S3 입하 CBM + zone별 Max_CBM</div>
+        <div><span class="tag-pill warn">Max_CBM 실측 선행 필요</span></div>
+      </div>
+      <div class="r">
+        <div>입하 예정일</div>
+        <div>도크 슬롯·검수 인력 배치</div>
+        <div>S3 M/H 예측 (PT 치수 입력 후 완결)</div>
+        <div><span class="tag-pill warn">치수 입력 대기</span></div>
+      </div>
+      <div class="r">
+        <div>생산 착수 전</div>
+        <div>임가공지 변경 시 재이동/직입하 지시</div>
+        <div>S2.5 목적지 변수 갱신 → 재실행</div>
+        <div><span class="tag-pill">설계</span></div>
+      </div>
+      <div class="r">
+        <div>상시</div>
+        <div>반복 부족 PT → ROP/안전재고 후보 리포트</div>
+        <div>PropagationLedger 부족자재_요약 누적</div>
+        <div><span class="tag-pill">설계 (P5 연계)</span></div>
+      </div>
+      <div class="r">
+        <div>상시</div>
+        <div>투입 정합 감시 (미착수 의심·과잉투입 알람)</div>
+        <div><code class="inl">material_alert.py</code></div>
+        <div><span class="tag-pill solid">기가동</span><br><span style="font-size:11px;color:var(--muted)">실적: 미착수 19 · 과잉 7</span></div>
+      </div>
+    </div>
+
+    <h3 id="ch3-4">3.4 선행 데이터 과제 3건</h3>
+
+    <div class="tbl c4">
+      <div class="r h"><div>#</div><div>과제</div><div>담당</div><div>비고</div></div>
+      <div class="r">
+        <div><strong>1</strong></div>
+        <div><strong>베스트원·잔여 zone Max_CBM 실측 입력</strong> — 현재 에이원 IB(57.6m³)만 실측, 나머지 전부 0</div>
+        <div>자재팀/물류</div>
+        <div>기존 P5 백로그 "베스트원 ST Max_CBM 실측"과 동일 항목 → 승격. 없으면 입하처 권고 불가</div>
+      </div>
+      <div class="r">
+        <div><strong>2</strong></div>
+        <div><strong>PT 치수(sync_parts 규격) 입력</strong> — top-100 PT 우선</div>
+        <div>사용자 (진행 예정)</div>
+        <div>완결률 9% → ~40%대 추정 (기존 H1 분석). S3·입하처·M/H의 전제</div>
+      </div>
+      <div class="r">
+        <div><strong>3</strong></div>
+        <div><strong>임가공 목적지 필드 확인</strong> — 프로젝트별 임가공지(에이원/다영 등)가 어느 테이블·필드에 기록되는지 실사</div>
+        <div>물류 (다음 세션)</div>
+        <div>인수인계서에 "다영→베스트원 이동" 운영 사례 존재. 없으면 신설 검토 (스키마 변경은 별도 승인)</div>
+      </div>
+    </div>
+
+    <!-- ─── V. 다음 단계 ─── -->
+    <h2 id="ch4"><span class="nm">V</span>다음 단계</h2>
+
+    <div class="roadmap">
+      <div class="road-row">
+        <div class="v">1</div>
+        <div class="d"><strong>NEST팀 전달</strong>Part 1.3 노출 스펙 + Part 2.1 등급표 (+ PoC 리포트 §5 질의 6건과 병합)</div>
+      </div>
+      <div class="road-row">
+        <div class="v">2</div>
+        <div class="d"><strong>안나 킥오프 안건</strong>경로 A(NEST 노출) vs B(큐레이션) SSOT 결정 (Part 2.3)</div>
+      </div>
+      <div class="road-row">
+        <div class="v">3</div>
+        <div class="d"><strong>자재팀</strong>선행 과제 1·2 착수 (Max_CBM 실측 · PT 치수)</div>
+      </div>
+      <div class="road-row">
+        <div class="v">4</div>
+        <div class="d"><strong>물류 (다음 세션)</strong>임가공 목적지 필드 실사 → S2.5 위치분기 구현 계획 (P1 nest_sync와 병행 여부 결정)</div>
+      </div>
+    </div>
+
+    <div class="src"><strong>출처</strong> · <a href="../nest-poc-probe-20260710.md">NEST PoC 프로브 리포트</a> (2026-07-10, 32콜 읽기전용) · WMS Location 실사 2026-07-14 (10 locations) · CBM 백본 체인 실적 (2026-06)</div>
+
+    <footer class="end">
+      <span>작성: 물류파트 · 2026.07.14 · SCM-NEST-CASCADE-DESIGN-01 · v1.0</span>
+      <span>END OF DOCUMENT</span>
+    </footer>
+
+  </article>
+
+  <!-- RIGHT TOC -->
+  <aside class="toc" id="toc">
+    <h5>이 문서 안에서</h5>
+    <ul>
+      <li><a href="#ch0">I. 요약 (3문항 → 3답변)</a></li>
+      <li><a href="#ch1">II. Part 1 — CBM 의존 체인</a></li>
+      <li class="sub"><a href="#ch1-1">1.1 현재 체인의 실체</a></li>
+      <li class="sub"><a href="#ch1-2">1.2 결론 명제</a></li>
+      <li class="sub"><a href="#ch1-3">1.3 노출 요구 스펙 초안</a></li>
+      <li class="sub"><a href="#ch1-4">1.4 검증 계획</a></li>
+      <li class="sub"><a href="#ch1-5">1.5 전환 시나리오</a></li>
+      <li><a href="#ch2">III. Part 2 — NEST 데이터 요구사항</a></li>
+      <li class="sub"><a href="#ch2-1">2.1 요구할 것 (등급표)</a></li>
+      <li class="sub"><a href="#ch2-2">2.2 요구하지 않을 것</a></li>
+      <li class="sub"><a href="#ch2-3">2.3 Fallback</a></li>
+      <li><a href="#ch3">IV. Part 3 — 자재팀 위치 액션</a></li>
+      <li class="sub"><a href="#ch3-1">3.1 3노드 네트워크 모델</a></li>
+      <li class="sub"><a href="#ch3-2">3.2 S2.5 위치분기 레이어</a></li>
+      <li class="sub"><a href="#ch3-3">3.3 액션 카탈로그</a></li>
+      <li class="sub"><a href="#ch3-4">3.4 선행 데이터 과제</a></li>
+      <li><a href="#ch4">V. 다음 단계</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<script>
+  (function(){
+    const navLinks = document.querySelectorAll('#nav a[href^="#"], #toc a[href^="#"]');
+    const sections = [...document.querySelectorAll('article h2[id], article h3[id]')];
+    function setActive(){
+      const y = window.scrollY + 100;
+      let current = sections[0];
+      for(const s of sections){ if(s.offsetTop <= y) current = s; }
+      if(!current) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current.id));
+    }
+    window.addEventListener('scroll', setActive, {passive:true});
+    setActive();
+  })();
+</script>
+
+</body>
+</html>

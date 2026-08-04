@@ -31,7 +31,6 @@ Method B (Cycle Time):
 
 import argparse
 import datetime
-import math
 import os
 import re
 import statistics
@@ -60,6 +59,7 @@ PUTAWAY_PER_CBM_MIN = 7.0
 QC_STD_PER_PROJECT = 2.5
 
 CYCLE_MAX_MIN = 180.0   # 인터벌 이상치 필터: 180분 초과는 유휴 오염으로 제외
+CYCLE_MIN_MIN = -10.0  # 입고 한정: 입고수량입력이 입하완료 전에 기록되는 패턴 허용 (실측 -4분 이내)
 
 # ── Airtable 설정 ──────────────────────────────────────────────────────────────
 IBSA_BASE  = "app6DGHCPI3Yh3IFS"
@@ -266,6 +266,8 @@ def aggregate(records, sync_parts):
         "입고_intervals": [],
         "검수_fallback_count": 0,
         "입고_fallback_count": 0,
+        "검수_qty_pairs": [],          # (qty, actual_min) — cycle-time 기반 qty 정규화용
+        "입고_qty_pairs": [],
     })
 
     for rec in records:
@@ -294,12 +296,16 @@ def aggregate(records, sync_parts):
         ts_검수 = fields.get(F["시안검수완료시간"])
         ts_입고 = fields.get(F["입고수량입력시간"])
 
+        qty = float(fields.get(F["입하수량"]) or 0)
+
         # 검수 interval
         if ts_입하 and ts_검수:
             d = diff_min(ts_입하, ts_검수)
             if d is not None and 0 < d < CYCLE_MAX_MIN:
                 w["검수_intervals"].append(d)
                 w["B_검수"] += d
+                if qty >= 5:
+                    w["검수_qty_pairs"].append((qty, d))
             else:
                 w["B_검수"] += QC_STD_PER_PROJECT * PFD_ALLOWANCE
                 w["검수_fallback_count"] += 1
@@ -308,11 +314,15 @@ def aggregate(records, sync_parts):
             w["검수_fallback_count"] += 1
 
         # 입고 interval (병렬 — 시작 = 입하완료처리시간)
+        # CYCLE_MIN_MIN < d: 입고수량입력이 입하완료 전 기록되는 패턴 허용 (-10분까지)
         if ts_입하 and ts_입고:
             d = diff_min(ts_입하, ts_입고)
-            if d is not None and 0 < d < CYCLE_MAX_MIN:
-                w["입고_intervals"].append(d)
-                w["B_입고"] += d
+            if d is not None and CYCLE_MIN_MIN < d < CYCLE_MAX_MIN:
+                actual_d = abs(d)  # 음수(동시 처리) → 절대값으로 M/H 계산
+                w["입고_intervals"].append(actual_d)
+                w["B_입고"] += actual_d
+                if qty >= 5:
+                    w["입고_qty_pairs"].append((qty, actual_d))
             else:
                 w["B_입고"] += putaway_mh(cbm)
                 w["입고_fallback_count"] += 1
@@ -321,6 +331,53 @@ def aggregate(records, sync_parts):
             w["입고_fallback_count"] += 1
 
     return weekly
+
+
+# ── PT코드별 cycle-time 집계 ───────────────────────────────────────────────────
+def aggregate_by_pt(records):
+    """
+    PT코드별 검수·입고 cycle-time (qty, actual_min) 쌍 수집.
+    qty < 5인 레코드는 제외 (소량 특이값 방지).
+    Returns: dict[pt_code] -> {"검수": [(qty, min), ...], "입고": [(qty, min), ...]}
+    """
+    pt = defaultdict(lambda: {"검수": [], "입고": []})
+
+    for rec in records:
+        fields = rec.get("fields", {})
+        pt_code = extract_pt_code(fields.get(F["입하예정물품"]))
+        if not pt_code:
+            continue
+        qty = float(fields.get(F["입하수량"]) or 0)
+        if qty < 5:
+            continue
+
+        ts_입하 = fields.get(F["입하완료처리시간"])
+        ts_검수 = fields.get(F["시안검수완료시간"])
+        ts_입고 = fields.get(F["입고수량입력시간"])
+
+        if ts_입하 and ts_검수:
+            d = diff_min(ts_입하, ts_검수)
+            if d is not None and 0 < d < CYCLE_MAX_MIN:
+                pt[pt_code]["검수"].append((qty, d))
+
+        if ts_입하 and ts_입고:
+            d = diff_min(ts_입하, ts_입고)
+            if d is not None and CYCLE_MIN_MIN < d < CYCLE_MAX_MIN:
+                pt[pt_code]["입고"].append((qty, abs(d)))
+
+    return pt
+
+
+def _rate_p50(pairs):
+    """(qty, min) 쌍 목록 → 분/100개 p50. 쌍이 없으면 None."""
+    rates = [m / q * 100 for q, m in pairs if q > 0]
+    return statistics.median(rates) if rates else None
+
+
+def _min_p50(pairs):
+    """(qty, min) 쌍 목록 → 실측분 p50."""
+    mins = [m for _, m in pairs]
+    return statistics.median(mins) if mins else None
 
 
 # ── 리포트 생성 ────────────────────────────────────────────────────────────────
@@ -348,92 +405,85 @@ def build_report(weekly, args_since):
                               "건수","cbm_sum"]}
     tot["검수_intervals"] = []
     tot["입고_intervals"] = []
+    tot["검수_qty_pairs"] = []
+    tot["입고_qty_pairs"] = []
 
     # 주차별 테이블
-    lines.append("## 주차별 집계")
+    lines.append("## 주차별 집계 (검수·입고: cycle-time 실측 | 입하: CBM-driven)")
     lines.append("")
     header = ("| 주차 | 건수 | CBM합계 "
-              "| A_입하 | A_검수 | A_입고 | **A_합계** "
-              "| B_입하 | B_검수 | B_입고 | **B_합계** "
-              "| 검수p50 | 입고p50 "
+              "| 입하(CBM) | 검수p50(분) | 검수p50(분/100개) | 입고p50(분) | 입고p50(분/100개) "
               "| 검수커버리지 | 입고커버리지 |")
     sep    = ("|------|------|---------|"
-              "--------|--------|--------|-----------|"
-              "--------|--------|--------|-----------|"
-              "---------|---------|"
+              "-----------|------------|-----------------|------------|-----------------|"
               "------------|------------|")
     lines.append(header)
     lines.append(sep)
 
     for wk in weeks:
         w = weekly[wk]
-        n    = w["건수"]
-        cbm  = w["cbm_sum"]
+        n   = w["건수"]
+        cbm = w["cbm_sum"]
 
-        a_recv = w["A_입하"]
-        a_qc   = len(w["A_검수_projects"]) * QC_STD_PER_PROJECT * PFD_ALLOWANCE
-        a_put  = w["A_입고"]
-        a_tot  = a_recv + a_qc + a_put
-
-        b_recv = w["B_입하"]
-        b_qc   = w["B_검수"]
-        b_put  = w["B_입고"]
-        b_tot  = b_recv + b_qc + b_put
+        a_recv_h = w["A_입하"] / 60
 
         qc_intervals = w["검수_intervals"]
         pa_intervals = w["입고_intervals"]
-        qc_p50 = f"{statistics.median(qc_intervals):.1f}" if qc_intervals else "—"
-        pa_p50 = f"{statistics.median(pa_intervals):.1f}" if pa_intervals else "—"
+        qc_p50_min  = f"{statistics.median(qc_intervals):.1f}" if qc_intervals else "—"
+        pa_p50_min  = f"{statistics.median(pa_intervals):.1f}" if pa_intervals else "—"
+
+        qc_rate = _rate_p50(w["검수_qty_pairs"])
+        pa_rate = _rate_p50(w["입고_qty_pairs"])
+        qc_p50_rate = f"{qc_rate:.2f}" if qc_rate is not None else "—"
+        pa_p50_rate = f"{pa_rate:.2f}" if pa_rate is not None else "—"
 
         qc_cov = len(qc_intervals) / n * 100 if n else 0
         pa_cov = len(pa_intervals) / n * 100 if n else 0
 
         lines.append(
             f"| {wk} | {n} | {cbm:.1f} "
-            f"| {a_recv/60:.2f} | {a_qc/60:.2f} | {a_put/60:.2f} | **{a_tot/60:.2f}** "
-            f"| {b_recv/60:.2f} | {b_qc/60:.2f} | {b_put/60:.2f} | **{b_tot/60:.2f}** "
-            f"| {qc_p50} | {pa_p50} "
+            f"| {a_recv_h:.2f}h | {qc_p50_min} | {qc_p50_rate} | {pa_p50_min} | {pa_p50_rate} "
             f"| {qc_cov:.0f}% | {pa_cov:.0f}% |"
         )
 
         # 누적
         tot["건수"]   += n
         tot["cbm_sum"] += cbm
-        tot["A_입하"] += a_recv; tot["A_검수"] += a_qc; tot["A_입고"] += a_put
-        tot["B_입하"] += b_recv; tot["B_검수"] += b_qc; tot["B_입고"] += b_put
+        tot["A_입하"] += w["A_입하"]
         tot["검수_intervals"].extend(qc_intervals)
         tot["입고_intervals"].extend(pa_intervals)
+        tot["검수_qty_pairs"].extend(w["검수_qty_pairs"])
+        tot["입고_qty_pairs"].extend(w["입고_qty_pairs"])
 
     # 합계 행
-    a_tot_all = tot["A_입하"] + tot["A_검수"] + tot["A_입고"]
-    b_tot_all = tot["B_입하"] + tot["B_검수"] + tot["B_입고"]
+    tot_n      = tot["건수"]
     qc_p50_all = f"{statistics.median(tot['검수_intervals']):.1f}" if tot["검수_intervals"] else "—"
     pa_p50_all = f"{statistics.median(tot['입고_intervals']):.1f}" if tot["입고_intervals"] else "—"
-    tot_n = tot["건수"]
+    qc_rate_all = _rate_p50(tot["검수_qty_pairs"])
+    pa_rate_all = _rate_p50(tot["입고_qty_pairs"])
+    qc_rate_str = f"{qc_rate_all:.2f}" if qc_rate_all is not None else "—"
+    pa_rate_str = f"{pa_rate_all:.2f}" if pa_rate_all is not None else "—"
     qc_cov_all = len(tot["검수_intervals"]) / tot_n * 100 if tot_n else 0
     pa_cov_all = len(tot["입고_intervals"]) / tot_n * 100 if tot_n else 0
     lines.append(
         f"| **합계** | **{tot_n}** | **{tot['cbm_sum']:.1f}** "
-        f"| **{tot['A_입하']/60:.1f}** | **{tot['A_검수']/60:.1f}** | **{tot['A_입고']/60:.1f}** | **{a_tot_all/60:.1f}** "
-        f"| **{tot['B_입하']/60:.1f}** | **{tot['B_검수']/60:.1f}** | **{tot['B_입고']/60:.1f}** | **{b_tot_all/60:.1f}** "
-        f"| {qc_p50_all} | {pa_p50_all} "
+        f"| **{tot['A_입하']/60:.1f}h** | **{qc_p50_all}** | **{qc_rate_str}** | **{pa_p50_all}** | **{pa_rate_str}** "
         f"| {qc_cov_all:.0f}% | {pa_cov_all:.0f}% |"
     )
 
     lines.append("")
-    lines.append("> MH 단위는 **시간(h)**. 검수·입고 커버리지 = 유효 타임스탬프 보유 레코드 비율.")
+    lines.append("> **입하**: CBM-driven 영구 표준 (h). **검수·입고**: cycle-time 실측 — p50(분) / p50(분/100개).")
+    lines.append("> 커버리지 = 유효 타임스탬프 보유 레코드 비율. qty < 5 레코드는 rate 산출 제외.")
     lines.append("")
 
     # 요약 섹션
-    diff_pct = (b_tot_all - a_tot_all) / a_tot_all * 100 if a_tot_all else 0
-    lines.append("## 방식별 요약 비교")
+    lines.append("## 운영 방식 요약")
     lines.append("")
-    lines.append("| 구분 | Method A (CBM-driven) | Method B (Cycle Time) | 차이 |")
-    lines.append("|------|----------------------|----------------------|------|")
-    lines.append(f"| 입하 MH | {tot['A_입하']/60:.1f}h | {tot['B_입하']/60:.1f}h | 동일 (CBM) |")
-    lines.append(f"| 검수 MH | {tot['A_검수']/60:.1f}h | {tot['B_검수']/60:.1f}h | {(tot['B_검수']-tot['A_검수'])/60:+.1f}h |")
-    lines.append(f"| 입고 MH | {tot['A_입고']/60:.1f}h | {tot['B_입고']/60:.1f}h | {(tot['B_입고']-tot['A_입고'])/60:+.1f}h |")
-    lines.append(f"| **합계** | **{a_tot_all/60:.1f}h** | **{b_tot_all/60:.1f}h** | **{diff_pct:+.1f}%** |")
+    lines.append("| 공정 | 방식 | 기준값 | 비고 |")
+    lines.append("|------|------|--------|------|")
+    lines.append(f"| 입하 | CBM-driven (영구) | {RECEIVING_MIN_PER_CBM} min/CBM × PFD | 시작 타임스탬프 없음 |")
+    lines.append(f"| 검수 | cycle-time 실측 | p50 {qc_p50_all}분 / {qc_rate_str}분/100개 | PT코드별 모델로 진화 예정 |")
+    lines.append(f"| 입고 | cycle-time 실측 | p50 {pa_p50_all}분 / {pa_rate_str}분/100개 | PT코드별 모델로 진화 예정 |")
     lines.append("")
     lines.append("## 상수 (이번 버전)")
     lines.append("```")
@@ -447,6 +497,69 @@ def build_report(weekly, args_since):
     lines.append(f"CYCLE_MAX_MIN           = {CYCLE_MAX_MIN}   min (이상치 필터)")
     lines.append("```")
 
+    return "\n".join(lines)
+
+
+# ── PT코드별 리포트 ────────────────────────────────────────────────────────────
+def build_pt_report(pt_data):
+    """
+    PT코드별 검수·입고 cycle-time 집계 → Markdown 테이블.
+    N≥30 ✅ / N 10-29 ⚠️ / N<10 ❌
+    관측 수 기준 내림차순 정렬 (검수N + 입고N 합산).
+    """
+    rows = []
+    for pt_code, d in pt_data.items():
+        qc_pairs = d["검수"]
+        pa_pairs = d["입고"]
+        qc_n = len(qc_pairs)
+        pa_n = len(pa_pairs)
+        if qc_n == 0 and pa_n == 0:
+            continue
+        rows.append({
+            "pt": pt_code,
+            "qc_n": qc_n,
+            "qc_p50_min":  _min_p50(qc_pairs),
+            "qc_p50_rate": _rate_p50(qc_pairs),
+            "pa_n": pa_n,
+            "pa_p50_min":  _min_p50(pa_pairs),
+            "pa_p50_rate": _rate_p50(pa_pairs),
+        })
+
+    rows.sort(key=lambda r: r["qc_n"] + r["pa_n"], reverse=True)
+
+    def status(n_qc, n_pa):
+        n = min(n_qc, n_pa) if n_qc and n_pa else max(n_qc, n_pa)
+        if n >= 30:
+            return "✅"
+        if n >= 10:
+            return "⚠️"
+        return "❌"
+
+    def fmt(v, decimals=2):
+        return f"{v:.{decimals}f}" if v is not None else "—"
+
+    lines = []
+    lines.append("## PT코드별 cycle-time 집계 (검수·입고)")
+    lines.append("")
+    lines.append("> 입하는 CBM-driven 영구 표준. 검수·입고만 cycle-time 운영 대상.")
+    lines.append("> ✅ N≥30 → 운영 기준 즉시 사용 가능 | ⚠️ N 10-29 → 수집 중 | ❌ N<10 → 데이터 부족")
+    lines.append("")
+    lines.append("| 상태 | PT코드 | 검수N | 검수p50(분) | 검수p50(분/100개) | 입고N | 입고p50(분) | 입고p50(분/100개) |")
+    lines.append("|------|--------|-------|------------|-----------------|-------|------------|-----------------|")
+
+    ready_count = 0
+    for r in rows:
+        st = status(r["qc_n"], r["pa_n"])
+        if st == "✅":
+            ready_count += 1
+        lines.append(
+            f"| {st} | {r['pt']} "
+            f"| {r['qc_n']} | {fmt(r['qc_p50_min'], 1)} | {fmt(r['qc_p50_rate'])} "
+            f"| {r['pa_n']} | {fmt(r['pa_p50_min'], 1)} | {fmt(r['pa_p50_rate'])} |"
+        )
+
+    lines.append("")
+    lines.append(f"> **운영 기준 사용 가능 PT코드**: {ready_count}개 (N≥30 기준)")
     return "\n".join(lines)
 
 
@@ -465,46 +578,38 @@ def main():
     print(f"  dry-run:  {args.dry_run}")
     print()
 
-    print("[1/4] sync_parts 로드...")
+    print("[1/5] sync_parts 로드...")
     sync_parts = load_sync_parts()
     print(f"      loaded {len(sync_parts)} parts")
 
-    print(f"[2/4] IBSA records 조회 (since={args.since})...")
+    print(f"[2/5] IBSA records 조회 (since={args.since})...")
     records = fetch_ibsa_records(since=args.since, limit=args.limit)
     print(f"      {len(records)} records")
     if not records:
         print("데이터 없음 — 종료")
         return
 
-    print("[3/4] 집계 중...")
+    print("[3/5] 주차별 집계...")
     weekly = aggregate(records, sync_parts)
     print(f"      {len(weekly)} 주차")
 
-    # 검증 샘플 출력
-    print("\n  [preview] 처음 3개 레코드:")
-    for r in records[:3]:
-        f = r.get("fields", {})
-        cbm = cbm_for_record(f, sync_parts)
-        ts_in = f.get(F["입하완료처리시간"])
-        ts_qc = f.get(F["시안검수완료시간"])
-        ts_pa = f.get(F["입고수량입력시간"])
-        d_qc = diff_min(ts_in, ts_qc) if ts_in and ts_qc else None
-        d_pa = diff_min(ts_in, ts_pa) if ts_in and ts_pa else None
-        print(f"    {r['id']}: CBM={cbm:.4f} "
-              f"A_recv={receiving_mh(cbm):.2f}분 "
-              f"검수Δ={f'{d_qc:.1f}분' if d_qc else '—'} "
-              f"입고Δ={f'{d_pa:.1f}분' if d_pa else '—'}")
+    print("[4/5] PT코드별 집계...")
+    pt_data = aggregate_by_pt(records)
+    ready = sum(1 for d in pt_data.values()
+                if min(len(d["검수"]), len(d["입고"])) >= 30)
+    print(f"      {len(pt_data)} PT코드 / ✅ 운영 가능 {ready}개 (N≥30)")
 
-    print("\n[4/4] 리포트 생성...")
-    report = build_report(weekly, args.since)
+    print("[5/5] 리포트 생성...")
+    today = datetime.date.today().isoformat()
+    report = build_report(weekly, args.since) + "\n\n" + build_pt_report(pt_data)
 
     if args.dry_run:
         print("\n--- REPORT PREVIEW (dry-run) ---")
-        print(report[:3000])
-        if len(report) > 3000:
+        print(report[:4000])
+        if len(report) > 4000:
             print(f"... (총 {len(report)}자)")
     else:
-        out_path = Path("outputs") / "MH_dual_W01-W21_2026.md"
+        out_path = Path("outputs") / f"MH_cycle_time_{today}.md"
         out_path.parent.mkdir(exist_ok=True)
         out_path.write_text(report, encoding="utf-8")
         print(f"  → {out_path} 저장 완료")

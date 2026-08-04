@@ -40,8 +40,12 @@ def staging_warnings(results: list[dict]) -> list[tuple[str, float]]:
 
 
 def build_digest(results: list[dict], totals: dict, run_id: str,
-                 window_days: int, top_n: int = 5) -> str | None:
-    """tick digest 텍스트. 신규 주문 0이면 None (발송 안 함 — spec §3.2)."""
+                 window_days: int, top_n: int = 5, d1: dict | None = None) -> str | None:
+    """tick digest 텍스트. 신규 주문 0이면 None (발송 안 함 — spec §3.2).
+
+    d1: weekly_outbound_forecast() 결과 (Chain A). total_cbm>0 이면 출하CBM 사전계획
+    섹션 추가 — digest 가 발송될 때(new≥1) 함께 노출.
+    """
     if totals.get("new", 0) < 1:
         return None
     lines = [
@@ -58,4 +62,12 @@ def build_digest(results: list[dict], totals: dict, run_id: str,
     if warns:
         lines.append("⚠ 입하장 적재 경고 (입하 후 >100%):")
         lines += [f"  · {pid}: {pct:.1f}%" for pid, pct in warns]
+    if d1 and d1.get("total_cbm"):
+        lines.append(
+            f"🚚 출하CBM 사전계획: {d1['total_cbm']:g}m³ / {d1.get('n_units', 0)}단위 "
+            f"(날짜커버 {d1.get('coverage_pct', 0)}%)"
+        )
+        weeks = list((d1.get("by_week") or {}).items())[:top_n]
+        if weeks:
+            lines.append("  " + "  ".join(f"· {label}: {b['cbm']:g}m³" for label, b in weeks))
     return "\n".join(lines)

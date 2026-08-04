@@ -70,5 +70,73 @@
     }
    }
   }
+ },
+ {
+  "snapshot_date": "2026-06-18",
+  "generated_at": "2026-06-18T16:20:18.009016+09:00",
+  "horizon_days": 14,
+  "tracks": {
+   "outbound": {
+    "event_boundary": "shipment.출하확정일",
+    "forward_by_date": {
+     "2026-06-18": 32.3042,
+     "2026-06-19": 8.2374,
+     "2026-06-22": 16.9269,
+     "2026-06-23": 81.7807,
+     "2026-06-24": 70.9773,
+     "2026-06-25": 12.543,
+     "2026-06-26": 20.1382,
+     "2026-06-29": 21.7767,
+     "2026-06-30": 29.6378,
+     "2026-07-01": 6.3956,
+     "2026-07-02": 9.404
+    },
+    "forward_total_cbm": 310.1218,
+    "n_shipments_window": 111,
+    "n_with_cbm": 91,
+    "coverage_pct": 82.0
+   },
+   "storage": {
+    "event_boundary": "inventory_ledger.point_in_time",
+    "occupied_total_cbm": 306.2373,
+    "by_warehouse": {
+     "베스트원": {
+      "occupied_cbm": 306.2373,
+      "max_cbm": null,
+      "occupancy_pct": null
+     }
+    },
+    "pt_coverage_pct": 44.9
+   },
+   "inbound": {
+    "event_boundary": "movement.입하예상일",
+    "scheduled_by_date": {
+     "2026-06-18": 2.8302,
+     "2026-06-19": 18.2272,
+     "2026-06-22": 0.0383,
+     "2026-06-23": 0.034,
+     "2026-06-24": 35.5607
+    },
+    "scheduled_total_cbm": 56.6904,
+    "n_rows_window": 317,
+    "coverage_pct": 16.4,
+    "staging": {
+     "에이원센터": {
+      "max_cbm": 57.6,
+      "peak_date": "2026-06-24",
+      "peak_day_cbm": 35.5607,
+      "peak_day_pct": 61.7
+     }
+    },
+    "mes_forecast": {
+     "by_horizon": {
+      "7": 11.1805,
+      "14": 11.6127
+     },
+     "n_joined": 31,
+     "n_total": 338
+    }
+   }
+  }
  }
 ]

@@ -14,6 +14,8 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
+import urllib.error
 import urllib.request
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
@@ -76,6 +78,8 @@ def _load_snapshot() -> dict:
 
 
 def _save_snapshot(snapshot: dict) -> None:
+    if DRY_RUN:
+        return  # dry run 은 baseline 스냅샷을 오염시키지 않음 (다음 LIVE 가 신규건을 정상 감지)
     if not SNAPSHOT_PATH:
         return
     import pathlib
@@ -101,11 +105,33 @@ def _get(url: str, params: dict) -> dict:
         return json.loads(r.read())
 
 
-def _patch(url: str, payload: dict) -> None:
+def _patch(url: str, payload: dict, *, retries: int = 3) -> bool:
+    """PATCH with 429/5xx 백오프 재시도. 성공 True / 영구실패 False (예외로 run 을 죽이지 않음)."""
     data = json.dumps(payload, ensure_ascii=False).encode()
-    req = urllib.request.Request(url, data=data, headers=_airtable_headers(), method="PATCH")
-    with urllib.request.urlopen(req, timeout=30) as r:
-        r.read()
+    for attempt in range(retries):
+        req = urllib.request.Request(url, data=data, headers=_airtable_headers(), method="PATCH")
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                r.read()
+            return True
+        except urllib.error.HTTPError as e:
+            body = ""
+            try:
+                body = e.read()[:200].decode("utf-8", "replace")
+            except Exception:
+                pass
+            if e.code in (429, 500, 502, 503) and attempt < retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            print(f"[ERROR] PATCH {e.code}: {body}")
+            return False
+        except urllib.error.URLError as e:
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            print(f"[ERROR] PATCH URLError: {e}")
+            return False
+    return False
 
 
 import urllib.parse
@@ -116,8 +142,13 @@ def fetch_auto_targets(today_iso: str, rolling_days: int = 7) -> list[dict]:
 
     필터:
     - project code NOT empty
-    - 발송상태_TMS NOT IN SHIPPED_STATUSES
-    - 출하확정일 설정됨 + within 7 business days (Python-side)
+    - 발송상태_TMS NOT IN 종료상태 ('출하 완료'·'진행 취소')
+    - 출하확정일 설정됨 + [today, window_end] 영업일 rolling window (서버사이드 + Python 재확인)
+
+    NOTE(2026-06-22): 발송상태_TMS 실제 옵션은 '출하 대기'·'출하 완료'·'진행 취소'·'이슈 발생'·
+    'EMPTY'·'베스트원'. 과거 코드는 존재하지 않는 '발송완료/취소/반품/회수/배달완료'를 제외하려 해
+    필터가 무효화 → 전체 이력(9900+건)을 매 실행 스캔하고 종료건도 재배차했다. 종료상태 2종만 제외하고
+    날짜창을 서버사이드(IS_AFTER/IS_BEFORE, Airtable formula 는 field ID 지원)로 좁혀 수정.
     """
     window_end = rolling_window_end(date.fromisoformat(today_iso), rolling_days)
     window_end_iso = window_end.isoformat()
@@ -125,12 +156,11 @@ def fetch_auto_targets(today_iso: str, rolling_days: int = 7) -> list[dict]:
     formula = (
         "AND("
         f"NOT({{{FLD_PROJECT_CODE}}}=''),"
-        f"NOT({{{FLD_STATUS}}}='발송완료'),"
-        f"NOT({{{FLD_STATUS}}}='취소'),"
-        f"NOT({{{FLD_STATUS}}}='반품'),"
-        f"NOT({{{FLD_STATUS}}}='회수'),"
-        f"NOT({{{FLD_STATUS}}}='배달완료'),"
-        f"{{{FLD_SHIP_DATE}}}!=''"
+        f"NOT({{{FLD_STATUS}}}='출하 완료'),"
+        f"NOT({{{FLD_STATUS}}}='진행 취소'),"
+        f"{{{FLD_SHIP_DATE}}}!='',"
+        f"IS_AFTER({{{FLD_SHIP_DATE}}}, DATEADD('{today_iso}', -1, 'days')),"
+        f"IS_BEFORE({{{FLD_SHIP_DATE}}}, DATEADD('{window_end_iso}', 1, 'days'))"
         ")"
     )
 
@@ -213,37 +243,42 @@ def _build_shipment(rec: dict) -> Optional[Shipment]:
 
 # ─── Airtable PATCH ───────────────────────────────────────────────────────────
 
-def _patch_batch(batch: list[dict]) -> None:
-    """batch 10건 PATCH → Shipment table (wave 4 fields + 배송슬롯)."""
+def _patch_batch(batch: list[dict]) -> bool:
+    """batch 10건 PATCH → Shipment table. 성공 True / 실패 False."""
     if DRY_RUN:
         for rec in batch:
             print(f"  [DRY] PATCH {rec['id']}: {rec['fields']}")
-        return
+        return True
     url = f"https://api.airtable.com/v0/{BASE_ID}/{SHIPMENT_TABLE}"
-    _patch(url, {"records": batch})
+    return _patch(url, {"records": batch})
 
 
 def patch_airtable(
     plans: dict[str, WavePlan],
     shipment_map: dict[str, Shipment],
     now_iso: str,
+    current_slots: dict[str, Optional[str]] | None = None,
 ) -> list[dict]:
-    """wave 4 fields + 배송슬롯 → Airtable PATCH (batch 10). Returns diff list."""
+    """wave 추천 필드 + (조건부) 배송슬롯 → Airtable PATCH (batch 10). Returns diff list.
+
+    운영자 소유 필드 보호 (2026-06-22):
+    - wave_locked 는 운영자 *입력* 이므로 추천기가 절대 되쓰지 않는다 (PATCH 미포함).
+    - 배송슬롯은 잠금 안 됐고 현재 셀이 비어있을 때만 추천값을 기입 — 운영자 수동 수정/잠금을
+      매 cron 이 덮어쓰지 않도록. current_slots: {record_id: 현재 배송슬롯값}.
+    """
+    current_slots = current_slots or {}
     records_to_patch: list[dict] = []
 
     for wave_id, plan in plans.items():
         for s in plan.shipments:
-            rec = {
-                "id": s.id,
-                "fields": {
-                    FLD_WAVE_REC: WAVE_DISPLAY.get(wave_id, wave_id),
-                    FLD_WAVE_CONF: round(s.slot_confidence * s.cbm_confidence, 2),
-                    FLD_WAVE_LOCKED: s.wave_locked,
-                    FLD_WAVE_UPDATED: now_iso,
-                },
+            fields: dict = {
+                FLD_WAVE_REC: WAVE_DISPLAY.get(wave_id, wave_id),
+                FLD_WAVE_CONF: round(s.slot_confidence * s.cbm_confidence, 2),
+                FLD_WAVE_UPDATED: now_iso,
             }
-            if s.slot:
-                rec["fields"][FLD_SLOT] = s.slot
+            if s.slot and not s.wave_locked and not current_slots.get(s.id):
+                fields[FLD_SLOT] = s.slot
+            rec = {"id": s.id, "fields": fields}
             records_to_patch.append(rec)
 
             if s.slot_confidence * s.cbm_confidence < CONFIDENCE_FLOOR:
@@ -254,9 +289,13 @@ def patch_airtable(
                     "cbm_conf": s.cbm_confidence,
                 })
 
-    # Batch 10
+    # Batch 10 — 한 배치 실패가 나머지를 막지 않도록 (PATCH 는 매 cron 멱등 재시도되므로 자가복구).
+    failures = 0
     for i in range(0, len(records_to_patch), 10):
-        _patch_batch(records_to_patch[i:i + 10])
+        if not _patch_batch(records_to_patch[i:i + 10]):
+            failures += 1
+    if failures:
+        print(f"[WARN] {failures}개 배치 PATCH 실패 — 다음 cron 에서 재시도(멱등)")
 
     return records_to_patch
 
@@ -266,15 +305,16 @@ def patch_airtable(
 PENDING_DIGEST_PATH = "_AutoResearch/SCM/outputs/audit_log/pending_digest.json"
 
 
-def _slack_post(text: str) -> None:
+def _slack_post(text: str) -> bool:
+    """Slack DM 발송. ok=False(만료토큰 등)는 HTTP 200 이라 body 의 ok 를 확인. 성공 True."""
     token = os.environ.get("SLACK_BOT_TOKEN", "")
     user = os.environ.get("SLACK_DM_USER_ID", "")
     if not token or not user:
         print("[WARN] SLACK_BOT_TOKEN or SLACK_DM_USER_ID not set — skipping Slack")
-        return
+        return False
     if DRY_RUN:
         print(f"[DRY] Slack → {user}: {text[:200]}")
-        return
+        return True
     data = json.dumps({"channel": user, "text": text}).encode()
     req = urllib.request.Request(
         "https://slack.com/api/chat.postMessage",
@@ -282,8 +322,16 @@ def _slack_post(text: str) -> None:
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=10) as r:
-        r.read()
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            resp = json.loads(r.read() or b"{}")
+    except Exception as e:
+        print(f"[ERROR] Slack post 예외: {e}")
+        return False
+    if not resp.get("ok"):
+        print(f"[ERROR] Slack post 실패: {resp.get('error')}")
+        return False
+    return True
 
 
 def _format_digest(
@@ -292,6 +340,7 @@ def _format_digest(
     today_iso: str,
     change_report: "ChangeReport | None" = None,
     otif_summary: "dict | None" = None,
+    n_dates: int = 1,
 ) -> str:
     util = compute_utilization(plans)
     lines = [f"*Wave 추천 엔진 다이제스트 — {today_iso}*"]
@@ -308,8 +357,14 @@ def _format_digest(
 
     for wid in ("W1", "W2", "W3"):
         plan = plans[wid]
-        u = util.get(wid, 0.0)
-        line = f"  {wid}: {plan.count}건 / {plan.total_cbm:.2f} CBM ({u:.0%})"
+        display = WAVE_DISPLAY.get(wid, wid)
+        u_total = util.get(wid, 0.0)
+        if n_dates > 1:
+            u_daily = u_total / n_dates
+            cbm_label = f"{plan.total_cbm:.2f} CBM — 일평균 {u_daily:.0%} ({n_dates}일)"
+        else:
+            cbm_label = f"{plan.total_cbm:.2f} CBM ({u_total:.0%})"
+        line = f"  {display}: {plan.count}건 / {cbm_label}"
         if otif_summary and wid in otif_summary:
             s = otif_summary[wid]
             line += f" — 납기 {s['on_time']}/{s['total']}건 ✅"
@@ -331,13 +386,14 @@ def save_pending_digest(
     today_iso: str,
     change_report=None,
     otif_summary=None,
+    n_dates: int = 1,
 ) -> None:
     import pathlib
     pathlib.Path(PENDING_DIGEST_PATH).parent.mkdir(parents=True, exist_ok=True)
     with open(PENDING_DIGEST_PATH, "w", encoding="utf-8") as f:
         json.dump(
             {"date": today_iso,
-             "text": _format_digest(plans, diff, today_iso, change_report, otif_summary)},
+             "text": _format_digest(plans, diff, today_iso, change_report, otif_summary, n_dates)},
             f,
         )
 
@@ -348,10 +404,11 @@ def send_or_queue_digest(
     today_iso: str,
     change_report=None,
     otif_summary=None,
+    n_dates: int = 1,
 ) -> None:
     now = datetime.now(KST)
     if is_quiet_hour(now):
-        save_pending_digest(plans, diff, today_iso, change_report, otif_summary)
+        save_pending_digest(plans, diff, today_iso, change_report, otif_summary, n_dates)
         print(f"[INFO] quiet hours — digest queued for next cycle")
         return
 
@@ -360,10 +417,11 @@ def send_or_queue_digest(
     if pending.exists():
         with open(pending, encoding="utf-8") as f:
             old = json.load(f)
-        _slack_post(old.get("text", ""))
-        pending.unlink()
+        # 큐된 다이제스트는 *전송 성공* 시에만 삭제 (실패 시 다음 cycle 재시도 — 알림 유실 방지)
+        if _slack_post(old.get("text", "")):
+            pending.unlink()
 
-    _slack_post(_format_digest(plans, diff, today_iso, change_report, otif_summary))
+    _slack_post(_format_digest(plans, diff, today_iso, change_report, otif_summary, n_dates))
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -428,12 +486,15 @@ def main() -> None:
             print(f"  {wid}: {cnt}건")
 
     automation_count = sum(plans[w].count for w in ("W1", "W2", "W3"))
-    total_count = len(shipments)
+    # 분모 = 자동화 가능 모수 (autonomous 파트너로 드롭된 건 제외) = 전 plan 버킷 합.
+    total_count = sum(p.count for p in plans.values())
     print(f"  automation: {automation_count}/{total_count} ({automation_count/total_count:.0%})" if total_count else "  no shipments")
 
     # Stage: PATCH + Slack
     shipment_map = {s.id: s for s in shipments}
-    diff = patch_airtable(plans, shipment_map, now_iso)
+    # 현재 배송슬롯값 — 비어있을 때만 추천값 기입 (운영자 수정 보호)
+    current_slots = {rec["id"]: _first(rec.get("fields", {}).get(FLD_SLOT)) for rec in raw_records}
+    diff = patch_airtable(plans, shipment_map, now_iso, current_slots)
 
     # Step 3: 가정 OTIF 추정
     otif_results = estimate_all(raw_records)
@@ -445,8 +506,9 @@ def main() -> None:
         or change_report.removed
         or change_report.critical_modified
     )
+    n_dates = max(1, len(date_to_shipments))
     if diff or has_changes:
-        send_or_queue_digest(plans, diff, today_iso, change_report, otif_summary)
+        send_or_queue_digest(plans, diff, today_iso, change_report, otif_summary, n_dates)
     else:
         print("  no changes to report")
 
