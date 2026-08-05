@@ -114,6 +114,7 @@ jobs:
           EOF
 
       - name: Commit history to repo
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -121,7 +122,8 @@ jobs:
           [ -f docs/weekly.html  ] && git add docs/weekly.html  || true
           [ -f docs/monthly.html ] && git add docs/monthly.html || true
           git diff --staged --quiet || git commit -m "chore: update scm report [skip ci]"
-          git push
+          # main 브랜치 보호(GH006)로 bot push 거부됨 → Pages 배포는 계속 진행. 히스토리 커밋은 비필수.
+          git push || echo "[warn] push to protected main skipped — Pages 배포는 계속"
 
       - name: Prepare site
         run: |
