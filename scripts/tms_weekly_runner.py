@@ -56,6 +56,9 @@ TBL_CLAIM = "tblIZ9kco1QDpUz0u"    # 배송클레임
 TBL_PARTNER = "tblI4ZXrte7WyhXyd"  # 배송파트너
 
 FORECAST_HIGH_THRESHOLD = 20  # 일별 건수 이 이상이면 추가 배차 권고
+# CBM_유효 이상치 상한(㎥). estimated_cbm 제품매칭 오류로 단일 출하가 170·64·49㎥ 등 중앙값(0.78㎥)의 100배+로 튀는 사례 존재(2026-08 확인) →
+# 이 값 초과 레코드는 CBM 예측 집계에서 제외. 전체 주간 출하가 ~19㎥인 운영 특성상 단일 출하 15㎥는 이미 관대한 상한.
+FORECAST_CBM_OUTLIER_CAP = 15.0
 BACKFILL_DATE = "2026-05-04"  # 372건 백필 기준일 (zone_classify 314 + events 42 + TRK 16)
 
 # 2026 법정 공휴일 + 대체공휴일 (신시어리 전사 휴무 기준)
@@ -221,6 +224,7 @@ def step_pull_data() -> dict:
         "fldp6haTDFzzF5C74",  # 구간유형
         "flduzH5tS7orqGG3o",  # 배송방식
         "fldyYIfBhhu7sEX1P",  # 약속납기일
+        "fldRQxI4HOWydlwEh",  # CBM_유효
     ])
     recent_ships = [
         r for r in ship_recs
@@ -561,6 +565,7 @@ def analyze_iter5_forecast(data: dict) -> dict:
 
     # {year-Www: {요일: count}}
     week_day: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    week_day_cbm: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     for rec in hist:
         confirmed = rec["fields"].get("fldQvmEwwzvQW95h9")
         if not confirmed:
@@ -571,7 +576,11 @@ def analyze_iter5_forecast(data: dict) -> dict:
                 continue
             iso = d.isocalendar()
             wk = f"{iso[0]}-W{iso[1]:02d}"
-            week_day[wk][weekday_map[d.weekday()]] += 1
+            wd = weekday_map[d.weekday()]
+            week_day[wk][wd] += 1
+            cbm = float(rec["fields"].get("fldRQxI4HOWydlwEh") or 0)
+            if cbm <= FORECAST_CBM_OUTLIER_CAP:  # estimated_cbm 오류 이상치 제외 (건수는 유지, CBM만 제외)
+                week_day_cbm[wk][wd] += cbm
         except ValueError:
             pass
 
@@ -600,26 +609,36 @@ def analyze_iter5_forecast(data: dict) -> dict:
         prior_non_hol  = [w for w in prior_8  if _week_day_date(w, day) not in HOLIDAYS_2026]
         recent_vals = [week_day[w].get(day, 0) for w in (recent_non_hol or recent_4)]
         prior_vals  = [week_day[w].get(day, 0) for w in (prior_non_hol  or prior_8)] if prior_8 else []
+        recent_cbm_vals = [week_day_cbm[w].get(day, 0.0) for w in (recent_non_hol or recent_4)]
+        prior_cbm_vals  = [week_day_cbm[w].get(day, 0.0) for w in (prior_non_hol  or prior_8)] if prior_8 else []
 
         avg_recent = sum(recent_vals) / len(recent_vals) if recent_vals else 0
         avg_prior  = sum(prior_vals)  / len(prior_vals)  if prior_vals else avg_recent
+        avg_recent_cbm = sum(recent_cbm_vals) / len(recent_cbm_vals) if recent_cbm_vals else 0.0
+        avg_prior_cbm  = sum(prior_cbm_vals)  / len(prior_cbm_vals)  if prior_cbm_vals else avg_recent_cbm
 
         trend = (avg_recent - avg_prior) / avg_prior if avg_prior > 0 else 0
         base_forecast = max(0, round(avg_recent * (1 + trend * 0.15)))  # 추세 보정계수 0.15 (Iter7-C 근거)
+        trend_cbm = (avg_recent_cbm - avg_prior_cbm) / avg_prior_cbm if avg_prior_cbm > 0 else 0
+        base_forecast_cbm = max(0.0, round(avg_recent_cbm * (1 + trend_cbm * 0.15), 2))  # 건수 예측과 동일 로직(추세 보정계수 0.15)
 
         actual_date = next_week_dates[day]
         holiday_name = HOLIDAYS_2026.get(actual_date)
         forecast = 0 if holiday_name else base_forecast
+        forecast_cbm = 0.0 if holiday_name else base_forecast_cbm
 
         day_forecast[day] = {
-            "forecast":     forecast,
-            "avg_recent":   round(avg_recent, 1),
-            "trend_pct":    round(trend * 100, 1),
-            "holiday":      holiday_name,
-            "actual_date":  actual_date.isoformat(),
+            "forecast":      forecast,
+            "avg_recent":    round(avg_recent, 1),
+            "trend_pct":     round(trend * 100, 1),
+            "forecast_cbm":  forecast_cbm,
+            "avg_recent_cbm": round(avg_recent_cbm, 2),
+            "holiday":       holiday_name,
+            "actual_date":   actual_date.isoformat(),
         }
 
     total_forecast = sum(v["forecast"] for v in day_forecast.values())
+    total_forecast_cbm = round(sum(v["forecast_cbm"] for v in day_forecast.values()), 2)
     high_days = [d for d, v in day_forecast.items() if v["forecast"] >= FORECAST_HIGH_THRESHOLD]
     peak_day = max(
         (d for d in day_forecast if not day_forecast[d]["holiday"]),
@@ -629,11 +648,12 @@ def analyze_iter5_forecast(data: dict) -> dict:
     holiday_days = [d for d, v in day_forecast.items() if v["holiday"]]
 
     return {
-        "day_forecast":     day_forecast,
-        "total_forecast":   total_forecast,
-        "high_volume_days": high_days,
-        "data_weeks":       len(sorted_weeks),
-        "peak_day":         peak_day,
+        "day_forecast":       day_forecast,
+        "total_forecast":     total_forecast,
+        "total_forecast_cbm": total_forecast_cbm,
+        "high_volume_days":   high_days,
+        "data_weeks":         len(sorted_weeks),
+        "peak_day":           peak_day,
         "holiday_days":     holiday_days,
     }
 
@@ -888,11 +908,12 @@ def step_save_report(results: dict, week_str: str, date_range: str = "") -> Path
 
 > 기반 데이터: {r5["data_weeks"]}주치 패턴 (최근 90일) | 최근 4주 이동평균 + 추세 보정 (계수 0.15) | 공휴일 자동 반영
 
-| 요일 | 날짜 | 예측 볼륨 | 최근 4주 평균 | 추세 |
-|------|------|----------|-------------|------|
-{chr(10).join(f"| {d} | {v['actual_date']} | {'🔴 공휴일 (' + v['holiday'] + ')' if v['holiday'] else str(v['forecast']) + '건'} | {v['avg_recent']}건 | {'+' if v['trend_pct'] >= 0 else ''}{v['trend_pct']}% |" for d, v in r5["day_forecast"].items())}
+| 요일 | 날짜 | 예측 볼륨 | 예측 CBM | 최근 4주 평균 | 추세 |
+|------|------|----------|---------|-------------|------|
+{chr(10).join(f"| {d} | {v['actual_date']} | {'🔴 공휴일 (' + v['holiday'] + ')' if v['holiday'] else str(v['forecast']) + '건'} | {'—' if v['holiday'] else format(v['forecast_cbm'], '.2f') + 'm³'} | {v['avg_recent']}건 | {'+' if v['trend_pct'] >= 0 else ''}{v['trend_pct']}% |" for d, v in r5["day_forecast"].items())}
 
 - **주간 예측 합계: {r5["total_forecast"]}건** (공휴일 제외)
+- **주간 예측 CBM: {r5["total_forecast_cbm"]:.2f}m³**
 {f"- 🔴 공휴일: **{'·'.join(r5['holiday_days'])}요일** — 출하 없음" if r5["holiday_days"] else ""}
 {f"- ⚠️ 배차 권고: **{'·'.join(r5['high_volume_days'])}요일** 볼륨 과다 → 고고엑스 사전 예약 또는 추가 기사 배정 검토" if r5["high_volume_days"] else "- 배차 이슈 없음 (전 요일 정상 범위)"}
 
@@ -978,7 +999,7 @@ def step_update_log(results: dict, report_path: Path, week_str: str) -> None:
 - OTIF On-Time: {r4["on_time_rate"]}% (목표 ≥90%)
 - 차량 적재율 median: {r2["util_stats"]["median"]}% (저적재 {r2["util_stats"]["n_under"]}건·오버부킹 {r2["util_stats"]["n_over"]}건)
 - 약속납기일 전환율: {r4["proxy_conversion_rate"]}%
-- 다음 주 예측: {r5["total_forecast"]}건 (피크 {r5["peak_day"]}요일)
+- 다음 주 예측: {r5["total_forecast"]}건 · {r5["total_forecast_cbm"]:.2f}m³ (피크 {r5["peak_day"]}요일)
 
 ### Iter6 갭분석
 - 흡수 가능 고고엑스: {r6b["absorbable_count"]}건 → 내부 소화율 {r6b["new_internal_rate_pct"]}% 달성 예상 ({r6b["gap_closure_pp"]:+.1f}pp)
@@ -1093,7 +1114,7 @@ def main(dry_run: bool) -> None:
     print(f"  Iter2: 내부 소화율 {r2['internal_rate']}%, 고고엑스 {r2['gogox_rate']}%")
     print(f"  Iter3: 배송방식 {len(r3['by_method'])}종")
     print(f"  Iter4: OTIF On-Time {r4['on_time_rate']}%, 전환율 {r4['proxy_conversion_rate']}%")
-    print(f"  Iter5: 다음 주 예측 합계 {r5['total_forecast']}건, 피크 {r5['peak_day']}요일")
+    print(f"  Iter5: 다음 주 예측 합계 {r5['total_forecast']}건 · {r5['total_forecast_cbm']:.2f}m³, 피크 {r5['peak_day']}요일")
     print(f"  Iter6a: 구간 커버리지 델타 {r6a['coverage_delta_pp']:+.1f}pp")
     print(f"  Iter6b: 흡수 가능 {r6b['absorbable_count']}건, 예상 소화율 {r6b['new_internal_rate_pct']}%")
 

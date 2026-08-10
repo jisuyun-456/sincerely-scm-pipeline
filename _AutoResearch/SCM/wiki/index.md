@@ -16,3 +16,4 @@
 | [TMS-2026-W21.md](../outputs/TMS-2026-W21.md) | 주간 | 2026-05-27 | 완료 |
 | [2026-05-27-driver-lane-consolidation-strategy.md](../outputs/2026-05-27-driver-lane-consolidation-strategy.md) | 전략 | 2026-05-27 | 완료 — 자체기사 3명 + 외주 5개사 Lane 분담 + 통합 적재 wave (Option B 채택) |
 | [2026-05-27-lane-strategy-backtest-2026.md](../outputs/2026-05-27-lane-strategy-backtest-2026.md) | Backtest | 2026-05-27 | 완료 — 26년 출하 1,640건 (100 sample) 기반 reality check. 3 critical blocker 발견 (POD 100% NULL, CBM 44% NULL, project lookup) |
+| [TMS-2026-W31.md](../outputs/TMS-2026-W31.md) | 주간 | 2026-08-04 | 완료 |

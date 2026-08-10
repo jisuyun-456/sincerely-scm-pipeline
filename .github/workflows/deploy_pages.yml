@@ -75,6 +75,15 @@ jobs:
           SKIP_DELAY:           ${{ env.SKIP_DELAY || '0' }}
         run: python pages/generate_scm_report.py
 
+      - name: Render weekly report (크림+클레이, 데이터 주도)
+        if: steps.mode.outputs.mode == 'weekly_review'
+        continue-on-error: true   # 리포트 렌더 실패가 대시보드 배포를 막지 않도록
+        env:
+          AIRTABLE_API_KEY_WMS: ${{ secrets.AIRTABLE_API_KEY_WMS }}
+          AIRTABLE_API_KEY_TMS: ${{ secrets.AIRTABLE_API_KEY_TMS }}
+          AIRTABLE_IBSA_PAT:    ${{ secrets.AIRTABLE_IBSA_PAT }}
+        run: python pages/render_weekly_report.py   # 직전 ISO 주 → docs/weekly-report.html
+
       - name: Save to history & build index
         run: |
           mkdir -p history
@@ -136,6 +145,9 @@ jobs:
           # 주간/월간 전용 리포트 페이지 (JSON 이미 주입됨)
           [ -f docs/weekly.html  ] && cp docs/weekly.html  site/weekly.html  || echo "[skip] weekly.html 없음"
           [ -f docs/monthly.html ] && cp docs/monthly.html site/monthly.html || echo "[skip] monthly.html 없음"
+
+          # 물류파트 주간 리포트 (크림+클레이, 데이터 주도 · 팀 공유 링크)
+          [ -f docs/weekly-report.html ] && cp docs/weekly-report.html site/weekly-report.html || echo "[skip] weekly-report.html 없음"
 
           # 히스토리
           cp history/*.json site/history/
