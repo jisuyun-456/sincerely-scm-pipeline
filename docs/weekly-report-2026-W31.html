@@ -215,8 +215,31 @@
     .card,.kpi,.ch,.framework{box-shadow:none; break-inside:avoid}
     section,.op-block{break-inside:avoid}
   }
+
+  .layout{display:flex; align-items:flex-start; gap:0; max-width:1240px; margin:0 auto}
+  .sidebar{position:sticky; top:0; align-self:flex-start; width:210px; flex:none; height:100vh;
+           overflow-y:auto; padding:32px 14px; border-right:1px solid var(--border); background:var(--surface-2)}
+  .sb-head{font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 14px}
+  .wk-list{display:flex; flex-direction:column; gap:4px}
+  .wk-item{display:flex; flex-direction:column; padding:9px 11px; border-radius:9px; text-decoration:none;
+           color:var(--muted); border:1px solid transparent}
+  .wk-item:hover{background:var(--surface); border-color:var(--border)}
+  .wk-item.active{background:var(--accent-tint); border-color:var(--border-strong); color:var(--accent-ink)}
+  .wk-key{font-size:13.5px; font-weight:700}
+  .wk-range{font-size:11px; color:var(--faint)}
+  .layout .wrap{flex:1; min-width:0}
+  @media(max-width:820px){.layout{flex-direction:column} .sidebar{position:static; width:100%; height:auto; border-right:none; border-bottom:1px solid var(--border); display:flex; gap:16px; align-items:center}
+    .wk-list{flex-direction:row; overflow-x:auto}}
 </style>
 
+<div class="layout">
+<aside class="sidebar">
+  <div class="sb-head">주차 이력</div>
+  <nav class="wk-list">
+    <a href="weekly-report-2026-W32.html" class="wk-item"><span class="wk-key">W32 (08/03~)</span><span class="wk-range">08-03 ~ 08-07</span></a>
+    <a href="weekly-report-2026-W31.html" aria-current="page" class="wk-item active"><span class="wk-key">W31 (07/27~)</span><span class="wk-range">07-27 ~ 07-31</span></a>
+  </nav>
+</aside>
 <div class="wrap">
 
   <header class="masthead">
@@ -317,12 +340,12 @@
       <div class="chart-grid">
 
         <div class="ch">
-          <div class="ch-head"><div><p class="ch-title">일별 입고 건수</p><p class="ch-sub">합계 247건 · 07-27 ~ 07-31</p></div><span class="pill good">실측</span></div>
+          <div class="ch-head"><div><p class="ch-title">일별 입고 건수</p><p class="ch-sub">합계 249건 · 07-27 ~ 07-31</p></div><span class="pill good">실측</span></div>
           <div class="bars">
             <div class="bar-col"><div class="bar" style="height:59%"><span class="bv">43</span></div></div>
             <div class="bar-col"><div class="bar" style="height:100%"><span class="bv">73</span></div></div>
-            <div class="bar-col"><div class="bar" style="height:36%"><span class="bv">26</span></div></div>
-            <div class="bar-col"><div class="bar" style="height:47%"><span class="bv">34</span></div></div>
+            <div class="bar-col"><div class="bar" style="height:37%"><span class="bv">27</span></div></div>
+            <div class="bar-col"><div class="bar" style="height:48%"><span class="bv">35</span></div></div>
             <div class="bar-col"><div class="bar" style="height:97%"><span class="bv">71</span></div></div>
           </div>
           <div class="bar-x"><span class="bar-xl">27</span><span class="bar-xl">28</span><span class="bar-xl">29</span><span class="bar-xl">30</span><span class="bar-xl">31</span></div>
@@ -341,12 +364,12 @@
         </div>
 
         <div class="ch">
-          <div class="ch-head"><div><p class="ch-title">입고 목적별 구성</p><p class="ch-sub">총 247건 · 수량 68,522 ea</p></div><span class="pill good">실측</span></div>
+          <div class="ch-head"><div><p class="ch-title">입고 목적별 구성</p><p class="ch-sub">총 249건 · 수량 68,914 ea</p></div><span class="pill good">실측</span></div>
           <div class="hbars">
-            <div class="hbar-row"><span class="hbar-label">생산산출</span><div class="hbar-track"><div class="hbar-fill" style="width:100.0%"></div></div><span class="hbar-val">170건</span></div>
-            <div class="hbar-row"><span class="hbar-label">재고이동</span><div class="hbar-track"><div class="hbar-fill" style="width:35.3%"></div></div><span class="hbar-val">60건</span></div>
-            <div class="hbar-row"><span class="hbar-label">재고생산</span><div class="hbar-track"><div class="hbar-fill" style="width:7.1%"></div></div><span class="hbar-val">12건</span></div>
-            <div class="hbar-row"><span class="hbar-label">생산샘플</span><div class="hbar-track"><div class="hbar-fill" style="width:2.4%"></div></div><span class="hbar-val">4건</span></div>
+            <div class="hbar-row"><span class="hbar-label">생산산출</span><div class="hbar-track"><div class="hbar-fill" style="width:100.0%"></div></div><span class="hbar-val">172건</span></div>
+            <div class="hbar-row"><span class="hbar-label">재고이동</span><div class="hbar-track"><div class="hbar-fill" style="width:34.9%"></div></div><span class="hbar-val">60건</span></div>
+            <div class="hbar-row"><span class="hbar-label">재고생산</span><div class="hbar-track"><div class="hbar-fill" style="width:7.0%"></div></div><span class="hbar-val">12건</span></div>
+            <div class="hbar-row"><span class="hbar-label">생산샘플</span><div class="hbar-track"><div class="hbar-fill" style="width:2.3%"></div></div><span class="hbar-val">4건</span></div>
             <div class="hbar-row"><span class="hbar-label">고객물품</span><div class="hbar-track"><div class="hbar-fill" style="width:0.6%"></div></div><span class="hbar-val">1건</span></div>
           </div>
         </div>
@@ -396,8 +419,8 @@
         <div class="kpi tappable" data-modal="ingo" tabindex="0" role="button" aria-label="입고 건수 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">입고 건수</span><span class="pill good">실측</span></div>
-          <div class="k-val">247<small>건</small></div>
-          <div class="k-bench">입하완료 246 / 미확인 1 · 완료율 99.6%</div>
+          <div class="k-val">249<small>건</small></div>
+          <div class="k-bench">입하완료 248 / 미확인 1 · 완료율 99.6%</div>
           <div class="k-src">WMS movement</div>
         </div>
         <div class="kpi tappable" data-modal="noarrive" tabindex="0" role="button" aria-label="미입하 발생 상세 보기">
@@ -417,9 +440,9 @@
         <div class="kpi tappable" data-modal="ontime" tabindex="0" role="button" aria-label="공급사 납기 준수율 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">공급사 납기 준수율</span><span class="pill good">실측</span></div>
-          <div class="k-val">97.7<small>%</small></div>
-          <div class="k-bench">정시 130건 · 지연 3건 · 평균 -1.7일</div>
-          <div class="k-src">WMS movement 입하예상일 vs 실제입하일 133건</div>
+          <div class="k-val">97.8<small>%</small></div>
+          <div class="k-bench">정시 132건 · 지연 3건 · 평균 -1.7일</div>
+          <div class="k-src">WMS movement 입하예상일 vs 실제입하일 135건</div>
         </div>
       </div>
       <span class="grp-tag" style="background:var(--proxy-bg);color:var(--proxy);margin-top:20px">🔎 검수 · Inspection / QC (최근 90일 실측)</span>
@@ -427,29 +450,29 @@
         <div class="kpi tappable" data-modal="qc" tabindex="0" role="button" aria-label="QC 불합격률 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">QC 불합격률</span><span class="pill good">실측</span></div>
-          <div class="k-val">1.21<small>%</small></div>
-          <div class="k-bench">품질이슈 3 / 247 · 이슈카테고리 실측</div>
+          <div class="k-val">1.2<small>%</small></div>
+          <div class="k-bench">품질이슈 3 / 249 · 이슈카테고리 실측</div>
           <div class="k-src">movement 이슈카테고리 · 2026-W31</div>
         </div>
         <div class="kpi tappable" data-modal="fpy" tabindex="0" role="button" aria-label="1차 합격률 (FPY) 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">1차 합격률 (FPY)</span><span class="pill good">실측 NEW</span></div>
           <div class="k-val">99.1<small>%</small></div>
-          <div class="k-bench">합격 2447 / 검수 2470건</div>
+          <div class="k-bench">합격 2435 / 검수 2457건</div>
           <div class="k-src">IBSA 표본검수결과 · WERC ★</div>
         </div>
         <div class="kpi tappable" data-modal="aql" tabindex="0" role="button" aria-label="AQL 샘플링 합격률 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">AQL 샘플링 합격률</span><span class="pill good">실측 NEW</span></div>
           <div class="k-val">99.7<small>%</small></div>
-          <div class="k-bench">미해결 이슈 7건 · 샘플링불합격 0 · 2470건</div>
+          <div class="k-bench">미해결 이슈 7건 · 샘플링불합격 0 · 2457건</div>
           <div class="k-src">IBSA 표본검수 품질 판정 · WERC ★</div>
         </div>
         <div class="kpi tappable" data-modal="insptime" tabindex="0" role="button" aria-label="검수 처리시간 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">검수 처리시간</span><span class="pill good">실측 NEW</span></div>
-          <div class="k-val">3.2<small>분 중앙값</small></div>
-          <div class="k-bench">평균 10.2분 · p90 22.8분 · 2107건</div>
+          <div class="k-val">3.3<small>분 중앙값</small></div>
+          <div class="k-bench">평균 10.3분 · p90 23.3분 · 2090건</div>
           <div class="k-src">IBSA 입하완료→시안검수완료</div>
         </div>
       </div>
@@ -458,8 +481,8 @@
         <div class="kpi tappable" data-modal="pick" tabindex="0" role="button" aria-label="자재 피킹수 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">자재 피킹수</span><span class="pill good">실측</span></div>
-          <div class="k-val">328<small>건</small></div>
-          <div class="k-bench">조립 320 · 생산 20 · 취소 12 제외(매칭 340)</div>
+          <div class="k-val">323<small>건</small></div>
+          <div class="k-bench">조립 315 · 생산 20 · 취소 12 제외(매칭 335)</div>
           <div class="k-src">조립·생산투입 ∩ 에이원/PNA</div>
         </div>
       </div>
@@ -482,8 +505,8 @@
         <div class="kpi tappable" data-modal="shipcost" tabindex="0" role="button" aria-label="출하 단가 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">출하 단가</span><span class="pill good">실측 NEW</span></div>
-          <div class="k-val">7.0<small>만원/오더</small></div>
-          <div class="k-bench">CBM당 68,859원/㎥ · 최근 30일 172건</div>
+          <div class="k-val">7.5<small>만원/오더</small></div>
+          <div class="k-bench">CBM당 75,743원/㎥ · 최근 30일 169건</div>
           <div class="k-src">TMS 물류비(합계) · WERC ★</div>
         </div>
         <div class="kpi tappable" data-modal="cycletime" tabindex="0" role="button" aria-label="오더 사이클타임 상세 보기">
@@ -491,14 +514,14 @@
           <div class="k-top"><span class="k-title">오더 사이클타임</span><span class="pill good">실측 NEW</span></div>
           <div class="k-val">18<small>일 중앙값</small></div>
           <div class="k-bench">발주신청~최종출고 · p25 14 · p75 23일</div>
-          <div class="k-src">order 11,391건 · 최근 90일 · WERC ★</div>
+          <div class="k-src">order 11,335건 · 최근 90일 · WERC ★</div>
         </div>
         <div class="kpi tappable" data-modal="otif" tabindex="0" role="button" aria-label="OTIF On-Time 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">OTIF On-Time</span><span class="pill good">실측</span></div>
           <div class="k-val">99.9<small>%</small></div>
           <div class="k-bench">벤치 ≥90% · 자동충족</div>
-          <div class="k-src">OTIF 2,310건 · WERC ★</div>
+          <div class="k-src">OTIF 2,356건 · WERC ★</div>
         </div>
         <div class="kpi tappable" data-modal="infull" tabindex="0" role="button" aria-label="In-Full 상세 보기">
           <span class="tap-hint">＋</span>
@@ -517,14 +540,14 @@
         <div class="kpi tappable" data-modal="claim" tabindex="0" role="button" aria-label="배송 클레임 (90일) 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">배송 클레임 (90일)</span><span class="pill good">실측</span></div>
-          <div class="k-val">1<small>건</small></div>
+          <div class="k-val">0<small>건</small></div>
           <div class="k-bench">미처리 0 · 90일 롤링(갱신)</div>
           <div class="k-src">클레임 롤링</div>
         </div>
         <div class="kpi tappable" data-modal="forecast" tabindex="0" role="button" aria-label="다음주 볼륨 예측 상세 보기">
           <span class="tap-hint">＋</span>
           <div class="k-top"><span class="k-title">다음주 볼륨 예측</span><span class="pill good">실측</span></div>
-          <div class="k-val">52<small>건 · 36.48m³</small></div>
+          <div class="k-val">40<small>건 · 25.73m³</small></div>
           <div class="k-bench">피크 목요일 · 14주 패턴</div>
           <div class="k-src">Iter5 · CBM 이상치 제외</div>
         </div>
@@ -532,6 +555,7 @@
     </div>
   </section>
 
+</div>
 </div>
 
 <!-- ===================== 카드 상세 모달 ===================== -->

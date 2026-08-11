@@ -15,7 +15,10 @@ render_weekly_report.py
 """
 import re
 import sys
+import json
 import pathlib
+import datetime
+from collections import Counter
 from datetime import date, timedelta
 
 
@@ -35,6 +38,7 @@ ROOT = _PAGES.parent
 # 템플릿은 pages/ 아래 추적 파일로 보관 (_AutoResearch/**/outputs/ 는 .gitignore → CI 미포함).
 TEMPLATE = _PAGES / "weekly_report.template.html"
 DEFAULT_OUT = ROOT / "docs" / "weekly-report.html"
+REPORTS_DIR = ROOT / "history" / "reports"
 
 SPLIT_HEAD = '  <!-- ===================== Ⅱ 운영 KPI ===================== -->'
 SPLIT_TAIL = '<!-- ===================== 카드 상세 모달 ===================== -->'
@@ -45,6 +49,36 @@ WD_KR = {"월": "월", "화": "화", "수": "수", "목": "목", "금": "금"}
 # ── HTML emit 헬퍼 ────────────────────────────────────────────────────────────
 def _esc(s):
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+# ── 주간 리포트 데이터 freeze/load 헬퍼 ───────────────────────────────────────
+def _jsonable(o):
+    if isinstance(o, dict):
+        return {k: _jsonable(v) for k, v in o.items()}
+    if isinstance(o, Counter):
+        return {k: _jsonable(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple, set)):
+        return [_jsonable(v) for v in o]
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return o.isoformat()
+    return o
+
+
+def _write_report_json(d, path):
+    path = pathlib.Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(_jsonable(d), ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
+def load_report(path):
+    return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+
+def freeze_week(week_id, reports_dir=REPORTS_DIR):
+    d = compute(week_id)
+    d["generated_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+    return _write_report_json(d, pathlib.Path(reports_dir) / f"{week_id}.json")
 
 
 def vbar_chart(title, sub, items, val_key, fmt, dim_below=None):
@@ -257,25 +291,77 @@ def _hydrate_conversion(head, d):
     return head
 
 
-def render(week_id, template_path=TEMPLATE, out_path=DEFAULT_OUT):
+def render_from_data(d, sidebar_html="", template_path=TEMPLATE, out_path=None):
     src = pathlib.Path(template_path).read_text(encoding="utf-8")
-    i1 = src.index(SPLIT_HEAD)
-    i2 = src.index(SPLIT_TAIL)
-    head = src[:i1]
-    tail = src[i2:]
-
-    d = compute(week_id)
-    head = re.sub(r'Weekly Report — 2026-W\d+', f'Weekly Report — {week_id}', head)
+    i1 = src.index(SPLIT_HEAD); i2 = src.index(SPLIT_TAIL)
+    head, tail = src[:i1], src[i2:]
+    wk = d["week_id"]
+    head = re.sub(r'Weekly Report — 2026-W\d+', f'Weekly Report — {wk}', head)
     head = _hydrate_conversion(head, d)
-
+    head = head.replace("@@SIDEBAR@@", sidebar_html)
     middle = build_operational_section(d)
-    out = head + middle + "\n\n</div>\n\n" + tail
-
-    outp = pathlib.Path(out_path)
-    outp.parent.mkdir(parents=True, exist_ok=True)
-    outp.write_text(out, encoding="utf-8")
-    print(f"[OK] {outp} ({len(out):,} bytes) · week={week_id}")
+    out = head + middle + "\n\n</div>\n</div>\n\n" + tail
+    if out_path:
+        outp = pathlib.Path(out_path); outp.parent.mkdir(parents=True, exist_ok=True)
+        outp.write_text(out, encoding="utf-8")
     return out
+
+
+def render(week_id, template_path=TEMPLATE, out_path=DEFAULT_OUT):
+    """단일 주 편의 래퍼: compute→freeze→render_from_data (사이드바 없음)."""
+    freeze_week(week_id)
+    d = load_report(REPORTS_DIR / f"{week_id}.json")
+    return render_from_data(d, template_path=template_path, out_path=out_path)
+
+
+def rebuild_index(reports_dir=REPORTS_DIR):
+    reports_dir = pathlib.Path(reports_dir); entries = []
+    for p in reports_dir.glob("*.json"):
+        if p.name == "index.json": continue
+        try:
+            d = load_report(p)
+        except Exception as e:
+            print(f"[skip] {p.name}: {e}")
+            continue
+        entries.append({"week_id": d["week_id"], "label": d.get("label", d["week_id"]),
+                        "range": d.get("week_range",""), "file": f"weekly-report-{d['week_id']}.html",
+                        "generated_at": d.get("generated_at","")})
+    entries.sort(key=lambda e: e["week_id"], reverse=True)
+    (reports_dir / "index.json").write_text(
+        json.dumps({"reports": entries}, ensure_ascii=False, indent=2), encoding="utf-8")
+    return entries
+
+
+def build_sidebar(index, current_week):
+    rows = []
+    for e in index:
+        cur = ' aria-current="page" class="wk-item active"' if e["week_id"] == current_week else ' class="wk-item"'
+        rows.append(f'<a href="{e["file"]}"{cur}><span class="wk-key">{_esc(e["label"])}</span>'
+                    f'<span class="wk-range">{_esc(e["range"])}</span></a>')
+    return ('<aside class="sidebar">\n  <div class="sb-head">주차 이력</div>\n  <nav class="wk-list">\n    '
+            + "\n    ".join(rows) + '\n  </nav>\n</aside>')
+
+
+def render_all_archive(reports_dir=REPORTS_DIR, out_dir=ROOT / "docs"):
+    out_dir = pathlib.Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    index = rebuild_index(reports_dir)
+    done = []
+    for e in index:
+        try:
+            d = load_report(pathlib.Path(reports_dir) / f'{e["week_id"]}.json')
+            sb = build_sidebar(index, e["week_id"])
+            render_from_data(d, sb, out_path=out_dir / e["file"])
+        except Exception as ex:
+            print(f"[skip] {e['week_id']}: {ex}")
+            continue
+        done.append(e["week_id"])
+    done_set = set(done)
+    for e in index:  # 최신(맨 위)부터 순회 → 렌더 성공(done)한 첫 주를 index.html로 승격
+        if e["week_id"] in done_set:
+            (out_dir / "index.html").write_text(
+                (out_dir / e["file"]).read_text(encoding="utf-8"), encoding="utf-8")
+            break
+    return done
 
 
 if __name__ == "__main__":

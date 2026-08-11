@@ -627,6 +627,7 @@ def compute(week_id):
     d.update(kpi_otif_claims())
     d.update(kpi_next_week_forecast())
     d["conversion_kpi"] = CONVERSION_KPI
+    d["label"] = f'W{week_id.split("-W")[1]} ({d["week_range"].split("~")[0].strip().replace("-", "/")}~)'
     return d
 
 

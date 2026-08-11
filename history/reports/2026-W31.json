@@ -1,0 +1,262 @@
+{
+  "week_id": "2026-W31",
+  "week_range": "07-27 ~ 07-31",
+  "generated_at": "2026-08-11T10:25:56",
+  "inbound_count": 249,
+  "inbound_completed": 248,
+  "inbound_unconfirmed": 1,
+  "inbound_completion_rate": 99.6,
+  "inbound_total_qty": 68914,
+  "chart_inbound_by_date": [
+    {
+      "date": "2026-07-27",
+      "cnt": 43
+    },
+    {
+      "date": "2026-07-28",
+      "cnt": 73
+    },
+    {
+      "date": "2026-07-29",
+      "cnt": 27
+    },
+    {
+      "date": "2026-07-30",
+      "cnt": 35
+    },
+    {
+      "date": "2026-07-31",
+      "cnt": 71
+    }
+  ],
+  "chart_inbound_by_purpose": [
+    {
+      "purpose": "생산산출",
+      "cnt": 172,
+      "qty": 33601
+    },
+    {
+      "purpose": "재고이동",
+      "cnt": 60,
+      "qty": 17967
+    },
+    {
+      "purpose": "재고생산",
+      "cnt": 12,
+      "qty": 17108
+    },
+    {
+      "purpose": "생산샘플",
+      "cnt": 4,
+      "qty": 8
+    },
+    {
+      "purpose": "고객물품",
+      "cnt": 1,
+      "qty": 230
+    }
+  ],
+  "qc_fail_rate": 1.2,
+  "qc_quality_issue_cnt": 3,
+  "qc_issue_breakdown": {
+    "수량이슈": 2,
+    "품질이슈": 3,
+    "운영이슈": 1
+  },
+  "no_arrival_count": 10,
+  "no_arrival_by_supplier": [
+    [
+      "신명인쇄",
+      5
+    ],
+    [
+      "\"Longgang Xingq",
+      2
+    ],
+    [
+      "\"Shenzhen Xin H",
+      1
+    ],
+    [
+      "주식회사 에벤에셀기업",
+      1
+    ],
+    [
+      "주식회사 케이원랩(KWON",
+      1
+    ]
+  ],
+  "material_picking_count": 323,
+  "material_picking_matched": 335,
+  "material_picking_cancelled": 12,
+  "material_picking_by_purpose": {
+    "조립투입": 315,
+    "생산투입": 20
+  },
+  "outbound_count": 54,
+  "weekly_cbm": 18.86,
+  "warehouse_util_pct": 42.5,
+  "chart_outbound_cbm_by_date": [
+    {
+      "date": "2026-07-27",
+      "cbm": 0.02
+    },
+    {
+      "date": "2026-07-28",
+      "cbm": 4.41
+    },
+    {
+      "date": "2026-07-29",
+      "cbm": 6.63
+    },
+    {
+      "date": "2026-07-30",
+      "cbm": 0.26
+    },
+    {
+      "date": "2026-07-31",
+      "cbm": 7.53
+    }
+  ],
+  "chart_cbm_by_channel": [
+    {
+      "name": "로젠 택배",
+      "cbm": 7.99,
+      "cnt": 17
+    },
+    {
+      "name": "신시어리 기사님 (조희선)",
+      "cbm": 6.36,
+      "cnt": 11
+    },
+    {
+      "name": "신시어리 기사님 (이장훈)",
+      "cbm": 2.42,
+      "cnt": 5
+    },
+    {
+      "name": "고객 직접수령",
+      "cbm": 1.79,
+      "cnt": 3
+    },
+    {
+      "name": "신시어리 (고고엑스)",
+      "cbm": 0.3,
+      "cnt": 4
+    },
+    {
+      "name": "베스트원 (택배)",
+      "cbm": 0.0,
+      "cnt": 5
+    },
+    {
+      "name": "제작협력사 (택배)",
+      "cbm": 0.0,
+      "cnt": 1
+    },
+    {
+      "name": "미기재",
+      "cbm": 0.0,
+      "cnt": 2
+    },
+    {
+      "name": "베스트원 (퀵)",
+      "cbm": 0.0,
+      "cnt": 3
+    },
+    {
+      "name": "로지비 (택배)",
+      "cbm": 0.0,
+      "cnt": 2
+    },
+    {
+      "name": "제작협력사 (퀵)",
+      "cbm": 0.0,
+      "cnt": 1
+    }
+  ],
+  "chart_by_method": [
+    {
+      "method": "퀵(수도권)",
+      "cbm": 9.09
+    },
+    {
+      "method": "택배",
+      "cbm": 7.99
+    },
+    {
+      "method": "기타(고객직접)",
+      "cbm": 1.79
+    }
+  ],
+  "chart_driver_util": [
+    {
+      "driver": "조희선",
+      "pct": 34.1,
+      "days": 4
+    },
+    {
+      "driver": "이장훈",
+      "pct": 13.0,
+      "days": 4
+    }
+  ],
+  "dts_count": 146,
+  "dts_avg_min": 19,
+  "dts_median_min": 8,
+  "dts_within_target": 146,
+  "dts_target_pct": 100.0,
+  "dts_excluded_negative": 29,
+  "supplier_ontime_pct": 97.8,
+  "supplier_total": 135,
+  "supplier_ontime": 132,
+  "supplier_late": 3,
+  "supplier_avg_diff_days": -1.7,
+  "fpy_pct": 99.1,
+  "fpy_pass": 2435,
+  "fpy_total": 2457,
+  "aql_pct": 99.7,
+  "aql_unresolved": 7,
+  "aql_sample_fail": 0,
+  "inspect_time_median_min": 3.3,
+  "inspect_time_mean_min": 10.3,
+  "inspect_time_p90_min": 23.3,
+  "inspect_time_count": 2090,
+  "ship_cost_per_order_median": 75000,
+  "ship_cost_per_cbm_median": 75743,
+  "ship_cost_count": 169,
+  "ship_cost_cbm_count": 116,
+  "order_cycle_median_days": 18,
+  "order_cycle_p25_days": 14.0,
+  "order_cycle_p75_days": 23.0,
+  "order_cycle_count": 11335,
+  "otif_ontime_pct": 99.9,
+  "otif_infull_pct": 100.0,
+  "otif_total": 2356,
+  "promise_conversion_pct": 99.9,
+  "promise_avg_delay_days": 0.0,
+  "claim_count": 0,
+  "claim_open": 0,
+  "forecast_count": 40,
+  "forecast_cbm": 25.73,
+  "forecast_peak_day": "목",
+  "forecast_data_weeks": 14,
+  "conversion_kpi": {
+    "cbm_completeness_pct": 81.2,
+    "cbm_complete": 1335,
+    "cbm_total": 1645,
+    "cbm_pending": 310,
+    "cbm_box_only_pct": 90.4,
+    "cbm_cbm_only_pct": 84.1,
+    "cbm_a1_pct": 89.6,
+    "cbm_dayoung_pct": 1.9,
+    "cbm_bottleneck_note": "미확정 310건 중 다영기획 156건(50.3%)",
+    "mh_inbound_pct": 100.0,
+    "mh_inspect_pct": 99.8,
+    "mh_putaway_pct": 99.9,
+    "mh_full_cycle_pct": 99.7,
+    "mh_prepkg_pct": 7.9,
+    "mh_timestamp_count": 3808
+  },
+  "label": "W31 (07/27~)"
+}

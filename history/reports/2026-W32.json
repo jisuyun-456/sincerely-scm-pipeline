@@ -1,0 +1,235 @@
+{
+  "week_id": "2026-W32",
+  "week_range": "08-03 ~ 08-07",
+  "generated_at": "2026-08-11T10:28:31",
+  "inbound_count": 234,
+  "inbound_completed": 234,
+  "inbound_unconfirmed": 0,
+  "inbound_completion_rate": 100.0,
+  "inbound_total_qty": 81788,
+  "chart_inbound_by_date": [
+    {
+      "date": "2026-08-03",
+      "cnt": 38
+    },
+    {
+      "date": "2026-08-04",
+      "cnt": 54
+    },
+    {
+      "date": "2026-08-05",
+      "cnt": 44
+    },
+    {
+      "date": "2026-08-06",
+      "cnt": 30
+    },
+    {
+      "date": "2026-08-07",
+      "cnt": 68
+    }
+  ],
+  "chart_inbound_by_purpose": [
+    {
+      "purpose": "생산산출",
+      "cnt": 152,
+      "qty": 34908
+    },
+    {
+      "purpose": "재고이동",
+      "cnt": 53,
+      "qty": 23219
+    },
+    {
+      "purpose": "재고생산",
+      "cnt": 23,
+      "qty": 23650
+    },
+    {
+      "purpose": "생산샘플",
+      "cnt": 6,
+      "qty": 11
+    }
+  ],
+  "qc_fail_rate": 1.28,
+  "qc_quality_issue_cnt": 3,
+  "qc_issue_breakdown": {
+    "품질이슈": 3,
+    "운영이슈": 2,
+    "수량이슈": 3
+  },
+  "no_arrival_count": 2,
+  "no_arrival_by_supplier": [
+    [
+      "(주)뮤스트",
+      1
+    ],
+    [
+      "엔엠텍코리아주식회사",
+      1
+    ]
+  ],
+  "material_picking_count": 402,
+  "material_picking_matched": 403,
+  "material_picking_cancelled": 1,
+  "material_picking_by_purpose": {
+    "조립투입": 376,
+    "생산투입": 27
+  },
+  "outbound_count": 50,
+  "weekly_cbm": 29.04,
+  "warehouse_util_pct": 65.4,
+  "chart_outbound_cbm_by_date": [
+    {
+      "date": "2026-08-03",
+      "cbm": 2.27
+    },
+    {
+      "date": "2026-08-04",
+      "cbm": 6.2
+    },
+    {
+      "date": "2026-08-05",
+      "cbm": 8.53
+    },
+    {
+      "date": "2026-08-06",
+      "cbm": 7.56
+    },
+    {
+      "date": "2026-08-07",
+      "cbm": 4.49
+    }
+  ],
+  "chart_cbm_by_channel": [
+    {
+      "name": "신시어리 기사님 (조희선)",
+      "cbm": 14.42,
+      "cnt": 15
+    },
+    {
+      "name": "신시어리 기사님 (이장훈)",
+      "cbm": 10.94,
+      "cnt": 11
+    },
+    {
+      "name": "로젠 택배",
+      "cbm": 1.51,
+      "cnt": 8
+    },
+    {
+      "name": "신시어리 기사님 (박종성)",
+      "cbm": 1.36,
+      "cnt": 2
+    },
+    {
+      "name": "신시어리 (고고엑스)",
+      "cbm": 0.55,
+      "cnt": 7
+    },
+    {
+      "name": "고객 직접수령",
+      "cbm": 0.26,
+      "cnt": 1
+    },
+    {
+      "name": "베스트원 (퀵)",
+      "cbm": 0.0,
+      "cnt": 5
+    },
+    {
+      "name": "다영기획 (퀵)",
+      "cbm": 0.0,
+      "cnt": 1
+    }
+  ],
+  "chart_by_method": [
+    {
+      "method": "퀵(수도권)",
+      "cbm": 27.27
+    },
+    {
+      "method": "택배",
+      "cbm": 1.51
+    },
+    {
+      "method": "기타(고객직접)",
+      "cbm": 0.26
+    }
+  ],
+  "chart_driver_util": [
+    {
+      "driver": "이장훈",
+      "pct": 54.2,
+      "days": 4
+    },
+    {
+      "driver": "조희선",
+      "pct": 50.0,
+      "days": 4
+    },
+    {
+      "driver": "박종성",
+      "pct": 11.3,
+      "days": 1
+    }
+  ],
+  "dts_count": 84,
+  "dts_avg_min": 14,
+  "dts_median_min": 5,
+  "dts_within_target": 84,
+  "dts_target_pct": 100.0,
+  "dts_excluded_negative": 70,
+  "supplier_ontime_pct": 97.8,
+  "supplier_total": 139,
+  "supplier_ontime": 136,
+  "supplier_late": 3,
+  "supplier_avg_diff_days": -2.3,
+  "fpy_pct": 99.1,
+  "fpy_pass": 2435,
+  "fpy_total": 2457,
+  "aql_pct": 99.7,
+  "aql_unresolved": 7,
+  "aql_sample_fail": 0,
+  "inspect_time_median_min": 3.3,
+  "inspect_time_mean_min": 10.3,
+  "inspect_time_p90_min": 23.3,
+  "inspect_time_count": 2090,
+  "ship_cost_per_order_median": 75000,
+  "ship_cost_per_cbm_median": 75743,
+  "ship_cost_count": 169,
+  "ship_cost_cbm_count": 116,
+  "order_cycle_median_days": 18,
+  "order_cycle_p25_days": 14.0,
+  "order_cycle_p75_days": 23.0,
+  "order_cycle_count": 11335,
+  "otif_ontime_pct": 99.9,
+  "otif_infull_pct": 100.0,
+  "otif_total": 2356,
+  "promise_conversion_pct": 99.9,
+  "promise_avg_delay_days": 0.0,
+  "claim_count": 0,
+  "claim_open": 0,
+  "forecast_count": 40,
+  "forecast_cbm": 25.73,
+  "forecast_peak_day": "목",
+  "forecast_data_weeks": 14,
+  "conversion_kpi": {
+    "cbm_completeness_pct": 81.2,
+    "cbm_complete": 1335,
+    "cbm_total": 1645,
+    "cbm_pending": 310,
+    "cbm_box_only_pct": 90.4,
+    "cbm_cbm_only_pct": 84.1,
+    "cbm_a1_pct": 89.6,
+    "cbm_dayoung_pct": 1.9,
+    "cbm_bottleneck_note": "미확정 310건 중 다영기획 156건(50.3%)",
+    "mh_inbound_pct": 100.0,
+    "mh_inspect_pct": 99.8,
+    "mh_putaway_pct": 99.9,
+    "mh_full_cycle_pct": 99.7,
+    "mh_prepkg_pct": 7.9,
+    "mh_timestamp_count": 3808
+  },
+  "label": "W32 (08/03~)"
+}

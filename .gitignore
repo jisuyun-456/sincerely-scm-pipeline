@@ -29,6 +29,8 @@ graphify-out/needs_update
 graphify-out/cache/
 outputs/
 reports/
+!history/reports/
+!history/reports/*.json
 *.pdf
 tmp_*.json
 
