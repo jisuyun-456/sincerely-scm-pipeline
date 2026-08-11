@@ -229,20 +229,25 @@ def _wms_headers():
 def _tms_headers():
     return {"Authorization": f"Bearer {TMS_KEY}"}
 
-def _get_with_retry(url, field_params, params, headers, max_retries=3):
+def _get_with_retry(url, field_params, params, headers, max_retries=5):
+    last_exc = None
     for attempt in range(max_retries):
         try:
             qs = "&".join(f"{k}={v}" for k, v in params.items())
             full_url = f"{url}?{field_params}&{qs}" if field_params else f"{url}?{qs}"
-            resp = requests.get(full_url, headers=headers, timeout=30)
-            if resp.status_code == 429:
-                time.sleep(30)
-                continue
+            resp = requests.get(full_url, headers=headers, timeout=60)
+            # 429(rate limit) + 5xx(일시 장애)는 재시도 대상 — 마지막 시도면 그대로 반환
+            if resp.status_code == 429 or resp.status_code >= 500:
+                if attempt < max_retries-1:
+                    time.sleep(min(2**attempt, 30))
+                    continue
+                return resp
             return resp
-        except Exception:
+        except Exception as e:
+            last_exc = e
             if attempt < max_retries-1:
                 time.sleep(2**attempt)
-    raise RuntimeError(f"fetch 실패: {url}")
+    raise RuntimeError(f"fetch 실패: {url} (last: {type(last_exc).__name__ if last_exc else 'HTTP'})")
 
 def _fetch_all(url, field_params, extra_params, headers):
     all_recs, offset = [], None
