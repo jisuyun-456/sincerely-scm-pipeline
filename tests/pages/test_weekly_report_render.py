@@ -78,3 +78,25 @@ def test_render_all_archive_skips_bad_json(tmp_path):
     assert (out_dir/"weekly-report-2026-W31.html").exists()
     assert (out_dir/"weekly-report-2026-W32.html").exists()
     assert not (out_dir/"weekly-report-2026-W99.html").exists()
+
+
+def test_render_all_archive_latest_render_fail_falls_back(tmp_path):
+    # W99 = VALID JSON (rebuild_index 통과 → index[0], 최신) 이지만 render_from_data 가
+    # 필요로 하는 운영 키가 없어 렌더 단계에서 실패 → done 에서 제외.
+    # index.html 은 W99 가 아니라 done 에 있는 최신 주(W32)로 승격되어야 함.
+    reports_dir = _copy_seeds(tmp_path / "reports")
+    (reports_dir / "2026-W99.json").write_text(json.dumps({
+        "week_id": "2026-W99",
+        "week_range": "12-21 ~ 12-25",
+        "label": "W99 (12/21~)",
+        "generated_at": "2026-12-22T00:00:00",
+    }, ensure_ascii=False), encoding="utf-8")
+    out_dir = tmp_path / "out"
+
+    weeks = R.render_all_archive(reports_dir=reports_dir, out_dir=out_dir)  # 크래시 금지
+
+    assert "2026-W99" not in weeks
+    assert set(weeks) == {"2026-W31", "2026-W32"}
+    idx_html_path = out_dir / "index.html"
+    assert idx_html_path.exists()
+    assert "2026-W32" in idx_html_path.read_text(encoding="utf-8")

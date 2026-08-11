@@ -355,10 +355,12 @@ def render_all_archive(reports_dir=REPORTS_DIR, out_dir=ROOT / "docs"):
             print(f"[skip] {e['week_id']}: {ex}")
             continue
         done.append(e["week_id"])
-    if index:  # 최신(맨 위) → index.html
-        latest = index[0]
-        (out_dir / "index.html").write_text(
-            (out_dir / latest["file"]).read_text(encoding="utf-8"), encoding="utf-8")
+    done_set = set(done)
+    for e in index:  # 최신(맨 위)부터 순회 → 렌더 성공(done)한 첫 주를 index.html로 승격
+        if e["week_id"] in done_set:
+            (out_dir / "index.html").write_text(
+                (out_dir / e["file"]).read_text(encoding="utf-8"), encoding="utf-8")
+            break
     return done
 
 
