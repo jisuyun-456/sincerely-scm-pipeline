@@ -28,3 +28,16 @@ def test_render_from_data_divbalanced(tmp_path):
     assert "2026-W32" in html
     assert "<aside id='sb'>" in html
     assert html.count("<div") == html.count("</div"), "div 불균형"
+
+
+def test_rebuild_index_and_sidebar(tmp_path):
+    for wk, rng in [("2026-W31","2026-07-27 ~ 2026-07-31"), ("2026-W32","2026-08-03 ~ 2026-08-07")]:
+        R._write_report_json({"week_id":wk,"week_range":rng,"label":f"{wk[-3:]} ({rng[5:10]}~)",
+                              "generated_at":"2026-08-10T00:00:00"}, tmp_path/f"{wk}.json")
+    idx = R.rebuild_index(tmp_path)
+    assert [e["week_id"] for e in idx] == ["2026-W32","2026-W31"]  # 최신 위
+    assert (tmp_path/"index.json").exists()
+    sb = R.build_sidebar(idx, "2026-W32")
+    assert "W32" in sb and "W31" in sb
+    assert "weekly-report-2026-W31.html" in sb   # 링크
+    assert sb.count("aria-current") == 1          # 현재 주만 표시

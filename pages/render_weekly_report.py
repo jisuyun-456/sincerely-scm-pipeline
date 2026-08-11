@@ -314,6 +314,30 @@ def render(week_id, template_path=TEMPLATE, out_path=DEFAULT_OUT):
     return render_from_data(d, template_path=template_path, out_path=out_path)
 
 
+def rebuild_index(reports_dir=REPORTS_DIR):
+    reports_dir = pathlib.Path(reports_dir); entries = []
+    for p in reports_dir.glob("*.json"):
+        if p.name == "index.json": continue
+        d = load_report(p)
+        entries.append({"week_id": d["week_id"], "label": d.get("label", d["week_id"]),
+                        "range": d.get("week_range",""), "file": f"weekly-report-{d['week_id']}.html",
+                        "generated_at": d.get("generated_at","")})
+    entries.sort(key=lambda e: e["week_id"], reverse=True)
+    (reports_dir / "index.json").write_text(
+        json.dumps({"reports": entries}, ensure_ascii=False, indent=2), encoding="utf-8")
+    return entries
+
+
+def build_sidebar(index, current_week):
+    rows = []
+    for e in index:
+        cur = ' aria-current="page" class="wk-item active"' if e["week_id"] == current_week else ' class="wk-item"'
+        rows.append(f'<a href="{e["file"]}"{cur}><span class="wk-key">{_esc(e["label"])}</span>'
+                    f'<span class="wk-range">{_esc(e["range"])}</span></a>')
+    return ('<aside class="sidebar">\n  <div class="sb-head">주차 이력</div>\n  <nav class="wk-list">\n    '
+            + "\n    ".join(rows) + '\n  </nav>\n</aside>')
+
+
 if __name__ == "__main__":
     wk = sys.argv[1] if len(sys.argv) > 1 else _default_week()
     outp = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_OUT
