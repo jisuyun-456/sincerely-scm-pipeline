@@ -300,7 +300,7 @@ def render_from_data(d, sidebar_html="", template_path=TEMPLATE, out_path=None):
     head = _hydrate_conversion(head, d)
     head = head.replace("@@SIDEBAR@@", sidebar_html)
     middle = build_operational_section(d)
-    out = head + middle + "\n\n</div>\n\n" + tail
+    out = head + middle + "\n\n</div>\n</div>\n\n" + tail
     if out_path:
         outp = pathlib.Path(out_path); outp.parent.mkdir(parents=True, exist_ok=True)
         outp.write_text(out, encoding="utf-8")

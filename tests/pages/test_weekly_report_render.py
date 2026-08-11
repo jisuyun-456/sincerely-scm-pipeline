@@ -15,19 +15,23 @@ def test_freeze_load_roundtrip(tmp_path):
 
 FIX = pathlib.Path(__file__).resolve().parents[2] / "history" / "reports" / "2026-W32.json"
 
-def test_render_from_data_divbalanced(tmp_path):
+def test_render_from_data_divbalanced():
+    # 프로덕션 템플릿에 @@SIDEBAR@@ 토큰이 실재(Task 5) — 실제 기본 TEMPLATE 대상으로 검증.
     d = R.load_report(FIX)
-    # 프로덕션 템플릿엔 @@SIDEBAR@@ 토큰이 아직 없음(Task 5에서 추가 예정) — head 슬라이스 안에
-    # 토큰을 심은 스크래치 사본으로 치환 로직 자체를 지금 검증한다.
-    tpl_src = R.TEMPLATE.read_text(encoding="utf-8")
-    tpl_src = tpl_src.replace(R.SPLIT_HEAD, "@@SIDEBAR@@\n" + R.SPLIT_HEAD, 1)
-    tpl = tmp_path / "tpl.html"
-    tpl.write_text(tpl_src, encoding="utf-8")
-
-    html = R.render_from_data(d, sidebar_html="<aside id='sb'></aside>", template_path=tpl)
+    html = R.render_from_data(d, sidebar_html="<aside id='sb'></aside>")
     assert "2026-W32" in html
     assert "<aside id='sb'>" in html
     assert html.count("<div") == html.count("</div"), "div 불균형"
+
+
+def test_template_two_column_layout():
+    d = R.load_report(FIX)
+    idx = R.rebuild_index()   # 시드 W31·W32
+    html = R.render_from_data(d, R.build_sidebar(idx, "2026-W32"))
+    assert 'class="layout"' in html
+    assert 'class="sidebar"' in html
+    assert "weekly-report-2026-W31.html" in html   # 사이드바 실제 주입
+    assert html.count("<div") == html.count("</div")
 
 
 def test_rebuild_index_and_sidebar(tmp_path):
