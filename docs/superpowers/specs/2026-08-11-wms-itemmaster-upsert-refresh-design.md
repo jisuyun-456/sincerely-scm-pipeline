@@ -1,7 +1,31 @@
 # WMS_ItemMaster 재적재 — upsert 리팩터 (설계)
 
+> ## ⛔ SUPERSEDED (2026-08-11, 실행 전 폐기) — 착수 금지
+>
+> **본 설계의 전제가 검증 단계에서 반증됐다.** 후속 설계:
+> `2026-08-11-shipment-cbm-parse-match-design.md`
+>
+> **반증된 전제**: §1은 "`build_kit_lookup()`이 이 테이블을 읽는다"를 근거로 굿즈행 갱신 가치를 주장했다.
+> 테이블을 읽는 것은 맞으나 **PT행만** 읽는다. ItemMaster 소비처 4곳
+> (`replay_outbound_cbm.build_kit_lookup` / `order_cascade.py:136` / `capacity_snapshot_run.py:137-140`
+> / `storage_occupied.py:63-66`)은 전부 PT코드로만 조인한다 — 앞의 둘은 `WMS_BOM.소품목_PT`(항상 `PT####`),
+> 뒤의 둘은 `parse_pt_from_ledger_key(품목키)`로 명시 필터. **굿즈행(품목키=한글 굿즈명)은 PT 정규식에
+> 영원히 매칭되지 않는다.** 직접 굿즈 CBM 경로는 ItemMaster가 아니라 TMS Product를
+> `load_product_lookup()`으로 읽는다. → 굿즈행 재적재는 다운스트림 출력을 **하나도** 바꾸지 못한다.
+>
+> **그런데 유일한 실효는 부수피해였다**: 재적재 시 351개 파츠행이 `출처` 치수파싱→수기로 뒤집힌다
+> (`build_item_rows`가 파츠를 CBM 없이 `출처="수기"`로 방출). 그 결과 ① `part_cbm_backfill.py:130-132`
+> 스코프(`CBM<=0 OR 출처∈{치수파싱,QC버킷}`)에서 영구 제외 → 파서 개선이 영원히 도달 불가,
+> ② P3' 문서의 롤백 핸들(`출처='치수파싱'` 필터) 소멸, ③ kit 신뢰도 0.55→0.7 묵시 인플레.
+> (단, "CBM 값이 지워진다"는 초기 우려는 **오판** — Airtable PATCH는 부분 갱신이라 누락 필드는 보존된다.)
+>
+> §6-4의 통과조건("파츠 diff 0건이어야 함")도 오류다 — diff는 351건이며 이는 `build_item_rows` 버그가
+> 아니라 upsert가 정당한 백필 데이터를 덮는 것이다. 그대로 따르면 오진한다.
+>
+> 실측 근거는 후속 설계 §2 참조. 본 문서는 audit trail로 보존한다.
+
 - **일자**: 2026-08-11
-- **Chain**: bridge-cbm-ssot (P1)
+- **Chain**: bridge-cbm-ssot (P1) — **폐기됨**
 - **선행**: 2026-08-11 세션 — Product 백필(신규 6굿즈+빈필드 28행)·dedup(30행 삭제)·`match_product` 공백무시 매칭 fix (커밋 8409485, 802f8cc @ feat/weekly-report-archive)
 
 ## 1. 배경 (Why now)
