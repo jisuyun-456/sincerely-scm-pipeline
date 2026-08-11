@@ -291,25 +291,27 @@ def _hydrate_conversion(head, d):
     return head
 
 
-def render(week_id, template_path=TEMPLATE, out_path=DEFAULT_OUT):
+def render_from_data(d, sidebar_html="", template_path=TEMPLATE, out_path=None):
     src = pathlib.Path(template_path).read_text(encoding="utf-8")
-    i1 = src.index(SPLIT_HEAD)
-    i2 = src.index(SPLIT_TAIL)
-    head = src[:i1]
-    tail = src[i2:]
-
-    d = compute(week_id)
-    head = re.sub(r'Weekly Report — 2026-W\d+', f'Weekly Report — {week_id}', head)
+    i1 = src.index(SPLIT_HEAD); i2 = src.index(SPLIT_TAIL)
+    head, tail = src[:i1], src[i2:]
+    wk = d["week_id"]
+    head = re.sub(r'Weekly Report — 2026-W\d+', f'Weekly Report — {wk}', head)
     head = _hydrate_conversion(head, d)
-
+    head = head.replace("@@SIDEBAR@@", sidebar_html)
     middle = build_operational_section(d)
     out = head + middle + "\n\n</div>\n\n" + tail
-
-    outp = pathlib.Path(out_path)
-    outp.parent.mkdir(parents=True, exist_ok=True)
-    outp.write_text(out, encoding="utf-8")
-    print(f"[OK] {outp} ({len(out):,} bytes) · week={week_id}")
+    if out_path:
+        outp = pathlib.Path(out_path); outp.parent.mkdir(parents=True, exist_ok=True)
+        outp.write_text(out, encoding="utf-8")
     return out
+
+
+def render(week_id, template_path=TEMPLATE, out_path=DEFAULT_OUT):
+    """단일 주 편의 래퍼: compute→freeze→render_from_data (사이드바 없음)."""
+    freeze_week(week_id)
+    d = load_report(REPORTS_DIR / f"{week_id}.json")
+    return render_from_data(d, template_path=template_path, out_path=out_path)
 
 
 if __name__ == "__main__":
