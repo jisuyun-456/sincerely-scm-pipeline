@@ -338,6 +338,22 @@ def build_sidebar(index, current_week):
             + "\n    ".join(rows) + '\n  </nav>\n</aside>')
 
 
+def render_all_archive(reports_dir=REPORTS_DIR, out_dir=ROOT / "docs"):
+    out_dir = pathlib.Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    index = rebuild_index(reports_dir)
+    done = []
+    for e in index:
+        d = load_report(pathlib.Path(reports_dir) / f'{e["week_id"]}.json')
+        sb = build_sidebar(index, e["week_id"])
+        render_from_data(d, sb, out_path=out_dir / e["file"])
+        done.append(e["week_id"])
+    if index:  # 최신(맨 위) → index.html
+        latest = index[0]
+        (out_dir / "index.html").write_text(
+            (out_dir / latest["file"]).read_text(encoding="utf-8"), encoding="utf-8")
+    return done
+
+
 if __name__ == "__main__":
     wk = sys.argv[1] if len(sys.argv) > 1 else _default_week()
     outp = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_OUT

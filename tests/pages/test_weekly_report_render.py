@@ -45,3 +45,12 @@ def test_rebuild_index_and_sidebar(tmp_path):
     assert "W32" in sb and "W31" in sb
     assert "weekly-report-2026-W31.html" in sb   # 링크
     assert sb.count("aria-current") == 1          # 현재 주만 표시
+
+
+def test_render_all_archive(tmp_path):
+    weeks = R.render_all_archive(out_dir=tmp_path)   # 시드 W31·W32 사용
+    assert set(weeks) == {"2026-W31","2026-W32"}
+    assert (tmp_path/"weekly-report-2026-W31.html").exists()
+    assert (tmp_path/"weekly-report-2026-W32.html").exists()
+    idx_html = (tmp_path/"index.html").read_text(encoding="utf-8")
+    assert "2026-W32" in idx_html and 'class="sidebar"' in idx_html   # index=최신+사이드바
