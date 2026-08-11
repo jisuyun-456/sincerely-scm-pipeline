@@ -15,7 +15,10 @@ render_weekly_report.py
 """
 import re
 import sys
+import json
 import pathlib
+import datetime
+from collections import Counter
 from datetime import date, timedelta
 
 
@@ -35,6 +38,7 @@ ROOT = _PAGES.parent
 # 템플릿은 pages/ 아래 추적 파일로 보관 (_AutoResearch/**/outputs/ 는 .gitignore → CI 미포함).
 TEMPLATE = _PAGES / "weekly_report.template.html"
 DEFAULT_OUT = ROOT / "docs" / "weekly-report.html"
+REPORTS_DIR = ROOT / "history" / "reports"
 
 SPLIT_HEAD = '  <!-- ===================== Ⅱ 운영 KPI ===================== -->'
 SPLIT_TAIL = '<!-- ===================== 카드 상세 모달 ===================== -->'
@@ -45,6 +49,36 @@ WD_KR = {"월": "월", "화": "화", "수": "수", "목": "목", "금": "금"}
 # ── HTML emit 헬퍼 ────────────────────────────────────────────────────────────
 def _esc(s):
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+# ── 주간 리포트 데이터 freeze/load 헬퍼 ───────────────────────────────────────
+def _jsonable(o):
+    if isinstance(o, dict):
+        return {k: _jsonable(v) for k, v in o.items()}
+    if isinstance(o, Counter):
+        return {k: _jsonable(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple, set)):
+        return [_jsonable(v) for v in o]
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return o.isoformat()
+    return o
+
+
+def _write_report_json(d, path):
+    path = pathlib.Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(_jsonable(d), ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
+def load_report(path):
+    return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+
+def freeze_week(week_id, reports_dir=REPORTS_DIR):
+    d = compute(week_id)
+    d["generated_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+    return _write_report_json(d, pathlib.Path(reports_dir) / f"{week_id}.json")
 
 
 def vbar_chart(title, sub, items, val_key, fmt, dim_below=None):
