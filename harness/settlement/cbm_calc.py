@@ -111,6 +111,16 @@ def load_product_lookup(headers: dict) -> dict[str, dict]:
         if e["code"]:
             ck = e["code"].lower()
             lookup[ck] = _resolve_dup(lookup[ck], e) if ck in lookup else e
+    # 공백 제거 alias — 붙임/띄움 철자 변형 매칭('스펙트럼컬러펜'↔'스펙트럼 컬러펜').
+    # 실제 name/code 키는 절대 덮지 않음(gap fill만). alias 간 충돌은 _resolve_dup로 해소.
+    real_keys = set(lookup.keys())
+    for e in entries:
+        if not e["name"]:
+            continue
+        nk = e["name"].lower().replace(" ", "")
+        if not nk or nk in real_keys:
+            continue
+        lookup[nk] = _resolve_dup(lookup[nk], e) if nk in lookup else e
     return lookup
 
 
@@ -142,6 +152,9 @@ def match_product(name: str, lookup: dict) -> tuple[str, dict | None, float]:
         return "", None, 0.0
     if key in lookup:
         return key, lookup[key], 1.0
+    nk = key.replace(" ", "")   # 공백 무시 매칭 (룩업의 stripped alias와 연결)
+    if nk != key and nk in lookup:
+        return nk, lookup[nk], 1.0
 
     tgt = _tokenize(name)
     if not tgt:
