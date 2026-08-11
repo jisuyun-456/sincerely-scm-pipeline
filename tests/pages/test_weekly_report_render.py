@@ -1,6 +1,16 @@
-import json, pathlib, sys
+import json, pathlib, shutil, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "pages"))
 import render_weekly_report as R
+
+SEED_DIR = pathlib.Path(__file__).resolve().parents[2] / "history" / "reports"
+SEED_WEEKS = ["2026-W31", "2026-W32"]
+
+
+def _copy_seeds(dest_dir):
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    for wk in SEED_WEEKS:
+        shutil.copy(SEED_DIR / f"{wk}.json", dest_dir / f"{wk}.json")
+    return dest_dir
 
 def test_freeze_load_roundtrip(tmp_path):
     d = {"week_id": "2026-W32", "inbound_count": 247,
@@ -24,9 +34,10 @@ def test_render_from_data_divbalanced():
     assert html.count("<div") == html.count("</div"), "div 불균형"
 
 
-def test_template_two_column_layout():
+def test_template_two_column_layout(tmp_path):
     d = R.load_report(FIX)
-    idx = R.rebuild_index()   # 시드 W31·W32
+    reports_dir = _copy_seeds(tmp_path / "reports")
+    idx = R.rebuild_index(reports_dir)   # 시드 W31·W32 (격리된 tmp_path)
     html = R.render_from_data(d, R.build_sidebar(idx, "2026-W32"))
     assert 'class="layout"' in html
     assert 'class="sidebar"' in html
@@ -48,9 +59,22 @@ def test_rebuild_index_and_sidebar(tmp_path):
 
 
 def test_render_all_archive(tmp_path):
-    weeks = R.render_all_archive(out_dir=tmp_path)   # 시드 W31·W32 사용
+    reports_dir = _copy_seeds(tmp_path / "reports")
+    out_dir = tmp_path / "out"
+    weeks = R.render_all_archive(reports_dir=reports_dir, out_dir=out_dir)   # 시드 W31·W32 (격리된 tmp_path)
     assert set(weeks) == {"2026-W31","2026-W32"}
-    assert (tmp_path/"weekly-report-2026-W31.html").exists()
-    assert (tmp_path/"weekly-report-2026-W32.html").exists()
-    idx_html = (tmp_path/"index.html").read_text(encoding="utf-8")
+    assert (out_dir/"weekly-report-2026-W31.html").exists()
+    assert (out_dir/"weekly-report-2026-W32.html").exists()
+    idx_html = (out_dir/"index.html").read_text(encoding="utf-8")
     assert "2026-W32" in idx_html and 'class="sidebar"' in idx_html   # index=최신+사이드바
+
+
+def test_render_all_archive_skips_bad_json(tmp_path):
+    reports_dir = _copy_seeds(tmp_path / "reports")
+    (reports_dir / "2026-W99.json").write_text("{bad", encoding="utf-8")
+    out_dir = tmp_path / "out"
+    weeks = R.render_all_archive(reports_dir=reports_dir, out_dir=out_dir)
+    assert set(weeks) == {"2026-W31","2026-W32"}   # W99 skipped, not raised
+    assert (out_dir/"weekly-report-2026-W31.html").exists()
+    assert (out_dir/"weekly-report-2026-W32.html").exists()
+    assert not (out_dir/"weekly-report-2026-W99.html").exists()

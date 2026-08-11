@@ -318,7 +318,11 @@ def rebuild_index(reports_dir=REPORTS_DIR):
     reports_dir = pathlib.Path(reports_dir); entries = []
     for p in reports_dir.glob("*.json"):
         if p.name == "index.json": continue
-        d = load_report(p)
+        try:
+            d = load_report(p)
+        except Exception as e:
+            print(f"[skip] {p.name}: {e}")
+            continue
         entries.append({"week_id": d["week_id"], "label": d.get("label", d["week_id"]),
                         "range": d.get("week_range",""), "file": f"weekly-report-{d['week_id']}.html",
                         "generated_at": d.get("generated_at","")})
@@ -343,9 +347,13 @@ def render_all_archive(reports_dir=REPORTS_DIR, out_dir=ROOT / "docs"):
     index = rebuild_index(reports_dir)
     done = []
     for e in index:
-        d = load_report(pathlib.Path(reports_dir) / f'{e["week_id"]}.json')
-        sb = build_sidebar(index, e["week_id"])
-        render_from_data(d, sb, out_path=out_dir / e["file"])
+        try:
+            d = load_report(pathlib.Path(reports_dir) / f'{e["week_id"]}.json')
+            sb = build_sidebar(index, e["week_id"])
+            render_from_data(d, sb, out_path=out_dir / e["file"])
+        except Exception as ex:
+            print(f"[skip] {e['week_id']}: {ex}")
+            continue
         done.append(e["week_id"])
     if index:  # 최신(맨 위) → index.html
         latest = index[0]

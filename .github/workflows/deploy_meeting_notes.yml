@@ -30,8 +30,10 @@ jobs:
         run: |
           mkdir -p site/history
 
-          # 메인 대시보드 (정적 파일만, Airtable 호출 없음)
-          cp pages/dashboard.html site/index.html
+          # 랜딩 = 최신 주 리포트 (커밋된 아카이브 사용, deploy_pages.yml과 동일)
+          cp docs/index.html site/index.html
+          cp docs/weekly-report-*.html site/ 2>/dev/null || true
+          cp -r history/reports site/history/reports 2>/dev/null || true
 
           # 히스토리 JSON (레포에 커밋된 최신본 사용)
           if ls history/*.json 1> /dev/null 2>&1; then
