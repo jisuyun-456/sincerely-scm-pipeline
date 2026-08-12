@@ -25,3 +25,37 @@ def test_without_name2code_preserves_current_jaccard_miss():
     # 동일 입력, name2code 없음 → Jaccard 0.33<0.4 → 미매칭 (현행 정산 동작 = 갭).
     out = calc_from_products("데스크테리어 매트×120", _lookup())
     assert out["matched"] == [] and out["unmatched"] == ["데스크테리어 매트"]
+
+
+def _box_lookup():
+    # 무공백 키를 명시적으로 넣는다 — 테스트는 lookup을 손으로 만들므로
+    # load_product_lookup의 alias 자동생성이 일어나지 않는다.
+    e = {"name": "프라임 폴더블 멀티충전기", "code": "PFMC", "box_type": "대형",
+         "qty_per_box": 10, "cbm_per_box": 0.1066, "rec_id": "r2"}
+    return {"프라임 폴더블 멀티충전기": e, "pfmc": e, "프라임폴더블멀티충전기": e}
+
+
+def test_bonus_qty_notation_counts_total():
+    # '50+1' = 본 50 + 여분 1 = 51 → ceil(51/10) = 6박스. v1 파서는 수량을 통째로 유실했다.
+    out = calc_from_products("프라임폴더블멀티충전기 50+1", _box_lookup())
+    assert out["matched"], "보너스 수량 표기가 매칭을 깨뜨리면 안 된다"
+    m = out["matched"][0]
+    assert m["qty"] == 51
+    assert m["extra"] == 1
+    assert m["n_boxes"] == 6
+
+
+def test_bracket_index_stripped_from_name():
+    # '[1]' 인덱스 표기가 붙어도 매칭돼야 한다 (v2가 이름에서 제거).
+    out = calc_from_products("프라임폴더블멀티충전기[1] 20", _box_lookup())
+    assert out["matched"]
+    assert out["matched"][0]["qty"] == 20
+    assert out["matched"][0]["n_boxes"] == 2
+
+
+def test_qty_hint_still_applies_when_no_qty_parsed():
+    # 수량이 전혀 없는 텍스트에서는 기존 qty_hint 폴백이 그대로 동작해야 한다.
+    out = calc_from_products("프라임폴더블멀티충전기", _box_lookup(), qty_hint=30)
+    assert out["matched"]
+    assert out["matched"][0]["qty"] == 30
+    assert out["matched"][0]["n_boxes"] == 3
