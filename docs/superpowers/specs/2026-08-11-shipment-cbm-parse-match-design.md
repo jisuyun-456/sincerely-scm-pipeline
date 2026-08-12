@@ -64,16 +64,24 @@
 
 **B. `harness/backbone/product_alias.py::resolve_product_entry`** — 3단(이름 Jaccard 폴백)에 정규화 재시도 추가
 - 현행 3단: `match_product(name, lookup)` 실패 시 종료.
-- 변경: 실패 시 `normalize_goods(name)`으로 ① name2code 재조회 ② Jaccard 재시도.
-  `crosswalk.py:17-19`의 검증된 패턴과 동일.
-- `method` 반환값에 `'name2code_norm'` / `'jaccard_norm'` 추가 — 관측 가능성 유지(어떤 경로로
-  해소됐는지 정산 리포트에서 구분 가능해야 함).
+- 변경: 실패 시 `normalize_goods(name)`으로 **Jaccard만** 재시도. `crosswalk.py:17-19`와 동일 패턴.
+- `method` 반환값에 `'jaccard_norm'` 추가 — 어떤 경로로 해소됐는지 정산 리포트에서 구분 가능해야 함.
+- ⚠️ **2단(name2code)은 재시도 대상이 아니다** — `product_alias.py:157`이 이미
+  `c = name2code.get(normalize_goods(name))`로 *정규화한 키*를 조회한다. 실측 확인:
+  `resolve_product_entry("데일리짐색(단품)", None, {"데일리짐색":"DLYG"}, lookup)`은
+  **현행 코드에서 이미** `('DLYG', 'name2code')`를 반환한다. 2단 재시도 블록을 추가하면
+  동일 키·동일 가드의 도달 불가 死코드가 된다.
 
-**C. `harness/dispatch/cbm_estimator.py::estimate_shipment_cbm`** — 리졸버 교체
-- `match_product(name, lookup)` → `resolve_product_entry(name, None, name2code, lookup)`.
-- `name2code`는 선택 인자로 주입(기본 `None` → 현행 동작 보존, 하위호환).
-- `score` 기반 confidence 계산 유지: 리졸버는 score를 반환하지 않으므로
-  `method`→score 매핑(`code`/`name2code`=1.0, `jaccard`계열은 `match_product` score)으로 보존.
+**C. 배차 `estimate_shipment_cbm` 리졸버 교체 — 본 설계에서 제외(후속 과제)**
+배차 경로도 공유 리졸버로 바꾸면 +4.0pp(57.5%→61.5%)를 얻지만, 다음 이유로 **분리**한다:
+- `wave_recommender.yml` cron(KST 09/14/17)이 `replay_outbound_cbm.py --write`를 돌리고,
+  그 안에서 `estimate_shipment_cbm` 결과가 `fuzzy_write_decision` 게이트(0.7 PATCH / 0.8 자동배차)를
+  거쳐 **`estimated_cbm`·`estimation_confidence`로 자동 PATCH**된다.
+- 리졸버 교체는 기존에 미매칭이던 라인을 코드·alias 경로로 해소시켜 **confidence를 올린다** →
+  자동배차 밴드 진입 여부가 바뀔 수 있다. `name2code=None` 기본값으로도 동작이 달라지므로
+  "하위호환"이라 부를 수 없다.
+- 즉 별도의 confidence-band delta 계측과 사용자 게이트가 필요하며, 이는 본 설계의
+  정산 스코프와 검증 축이 다르다. → 별도 spec/plan으로 분리.
 
 ## 5. 데이터 흐름 (정산 1건)
 
@@ -88,15 +96,26 @@ Shipment 텍스트 "프라임폴더블멀티충전기 50+1, 데일리짐색(단�
                       → 정확한 n_boxes → CBM·상하차비 정상 산출
 ```
 
-## 6. ⚠️ 리스크 — 정산 금액이 바뀐다 (Risk-First)
+## 6. ⚠️ 리스크 — 기사님 운임이 자동으로 바뀐다 (Risk-First)
 
-**이 변경은 운임 정산의 `total_cbm`과 `unload_fee`를 바꾼다.** 방향은 "과소계상 → 정상"이지만
-**금액에 영향을 주는 변경이므로 사후 검증 없이 배포하면 안 된다.**
+**이 변경은 운임 정산의 `unload_fee`를 바꾸고, 그 값은 cron이 자동으로 Airtable에 쓴다.**
+
+추적된 경로:
+```
+calc_from_products(...)["unload_fee"]        harness/tms_settlement/calc.py:241-242
+   → cbm_unload → unload = _parse_unload_fee(box_text) or cbm_unload      calc.py:265
+   → SettlementItem.unload_calc → _build_patch_fields → client.patch_record()  write.py:130
+   → .github/workflows/tms_settlement.yml  cron '0 9 * * *' = 매일 KST 18:00
+```
+즉 **기사님께 지급되는 상하차비**가 대상이다. 완화 요인은 `calc.py:265`의 `or` — `box_text`
+파싱이 0을 낼 때만 `cbm_unload`가 쓰이는 **폴백 경로**라 전량이 아니다. 그래도 자동 지급 금액이다.
 
 - 수량 0 → 실수량 복원은 `n_boxes = ceil(qty/qty_per_box)`를 1 → N으로 올린다.
   `unload_fee`는 박스 수 기반(`BOX_FEE_RULES`, 상한 50,000원)이므로 **상하차비가 증가하는 방향**.
-- 따라서 **dry-run 비교 리포트(변경 전/후 shipment별 CBM·unload_fee delta)를 산출하고,
-  사용자가 표본을 확인한 뒤에만 실제 정산에 반영**한다. 자동 반영 금지.
+- 따라서 **변경 전/후 비교 리포트를 산출하고 사용자가 표본을 확인한 뒤에만 main에 병합**한다.
+  cron은 main에서 돌므로 **feature 브랜치가 안전 경계**다. 병합 = 배포임을 명심.
+- 과거 정산분 소급 정정 여부는 **본 설계 범위 밖**(사용자 판단 사항).
+- 정산 원장 INSERT-only 원칙과 무관 — 본 변경은 *계산 로직*이지 기존 기록의 수정이 아니다.
 - 정산 원장 자체는 INSERT-only 원칙 유지 — 본 변경은 *계산 로직*이지 기존 기록의 수정이 아니다.
   과거 정산분 소급 정정 여부는 **본 설계 범위 밖**(사용자 판단 사항).
 
@@ -104,7 +123,13 @@ Shipment 텍스트 "프라임폴더블멀티충전기 50+1, 데일리짐색(단�
 - **Jaccard ≥0.4 오매칭** — `normalize_goods`로 후보 공간이 넓어지면 오매칭 여지도 커진다
   (예: `Solid스탠다드G형박스(브랜디드타월2개입)` → `Solid 커스텀 G형박스(S사이즈)` score 0.40).
   → 검증에서 신규 매칭의 score 분포를 출력하고 0.4~0.5 구간을 표본 육안 확인.
+  ⚠️ `method='jaccard'`는 **exact 히트(score 1.0)에도 붙는다**(`cbm_calc.py:153-157`의 정확·무공백
+  alias 경로). `matched[]`에는 score가 없으므로, 위험 구간을 보려면 계측 스크립트가
+  `match_product`로 score를 **재계산**해야 한다(굿즈명 단위 캐시 — 동일 이름이 수천 건 반복).
 - **순환 import** — A의 지연 import로 회피. 스모크 테스트(`tests/test_import_smoke.py`)로 확인.
+- **커버리지 분모 이동** — v1은 19,547 라인, v2는 19,709 라인을 만든다(파서가 분할을 더 잘함).
+  따라서 %만 비교하면 안 되고 **CBM-able 절대 건수**(2,828 → 목표 ~12,126)를 주 지표로 삼되
+  분모를 함께 표기한다.
 
 ## 7. 검증 계획
 
