@@ -2,7 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** `resolve_product_entry`에 결정론 1.5단(크로스워크)을 추가하고, git-SSOT 크로스워크 파일을 실측 시드로 초기 채운다. 확정행은 결정론으로, 나머지는 기존 퍼지 안전망으로 흐른다.
+**Goal (북극성):** **에이원·다영 출하 `CBM_유효` 완결율**을 올린다 — 분모=텍스트보유 출하 기준 다영 27.5% → ≥79%(필수)/~93%(목표), 에이원 28.3% → ≥83%(필수)/~91%(목표). 수단은 ① 결정론 크로스워크(1.5단) 구축·채우기와 ② **과거분 `estimated_cbm` 백필**이다. 단순 fuzzy→deterministic parity는 목표가 아니다.
+
+⚠️ **두 기여를 분리해 읽을 것**: 백필 6,079건이 지배적 레버이고 브릿지 순증은 860건(약 1/7)이다. 그리고 `jaccard_norm` 760건은 이미 매칭되던 라인의 **결정론 전환이라 커버리지 중립**이다 — 커버리지 순증은 오직 현재 미매칭(<0.5 93건 + 미해소)을 확정행으로 등재하는 데서 나온다.
 
 **Architecture:** 신규 파일 2개(로더 모듈, 후보 생성 스크립트) + 기존 리졸버에 1.5단 삽입. 크로스워크는 `data/crosswalk/goods_crosswalk.csv`(git 추적)를 SSOT로 하고 런타임에 캐시 로드한다. 파일이 없으면 로더가 빈 맵을 반환해 1.5단이 자동 무력화되므로 기존 1~4단 동작이 그대로 보존된다.
 
@@ -721,26 +723,82 @@ score 1.0 자동확정 / 나머지 미검증·보류. 미검증→확정 승급�
 
 ---
 
-### Task 5: 커버리지·금액 영향 검증 + 사용자 게이트
+### Task 5: 과거분 estimated_cbm 백필 (북극성의 지배적 레버)
 
-**Files:** 없음 (기존 측정 스크립트 재사용)
+크로스워크만으로는 `CBM_유효`가 움직이지 않는다 — 저장된 `estimated_cbm`을 읽기 때문이다. 두 쓰기 경로가 모두 7일 롤링 윈도우라 과거 출하분은 기록된 적이 없다. **이 태스크가 북극성 상승분의 약 7/8을 만든다** (백필 6,079건 vs 브릿지 860건).
 
-- [ ] **Step 1: 커버리지 비회귀 + 경로 분포 확인**
+**Files:** 없음 — 기존 `scripts/backbone/replay_outbound_cbm.py`를 인자만 바꿔 실행한다. **스크립트를 수정하지 말 것.**
 
-Run: `python scripts/settlement/measure_cbm_coverage.py`
-Expected: `해소 경로 분포`에 `crosswalk` 가 나타난다. CBM-able 절대건수가 직전 기준선(12,124) **이상**이어야 한다. 낮아지면 1.5단이 기존 매칭을 더 나쁜 코드로 바꾼 것이므로 중단하고 조사한다.
+**Interfaces:** Task 2의 1.5단이 이미 리졸버에 들어가 있으므로, 이 백필은 크로스워크 확정행까지 반영된 추정치를 기록한다. 따라서 **Task 4 이후에 실행해야** 브릿지 기여분이 함께 반영된다.
 
-- [ ] **Step 2: 정산 금액 delta 산출**
+- [ ] **Step 1: dry-run — 쓰기 대상 규모 확인**
 
-같은 실행의 `실제 정산 노출 (박종성 calc_park 게이팅 미러)` 섹션에서 `cbm_unload 합계`를 읽는다. 직전 값은 **₩3,760,000**(402건)이다.
+Run: `python scripts/backbone/replay_outbound_cbm.py`
+(`--recent` 없이 = 전 기간. 16.8k건 조회라 수 분 걸린다. 타임아웃 1800000ms.)
 
-- [ ] **Step 3: 사용자 게이트 (자동 병합 금지)**
+Expected: 쓰기 대상 건수가 출력된다. `fuzzy_write_decision`의 `FUZZY_MIN_CONF=0.5` 게이트를 통과한 건만 대상이므로 **6,079보다 작을 수 있다** — 이는 정상이며, 실제 수치를 Step 3 보고에 쓴다.
 
-다음을 보고하고 **명시적 승인 전까지 main 병합을 진행하지 않는다.** `tms_settlement.yml` cron이 main에서 매일 KST 18:00에 돌므로 병합이 곧 배포다.
-1. CBM-able: 12,124 → 실측값
-2. `crosswalk` 경로로 해소된 라인 수 (결정론 전환 규모)
-3. 상하차비 합계: ₩3,760,000 → 실측값, 차액
-4. 1.5단 도입으로 **코드가 바뀐** 라인 표본 (기존 퍼지 결과 ≠ 크로스워크 결과) — 있다면 육안 확인
+- [ ] **Step 2: 백필 전 북극성 기준선 측정**
+
+Run: `python scripts/crosswalk/measure_northstar.py` (Task 6에서 만든다 — 순서상 Task 6을 먼저 하거나, 이 단계에서 만들어 쓴다)
+
+⚠️ 순서 주의: 북극성 측정 스크립트(Task 6)가 이 태스크의 전/후 비교에 필요하다. **Task 6을 Task 5보다 먼저 실행해도 무방하며**, 그 편이 기준선 확보에 유리하다.
+
+- [ ] **Step 3: 사용자 게이트 — 백필 실행 승인 (자동 실행 금지)**
+
+`--write`는 **과거 출하 수천 건의 `estimated_cbm`·`estimation_confidence`를 PATCH**한다. 영향 범위를 보고하고 승인받는다:
+1. 쓰기 대상 건수 (Step 1 dry-run 결과)
+2. 영향 지표 — `CBM_유효`는 배차일지 **차량이용률** rollup과 주간리포트 **출하단가(원/CBM)**의 소스다. 두 KPI의 과거 수치가 바뀐다.
+3. 원장 아님 — `estimated_cbm`은 파생 계산 필드이지 거래 원장이 아니므로 Immutable Ledger 위반이 아니다. 다만 되돌리려면 재실행이 아니라 필드 초기화가 필요하다.
+
+- [ ] **Step 4: 백필 실행**
+
+Run: `python scripts/backbone/replay_outbound_cbm.py --write`
+Expected: dry-run에서 예고한 건수만큼 PATCH된다.
+
+---
+
+### Task 6: 북극성 측정 + 최종 사용자 게이트
+
+**Files:**
+- Create: `scripts/crosswalk/measure_northstar.py`
+
+**Interfaces:**
+- Produces: 거점별(`다영`/`에이원`) `CBM_유효` 완결율. 분모 = **품목 텍스트 보유 출하**.
+
+- [ ] **Step 1: 측정 스크립트 작성**
+
+거점 판정은 `harness/tms_settlement/calc.py`와 동일 규칙을 쓴다 — 출고지 주소(`fldb24I9EQ2KPXv6S`)에 `성남` 또는 `다영`이 있으면 `다영`, 그 외 주소 보유 건은 `에이원`.
+
+필드: `Total_CBM`=`fldJ9DHjwoRyeUEqE`, `estimated_cbm`=`fldaP8D9AM8CHEZ2o`, 품목텍스트=`fldXXnGOXkm90snKn` 우선 `fldgSupj5XLjJXYQo` 폴백.
+
+`CBM_유효 보유` = `Total_CBM > 0 or estimated_cbm > 0`.
+분모 = `parse_product_lines_v2`로 파싱했을 때 비서비스 라인이 1개 이상인 출하.
+
+출력: 거점별 `보유/분모 = %`, 그리고 미보유 건을 ① 라인 해소됨(백필 미반영) ② 브릿지 등재 가능 ③ 마스터 부재로 분해. **Airtable GET only.**
+
+- [ ] **Step 2: 백필 전후 비교 실행**
+
+Task 5 실행 전후로 각각 돌려 두 수치를 확보한다.
+
+- [ ] **Step 3: 최종 사용자 게이트 (main 병합 금지)**
+
+**게이트 판정 기준 (spec §1.1):**
+
+| 거점 | 기준선 | **필수** | 목표 |
+|---|---:|---:|---:|
+| 다영 (분모 739) | 27.5% | **≥ 79%** | ~93% |
+| 에이원 (분모 10,264) | 28.3% | **≥ 83%** | ~91% |
+
+보고 항목:
+1. 거점별 완결율 — 기준선 → 백필 후 → (브릿지 승급 반영 후)
+2. **백필 기여분과 브릿지 기여분을 분리**해 제시 (둘을 섞으면 브릿지 효과를 오판한다)
+3. `crosswalk` 경로로 해소된 라인 수 = 결정론 전환 규모 (커버리지 중립 — 안정성 지표)
+4. 정산 상하차비: ₩3,760,000 → 실측값, 차액 (`measure_cbm_coverage.py`)
+5. 1.5단 도입으로 **코드가 바뀐** 라인 표본 — 있다면 육안 확인
+6. 잔여 마스터 부재 건수 → P2 규격요청 인계 규모
+
+목표 미달은 실패가 아니다 — 브릿지 기여분은 사람의 확정 승급 속도에 종속되고, 잔여 7~9%는 Product 마스터 부재(P2) 몫이다. **필수 기준 미달이면** 백필이 정상 반영되지 않은 것이므로 중단하고 조사한다.
 
 ---
 
@@ -764,7 +822,9 @@ Expected: `해소 경로 분포`에 `crosswalk` 가 나타난다. CBM-able 절�
 | §7-3 확정만 결정론 | Task 1 `test_loads_only_confirmed_goods_rows` |
 | §7-4 파일 부재 안전 | Task 1 `test_missing_file_returns_empty`, Task 2 Step 5 |
 | §7-5 CBM 가드 | Task 2 |
-| §7-6 커버리지 비회귀 | Task 5 Step 1 |
+| §1.1 북극성 게이트 (다영 ≥79% / 에이원 ≥83%) | Task 6 Step 3 |
+| §1.1 백필 없이는 지표 불변 → P1에 백필 포함 | Task 5 |
+| §7-6 북극성 완결율 측정 | Task 6 Step 1·2 |
 | §7-7 멱등성 | Task 3 `test_merge_is_idempotent` |
 | §7-8 이관 parity 골든 | **미포함** — 아래 참조 |
 | §9 정산 금액 영향 게이트 | Task 5 Step 3 |
