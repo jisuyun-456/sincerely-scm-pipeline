@@ -135,9 +135,10 @@ def resolve_product_entry(name, code, name2code, lookup):
       1) 코드 직접 (+alias)               — 캐스케이드 경로 (code 보유 시)
       2) 이름 → sync_item 코드 (+alias)   — 정산 경로 (Shipment에 코드 없음 → 이름으로 코드 복원)
       3) 이름 Jaccard 폴백                — sync_item 미등록 이름 (현행 정산 동작 보존)
+      4) 정규화 재시도                    — 변형 접미('(단품)'·'[2]'·'_재제작') 제거 후 3단 반복
 
     Returns (entry|None, resolved_code|None, method).
-      method: 'code' | 'name2code' | 'jaccard' | 'unmatched'.
+      method: 'code' | 'name2code' | 'jaccard' | 'jaccard_norm' | 'unmatched'.
     name2code: {normalize_goods(굿즈명): 굿즈코드(upper)} (None/{}이면 2단 스킵 → 현행 Jaccard만).
     하위호환: name2code 미전달 + code 미전달 시 (3)만 실행 → 기존 match_product 동작과 동일.
     """
@@ -166,5 +167,15 @@ def resolve_product_entry(name, code, name2code, lookup):
         _k, e, _score = match_product(name, lookup)
         if e is not None:
             return e, (str(e.get("code") or "").upper() or None), "jaccard"
+
+    # 4) 정규화 재시도 — '(단품)'·'[2]'·'_재제작' 등 변형 접미 제거 후 3단(Jaccard)만 반복.
+    #    2단(name2code)은 이미 normalize_goods 키로 조회하므로 재시도 대상이 아니다.
+    #    crosswalk.build_crosswalk(:17-19)이 쓰는 검증된 패턴과 동일.
+    if name:
+        nm = normalize_goods(name)
+        if nm and nm != name:
+            _k, e, _score = match_product(nm, lookup)
+            if e is not None:
+                return e, (str(e.get("code") or "").upper() or None), "jaccard_norm"
 
     return None, None, "unmatched"
