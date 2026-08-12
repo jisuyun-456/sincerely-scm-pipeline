@@ -292,12 +292,12 @@
         <div class="note">미확정 310건 중 <b>다영기획 156건(50.3%)</b> — 단일 최대 병목. 대상: 순수 고객납품 1,645건 · 2026-01~07.</div>
         <p class="block-label">이니셔티브 진행</p>
         <div class="steps">
-          <div class="step"><span class="p">P1</span><span class="desc">box✓ cbm✗ 152건 → NEST/Product 박스 CBM 매칭<span class="type">🔧 코드 · ⏳ 대기</span></span><span class="to">~87%</span></div>
-          <div class="step"><span class="p">P2</span><span class="desc">다영기획 외주 경로 박스수량 입력 의무화<span class="type">📋 운영 · ⏳ 대기</span></span><span class="to">~95%</span></div>
-          <div class="step"><span class="p">P3</span><span class="desc">Lv3 자재 PT 규격 표준화 (품질혁신·안나님)<span class="type">🤝 타팀 · ⏳ 협의</span></span><span class="to">100%</span></div>
+          <div class="step"><span class="p">P1</span><span class="desc">매칭 정합화 — 공백무시 매칭 + Product 마스터 백필·중복 30행 정리<span class="type">🔧 코드 · ✅ 완료</span></span><span class="to">다영 86.5%</span></div>
+          <div class="step"><span class="p">P2</span><span class="desc">굿즈 ↔ Product 브릿지 테이블 — 조인을 코드로 결정론화<span class="type">🔧 코드 · 🔨 설계착수</span></span><span class="to">estimated 안정</span></div>
+          <div class="step"><span class="p">P3</span><span class="desc">다영 외주 박스수량 입력 + Product 규격 완성 (품질혁신)<span class="type">🤝 타팀 · ⏳ 대기</span></span><span class="to">100%</span></div>
         </div>
-        <p class="block-label">estimated_cbm이 막힌 이유 · 해결 경로</p>
-        <div class="note"><b>왜 안 됐나</b> — 에이원·다영기획을 estimated_cbm으로 채우려면 WMS <b>출고자재·굿즈 / 출고수량</b>을 TMS <b>Product 마스터(견적코드·박스 CBM)</b>와 이어야 하는데, <b>양쪽을 잇는 공통 코드가 없어</b> 매칭이 끊긴다 → 결국 <b>최종 외박스 실측</b>으로만 CBM이 확정된다.<br><b>해결</b> — WMS에 <b>굿즈 ↔ Product 매핑 코드 테이블(브릿지)</b>을 두어 조인을 결정론화(P1, box✓·cbm✗ 152건 해소 → ~87%). 나머지 100%는 코드만으론 불가 — <b>다영 외주 박스수량 입력(P2)</b> + <b>Product 박스규격 완성(P3·품질혁신)</b> 병행 필요.</div>
+        <p class="block-label">estimated_cbm이 막힌 이유 · 왜 브릿지까지</p>
+        <div class="note"><b>근본 원인 = 공통 코드 부재</b> — 출고 굿즈(출고자재)와 TMS <b>Product 마스터(견적코드·박스CBM)</b>를 잇는 <b>공통 코드가 없어</b> 이름 매칭에만 의존 → 변형 철자·미등록 굿즈에서 매칭이 끊겨 estimated 산출 불가, 외박스 실측에만 의존.<br><b>1차 조치(완료)</b> — 공백무시 매칭 + 마스터 백필로 <b>다영 CBM_유효 74.7%→86.5%</b>. 그러나 <b>이름 기반은 근본 한계</b>(천장).<br><b>해결(진행)</b> — WMS에 <b>굿즈↔Product 결정론 매핑 브릿지 테이블</b>을 두어 조인을 코드로 확정 → estimated 100% 수렴. 나머지는 다영 박스수량(P2)+규격 완성(P3) 병행.</div>
       </div>
 
       <div class="card">
@@ -309,14 +309,14 @@
           <tbody>
             <tr><td>입하 · 검수 · 입고</td><td class="r">100 · 99.8 · 99.9%</td></tr>
             <tr class="em"><td>3개 동시(완전 사이클)</td><td class="r">99.7%</td></tr>
-            <tr class="sub-row"><td>프리패키징 (7월~ 신규) <span class="pill crit">초기</span></td><td class="r">11.2% <span style="color:var(--faint);font-weight:600">(7.9%→ +3.3%p)</span></td></tr>
+            <tr class="sub-row"><td>프리패키징 (7월~ 신규) <span class="pill crit">진행</span></td><td class="r">실측 12.1% <span style="color:var(--faint);font-weight:600">· 추정포함 88.6%</span></td></tr>
           </tbody>
         </table>
         <p class="block-label">이니셔티브 진행</p>
         <div class="steps">
           <div class="step"><span class="p">P1</span><span class="desc">검수 정의 2.875/proj 통일 + 표준 backfill cron 복구<span class="type">🔧 코드 · ⏳ 대기</span></span><span class="to">정합성 확보</span></div>
-          <div class="step"><span class="p">P2</span><span class="desc">프리패키징 입력 정착 (7.9%→11.2%, 대상식별 체계)<span class="type">📋 운영 · ⏳ 진행</span></span><span class="to">입력 100%</span></div>
-          <div class="step"><span class="p">P3</span><span class="desc">작업 시작 타임스탬프 도입 + 4Q M/H 표준 재측정<span class="type">🔬 현장 · ⚪ 장기</span></span><span class="to">실측 검증</span></div>
+          <div class="step"><span class="p">P2</span><span class="desc">프리패키징 M/H 백필 — 보수적 ELS(PFD·대량 피로가중)로 미입력 505건 추정, 추정 마커로 실측 분리<span class="type">🔧 코드 · ✅ 완료</span></span><span class="to">커버리지 88.6%</span></div>
+          <div class="step"><span class="p">P3</span><span class="desc">보완점 — 미측정 16 PT(75건) 웨일즈 실측 요청 + 작업시작 타임스탬프로 실측 자동화<span class="type">🔬 현장 · 🔨 진행</span></span><span class="to">추정→실측</span></div>
         </div>
       </div>
     </div>

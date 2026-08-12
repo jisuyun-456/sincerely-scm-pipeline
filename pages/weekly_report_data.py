@@ -599,7 +599,7 @@ CONVERSION_KPI = {
     "mh_inspect_pct": 99.8,
     "mh_putaway_pct": 99.9,
     "mh_full_cycle_pct": 99.7,
-    "mh_prepkg_pct": 11.2,
+    "mh_prepkg_pct": 12.1,
     "mh_timestamp_count": 3808,
 }
 
