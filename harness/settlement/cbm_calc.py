@@ -214,25 +214,31 @@ def calc_from_products(
     """
     품목+수량 텍스트 → {"unload_fee", "total_cbm", "matched", "unmatched"}.
 
+    파싱은 parse_product_lines_v2 (보너스 수량 '100+1' · '[N]' 인덱스 · 천단위 콤마 처리).
+
     qty_hint: 수량 정보가 텍스트에 없을 때 첫 번째 품목에 적용.
     name2code: sync_item 굿즈명→굿즈코드. 주어지면 공유 리졸버(이름→코드→V2 alias→Product)로
       캐스케이드와 동일 경로 해소, 실패 시 이름 Jaccard 폴백. None이면 현행 Jaccard 동작 보존.
     """
     from harness.backbone.product_alias import resolve_product_entry
+    from harness.dispatch.cbm_estimator import parse_product_lines_v2
 
-    lines = parse_product_lines(product_text)
+    # v2 파서: 보너스 수량('100+1')·'[N]' 인덱스·천단위 콤마·무공백 수량을 처리한다.
+    # v1은 '100+1'에서 수량을 유실해 n_boxes=1로 CBM을 과소계상했다(실측 5,583 라인).
+    lines = parse_product_lines_v2(product_text)
     if not lines:
         return {"unload_fee": 0, "total_cbm": 0.0, "matched": [], "unmatched": []}
 
-    if qty_hint > 0 and all(q == 0 for _, q in lines):
-        lines = [(p, qty_hint if i == 0 else 0) for i, (p, _) in enumerate(lines)]
+    if qty_hint > 0 and all(q == 0 for _, q, _x in lines):
+        lines = [(p, qty_hint if i == 0 else 0, x)
+                 for i, (p, _q, x) in enumerate(lines)]
 
     buckets: dict[str, int] = {"heavy": 0, "large": 0, "xlarge": 0}
     total_cbm = 0.0
     matched_list: list[dict] = []
     unmatched_list: list[str] = []
 
-    for prod_name, qty in lines:
+    for prod_name, qty, extra in lines:
         entry, key, _method = resolve_product_entry(prod_name, None, name2code, lookup)
         if entry is None:
             unmatched_list.append(prod_name)
@@ -255,6 +261,7 @@ def calc_from_products(
             "matched_key": key,
             "method":      _method,
             "qty":         qty,
+            "extra":       extra,
             "n_boxes":     n_boxes,
             "box_type":    box_type,
             "cbm_per_box": cbm_per_box,
