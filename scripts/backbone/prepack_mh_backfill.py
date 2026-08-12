@@ -2,7 +2,8 @@
 
 방법론(2026-08-11): 프리패키징은 글로벌 표준 부재(mh 표준문서 F표) → 자체 ELS 구축.
   est_min = (SETUP + rate × 수량 × fatigue(수량)) × PFD
-  - rate  = PT별 Σ(실측소요×인원)/Σ출고수량  (1인 기준 person-min/개, 실측)
+  - rate  = PT별 record rate(실측소요×인원/수량)의 **중위값** (1인 기준 person-min/개)
+            → 대량 record가 rate를 지배(leverage)하는 것을 방지, 이상치에 강건
   - PFD   = ×1.15  (Personal+Fatigue+Delay — 기존 mh_calculator와 동일)
   - SETUP = 배치 준비 최소분 (소량 record 하한)
   - fatigue(수량) = 대량배치 피로·유휴·재작업 가중 (수량↑ → 페이스↓)
@@ -16,6 +17,7 @@ Usage:
 import argparse
 import os
 import re
+import statistics
 import time
 from collections import defaultdict
 
@@ -115,10 +117,10 @@ def build_patches(recs):
         if not d["filled"]:
             never += len(d["empty"])
             continue
-        q = sum(x["qty"] for x in d["filled"])
-        if q <= 0:
+        rates = [x["so"] * x["inn"] / x["qty"] for x in d["filled"] if x["qty"] > 0]
+        if not rates:
             continue
-        rate = sum(x["so"] * x["inn"] for x in d["filled"]) / q   # person-min/개 (1인 기준, 실측)
+        rate = statistics.median(rates)   # record rate 중위값 (대량 leverage 강건, 이상치 완화)
         for e in d["empty"]:
             op = rate * e["qty"] * fatigue(e["qty"])               # 운영시간 + 대량 피로가중
             est = round((SETUP_MIN + op) * PFD, 2)                 # + 셋업하한, × PFD (보수적)
