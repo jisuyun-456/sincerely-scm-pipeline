@@ -140,7 +140,7 @@ def resolve_product_entry(name, code, name2code, lookup):
     Returns (entry|None, resolved_code|None, method).
       method: 'code' | 'name2code' | 'jaccard' | 'jaccard_norm' | 'unmatched'.
     name2code: {normalize_goods(굿즈명): 굿즈코드(upper)} (None/{}이면 2단 스킵 → 현행 Jaccard만).
-    하위호환: name2code 미전달 + code 미전달 시 (3)만 실행 → 기존 match_product 동작과 동일.
+    하위호환: name2code 미전달 + code 미전달 시 (3)→(4) 실행 (정규화로 이름이 바뀌는 경우에 한해 4단 발동).
     """
     from harness.backbone.keys import normalize_goods
     from harness.settlement.cbm_calc import match_product
