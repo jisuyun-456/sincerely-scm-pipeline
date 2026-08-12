@@ -241,3 +241,59 @@ def test_normalize_retry_still_unmatched_returns_unmatched():
     assert entry is None
     assert code is None
     assert method == "unmatched"
+
+
+# ── 1.5단 크로스워크 결정론 계층 (spec §4.1) ──────────────────────────────
+def _cw_lookup():
+    e = {"rec_id": "rC", "name": "로고스트랩 파우치", "code": "LSPO",
+         "box_type": "대형", "qty_per_box": 100, "cbm_per_box": 0.1066}
+    other = {"rec_id": "rD", "name": "다른 굿즈", "code": "OTHR",
+             "box_type": "중형", "qty_per_box": 50, "cbm_per_box": 0.0201}
+    return {"로고스트랩 파우치": e, "lspo": e, "다른 굿즈": other, "othr": other}
+
+
+def test_crosswalk_stage_resolves_before_name2code(monkeypatch):
+    # 크로스워크 확정행이 sync_item(name2code)보다 우선 — 사람 판정 우선
+    import harness.backbone.product_alias as pa
+    from harness.backbone.crosswalk_store import crosswalk_key
+    monkeypatch.setattr(pa, "load_crosswalk",
+                        lambda: {crosswalk_key("로고스트랩파우치(단품)"): "LSPO"})
+    entry, code, method = pa.resolve_product_entry(
+        "로고스트랩파우치(단품)", None, {"로고스트랩파우치": "OTHR"}, _cw_lookup())
+    assert code == "LSPO"
+    assert method == "crosswalk"
+
+
+def test_crosswalk_miss_falls_through_to_existing_stages(monkeypatch):
+    import harness.backbone.product_alias as pa
+    monkeypatch.setattr(pa, "load_crosswalk", lambda: {})
+    entry, code, method = pa.resolve_product_entry(
+        "로고스트랩 파우치", None, None, _cw_lookup())
+    assert entry is not None
+    assert method == "jaccard"
+
+
+def test_crosswalk_pointing_at_cbmless_product_falls_through(monkeypatch):
+    # 확정행이 CBM 0 Product를 가리키면 0짜리 entry 반환 금지 → 퍼지로 통과 (spec §4.4)
+    import harness.backbone.product_alias as pa
+    from harness.backbone.crosswalk_store import crosswalk_key
+    lk = {"제로박스": {"rec_id": "rZ", "name": "제로박스", "code": "ZERO",
+                    "box_type": "", "qty_per_box": 1, "cbm_per_box": 0.0},
+          "zero": {"rec_id": "rZ", "name": "제로박스", "code": "ZERO",
+                   "box_type": "", "qty_per_box": 1, "cbm_per_box": 0.0}}
+    monkeypatch.setattr(pa, "load_crosswalk",
+                        lambda: {crosswalk_key("제로박스"): "ZERO"})
+    entry, code, method = pa.resolve_product_entry("제로박스", None, None, lk)
+    assert method != "crosswalk"
+
+
+def test_crosswalk_not_used_when_code_given(monkeypatch):
+    # 1단(code 직접)이 1.5단보다 우선
+    import harness.backbone.product_alias as pa
+    from harness.backbone.crosswalk_store import crosswalk_key
+    monkeypatch.setattr(pa, "load_crosswalk",
+                        lambda: {crosswalk_key("로고스트랩 파우치"): "OTHR"})
+    entry, code, method = pa.resolve_product_entry(
+        "로고스트랩 파우치", "LSPO", None, _cw_lookup())
+    assert code == "LSPO"
+    assert method == "code"

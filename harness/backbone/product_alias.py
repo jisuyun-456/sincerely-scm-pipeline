@@ -11,6 +11,8 @@ cascade S5 "출하CBM 미산출" 견적코드는 대부분 '미등록'이 아니
 """
 import re
 
+from harness.backbone.crosswalk_store import crosswalk_key, load_crosswalk
+
 # 동일명/세대 쌍둥이 — WMS코드 → 등록된 권위 코드 (1:1)
 ALIAS = {
     "LOPU": "LSPO",   # 로고스트랩 파우치        (LSPO 대형/100)
@@ -133,12 +135,13 @@ def resolve_product_entry(name, code, name2code, lookup):
 
     우선순위:
       1) 코드 직접 (+alias)               — 캐스케이드 경로 (code 보유 시)
+      1.5) 크로스워크 결정론              — 확정·굿즈명 행 (git-SSOT, 사람 검증)
       2) 이름 → sync_item 코드 (+alias)   — 정산 경로 (Shipment에 코드 없음 → 이름으로 코드 복원)
       3) 이름 Jaccard 폴백                — sync_item 미등록 이름 (현행 정산 동작 보존)
       4) 정규화 재시도                    — 변형 접미('(단품)'·'[2]'·'_재제작') 제거 후 3단 반복
 
     Returns (entry|None, resolved_code|None, method).
-      method: 'code' | 'name2code' | 'jaccard' | 'jaccard_norm' | 'unmatched'.
+      method: 'code' | 'crosswalk' | 'name2code' | 'jaccard' | 'jaccard_norm' | 'unmatched'.
     name2code: {normalize_goods(굿즈명): 굿즈코드(upper)} (None/{}이면 2단 스킵 → 현행 Jaccard만).
     하위호환: name2code 미전달 + code 미전달 시 (3)→(4) 실행 (정규화로 이름이 바뀌는 경우에 한해 4단 발동).
     """
@@ -152,6 +155,18 @@ def resolve_product_entry(name, code, name2code, lookup):
         e = lookup.get(str(rc).lower())
         if e is not None and e.get("cbm_per_box", 0) > 0:
             return e, rc, "code"
+
+    # 1.5) 크로스워크 결정론 계층 — 확정·굿즈명 행만 (spec §4.1).
+    #      사람이 검증한 판정이므로 자동 매핑인 sync_item(2단)보다 우선한다.
+    #      확정행이 CBM 0 Product를 가리키면 반환하지 않고 통과시킨다(1·2단과 동일 가드).
+    if name:
+        cw = load_crosswalk()
+        if cw:
+            rc = cw.get(crosswalk_key(name))
+            if rc:
+                e = lookup.get(str(rc).lower())
+                if e is not None and e.get("cbm_per_box", 0) > 0:
+                    return e, rc, "crosswalk"
 
     # 2) 이름 → sync_item 코드 (+alias)
     if name and name2code:
