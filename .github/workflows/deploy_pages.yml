@@ -1,6 +1,16 @@
 name: Deploy SCM Dashboard to Pages
 
 on:
+  push:
+    branches: [main]
+    paths:                                  # 대시보드 산출물 소스가 바뀔 때만 자동 배포
+      - 'pages/**'
+      - 'utils/**'                          # 대시보드 계산 의존 (vehicle_util·cbm_panels·cbm_utils — 3파일 전부 대시보드 전용)
+      - 'scripts/tms_weekly_runner.py'      # 다음주 예측 러너 (weekly_report_data 의존)
+      - 'scripts/wms_cbm_ledger.py'         # 창고 입고 CBM 원장 (generate_scm_report 의존)
+      - 'history/**'
+      - '.github/workflows/deploy_pages.yml'
+      # 주의: 위 모듈이 새로 끌어오는 심층 의존은 필터에 없음 → 주간 cron이 backstop (≤1주 내 반영)
   schedule:
     - cron: '0 0 * * 1'   # 매주 월요일 09:00 KST (weekly_review)
     - cron: '0 0 1 * *'   # 매월  1일  09:00 KST (monthly)
@@ -58,8 +68,8 @@ jobs:
       - name: Install dependencies
         run: pip install requests pyairtable
 
-      - name: Override delay (수동 실행 시)
-        if: github.event_name == 'workflow_dispatch' && inputs.skip_delay == true
+      - name: Override delay (수동 실행·main 머지 배포 시)
+        if: (github.event_name == 'workflow_dispatch' && inputs.skip_delay == true) || github.event_name == 'push'
         run: echo "SKIP_DELAY=1" >> $GITHUB_ENV
 
       - name: Run unified SCM report generator
