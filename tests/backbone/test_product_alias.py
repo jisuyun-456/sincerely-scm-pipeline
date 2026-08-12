@@ -188,3 +188,56 @@ def test_resolve_entry_jaccard_fallback():
 def test_resolve_entry_unmatched():
     e, rc, m = resolve_product_entry("존재하지않는무언가", None, {}, NAMED)
     assert e is None and rc is None and m == "unmatched"
+
+
+def _norm_lookup():
+    """'데일리 짐색' 룩업 — '데일리짐색(단품)'은 정규화해야 해소된다.
+
+    ⚠️ 무공백 alias 키('데일리짐색')를 **명시적으로** 넣어야 한다. 운영에서는
+    load_product_lookup(cbm_calc.py:114-123)이 자동 생성하지만, 테스트는 dict를
+    손으로 만들므로 자동 생성이 일어나지 않는다. 없으면 정규화 후에도
+    Jaccard가 0.0(토큰 '데일리짐색' vs {'데일리','짐색'})이라 재시도가 실패한다.
+    """
+    e = {"rec_id": "r9", "name": "데일리 짐색", "code": "DLYG",
+         "box_type": "대형", "qty_per_box": 101, "cbm_per_box": 0.1066}
+    return {"데일리 짐색": e, "dlyg": e, "데일리짐색": e}
+
+
+def test_normalize_retry_resolves_paren_suffix():
+    # '(단품)' 접미 때문에 직접 Jaccard 실패 → normalize_goods로 괄호 제거 후 해소.
+    from harness.backbone.product_alias import resolve_product_entry
+    entry, code, method = resolve_product_entry(
+        "데일리짐색(단품)", None, None, _norm_lookup())
+    assert entry is not None
+    assert code == "DLYG"
+    assert method == "jaccard_norm"
+
+
+def test_name2code_already_normalizes_so_no_retry_needed():
+    # 회귀 가드: 2단이 name2code.get(normalize_goods(name))이므로 '(단품)'은 이미 해소된다.
+    # 4단 재시도가 2단을 중복하지 않음을 고정한다.
+    from harness.backbone.product_alias import resolve_product_entry
+    entry, code, method = resolve_product_entry(
+        "데일리짐색(단품)", None, {"데일리짐색": "DLYG"}, _norm_lookup())
+    assert entry is not None
+    assert code == "DLYG"
+    assert method == "name2code"
+
+
+def test_normalize_retry_not_used_when_direct_match_works():
+    # 직접 매칭이 되면 재시도하지 않는다 — method는 기존 값 그대로.
+    from harness.backbone.product_alias import resolve_product_entry
+    entry, code, method = resolve_product_entry(
+        "데일리 짐색", None, None, _norm_lookup())
+    assert entry is not None
+    assert method == "jaccard"
+
+
+def test_normalize_retry_still_unmatched_returns_unmatched():
+    # 정규화해도 못 찾으면 기존대로 unmatched.
+    from harness.backbone.product_alias import resolve_product_entry
+    entry, code, method = resolve_product_entry(
+        "존재하지않는물건(단품)", None, None, _norm_lookup())
+    assert entry is None
+    assert code is None
+    assert method == "unmatched"
