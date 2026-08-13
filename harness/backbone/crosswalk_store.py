@@ -17,8 +17,7 @@ from __future__ import annotations
 import csv
 import logging
 import os
-
-from harness.backbone.keys import normalize_goods
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +38,12 @@ class CrosswalkConflictError(Exception):
 
 
 def crosswalk_key(raw: str) -> str:
-    """조회 키 정규화 — normalize_goods 후 공백 제거·casefold."""
-    return normalize_goods(raw or "").strip().casefold()
+    """조회 키 — 공백 제거 + casefold. 괄호·[n]·_접미를 보존한다.
+
+    normalize_goods 를 쓰지 않는 것이 의도다: '(S)'·'(M)'·'(무릎담요)' 같은 괄호가
+    SKU 구분자이며, 제거하면 서로 다른 제품이 한 키로 뭉개진다(실측 충돌 27건).
+    """
+    return re.sub(r"\s+", "", raw or "").casefold()
 
 
 def clear_cache() -> None:

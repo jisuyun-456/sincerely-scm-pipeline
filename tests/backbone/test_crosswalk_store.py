@@ -18,10 +18,17 @@ def _write(tmp_path, rows):
     return str(p)
 
 
-def test_key_normalizes_variants_to_same_key():
-    # '(단품)'·'[2]'·'_재제작' 접미는 normalize_goods가 제거 → 같은 키
-    assert crosswalk_key("데일리짐색(단품)") == crosswalk_key("데일리짐색")
-    assert crosswalk_key("페이퍼샤쉐[2]") == crosswalk_key("페이퍼샤쉐")
+def test_key_preserves_paren_and_bracket_variants():
+    # 괄호·[n] 접미는 SKU 구분자다 — normalize_goods처럼 제거하면 안 된다(실측 충돌 27건).
+    assert crosswalk_key("데일리짐색(단품)") != crosswalk_key("데일리짐색")
+    assert crosswalk_key("페이퍼샤쉐[2]") != crosswalk_key("페이퍼샤쉐")
+    # 공백·대소문자는 여전히 정규화된다.
+    assert crosswalk_key("Simple 슬라이드지퍼백(M)") == crosswalk_key("simple슬라이드지퍼백(m)")
+
+
+def test_key_distinguishes_paren_sku_discriminator():
+    # 동기 사례: 괄호 하나 차이가 실제로 다른 SKU(다른 박스·CBM)를 가리킨다.
+    assert crosswalk_key("Simple슬라이드지퍼백(S)") != crosswalk_key("Simple슬라이드지퍼백(M)")
 
 
 def test_loads_only_confirmed_goods_rows(tmp_path):
@@ -42,16 +49,17 @@ def test_missing_file_returns_empty(tmp_path):
 
 
 def test_conflicting_confirmed_rows_excluded_not_raised(tmp_path):
-    # 같은 정규화 키인데 견적코드가 다른 확정 행 2개 → load_crosswalk는 raise하지 않고
+    # 같은 키인데 견적코드가 다른 확정 행 2개 → load_crosswalk는 raise하지 않고
     # 그 키를 양쪽 다 제외한다(§4.2 2026-08-12 개정). 다른(비충돌) 행은 그대로 남는다.
+    # 괄호는 이제 키를 보존하므로(단품)/(키트)는 더 이상 충돌하지 않는다 — 공백 변형으로 같은 키를 만든다.
     path = _write(tmp_path, [
         "데일리짐색(단품),굿즈명,DLYG,정확,1.0,확정,seed\n",
-        "데일리짐색(키트),굿즈명,ZZZZ,정확,1.0,확정,seed\n",
+        "데일리 짐색(단품),굿즈명,ZZZZ,정확,1.0,확정,seed\n",
         "정상굿즈,굿즈명,GOOD,정확,1.0,확정,seed\n",
     ])
     clear_cache()
     m = load_crosswalk(path, _cache=False)
-    assert crosswalk_key("데일리짐색") not in m
+    assert crosswalk_key("데일리짐색(단품)") not in m
     assert m == {crosswalk_key("정상굿즈"): "GOOD"}
 
 
@@ -59,7 +67,7 @@ def test_validate_crosswalk_raises_on_conflict(tmp_path):
     # validate_crosswalk는 같은 입력에 대해 loud 실패한다 — 메시지가 키와 두 코드를 모두 지목
     path = _write(tmp_path, [
         "데일리짐색(단품),굿즈명,DLYG,정확,1.0,확정,seed\n",
-        "데일리짐색(키트),굿즈명,ZZZZ,정확,1.0,확정,seed\n",
+        "데일리 짐색(단품),굿즈명,ZZZZ,정확,1.0,확정,seed\n",
     ])
     clear_cache()
     with pytest.raises(CrosswalkConflictError) as exc:
@@ -80,13 +88,14 @@ def test_validate_crosswalk_returns_empty_list_when_clean(tmp_path):
 
 
 def test_same_key_same_code_is_not_conflict(tmp_path):
-    # 변형 2개가 같은 코드를 가리키는 것은 정상 (충돌 아님)
+    # 변형 2개가 같은 코드를 가리키는 것은 정상 (충돌 아님) — 공백 변형으로 같은 키를 만든다
+    # (괄호는 이제 보존되므로 (단품)/(키트) 변형은 서로 다른 키다).
     path = _write(tmp_path, [
         "데일리짐색(단품),굿즈명,DLYG,정확,1.0,확정,seed\n",
-        "데일리짐색(키트),굿즈명,DLYG,정확,1.0,확정,seed\n",
+        "데일리 짐색(단품),굿즈명,DLYG,정확,1.0,확정,seed\n",
     ])
     clear_cache()
-    assert load_crosswalk(path, _cache=False) == {crosswalk_key("데일리짐색"): "DLYG"}
+    assert load_crosswalk(path, _cache=False) == {crosswalk_key("데일리짐색(단품)"): "DLYG"}
 
 
 def test_blank_fields_skipped(tmp_path):
