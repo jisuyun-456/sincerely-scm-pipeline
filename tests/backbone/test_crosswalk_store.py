@@ -6,6 +6,7 @@ from harness.backbone.crosswalk_store import (
     clear_cache,
     crosswalk_key,
     load_crosswalk,
+    validate_crosswalk,
 )
 
 HEADER = "표준키,키유형,TMS_견적코드,매칭방식,매칭신뢰도,검증상태,근거\n"
@@ -40,16 +41,42 @@ def test_missing_file_returns_empty(tmp_path):
     assert load_crosswalk(str(tmp_path / "nope.csv"), _cache=False) == {}
 
 
-def test_conflicting_confirmed_rows_raise(tmp_path):
-    # 같은 정규화 키인데 견적코드가 다른 확정 행 2개 → 조용한 last-wins 금지
+def test_conflicting_confirmed_rows_excluded_not_raised(tmp_path):
+    # 같은 정규화 키인데 견적코드가 다른 확정 행 2개 → load_crosswalk는 raise하지 않고
+    # 그 키를 양쪽 다 제외한다(§4.2 2026-08-12 개정). 다른(비충돌) 행은 그대로 남는다.
+    path = _write(tmp_path, [
+        "데일리짐색(단품),굿즈명,DLYG,정확,1.0,확정,seed\n",
+        "데일리짐색(키트),굿즈명,ZZZZ,정확,1.0,확정,seed\n",
+        "정상굿즈,굿즈명,GOOD,정확,1.0,확정,seed\n",
+    ])
+    clear_cache()
+    m = load_crosswalk(path, _cache=False)
+    assert crosswalk_key("데일리짐색") not in m
+    assert m == {crosswalk_key("정상굿즈"): "GOOD"}
+
+
+def test_validate_crosswalk_raises_on_conflict(tmp_path):
+    # validate_crosswalk는 같은 입력에 대해 loud 실패한다 — 메시지가 키와 두 코드를 모두 지목
     path = _write(tmp_path, [
         "데일리짐색(단품),굿즈명,DLYG,정확,1.0,확정,seed\n",
         "데일리짐색(키트),굿즈명,ZZZZ,정확,1.0,확정,seed\n",
     ])
     clear_cache()
     with pytest.raises(CrosswalkConflictError) as exc:
-        load_crosswalk(path, _cache=False)
-    assert "데일리짐색" in str(exc.value)
+        validate_crosswalk(path)
+    msg = str(exc.value)
+    assert "데일리짐색" in msg
+    assert "DLYG" in msg
+    assert "ZZZZ" in msg
+
+
+def test_validate_crosswalk_returns_empty_list_when_clean(tmp_path):
+    path = _write(tmp_path, [
+        "데일리짐색(단품),굿즈명,DLYG,정확,1.0,확정,seed\n",
+        "정상굿즈,굿즈명,GOOD,정확,1.0,확정,seed\n",
+    ])
+    clear_cache()
+    assert validate_crosswalk(path) == []
 
 
 def test_same_key_same_code_is_not_conflict(tmp_path):
