@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
@@ -40,6 +41,33 @@ def classify(score: float, matched: bool) -> tuple[str, str]:
     if score < PENDING_SCORE:
         return "보류", "유사"
     return "미검증", "유사"
+
+
+def find_ambiguous_names(lookup: dict) -> dict[str, set[str]]:
+    """정규화 이름(소문자·공백제거)별 서로 다른 견적코드 집합 — 2개 이상이면 모호.
+
+    Product 마스터에 동명이코드(중복 이름, 서로 다른 견적코드)가 있으면
+    lookup의 이름 키는 last-write-wins라 어느 코드가 걸릴지 결정론적이지 않다
+    (harness/settlement/cbm_calc.py load_product_lookup 참조). classify()가
+    그 임의 결과에 score=1.0로 자동 '확정'을 주면 위험하므로, collect_candidates가
+    이 집합으로 사후 검출해 강제 다운그레이드한다.
+
+    lookup 값은 rec_id별로 name/code/공백제거 alias 등 여러 키에 중복 등장하므로
+    rec_id로 먼저 dedupe한 뒤 집계한다.
+    """
+    seen_ids: set[str] = set()
+    by_name: dict[str, set[str]] = {}
+    for entry in lookup.values():
+        rid = entry.get("rec_id")
+        if rid in seen_ids:
+            continue
+        seen_ids.add(rid)
+        nm = re.sub(r"\s+", "", str(entry.get("name") or "")).lower()
+        code = str(entry.get("code") or "").strip()
+        if not nm or not code:
+            continue
+        by_name.setdefault(nm, set()).add(code)
+    return {nm: codes for nm, codes in by_name.items() if len(codes) > 1}
 
 
 def merge_rows(existing: list[dict], candidates: list[dict]) -> tuple[list[dict], int]:
@@ -69,13 +97,23 @@ def read_csv(path: str) -> list[dict]:
 
 
 def write_csv(path: str, rows: list[dict], *, bom: bool = False) -> None:
+    """COLUMNS + rows에 있는 미지 컬럼(사람이 Excel에서 추가한 검토자/메모 등)을 보존해서 쓴다.
+
+    미지 컬럼을 fieldnames에서 빼면 DictWriter가 매 --write마다 조용히 지운다 — 금지.
+    """
     os.makedirs(os.path.dirname(path), exist_ok=True)
     enc = "utf-8-sig" if bom else "utf-8"
+    extra: list[str] = []
+    for r in rows:
+        for k in r:
+            if k not in COLUMNS and k not in extra:
+                extra.append(k)
+    fieldnames = COLUMNS + extra
     with open(path, "w", encoding=enc, newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLUMNS, lineterminator="\n")
+        w = csv.DictWriter(fh, fieldnames=fieldnames, lineterminator="\n")
         w.writeheader()
         for r in rows:
-            w.writerow({c: r.get(c, "") for c in COLUMNS})
+            w.writerow({c: r.get(c, "") for c in fieldnames})
 
 
 def collect_candidates() -> tuple[list[dict], list[dict], dict]:
@@ -114,7 +152,8 @@ def collect_candidates() -> tuple[list[dict], list[dict], dict]:
             break
 
     freq: collections.Counter = collections.Counter()
-    best: dict[str, tuple[float, str, str]] = {}   # name → (score, code, method)
+    # name → (score, code, method, matched_entry_name) — matched_entry_name만 모호 검출용.
+    best: dict[str, tuple[float, str, str, str]] = {}
     for rec in recs:
         f = rec["fields"]
         text = f.get("fldXXnGOXkm90snKn") or f.get("fldgSupj5XLjJXYQo") or ""
@@ -128,8 +167,9 @@ def collect_candidates() -> tuple[list[dict], list[dict], dict]:
                 continue
             entry, code, method = resolve_product_entry(nm, None, name2code, lookup)
             if entry is None:
-                best[nm] = (0.0, "", method)
+                best[nm] = (0.0, "", method, "")
                 continue
+            matched_name = ""
             if method in ("code", "crosswalk", "name2code"):
                 score = 1.0
             else:
@@ -138,18 +178,31 @@ def collect_candidates() -> tuple[list[dict], list[dict], dict]:
                     from harness.backbone.keys import normalize_goods
                     _k, e, s = match_product(normalize_goods(nm), lookup)
                 score = s if e is not None else 0.0
-            best[nm] = (score, code or "", method)
+                matched_name = e.get("name", "") if e is not None else ""
+            best[nm] = (score, code or "", method, matched_name)
 
+    ambiguous_names = find_ambiguous_names(lookup)
+    ambiguous_downgraded = 0
     cross, pending = [], []
     stats = collections.Counter()
-    for nm, (score, code, method) in best.items():
+    for nm, (score, code, method, matched_name) in best.items():
         status, how = classify(score, bool(code))
+        reason = f"{method} score={score:.2f} freq={freq[nm]}"
+        if method in ("jaccard", "jaccard_norm") and matched_name:
+            dup_codes = ambiguous_names.get(re.sub(r"\s+", "", matched_name).lower())
+            if dup_codes:
+                status = "미검증"
+                ambiguous_downgraded += 1
+                reason += " ambiguous-name:" + "|".join(sorted(dup_codes))
         row = {"표준키": nm, "키유형": "굿즈명", "TMS_견적코드": code,
                "매칭방식": how, "매칭신뢰도": f"{score:.2f}",
                "검증상태": status,
-               "근거": f"{method} score={score:.2f} freq={freq[nm]}"}
+               "근거": reason}
         stats[status] += 1
         (pending if status == "보류" else cross).append(row)
+
+    print(f"모호 이름 자동확정 차단: {ambiguous_downgraded}건 미검증으로 강제 전환 "
+          f"(동명이코드 Product master, jaccard/jaccard_norm 매칭)")
 
     # 규격요청은 빈도 내림차순 — 무엇부터 요청할지 우선순위
     pending.sort(key=lambda r: -freq.get(r["표준키"], 0))
