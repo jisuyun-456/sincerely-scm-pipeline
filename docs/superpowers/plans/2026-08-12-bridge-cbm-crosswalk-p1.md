@@ -693,15 +693,19 @@ Expected: 두 CSV가 생성된다.
 
 ```bash
 python -c "
-from harness.backbone.crosswalk_store import load_crosswalk, clear_cache
+from harness.backbone.crosswalk_store import validate_crosswalk, load_crosswalk, clear_cache
 clear_cache()
 m = load_crosswalk(_cache=False)
 print(f'확정 결정론 엔트리: {len(m)}')
+validate_crosswalk()   # 충돌 시 raise
+print('검증 통과 — 충돌 없음')
 "
 ```
-Expected: 예외 없이 엔트리 수가 출력된다.
+Expected: 엔트리 수 출력 후 `검증 통과`.
 
-**`CrosswalkConflictError`가 발생하면 그것은 버그가 아니라 발견이다** — 같은 정규화 키에 서로 다른 견적코드를 자동 배정한 실제 충돌이다(FGPS 류). 이 경우 해당 행들의 `검증상태`를 `보류`로 내리고 `근거`에 충돌 사실을 적은 뒤 재확인한다. 자동으로 한쪽을 고르지 말 것.
+**`CrosswalkConflictError`가 발생하면 그것은 버그가 아니라 발견이다** — 같은 정규화 키에 서로 다른 견적코드를 자동 배정한 실제 충돌이다(FGPS 류). 이 경우 해당 행들의 `검증상태`를 `보류`로 내리고 `근거`에 충돌 사실을 적은 뒤 재확인한다. **자동으로 한쪽을 고르지 말 것.**
+
+참고: 런타임(`load_crosswalk`)은 충돌 키를 양쪽 다 제외하고 넘어가므로 정산 크론이 죽지는 않는다(spec §4.2 개정). 그래도 해당 굿즈명은 결정론을 못 받고 퍼지로 흐르므로, 충돌은 반드시 해소해야 한다.
 
 - [ ] **Step 4: 커밋 (리뷰게이트 제출)**
 
