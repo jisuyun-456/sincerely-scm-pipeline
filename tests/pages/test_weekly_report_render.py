@@ -80,6 +80,51 @@ def test_render_all_archive_skips_bad_json(tmp_path):
     assert not (out_dir/"weekly-report-2026-W99.html").exists()
 
 
+def test_delta_kinds():
+    assert R._delta(65.4, 42.5, "pp", thresh=10) == ("▲22.9p", True)
+    assert R._delta(29.04, 18.86, "pct", thresh=20) == ("▲+54%", True)
+    assert R._delta(5, 8, "abs", lower_better=True, thresh=2) == ("▼3 개선", True)
+    assert R._delta(2, 10, "abs", lower_better=True, thresh=5) == ("▼8 개선", True)
+    assert R._delta(97.8, 97.8, "none") == ("–", False)
+    assert R._delta(100.0, 99.6, "pp", thresh=1) == ("▲0.4p", False)   # 임계 미만 → 이탈 아님
+    assert R._delta(5, None, "abs") == ("–", False)                    # prev 없음
+
+
+def test_render_markdown_structure(tmp_path):
+    reports_dir = _copy_seeds(tmp_path / "reports")
+    p = R.render_markdown("2026-W32", reports_dir=reports_dir, out_dir=reports_dir)
+    md = p.read_text(encoding="utf-8")
+    # 프로세스 5단계 버킷 + 순서(입하→검수→입고→자재→출하)
+    for stage in ["📥 입하", "🔎 검수", "📦 입고", "🧰 자재", "🚚 출하"]:
+        assert stage in md
+    assert md.index("📥 입하") < md.index("🔎 검수") < md.index("📦 입고") < md.index("🧰 자재") < md.index("🚚 출하")
+    # WoW 비교대상 + 실제 계산 (미입하 10→2 ▼8, 주간 CBM +54%)
+    assert "compare_to: 2026-W31" in md
+    assert "▼8 개선" in md
+    assert "▲+54%" in md
+    # 예외중심 신호 테이블
+    assert "이번 주 이탈·특이 신호" in md
+    # 전환 KPI = 라이브 상수 (다영 86.5 · 프리패키징 12.1/88.6)
+    assert "86.5%" in md
+    assert "실측 12.1% / 추정포함 88.6%" in md
+
+
+def test_render_markdown_no_prev_week(tmp_path):
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True)
+    shutil.copy(SEED_DIR / "2026-W31.json", reports_dir / "2026-W31.json")
+    md = R.render_markdown("2026-W31", reports_dir=reports_dir, out_dir=reports_dir).read_text(encoding="utf-8")
+    assert "compare_to: 없음" in md          # 직전주 없어도 생성
+    assert "📥 입하" in md
+
+
+def test_render_all_archive_emits_markdown(tmp_path):
+    reports_dir = _copy_seeds(tmp_path / "reports")
+    R.render_all_archive(reports_dir=reports_dir, out_dir=tmp_path / "out")
+    assert (reports_dir / "2026-W32.md").exists()   # HTML 옆에 MD 동시 산출
+    assert (reports_dir / "2026-W31.md").exists()
+
+
 def test_render_all_archive_latest_render_fail_falls_back(tmp_path):
     # W99 = VALID JSON (rebuild_index 통과 → index[0], 최신) 이지만 render_from_data 가
     # 필요로 하는 운영 키가 없어 렌더 단계에서 실패 → done 에서 제외.

@@ -592,14 +592,15 @@ CONVERSION_KPI = {
     "cbm_pending": 310,
     "cbm_box_only_pct": 90.4,
     "cbm_cbm_only_pct": 84.1,
-    "cbm_a1_pct": 89.6,
-    "cbm_dayoung_pct": 1.9,
+    "cbm_a1_pct": 89.3,
+    "cbm_dayoung_pct": 86.5,
     "cbm_bottleneck_note": "미확정 310건 중 다영기획 156건(50.3%)",
     "mh_inbound_pct": 100.0,
     "mh_inspect_pct": 99.8,
     "mh_putaway_pct": 99.9,
     "mh_full_cycle_pct": 99.7,
     "mh_prepkg_pct": 12.1,
+    "mh_prepkg_est_pct": 88.6,
     "mh_timestamp_count": 3808,
 }
 
