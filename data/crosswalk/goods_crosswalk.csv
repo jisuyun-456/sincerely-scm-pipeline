@@ -1,0 +1,1395 @@
+표준키,키유형,TMS_견적코드,매칭방식,매칭신뢰도,검증상태,근거
+"""Solid커스텀G형박스",굿즈명,SOLD,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:SCGB|SOLD
+"""Solid커스텀G형박스(L사이즈)",굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+"""Solid커스텀G형박스(L사이즈) 키트",굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:SCGB|SOLD
+"""Solid커스텀G형박스(S사이즈) 키트",굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:SCGB|SOLD
+"""프라우드메모패드(블랙)",굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+(+비치타올+여권지갑+스타일 수면안대),굿즈명,STSM,유사,0.50,미검증,jaccard score=0.50 freq=1
+(1 안전봉투),굿즈명,SFPP,유사,0.50,미검증,jaccard score=0.50 freq=1
+(블랙),굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+(블랙)1,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+(수면안대4,굿즈명,STSM,유사,0.50,미검증,jaccard score=0.50 freq=1
+(스티커 X,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+(잔여분)다이어리(1)1,굿즈명,MOLD,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+(캘린더,굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=2
+(커스텀 박스),굿즈명,SCGL,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:SCGL|SOLL
+Advent굿즈박스 키트,굿즈명,AVBX,유사,0.67,미검증,jaccard score=0.67 freq=6
+Advent굿즈박스 키트 [브랜드팝클리어키링],굿즈명,AVBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Advent굿즈박스 키트 [핸디파우더솝],굿즈명,AVBX,유사,0.50,미검증,jaccard score=0.50 freq=2
+BLANKUV칫솔살균기,굿즈명,UVBR,정확,1.00,확정,jaccard score=1.00 freq=36
+BLANK칫솔살균기 (1),굿즈명,UVBR,유사,0.67,미검증,jaccard score=0.67 freq=1
+BLANK칫솔살균기 (2),굿즈명,UVBR,유사,0.67,미검증,jaccard score=0.67 freq=1
+Brandfit 커스텀 쇼핑백,굿즈명,BFSB,정확,1.00,확정,jaccard score=1.00 freq=7
+Brandfit커스텀쇼핑백,굿즈명,BFSB,정확,1.00,확정,jaccard score=1.00 freq=51
+Carry me 와인잔,굿즈명,CMWC,정확,1.00,확정,jaccard score=1.00 freq=4
+Carryme와인잔(1입),굿즈명,CMWS,정확,1.00,확정,jaccard score=1.00 freq=16
+Carryme와인잔(2입),굿즈명,CMWC,정확,1.00,확정,jaccard score=1.00 freq=8
+Eco 페이퍼박스 키트,굿즈명,ECPB,유사,0.50,미검증,jaccard score=0.50 freq=8
+Eco페이퍼박스 키트,굿즈명,ECPB,유사,0.50,미검증,jaccard score=0.50 freq=1
+Eco페이퍼박스(S사이즈),굿즈명,ECPB,정확,1.00,확정,jaccard score=1.00 freq=5
+Eco페이퍼박스(S사이즈) 키트,굿즈명,ECPB,유사,0.75,미검증,jaccard score=0.75 freq=10
+Eco페이퍼박스(S사이즈)키트,굿즈명,ECPB,유사,0.75,미검증,jaccard score=0.75 freq=14
+Eco페이퍼박스(T사이즈),굿즈명,ECPT,정확,1.00,확정,jaccard score=1.00 freq=9
+Eco페이퍼박스(T사이즈) A키트,굿즈명,ECPB,유사,0.75,미검증,jaccard score=0.75 freq=1
+Eco페이퍼박스(T사이즈) B키트,굿즈명,ECPB,유사,0.75,미검증,jaccard score=0.75 freq=3
+Eco페이퍼박스(T사이즈) 키트,굿즈명,ECPB,유사,0.75,미검증,jaccard score=0.75 freq=28
+Eco페이퍼박스(T사이즈)키트,굿즈명,ECPB,유사,0.75,미검증,jaccard score=0.75 freq=17
+G형박스 L사이즈,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:SCGB|SOLD
+G형박스 L사이즈 사각스티커,굿즈명,SOLD,유사,0.40,미검증,jaccard score=0.40 freq=5 ambiguous-name:SCGB|SOLD
+HighLight 슬라이드 지퍼백,굿즈명,HLSZ,정확,1.00,확정,name2code score=1.00 freq=1
+HighLight슬라이드지퍼백,굿즈명,HLSZ,정확,1.00,미검증,jaccard score=1.00 freq=6 ambiguous-name:HLST|HLSZ
+HighLight슬라이드지퍼백 키트,굿즈명,HLST,유사,0.67,미검증,jaccard score=0.67 freq=7 ambiguous-name:HLST|HLSZ
+HighLight슬라이드지퍼백(1000개미만),굿즈명,HLST,유사,0.67,미검증,jaccard score=0.67 freq=4 ambiguous-name:HLST|HLSZ
+HighLight슬라이드지퍼백(1000개미만) 키트,굿즈명,HLST,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:HLST|HLSZ
+HighLight슬라이드지퍼백(1000개미만)키트,굿즈명,HLST,유사,0.50,미검증,jaccard score=0.50 freq=5 ambiguous-name:HLST|HLSZ
+HighLight슬라이드지퍼백1),굿즈명,HLST,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:HLST|HLSZ
+HighLight슬라이드지퍼백300,굿즈명,HLST,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:HLST|HLSZ
+KeepSafe안전봉투,굿즈명,SFPP,정확,1.00,확정,jaccard score=1.00 freq=2
+KeepSafe안전봉투 키트,굿즈명,SFPP,유사,0.67,미검증,jaccard score=0.67 freq=5
+KeepSafe안전봉투+스티커,굿즈명,SFPP,유사,0.67,미검증,jaccard score=0.67 freq=1
+KeepSafe안전봉투+썸네일캘린더,굿즈명,SFPP,유사,0.67,미검증,jaccard score=0.67 freq=1
+Lite 스트랩 박스,굿즈명,TWKF,정확,1.00,확정,name2code score=1.00 freq=1
+Lite 스트랩 박스 키트,굿즈명,TWKF,유사,0.75,미검증,jaccard score=0.75 freq=6
+MM00078697 로 입하된 킵세이프 마그넷 배터리,굿즈명,KSMB,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:KSMB|MGNB
+Motion커스텀박스(Small) 키트,굿즈명,MBCS,유사,0.50,미검증,jaccard score=0.50 freq=1
+Motion커스텀박스(Tower),굿즈명,MBCS,유사,0.67,미검증,jaccard score=0.67 freq=2
+Motion커스텀박스(Tower) 키트,굿즈명,MBCS,유사,0.50,미검증,jaccard score=0.50 freq=1
+Open 페이퍼박스 키트,굿즈명,OPPR,유사,0.50,미검증,jaccard score=0.50 freq=2
+Open페이퍼박스,굿즈명,OPPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+Open페이퍼박스 키트,굿즈명,OPPR,유사,0.50,미검증,jaccard score=0.50 freq=7
+Open페이퍼박스(Large) 키트,굿즈명,OPPL,유사,0.60,미검증,jaccard score=0.60 freq=1
+Open페이퍼박스(Small) 키트,굿즈명,OPPB,유사,0.60,미검증,jaccard score=0.60 freq=1
+Open페이퍼박스(스탠다드),굿즈명,OPPR,정확,1.00,확정,jaccard score=1.00 freq=7
+Open페이퍼박스(스탠다드) (일본어버전),굿즈명,OPPR,유사,0.75,미검증,jaccard score=0.75 freq=1
+Open페이퍼박스(스탠다드) 키트,굿즈명,OPPR,유사,0.75,미검증,jaccard score=0.75 freq=17
+Open페이퍼박스(스탠다드) 키트 웰컴페이퍼,굿즈명,OPPR,유사,0.60,미검증,jaccard score=0.60 freq=1
+Open페이퍼박스(스탠다드) 키트 웰컴페이퍼 O,굿즈명,OPPR,유사,0.60,미검증,jaccard score=0.60 freq=1
+Open페이퍼박스(스탠다드)300,굿즈명,OPPR,정확,1.00,확정,jaccard score=1.00 freq=1
+Open페이퍼박스(스탠다드)키트,굿즈명,OPPR,유사,0.75,미검증,jaccard score=0.75 freq=17
+Open페이퍼박스(스탠다드)키트(ver1),굿즈명,OPPR,유사,0.60,미검증,jaccard score=0.60 freq=1
+Open페이퍼박스(스탠다드)키트(ver2),굿즈명,OPPR,유사,0.60,미검증,jaccard score=0.60 freq=1
+Open페이퍼박스(커스텀,굿즈명,OPPC,유사,0.75,미검증,jaccard score=0.75 freq=21
+Open페이퍼박스100,굿즈명,OPPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+PD충전기,굿즈명,PUPD,유사,0.67,미검증,jaccard score=0.67 freq=2
+PD충전기(Lite모델),굿즈명,PDCX,유사,0.67,미검증,jaccard score=0.67 freq=2
+PD충전기(PRO모델),굿즈명,PDCG,유사,0.67,미검증,jaccard score=0.67 freq=3
+PNA17869-PMG 애드온뱃지,굿즈명,AOBG,유사,0.50,미검증,jaccard score=0.50 freq=1
+PNA20038-고양시도서관센터 애드온뱃지,굿즈명,AOBG,유사,0.50,미검증,jaccard score=0.50 freq=1
+PNA22933-골든플래닛 레더스킨 다이어리,굿즈명,LSKF,유사,0.50,미검증,jaccard score=0.50 freq=1
+PT4834-Solid커스텀G형박스,굿즈명,SOLD,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:SCGB|SOLD
+Passion 더스트백,굿즈명,DBAG,정확,1.00,확정,name2code score=1.00 freq=2
+Passion 더스트백1),굿즈명,DBAM,유사,0.67,미검증,jaccard score=0.67 freq=1
+Passion 더스트백2),굿즈명,DBAM,유사,0.67,미검증,jaccard score=0.67 freq=1
+Passion더스트백 키트 (블랙M),굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=1
+Passion더스트백 키트(블랙M),굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=1
+Passion더스트백(반투명),굿즈명,DBAM,정확,1.00,확정,jaccard score=1.00 freq=1
+Passion더스트백(반투명)키트,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=3
+Passion더스트백(반투명L),굿즈명,DBAM,정확,1.00,확정,jaccard score=1.00 freq=23
+Passion더스트백(반투명L) 키트,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=28
+Passion더스트백(반투명L)키트,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=14
+Passion더스트백(반투명L)키트 (선풍기네이비)50,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명L)키트 (선풍기화이트),굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명L)키트 L-,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명L)키트 M-,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명L)키트 S-,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명L)키트 XL-,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M),굿즈명,DBAM,정확,1.00,확정,jaccard score=1.00 freq=14
+Passion더스트백(반투명M) (8pin) 키트,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M) (C타입) 키트,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M) 키트,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=35
+Passion더스트백(반투명M)(피규어키링1)키트,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M)(피규어키링2)키트,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M)(피규어키링3)키트,굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M)+클리어리유저블,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=1
+Passion더스트백(반투명M)메시지캐리어파우치(메탈그레이),굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M)메시지캐리어파우치(실버),굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(반투명M)키트,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=22
+Passion더스트백(반투명M)키트100,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=1
+Passion더스트백(블랙)+아이콘 콜드컵,굿즈명,DBAG,유사,0.60,미검증,jaccard score=0.60 freq=1
+Passion더스트백(블랙)키트,굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=1
+Passion더스트백(블랙M 키트,굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=1
+Passion더스트백(블랙M),굿즈명,DBAG,정확,1.00,확정,jaccard score=1.00 freq=9
+Passion더스트백(블랙M) 벌크,굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=1
+Passion더스트백(블랙M) 키트,굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=16
+Passion더스트백(블랙M)150,굿즈명,DBAG,정확,1.00,확정,jaccard score=1.00 freq=1
+Passion더스트백(블랙M)키트,굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=20
+Passion더스트백1),굿즈명,DBAM,유사,0.67,미검증,jaccard score=0.67 freq=1
+Quality 슬리브박스 키트,굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=19
+Quality슬리브박스,굿즈명,SLVR,유사,0.67,미검증,jaccard score=0.67 freq=23
+Quality슬리브박스  키트,굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=1
+Quality슬리브박스 벌크,굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=2
+Quality슬리브박스 슬리브,굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=1
+Quality슬리브박스 재임가공,굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=1
+Quality슬리브박스 키트,굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=133
+Quality슬리브박스 키트 (전시2팀 AI파트),굿즈명,SLVR,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+Quality슬리브박스 키트 (전시2팀 소싱파트),굿즈명,SLVR,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+Quality슬리브박스 키트(올가닉 라벤더),굿즈명,SLVR,유사,0.50,미검증,jaccard_norm score=0.50 freq=2
+Quality슬리브박스 키트100,굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=2
+Quality슬리브박스(조립),굿즈명,SLVR,유사,0.50,미검증,jaccard score=0.50 freq=1
+RAW 코튼 파우치 키트 (1) 8핀,굿즈명,RWCL,유사,0.60,미검증,jaccard score=0.60 freq=1
+RAW 코튼 파우치 키트 (1) C타입,굿즈명,RWCL,유사,0.50,미검증,jaccard score=0.50 freq=1
+RAW 코튼 파우치 키트 (2),굿즈명,RWCL,유사,0.60,미검증,jaccard score=0.60 freq=1
+RE:CUP(리컵)_12oz,굿즈명,RECP,정확,1.00,확정,name2code score=1.00 freq=14
+RE:CUP(리컵)_16oz,굿즈명,RECP,정확,1.00,확정,name2code score=1.00 freq=7
+Raw 코튼 파우치,굿즈명,RWCL,정확,1.00,확정,name2code score=1.00 freq=1
+Raw 코튼 파우치 키트,굿즈명,RWCL,유사,0.60,미검증,jaccard score=0.60 freq=2
+Reinvent 슬리브박스 키트,굿즈명,RIVT,유사,0.67,미검증,jaccard score=0.67 freq=1
+Reinvent슬리브박스,굿즈명,RIVT,정확,1.00,확정,jaccard score=1.00 freq=2
+Reinvent슬리브박스 (벌크),굿즈명,RIVT,유사,0.67,미검증,jaccard score=0.67 freq=1
+Reinvent슬리브박스 (키트 조립),굿즈명,RIVT,유사,0.50,미검증,jaccard score=0.50 freq=1
+Reinvent슬리브박스 LS,굿즈명,RIVT,유사,0.67,미검증,jaccard score=0.67 freq=1
+Reinvent슬리브박스 키트,굿즈명,RIVT,유사,0.67,미검증,jaccard score=0.67 freq=18
+Simple 슬라이드 지퍼백,굿즈명,SLZB,정확,1.00,확정,jaccard score=1.00 freq=5
+Simple 슬라이드 지퍼백 (M) 키트,굿즈명,SLZB,유사,0.75,미검증,jaccard score=0.75 freq=1
+Simple 슬라이드 지퍼백 키트,굿즈명,SLZB,유사,0.75,미검증,jaccard score=0.75 freq=9
+Simple슬라이드지퍼백(L),굿즈명,SLZL,정확,1.00,확정,jaccard score=1.00 freq=1
+Simple슬라이드지퍼백(M),굿즈명,SLZB,정확,1.00,확정,jaccard score=1.00 freq=32
+Simple슬라이드지퍼백(S),굿즈명,SLZS,정확,1.00,확정,jaccard score=1.00 freq=9
+Solid 스탠다드 G형박스,굿즈명,SOLD,유사,0.40,미검증,jaccard score=0.40 freq=4 ambiguous-name:SCGB|SOLD
+Solid 커스텀 G형박스,굿즈명,SOLD,유사,0.75,미검증,jaccard score=0.75 freq=1 ambiguous-name:SCGB|SOLD
+Solid 커스텀 G형박스 키트,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=5 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈),굿즈명,SOLC,정확,1.00,확정,jaccard score=1.00 freq=25
+Solid스탠다드G형박스(L사이즈) 키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=46 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈) 키트 [인쇄 X],굿즈명,SOLD,유사,0.43,미검증,jaccard score=0.43 freq=1 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈) 키트60,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈)100,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈)150,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈)블랙,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈)키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=38 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈)화이트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(L사이즈_벌크),굿즈명,SOLD,유사,0.40,미검증,jaccard_norm score=0.40 freq=1 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(M사이즈),굿즈명,SOLB,정확,1.00,확정,jaccard score=1.00 freq=2
+Solid스탠다드G형박스(M사이즈) 키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=7 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(M사이즈)키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=6 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(S사이즈),굿즈명,SOLA,정확,1.00,확정,jaccard score=1.00 freq=2
+Solid스탠다드G형박스(S사이즈) 키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=5 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(S사이즈)키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=23 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스(브랜디드타월2개입),굿즈명,SOLD,유사,0.40,미검증,jaccard_norm score=0.40 freq=3 ambiguous-name:SCGB|SOLD
+Solid스탠다드G형박스100,굿즈명,SOLD,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스,굿즈명,SOLD,유사,0.75,미검증,jaccard score=0.75 freq=7 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스 (키트),굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스 키트,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=5 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈,굿즈명,SOLD,정확,1.00,미검증,jaccard score=1.00 freq=2 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈),굿즈명,SCGL,정확,1.00,미검증,jaccard score=1.00 freq=18 ambiguous-name:SCGL|SOLL
+Solid커스텀G형박스(L사이즈) (뉴오피스키트),굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) (벌크),굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) + 스티커,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) 띠지 + 양면테이프,굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=2 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) 띠지+양면테이프,굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) 벌크,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=3 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) 웰컴페이퍼,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=3 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) 키트,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=52 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈) 키트 47+여분수량,굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈)(웰컴키트),굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈)키트,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=66 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈)키트 45+여유수량,굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈)키트(레더스킨_그레이),굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(L사이즈)키트(레더스킨_블랙),굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(M사이즈),굿즈명,SOLM,정확,1.00,미검증,jaccard score=1.00 freq=5 ambiguous-name:SCGM|SOLM
+Solid커스텀G형박스(M사이즈) 키트,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=13 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(M사이즈)키트,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=6 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(M사이즈)키트 100+,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(M사이즈)키트[일본어],굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(M사이즈)키트[한국어],굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈,굿즈명,SOLD,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈),굿즈명,SOLD,정확,1.00,미검증,jaccard score=1.00 freq=9 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈) 벌크,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈) 웰커페이퍼,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈) 재포장,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈) 키트,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=18 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈) 키트 (일문버전),굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈) 키트200,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈)키,굿즈명,SOLD,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈)키트,굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=32 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈)키트 90(c타입),굿즈명,SOLD,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈)키트[영문버전],굿즈명,SOLD,유사,0.80,미검증,jaccard score=0.80 freq=2 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(S사이즈키트,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(Vip) 키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(XL)Enter,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(XL)sports100,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(ver1.레더스킨,굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(ver2.),굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=1 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(기본) 키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(커스텀사이즈) 키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스(커스텀사이즈)키트,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:SCGB|SOLD
+Solid커스텀G형박스키트(L사이즈),굿즈명,SOLD,유사,0.60,미검증,jaccard score=0.60 freq=2 ambiguous-name:SCGB|SOLD
+Start틴케이스,굿즈명,TNCS,정확,1.00,확정,jaccard score=1.00 freq=1
+Start틴케이스 100(여분),굿즈명,TNCS,유사,0.67,미검증,jaccard score=0.67 freq=1
+Start틴케이스 키트,굿즈명,TNCS,유사,0.67,미검증,jaccard score=0.67 freq=27
+Start틴케이스 키트200,굿즈명,TNCS,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery  페이퍼박스 키트,굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery 페이퍼박스 키트,굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery페이퍼박스,굿즈명,STBX,정확,1.00,확정,jaccard score=1.00 freq=4
+Stationery페이퍼박스  100(박스샘플포함),굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery페이퍼박스 (벌크),굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery페이퍼박스 (벌크전달),굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery페이퍼박스 [성수],굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery페이퍼박스 [용산],굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=1
+Stationery페이퍼박스 [일반],굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=2
+Stationery페이퍼박스 키트,굿즈명,STBX,유사,0.67,미검증,jaccard score=0.67 freq=47
+Stationery페이퍼박스 키트 (사내배포),굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스 키트 (영업배포),굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스 키트 150+여분,굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스 키트 50+여분,굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스 키트((볼펜제외) 키트,굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스 키트((볼펜포함) 키트,굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스 키트(볼펜제외),굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스 키트(캘린더미포함),굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스(볼펜포함) 키트,굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Stationery페이퍼박스(웰컴) 키트,굿즈명,STBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+Storage 펄프박스 키트,굿즈명,STPB,유사,0.67,미검증,jaccard score=0.67 freq=6
+Storage펄프박스,굿즈명,STPB,정확,1.00,확정,jaccard score=1.00 freq=3
+Storage펄프박스 리드300,굿즈명,STPB,유사,0.67,미검증,jaccard score=0.67 freq=1
+Storage펄프박스 바디300,굿즈명,STPB,유사,0.67,미검증,jaccard score=0.67 freq=1
+Storage펄프박스 키트,굿즈명,STPB,유사,0.67,미검증,jaccard score=0.67 freq=40
+Storage펄프박스 키트20,굿즈명,STPB,유사,0.67,미검증,jaccard score=0.67 freq=1
+Tailored 스트랩 박스 키트,굿즈명,TILD,유사,0.75,미검증,jaccard score=0.75 freq=8
+Tailored 스트랩 박스 키트 (L ),굿즈명,TILD,유사,0.75,미검증,jaccard score=0.75 freq=1
+Tailored 스트랩 박스 키트 (XL),굿즈명,TILD,유사,0.75,미검증,jaccard score=0.75 freq=1
+Tailored스트랩박스,굿즈명,TILD,정확,1.00,확정,jaccard score=1.00 freq=12
+Tailored스트랩박스(벌크),굿즈명,TILD,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+Tailored스트랩박스(조립),굿즈명,TILD,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+Two-way에코쇼핑백(L),굿즈명,TWOS,정확,1.00,확정,jaccard score=1.00 freq=4
+Two-way에코쇼핑백(XL),굿즈명,TWOX,정확,1.00,확정,jaccard score=1.00 freq=5
+USB 1),굿즈명,DUSB,유사,0.50,미검증,jaccard score=0.50 freq=1
+USB1),굿즈명,DUSB,유사,0.50,미검증,jaccard score=0.50 freq=1
+USb2),굿즈명,DUSB,유사,0.50,미검증,jaccard score=0.50 freq=1
+UV(버티컬 무선충전패드),굿즈명,VWPD,유사,0.67,미검증,jaccard score=0.67 freq=2
+UV(베케이션 여권케이스),굿즈명,VCIT,유사,0.67,미검증,jaccard score=0.67 freq=4
+UV(아트워크 레더 다이어리),굿즈명,ATWK,유사,0.75,미검증,jaccard score=0.75 freq=1
+UV(어텐션 스포츠 보틀_360),굿즈명,ATSS,유사,0.40,미검증,jaccard score=0.40 freq=3 ambiguous-name:ATSB|ATSS
+UV(어텐션 스포츠 보틀_360) (1)1,굿즈명,ATSS,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:ATSB|ATSS
+UV(어텐션 스포츠 보틀_360) (2),굿즈명,ATSS,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:ATSB|ATSS
+UV(어텐션 스포츠 보틀_360) (2)1,굿즈명,ATSS,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:ATSB|ATSS
+UV(킵세이프 마그넷 배터리_전면중앙),굿즈명,KSMB,유사,0.40,미검증,jaccard score=0.40 freq=2 ambiguous-name:KSMB|MGNB
+UV(핸디링 미니 선풍기),굿즈명,HDRM,유사,0.75,미검증,jaccard score=0.75 freq=3
+eco페이퍼박스 키트,굿즈명,ECPB,유사,0.50,미검증,jaccard score=0.50 freq=1
+stationery페이퍼박스,굿즈명,STBX,정확,1.00,확정,jaccard score=1.00 freq=1
+usb1,굿즈명,DUSB,유사,0.50,미검증,jaccard score=0.50 freq=2
+가챠브랜드팝 클리어 키링,굿즈명,BCAK,유사,0.50,미검증,jaccard score=0.50 freq=1
+가챠아임히어 리플렉터 키링,굿즈명,IMHE,유사,0.50,미검증,jaccard score=0.50 freq=1
+고객인지이슈 핑거팬,굿즈명,FING,유사,0.50,미검증,jaccard score=0.50 freq=1
+고체치약1,굿즈명,TUTH,유사,0.50,미검증,jaccard score=0.50 freq=3
+고체치약1),굿즈명,TUTH,유사,0.50,미검증,jaccard score=0.50 freq=2
+골프공,굿즈명,PSGB,유사,0.50,미검증,jaccard score=0.50 freq=7
+골프공 6구,굿즈명,PSGB,유사,0.50,미검증,jaccard score=0.50 freq=1
+골프공3),굿즈명,PSGB,유사,0.50,미검증,jaccard score=0.50 freq=1
+굿데이 볼캡,굿즈명,GDEB,정확,1.00,확정,name2code score=1.00 freq=2
+굿데이볼캡,굿즈명,GDEB,정확,1.00,확정,jaccard score=1.00 freq=24
+굿스타트 슈즈백,굿즈명,GSSH,정확,1.00,확정,name2code score=1.00 freq=5
+굿스타트슈즈백(단품),굿즈명,GSSH,정확,1.00,확정,jaccard score=1.00 freq=14
+굿스타트슈즈백(키트),굿즈명,GSSK,정확,1.00,확정,jaccard score=1.00 freq=13
+굿이너프 비치타월,굿즈명,BCTL,정확,1.00,확정,name2code score=1.00 freq=37
+굿이너프 비치타월(인쇄+봉재),굿즈명,BCTL,정확,1.00,확정,name2code score=1.00 freq=20
+굿이너프 비치타월(인쇄+봉재) (1),굿즈명,BCTL,정확,1.00,확정,name2code score=1.00 freq=5
+굿이너프 비치타월(인쇄+봉재) (1)1,굿즈명,BCTL,유사,0.50,미검증,jaccard score=0.50 freq=1
+굿이너프 비치타월(인쇄+봉재) (2),굿즈명,BCTL,정확,1.00,확정,name2code score=1.00 freq=5
+굿이너프 비치타월(인쇄+봉재) (2)1,굿즈명,BCTL,유사,0.50,미검증,jaccard score=0.50 freq=3
+굿이너프비치타월,굿즈명,BCTL,정확,1.00,확정,jaccard score=1.00 freq=86
+굿이너프비치타월 + Solid스탠다드G형박스(M사이즈),굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:SCGB|SOLD
+굿이너프비치타월(2022ver),굿즈명,BCTL,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+굿이너프비치타월(300개이하),굿즈명,BCTL,정확,1.00,확정,jaccard_norm score=1.00 freq=15
+굿이너프비치타월(300개이하) + Solid스탠다드G형박스(M사이즈),굿즈명,SOLD,유사,0.43,미검증,jaccard score=0.43 freq=1 ambiguous-name:SCGB|SOLD
+굿이너프비치타월(FastTrack),굿즈명,BCTL,정확,1.00,확정,jaccard_norm score=1.00 freq=22
+굿즈박스4),굿즈명,AVBX,유사,0.50,미검증,jaccard score=0.50 freq=1
+그래픽 에코백,굿즈명,GPEB,정확,1.00,확정,name2code score=1.00 freq=7
+그래픽 에코백 키트,굿즈명,GPEB,유사,0.67,미검증,jaccard score=0.67 freq=1
+그래픽배너 대용량 보조배터리,굿즈명,GBBT,정확,1.00,확정,name2code score=1.00 freq=2
+그래픽배너대용량보조배터리,굿즈명,GBBT,정확,1.00,확정,jaccard score=1.00 freq=18
+그래픽배너대용량보조배터리100,굿즈명,GBBT,정확,1.00,확정,jaccard score=1.00 freq=1
+그래픽에코백,굿즈명,GPEB,정확,1.00,확정,jaccard score=1.00 freq=59
+그래픽에코백 (단품),굿즈명,GPEB,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+그래픽에코백(인쇄+봉재),굿즈명,GPEB,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+그로우 북라이트,굿즈명,BMLT,정확,1.00,확정,name2code score=1.00 freq=2
+그립잇,굿즈명,GRIT,정확,1.00,확정,jaccard score=1.00 freq=55
+그립잇 2종,굿즈명,GRIT,정확,1.00,확정,jaccard score=1.00 freq=1
+그립잇(배경지없음)200,굿즈명,GRIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+그립잇(인쇄+조립),굿즈명,GRIT,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+그립잇+인쇄,굿즈명,GRIT,유사,0.50,미검증,jaccard score=0.50 freq=7
+그립잇1,굿즈명,GRIT,정확,1.00,확정,jaccard score=1.00 freq=3
+그립잇1),굿즈명,GRIT,정확,1.00,확정,jaccard score=1.00 freq=1
+그립잇100,굿즈명,GRIT,정확,1.00,확정,jaccard score=1.00 freq=1
+그립잇300,굿즈명,GRIT,정확,1.00,확정,jaccard score=1.00 freq=1
+그립잇803,굿즈명,GRIT,정확,1.00,확정,jaccard score=1.00 freq=1
+글로시 키링,굿즈명,GKEY,정확,1.00,확정,name2code score=1.00 freq=3
+글로시키링,굿즈명,GKEY,정확,1.00,확정,jaccard score=1.00 freq=31
+글로시키링(24.09.ver),굿즈명,GKEY,정확,1.00,확정,jaccard_norm score=1.00 freq=30
+낫씽설거지비누(110g커스텀),굿즈명,QWER,정확,1.00,확정,jaccard score=1.00 freq=3
+낫씽설거지비누(200g커스텀),굿즈명,QWEC,정확,1.00,확정,jaccard score=1.00 freq=2
+내추럴 노트,굿즈명,NTRN,정확,1.00,확정,name2code score=1.00 freq=1
+내추럴 노트 (벌크),굿즈명,NTRN,정확,1.00,확정,name2code score=1.00 freq=1
+내추럴 노트 - 1541 (42박스),굿즈명,NTRN,유사,0.67,미검증,jaccard score=0.67 freq=1
+내추럴 노트(표지인쇄 포함),굿즈명,NTRN,정확,1.00,확정,name2code score=1.00 freq=2
+내추럴노트,굿즈명,NTRN,정확,1.00,확정,jaccard score=1.00 freq=42
+내추럴노트 (박스에 삽입),굿즈명,NTRN,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+내추럴노트(씬페이퍼봉투+스티커),굿즈명,NTRN,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+노스트레스PD충전기,굿즈명,PUPD,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트,굿즈명,NTRN,유사,0.50,미검증,jaccard score=0.50 freq=2
+노트1,굿즈명,NTRN,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트1),굿즈명,NTRN,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트2),굿즈명,NTRN,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트3),굿즈명,NTRN,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트북 스탠드패드,굿즈명,NSTP,정확,1.00,확정,name2code score=1.00 freq=5
+노트북백,굿즈명,BRDD,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트북스탠드패드,굿즈명,NSTP,정확,1.00,확정,jaccard score=1.00 freq=60
+노트북스탠드패드147,굿즈명,NSTP,정확,1.00,확정,jaccard score=1.00 freq=1
+노트패드,굿즈명,CNPD,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트패드1),굿즈명,CNPD,유사,0.50,미검증,jaccard score=0.50 freq=1
+노트패드5),굿즈명,CNPD,유사,0.50,미검증,jaccard score=0.50 freq=1
+눈마사지기,굿즈명,EMSG,유사,0.50,미검증,jaccard score=0.50 freq=1
+다이어리,굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=7
+다이어리 24부,굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=1
+다이어리 26부,굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=1
+다이어리),굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=1
+다이어리1,굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=7
+다이어리1),굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=11
+다이어리2,굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=2
+다이어리2),굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=4
+다이어리5),굿즈명,MOLD,유사,0.50,미검증,jaccard score=0.50 freq=1
+더블업 트래블 파우치,굿즈명,DTPL,정확,1.00,확정,name2code score=1.00 freq=7
+더블업 트래블 파우치 키트,굿즈명,DTPK,정확,1.00,확정,jaccard score=1.00 freq=1
+데스크테리어 매트,굿즈명,DSKS,정확,1.00,확정,name2code score=1.00 freq=17
+데스크테리어매트(기본형),굿즈명,DSKS,정확,1.00,확정,jaccard score=1.00 freq=30
+데스크테리어매트(대형),굿즈명,DSKW,정확,1.00,확정,jaccard score=1.00 freq=9
+데일리 짐색,굿즈명,DLYG,정확,1.00,확정,name2code score=1.00 freq=26
+데일리 짐색 (1)600,굿즈명,DLYG,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색 (2)600,굿즈명,DLYG,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색 키트,굿즈명,DLYG,유사,0.67,미검증,jaccard score=0.67 freq=5 ambiguous-name:DLYG|DLYK
+데일리 짐색 키트 (포시즌 티셔츠 2XL  ),굿즈명,DLYG,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색 키트 (포시즌 티셔츠 3XL ),굿즈명,DLYG,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색 키트 (포시즌 티셔츠 L ),굿즈명,DLYG,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색 키트 (포시즌 티셔츠 M  ),굿즈명,DLYG,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색 키트 (포시즌 티셔츠 S ),굿즈명,DLYG,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색 키트 (포시즌 티셔츠 XL ),굿즈명,DLYG,유사,0.40,미검증,jaccard score=0.40 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색1),굿즈명,DLYG,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리 짐색2),굿즈명,DLYG,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리머그,굿즈명,DMUG,정확,1.00,확정,jaccard score=1.00 freq=15
+데일리머그(블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+데일리머그(화이트),굿즈명,DMUG,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+데일리짐색,굿즈명,DLYG,정확,1.00,미검증,jaccard score=1.00 freq=45 ambiguous-name:DLYG|DLYK
+데일리짐색(+손잡이백),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리짐색(1),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리짐색(2),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리짐색(그레이 슬리브 키트),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리짐색(단품),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=185 ambiguous-name:DLYG|DLYK
+데일리짐색(벌크),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=3 ambiguous-name:DLYG|DLYK
+데일리짐색(블랙 슬리브 키트),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리짐색(키트),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=31 ambiguous-name:DLYG|DLYK
+데일리짐색(키트)(+남자피규어),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데일리짐색(키트)(+여자피규어),굿즈명,DLYG,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:DLYG|DLYK
+데코 스티커,굿즈명,DECO,정확,1.00,확정,name2code score=1.00 freq=8
+데코 스티커 2종 1장씩,굿즈명,DECO,유사,0.67,미검증,jaccard score=0.67 freq=1
+데코무선가습기,굿즈명,DCMS,정확,1.00,확정,jaccard score=1.00 freq=3
+데코스티커,굿즈명,DECO,정확,1.00,확정,jaccard score=1.00 freq=103
+드레스업 손거울,굿즈명,DRSU,정확,1.00,확정,name2code score=1.00 freq=5
+드레스업손거울,굿즈명,DRSU,정확,1.00,확정,jaccard score=1.00 freq=34
+디스플레이 피규어 세트,굿즈명,DPFG,정확,1.00,확정,name2code score=1.00 freq=2
+디자이너 노트,굿즈명,DSGN,정확,1.00,확정,name2code score=1.00 freq=5
+디자이너노트,굿즈명,DSGN,정확,1.00,확정,jaccard score=1.00 freq=71
+디테일 드라이버 키트,굿즈명,DTDK,정확,1.00,확정,name2code score=1.00 freq=1
+디테일드라이버키트,굿즈명,DTDK,정확,1.00,확정,jaccard score=1.00 freq=6
+라미 사파리 펜,굿즈명,LAMY,정확,1.00,확정,name2code score=1.00 freq=2
+라미사파리펜,굿즈명,LAMY,정확,1.00,확정,jaccard score=1.00 freq=19
+라미사파리펜(30주년),굿즈명,LAMY,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+라미사파리펜(stock),굿즈명,LAMY,정확,1.00,확정,jaccard_norm score=1.00 freq=4
+라미사파리펜(대원씨아이),굿즈명,LAMY,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+라미사파리펜(만년필),굿즈명,LAMY,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+라미사파리펜(재고확인필수),굿즈명,LAMY,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+라운드밤부칫솔,굿즈명,RBTB,정확,1.00,확정,jaccard score=1.00 freq=3
+라운드밤부칫솔(stock),굿즈명,RBTB,정확,1.00,확정,jaccard_norm score=1.00 freq=4
+라이트 샤오미 펜,굿즈명,LXMP,정확,1.00,확정,jaccard score=1.00 freq=1
+라이트 샤오미펜,굿즈명,LXMP,정확,1.00,확정,name2code score=1.00 freq=9
+라이트 샤오미펜100,굿즈명,LXMP,정확,1.00,확정,jaccard score=1.00 freq=1
+라이트 캘린더 샘플,굿즈명,LTCL,유사,0.67,미검증,jaccard score=0.67 freq=1
+라이트샤오미펜,굿즈명,LXMP,정확,1.00,확정,jaccard score=1.00 freq=54
+라이트캘린더,굿즈명,LTCL,정확,1.00,확정,jaccard score=1.00 freq=18
+런치박스,굿즈명,RDGL,유사,0.50,미검증,jaccard score=0.50 freq=1
+런치박스100,굿즈명,RDGL,유사,0.50,미검증,jaccard score=0.50 freq=1
+런치박스2,굿즈명,RDGL,유사,0.50,미검증,jaccard score=0.50 freq=1
+레더라벨 캠핑체어,굿즈명,LTLB,정확,1.00,확정,name2code score=1.00 freq=7
+레더라벨캠핑체어,굿즈명,LTLB,정확,1.00,확정,jaccard score=1.00 freq=60
+레더라벨캠핑체어(세트_본품및파우치)_베이지,굿즈명,LTLB,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+레더스킨 다이어리,굿즈명,LSKD,정확,1.00,확정,name2code score=1.00 freq=11
+레더스킨 다이어리 (벌크전달)150,굿즈명,LSKF,유사,0.50,미검증,jaccard score=0.50 freq=1
+레더스킨 다이어리 블랙,굿즈명,LSKF,유사,0.50,미검증,jaccard score=0.50 freq=1
+레더스킨 다이어리100,굿즈명,LSKF,유사,0.67,미검증,jaccard score=0.67 freq=1
+레더스킨다이어리(커스텀),굿즈명,LSKF,정확,1.00,확정,jaccard score=1.00 freq=11
+레더스킨다이어리(표준),굿즈명,LSKD,정확,1.00,확정,jaccard score=1.00 freq=216
+레디고런치박스,굿즈명,RDGL,정확,1.00,확정,jaccard score=1.00 freq=65
+레터링유리머그,굿즈명,LTLU,정확,1.00,확정,jaccard score=1.00 freq=24
+로고스트랩 파우치,굿즈명,LSPO,정확,1.00,확정,name2code score=1.00 freq=14
+로고스트랩 파우치 키트,굿즈명,LSPH,정확,1.00,확정,jaccard score=1.00 freq=2
+로고스트랩 파우치(프로)키트,굿즈명,LSPH,유사,0.75,미검증,jaccard score=0.75 freq=1
+로고스트랩파우치,굿즈명,LSPO,정확,1.00,확정,jaccard score=1.00 freq=9
+로고스트랩파우치 (단품포장),굿즈명,LSPO,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+로고스트랩파우치(단품),굿즈명,LSPO,정확,1.00,확정,jaccard_norm score=1.00 freq=108
+로고스트랩파우치(키트),굿즈명,LSPH,정확,1.00,확정,jaccard score=1.00 freq=33
+로지텍라이트마우스,굿즈명,MSMO,정확,1.00,확정,jaccard score=1.00 freq=1
+로지텍페블블루투스마우스,굿즈명,BLTS,정확,1.00,확정,jaccard score=1.00 freq=2
+리마커블 칫솔살균기,굿즈명,RMKB,정확,1.00,확정,name2code score=1.00 freq=6
+리멤버 타투스티커,굿즈명,TTSK,정확,1.00,확정,name2code score=1.00 freq=3
+리멤버 탁상시계,굿즈명,RMBT,정확,1.00,확정,name2code score=1.00 freq=12
+리멤버타투스티커,굿즈명,TTSK,정확,1.00,확정,jaccard score=1.00 freq=31
+리멤버탁상시계,굿즈명,RMBT,정확,1.00,확정,jaccard score=1.00 freq=57
+리유저블캘린더,굿즈명,RUCD,정확,1.00,확정,jaccard score=1.00 freq=66
+리틀빅 리유저블컵,굿즈명,LTBR,정확,1.00,확정,name2code score=1.00 freq=1
+리프레쉬고체치약,굿즈명,TUTH,정확,1.00,확정,jaccard score=1.00 freq=14
+린넨메쉬파우치,굿즈명,LNMS,정확,1.00,확정,jaccard score=1.00 freq=1
+린넨샤쉐,굿즈명,LSCH,유사,0.50,미검증,jaccard score=0.50 freq=1
+릴리프 눈마사지기,굿즈명,EMSG,정확,1.00,확정,name2code score=1.00 freq=1
+릴리프 눈마사지기1),굿즈명,EMSG,정확,1.00,확정,jaccard score=1.00 freq=1
+릴리프눈마사지기,굿즈명,EMSG,정확,1.00,확정,jaccard score=1.00 freq=28
+마그넷 배터리,굿즈명,KSMB,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:KSMB|MGNB
+마그넷 오프너,굿즈명,MOPN,정확,1.00,확정,name2code score=1.00 freq=5
+마그넷1,굿즈명,MOPN,유사,0.50,미검증,jaccard score=0.50 freq=1
+마그넷3,굿즈명,MOPN,유사,0.50,미검증,jaccard score=0.50 freq=1
+마그넷오프너,굿즈명,MOPN,정확,1.00,확정,jaccard score=1.00 freq=72
+매트블랙 텀블러,굿즈명,MTTB,정확,1.00,확정,name2code score=1.00 freq=12
+매트블랙텀블러,굿즈명,MTTB,정확,1.00,확정,jaccard score=1.00 freq=157
+머그1),굿즈명,MMUG,유사,0.50,미검증,jaccard score=0.50 freq=1
+머그2,굿즈명,MMUG,유사,0.50,미검증,jaccard score=0.50 freq=2
+머그2),굿즈명,MMUG,유사,0.50,미검증,jaccard score=0.50 freq=1
+메모패드1),굿즈명,PMPC,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:PMPB|PMPC
+메모패드2),굿즈명,PMPC,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:PMPB|PMPC
+메모패드250,굿즈명,PMPC,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:PMPB|PMPC
+메세지 스트랩,굿즈명,MSST,정확,1.00,확정,name2code score=1.00 freq=1
+메세지 캐리어 파우치,굿즈명,MSGA,유사,0.75,미검증,jaccard score=0.75 freq=1
+메세지스트랩,굿즈명,MSST,정확,1.00,확정,jaccard score=1.00 freq=8
+메세지스트랩(337개입),굿즈명,MSST,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+메시지 캐리어 파우치,굿즈명,MSGC,정확,1.00,확정,name2code score=1.00 freq=19
+메시지 캐리어 파우치(실버),굿즈명,MSGC,정확,1.00,확정,name2code score=1.00 freq=1
+메시지캐리어파우치,굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=249
+메시지캐리어파우치 (1)50,굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=2
+메시지캐리어파우치 (2)50,굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=2
+메시지캐리어파우치 (기존 로고),굿즈명,MSGC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+메시지캐리어파우치 (변경로고)150,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치 (신규 로고),굿즈명,MSGC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+메시지캐리어파우치 + 펠트스트링파우치,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치 200+잔여분1,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치 OPP,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치 키트,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=5
+메시지캐리어파우치(2024ver),굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=5
+메시지캐리어파우치(메탈그레이),굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치(메탈그레이) + 펠트스트링파우치,굿즈명,MSGC,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+메시지캐리어파우치(블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치(블랙or실버),굿즈명,MSGC,정확,1.00,확정,jaccard_norm score=1.00 freq=7
+메시지캐리어파우치(블랙그레이),굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=7
+메시지캐리어파우치(실버),굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=2
+메시지캐리어파우치(키트),굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치+인쇄,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=5
+메시지캐리어파우치+인쇄 (1)1,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치+인쇄 (2)1,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+메시지캐리어파우치1,굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=2
+메시지캐리어파우치1),굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=2
+메시지캐리어파우치150,굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=1
+메시지캐리어파우치330,굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=1
+메시지캐리어파우치4,굿즈명,MSGC,정확,1.00,확정,jaccard score=1.00 freq=1
+모뉴먼트 블랙 트로피,굿즈명,MNBT,정확,1.00,확정,name2code score=1.00 freq=2
+모먼트 골드스파클,굿즈명,MGOL,정확,1.00,확정,name2code score=1.00 freq=3
+모먼트 일회용 카메라,굿즈명,FCAM,정확,1.00,확정,name2code score=1.00 freq=2
+모먼트일회용카메라,굿즈명,FCAM,정확,1.00,확정,jaccard score=1.00 freq=22
+모바일 오피스 파우치 2.0,굿즈명,MOSL,정확,1.00,확정,name2code score=1.00 freq=6
+모바일오피스파우치,굿즈명,MOFP,정확,1.00,확정,jaccard score=1.00 freq=38
+모바일오피스파우치 +미니어처 NFC 키링,굿즈명,MNFC,유사,0.75,미검증,jaccard score=0.75 freq=1
+모바일오피스파우치(stock),굿즈명,MOFP,정확,1.00,확정,jaccard_norm score=1.00 freq=10
+모바일오피스파우치2.0,굿즈명,MOSL,정확,1.00,확정,jaccard score=1.00 freq=1
+모이스트듀얼가습기,굿즈명,MODU,정확,1.00,확정,jaccard score=1.00 freq=2
+몰스킨 노트 키트,굿즈명,MOLN,유사,0.50,미검증,jaccard score=0.50 freq=2
+몰스킨 다이어리,굿즈명,MOLD,정확,1.00,확정,jaccard score=1.00 freq=1
+몰스킨 데일리 노트,굿즈명,MOLN,정확,1.00,확정,name2code score=1.00 freq=2
+몰스킨2026다이어리,굿즈명,MOLD,정확,1.00,확정,jaccard score=1.00 freq=8
+몰스킨데일리노트,굿즈명,MOLN,정확,1.00,확정,jaccard score=1.00 freq=3
+뮤지엄 머그,굿즈명,MMUG,정확,1.00,확정,name2code score=1.00 freq=3
+뮤지엄머그,굿즈명,MMUG,정확,1.00,확정,jaccard score=1.00 freq=40
+미니가든 피규어 세트(스티커X),굿즈명,ISGK,정확,1.00,확정,name2code score=1.00 freq=1
+미니가든 피규어 세트(스티커o),굿즈명,ISGK,정확,1.00,확정,name2code score=1.00 freq=1
+미니멀 스텐머그,굿즈명,MSTM,정확,1.00,확정,name2code score=1.00 freq=5
+미니멀 스텐머그(단품),굿즈명,MSTM,정확,1.00,확정,name2code score=1.00 freq=1
+미니멀무선충전마우스패드(맥스),굿즈명,WLMM,정확,1.00,확정,jaccard score=1.00 freq=4
+미니멀무선충전마우스패드(스탠다드),굿즈명,WLMS,정확,1.00,확정,jaccard score=1.00 freq=13
+미니멀무선충전마우스패드(스플릿),굿즈명,WLMP,정확,1.00,확정,jaccard score=1.00 freq=10
+미니멀무선충전마우스패드(와이드),굿즈명,WLMW,정확,1.00,확정,jaccard score=1.00 freq=7
+미니멀스텐머그,굿즈명,MSTM,정확,1.00,확정,jaccard score=1.00 freq=73
+미니멀스텐머그 -,굿즈명,MSTM,정확,1.00,확정,jaccard score=1.00 freq=1
+미니멀스텐머그 박스 (벌크),굿즈명,MSTM,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+미니멀스텐머그 스티커 (벌크),굿즈명,MSTM,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+미니멀스텐머그1,굿즈명,MSTM,정확,1.00,확정,jaccard score=1.00 freq=1
+미니멀스텐머그1),굿즈명,MSTM,정확,1.00,확정,jaccard score=1.00 freq=1
+미니멀스텐머그3,굿즈명,MSTM,정확,1.00,확정,jaccard score=1.00 freq=1
+미니어처 NFC 키링,굿즈명,MNFC,정확,1.00,확정,name2code score=1.00 freq=12
+미니어처NFC키링,굿즈명,MNFC,정확,1.00,확정,jaccard score=1.00 freq=2
+미니파우치1,굿즈명,TCMP,유사,0.50,미검증,jaccard score=0.50 freq=1
+미니파우치2,굿즈명,TCMP,유사,0.50,미검증,jaccard score=0.50 freq=1
+미르(MiiR) 텀블러,굿즈명,MIRT,정확,1.00,확정,jaccard score=1.00 freq=10
+미르(MiiR)텀블러,굿즈명,MIRT,정확,1.00,확정,jaccard score=1.00 freq=58
+미르(MiiR)텀블러 (인쇄O),굿즈명,MIRT,유사,0.75,미검증,jaccard score=0.75 freq=1
+미르(MiiR)텀블러 (인쇄X),굿즈명,MIRT,유사,0.75,미검증,jaccard score=0.75 freq=1
+미르(MiiR)텀블러 여분,굿즈명,MIRT,유사,0.75,미검증,jaccard score=0.75 freq=1
+미르(MiiR)텀블러(12oz),굿즈명,MIRT,유사,0.75,미검증,jaccard score=0.75 freq=1
+미르(MiiR)텀블러(16oz),굿즈명,MIRT,유사,0.75,미검증,jaccard score=0.75 freq=1
+미르(MiiR)텀블러1,굿즈명,MIRT,정확,1.00,확정,jaccard score=1.00 freq=2
+미르(MiiR)텀블러1),굿즈명,MIRT,정확,1.00,확정,jaccard score=1.00 freq=2
+미르(MiiR)텀블러150,굿즈명,MIRT,정확,1.00,확정,jaccard score=1.00 freq=1
+미르(MiiR)텀블러[B1],굿즈명,MIRT,유사,0.50,미검증,jaccard score=0.50 freq=1
+미르(MiiR)텀블러[B2],굿즈명,MIRT,유사,0.50,미검증,jaccard score=0.50 freq=1
+미스트 워터보틀,굿즈명,MIST,정확,1.00,확정,name2code score=1.00 freq=4
+미스트워터보틀,굿즈명,MIST,정확,1.00,확정,jaccard score=1.00 freq=60
+밀크 에코컵,굿즈명,MKEC,정확,1.00,확정,name2code score=1.00 freq=1
+밀크에코컵,굿즈명,MKEC,정확,1.00,확정,jaccard score=1.00 freq=17
+바스켓_리드_오트밀,굿즈명,BSKP,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+바스켓_바디_오트밀,굿즈명,BSKP,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+바이브 캠핑쿨러,굿즈명,VBCC,정확,1.00,확정,name2code score=1.00 freq=7
+바이브 캠핑쿨러 (인쇄),굿즈명,VBCC,정확,1.00,확정,name2code score=1.00 freq=1
+바이브 캠핑쿨러 (인쇄X),굿즈명,VBCC,정확,1.00,확정,name2code score=1.00 freq=1
+바이브 캠핑쿨러 키트,굿즈명,VBCC,유사,0.67,미검증,jaccard score=0.67 freq=1
+바이브캠핑쿨러,굿즈명,VBCC,정확,1.00,확정,jaccard score=1.00 freq=18
+밸류 메모큐브,굿즈명,VMCM,정확,1.00,확정,name2code score=1.00 freq=4
+밸류 메모큐브 1),굿즈명,VLMS,정확,1.00,확정,jaccard score=1.00 freq=1
+밸류 메모큐브1),굿즈명,VLMS,정확,1.00,확정,jaccard score=1.00 freq=1
+밸류 무선충전 마우스패드,굿즈명,SMMP,정확,1.00,확정,name2code score=1.00 freq=5
+밸류메모큐브,굿즈명,VMCM,정확,1.00,확정,jaccard score=1.00 freq=4
+밸류메모큐브(M),굿즈명,VLMM,정확,1.00,확정,jaccard score=1.00 freq=30
+밸류메모큐브(M)1,굿즈명,VMCM,정확,1.00,확정,jaccard score=1.00 freq=4
+밸류메모큐브(M)1),굿즈명,VMCM,정확,1.00,확정,jaccard score=1.00 freq=1
+밸류메모큐브(M)2 브랜디파이핸드스트랩2,굿즈명,VMCM,유사,0.50,미검증,jaccard score=0.50 freq=1
+밸류메모큐브(S),굿즈명,VLMS,정확,1.00,확정,jaccard score=1.00 freq=9
+밸류메모큐브(S)3,굿즈명,VMCM,정확,1.00,확정,jaccard score=1.00 freq=1
+밸류메모큐브(S)400,굿즈명,VMCM,정확,1.00,확정,jaccard score=1.00 freq=1
+밸류메모큐브(XS),굿즈명,VMCM,정확,1.00,확정,jaccard score=1.00 freq=9
+밸류메모큐브(ver2),굿즈명,VMCM,유사,0.50,미검증,jaccard score=0.50 freq=1
+밸류메모큐브6),굿즈명,VMCM,정확,1.00,확정,jaccard score=1.00 freq=1
+밸류무선충전마우스패드,굿즈명,SMMP,정확,1.00,확정,jaccard score=1.00 freq=26
+밸류보드다이어리,굿즈명,VABD,정확,1.00,확정,jaccard score=1.00 freq=4
+밸류보드다이어리(커스텀내지),굿즈명,VABD,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+밸류보드다이어리(표준),굿즈명,VABD,정확,1.00,확정,jaccard_norm score=1.00 freq=10
+버티컬 무선충전 패드,굿즈명,VWPD,정확,1.00,확정,jaccard score=1.00 freq=1
+버티컬 무선충전패드,굿즈명,VWPD,정확,1.00,확정,name2code score=1.00 freq=5
+버티컬 무선충전패드 UV_4도,굿즈명,VWPD,유사,0.67,미검증,jaccard score=0.67 freq=1
+버티컬 무선충전패드 UV_화이트1색,굿즈명,VWPD,유사,0.67,미검증,jaccard score=0.67 freq=1
+버티컬 무선충전패드1,굿즈명,VWPD,정확,1.00,확정,jaccard score=1.00 freq=1
+버티컬무선충전패드,굿즈명,VWPD,정확,1.00,확정,jaccard score=1.00 freq=44
+베이직 도킹형 보조배터리,굿즈명,BASD,정확,1.00,확정,name2code score=1.00 freq=4
+베이직 무선충전 마우스패드,굿즈명,BMMP,정확,1.00,확정,name2code score=1.00 freq=9
+베이직도킹형보조배터리,굿즈명,BASD,정확,1.00,확정,jaccard score=1.00 freq=58
+베이직무선충전마우스패드,굿즈명,BMMH,정확,1.00,미검증,jaccard score=1.00 freq=23 ambiguous-name:BMMH|BMMP
+베이직무선충전마우스패드(500개미만),굿즈명,BMMH,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:BMMH|BMMP
+베케이션 여권 케이스,굿즈명,VCIT,정확,1.00,확정,jaccard score=1.00 freq=1
+베케이션 여권케이스,굿즈명,VCIT,정확,1.00,확정,name2code score=1.00 freq=4
+베케이션 여권케이스498,굿즈명,VCIT,정확,1.00,확정,jaccard score=1.00 freq=1
+베케이션여권케이스,굿즈명,VCIT,정확,1.00,확정,jaccard score=1.00 freq=45
+베케이션여권케이스 (+박스),굿즈명,VCIT,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+보조배터리 8핀)50,굿즈명,ATCB,유사,0.50,미검증,jaccard score=0.50 freq=1
+보조배터리1,굿즈명,ATCB,유사,0.50,미검증,jaccard score=0.50 freq=1
+보조배터리1),굿즈명,ATCB,유사,0.50,미검증,jaccard score=0.50 freq=1
+불박(슬로건 다이어리),굿즈명,SLGN,유사,0.50,미검증,jaccard score=0.50 freq=1
+브랜드 스트랩 단우산,굿즈명,BRSU,정확,1.00,확정,name2code score=1.00 freq=10
+브랜드-잇,굿즈명,BRDT,정확,1.00,확정,name2code score=1.00 freq=87
+브랜드-잇 300개개,굿즈명,BRDT,유사,0.50,미검증,jaccard score=0.50 freq=1
+브랜드-잇 내지,굿즈명,BRDT,유사,0.50,미검증,jaccard score=0.50 freq=2
+브랜드-잇 여분20,굿즈명,BRDT,유사,0.50,미검증,jaccard score=0.50 freq=1
+브랜드-잇1,굿즈명,BRDT,정확,1.00,확정,jaccard score=1.00 freq=2
+브랜드-잇2,굿즈명,BRDT,정확,1.00,확정,jaccard score=1.00 freq=2
+브랜드-잇50,굿즈명,BRDT,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜드스트랩단우산,굿즈명,BRSU,정확,1.00,확정,jaccard score=1.00 freq=84
+브랜드팝 클리어 키링,굿즈명,BCAK,정확,1.00,확정,name2code score=1.00 freq=5
+브랜드팝 클리어 키링2,굿즈명,BCAK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜드팝 키링,굿즈명,BCAK,유사,0.67,미검증,jaccard score=0.67 freq=1
+브랜드팝클리어키링,굿즈명,BCAK,정확,1.00,확정,jaccard score=1.00 freq=43
+브랜디드 노트북백,굿즈명,BRDD,정확,1.00,확정,name2code score=1.00 freq=6
+브랜디드 노트북백 55=1,굿즈명,BRDD,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드 노트북백 키트,굿즈명,BRDD,유사,0.67,미검증,jaccard score=0.67 freq=1
+브랜디드 타월,굿즈명,BDTW,정확,1.00,확정,name2code score=1.00 freq=9
+브랜디드 피규어,굿즈명,BRPR,정확,1.00,확정,name2code score=1.00 freq=17
+브랜디드 피규어 + 플라워 피규어 방향제,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+브랜디드 피규어 세트,굿즈명,BRPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+브랜디드 피규어 키링,굿즈명,BRPK,정확,1.00,확정,name2code score=1.00 freq=30
+브랜디드 피규어 키링 A1 (주황색 ),굿즈명,BRPK,유사,0.75,미검증,jaccard score=0.75 freq=1
+브랜디드 피규어 키링 A1 (주황색),굿즈명,BRPK,유사,0.75,미검증,jaccard score=0.75 freq=1
+브랜디드 피규어 키링 A2 (파란색),굿즈명,BRPK,유사,0.75,미검증,jaccard score=0.75 freq=3
+브랜디드 피규어 키링1,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드 피규어(남자),굿즈명,BRPR,정확,1.00,확정,name2code score=1.00 freq=1
+브랜디드 피규어(여자),굿즈명,BRPR,정확,1.00,확정,name2code score=1.00 freq=1
+브랜디드 피규어1),굿즈명,BRPR,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드노트북백,굿즈명,BRDD,정확,1.00,확정,jaccard score=1.00 freq=46
+브랜디드노트북백 (단품),굿즈명,BRDD,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+브랜디드노트북백(stock),굿즈명,BRDD,정확,1.00,확정,jaccard_norm score=1.00 freq=12
+브랜디드타월 + Solid스탠다드G형박스(L사이즈),굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:SCGB|SOLD
+브랜디드피규어,굿즈명,BRPR,정확,1.00,확정,jaccard score=1.00 freq=132
+브랜디드피규어 키링,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어(개별파츠),굿즈명,BRPR,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+브랜디드피규어(키링),굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=18
+브랜디드피규어_키링,굿즈명,BRPR,정확,1.00,확정,jaccard_norm score=1.00 freq=3
+브랜디드피규어키링,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=198
+브랜디드피규어키링 (1)1,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어키링 (2)1,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=2
+브랜디드피규어키링 500=7,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어키링(1),굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어키링(핸드블록),굿즈명,BRPK,유사,0.50,미검증,jaccard score=0.50 freq=1
+브랜디드피규어키링18,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어키링2,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어키링21,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어키링3),굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=1
+브랜디드피규어키링50,굿즈명,BRPK,정확,1.00,확정,jaccard score=1.00 freq=2
+브랜디파이핸드스트랩,굿즈명,BRDF,정확,1.00,확정,jaccard score=1.00 freq=11
+브릭 메모&캘린더 스탠드 2.0,굿즈명,BMCH,정확,1.00,확정,jaccard score=1.00 freq=4
+브릭 메모&캘린더 스탠드 2.0 키트,굿즈명,BMCH,유사,0.75,미검증,jaccard score=0.75 freq=5
+브릭 메모&캘린더 스탠드 2.0키트2,굿즈명,BMCH,유사,0.75,미검증,jaccard score=0.75 freq=1
+브릭 메모&캘린더 스탠드 키트 2.0,굿즈명,BMCH,유사,0.75,미검증,jaccard score=0.75 freq=2
+브릭메모&캘린더스탠드,굿즈명,BMCH,정확,1.00,확정,jaccard score=1.00 freq=2
+브릭스탠드 멀티충전기,굿즈명,BSMC,정확,1.00,확정,name2code score=1.00 freq=8
+브릭스탠드멀티충전스테이션,굿즈명,BSMC,정확,1.00,확정,jaccard score=1.00 freq=10
+브릭스탠드멀티충전스테이션 (패드),굿즈명,BSMC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+브릭스탠드멀티충전스테이션(남자),굿즈명,BSMC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+브릭스탠드멀티충전스테이션(여자),굿즈명,BSMC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+브링유어컵,굿즈명,BYCT,유사,0.50,미검증,jaccard score=0.50 freq=1
+브링유어컵1,굿즈명,BYCT,유사,0.50,미검증,jaccard score=0.50 freq=2
+브링유어컵텀블러,굿즈명,BYCT,정확,1.00,확정,jaccard score=1.00 freq=9
+블랙 2XL,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+블랙 3XL,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+블랙 L,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+블랙 M,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+블랙 S,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+블랙 XL,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+블랙 쇼핑백,굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+블랙)(32),굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=1
+블랙쇼핑백,굿즈명,BSPB,정확,1.00,확정,name2code score=1.00 freq=2
+블랭킷 택+끈 (2종 X 255개),굿즈명,FUBM,유사,0.50,미검증,jaccard score=0.50 freq=1
+블랭킷1,굿즈명,FUBM,유사,0.50,미검증,jaccard score=0.50 freq=2
+블랭킷2,굿즈명,FUBM,유사,0.50,미검증,jaccard score=0.50 freq=1
+블루투스 키보드,굿즈명,STBK,유사,0.67,미검증,jaccard score=0.67 freq=1
+블루투스 키보드 단품,굿즈명,STBK,유사,0.50,미검증,jaccard score=0.50 freq=1
+비주얼PD고속충전기65W,굿즈명,VSPD,정확,1.00,확정,jaccard score=1.00 freq=7
+비주얼핏 키캡키링,굿즈명,KYCP,정확,1.00,확정,name2code score=1.00 freq=14
+비치타월,굿즈명,BCTL,유사,0.50,미검증,jaccard score=0.50 freq=16
+사원증 홀더,굿즈명,STHD,유사,0.67,미검증,jaccard score=0.67 freq=1
+샤오미펜1),굿즈명,LXMP,유사,0.50,미검증,jaccard score=0.50 freq=1
+샤인 미러 키링,굿즈명,SMAK,정확,1.00,확정,name2code score=1.00 freq=3
+샤인미러키링,굿즈명,SMAK,정확,1.00,확정,jaccard score=1.00 freq=10
+센텐스 펜,굿즈명,STCP,정확,1.00,확정,name2code score=1.00 freq=2
+센텐스펜,굿즈명,STCP,정확,1.00,확정,jaccard score=1.00 freq=32
+셀렉티브 전동오프너&와인잔 세트,굿즈명,WWST,정확,1.00,확정,name2code score=1.00 freq=3
+셀렉티브전동오프너&와인잔세트,굿즈명,WWST,정확,1.00,확정,jaccard score=1.00 freq=15
+소프트터치블루투스키보드,굿즈명,STBK,정확,1.00,확정,jaccard score=1.00 freq=24
+손거울2),굿즈명,DRSU,유사,0.50,미검증,jaccard score=0.50 freq=1
+손거울3,굿즈명,DRSU,유사,0.50,미검증,jaccard score=0.50 freq=1
+솔리드 레디백,굿즈명,SORB,정확,1.00,확정,name2code score=1.00 freq=2
+솔리드 레디백 키트,굿즈명,SORB,유사,0.67,미검증,jaccard score=0.67 freq=2
+수면안대,굿즈명,STSM,유사,0.50,미검증,jaccard score=0.50 freq=3
+수면안대1,굿즈명,STSM,유사,0.50,미검증,jaccard score=0.50 freq=1
+수면안대2,굿즈명,STSM,유사,0.50,미검증,jaccard score=0.50 freq=1
+슈가케인 텀블러 바디,굿즈명,SGCN,유사,0.67,미검증,jaccard score=0.67 freq=1
+슈가케인 펜,굿즈명,SCPN,정확,1.00,확정,name2code score=1.00 freq=5
+슈가케인 펜(샘플)-,굿즈명,SCPN,유사,0.50,미검증,jaccard score=0.50 freq=1
+슈가케인텀블러,굿즈명,SGCN,정확,1.00,확정,jaccard score=1.00 freq=29
+슈가케인텀블러(빨대),굿즈명,SGCN,정확,1.00,확정,jaccard_norm score=1.00 freq=10
+슈가케인텀블러(빨대포함),굿즈명,SGCT,정확,1.00,확정,jaccard score=1.00 freq=4
+슈가케인펜,굿즈명,SCPN,정확,1.00,확정,jaccard score=1.00 freq=154
+슈가케인펜 (스티커 미부착),굿즈명,SCPN,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+슈가케인펜 (스티커 부착),굿즈명,SCPN,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+슈가케인펜(단품),굿즈명,SCPN,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+슈가케인펜(벌크),굿즈명,SCPN,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+스타일 수면안대,굿즈명,STSM,정확,1.00,확정,name2code score=1.00 freq=7
+스타일수면안대,굿즈명,STSM,정확,1.00,확정,jaccard score=1.00 freq=44
+스타트 씨드키트,굿즈명,SEED,정확,1.00,확정,name2code score=1.00 freq=11
+스타트씨드키트,굿즈명,SEED,정확,1.00,확정,jaccard score=1.00 freq=107
+스탠드-업 칫솔,굿즈명,STNB,정확,1.00,확정,name2code score=1.00 freq=4
+스탠드-업 칫솔1,굿즈명,STNB,정확,1.00,확정,jaccard score=1.00 freq=1
+스탠드-업 칫솔1),굿즈명,STNB,정확,1.00,확정,jaccard score=1.00 freq=1
+스탠드-업 칫솔2,굿즈명,STNB,정확,1.00,확정,jaccard score=1.00 freq=1
+스탠드-업칫솔,굿즈명,STNB,정확,1.00,확정,jaccard score=1.00 freq=53
+스탠딩 휴대용 선풍기,굿즈명,STPF,정확,1.00,확정,name2code score=1.00 freq=13
+스탠딩 휴대용 선풍기 (LUMENA 272),굿즈명,STPF,정확,1.00,확정,name2code score=1.00 freq=1
+스탠딩 휴대용 선풍기 LUMENA,굿즈명,STPF,유사,0.75,미검증,jaccard score=0.75 freq=1
+스탠딩휴대용선풍기,굿즈명,STPF,정확,1.00,확정,jaccard score=1.00 freq=12
+스탠딩휴대용선풍기 (OS),굿즈명,STPF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+스탠리 데일리 텀블러,굿즈명,STLD,정확,1.00,확정,name2code score=1.00 freq=10
+스탠리 데일리 텀블러1),굿즈명,STLD,정확,1.00,확정,jaccard score=1.00 freq=1
+스탠리 데일리 텀블러100,굿즈명,STLD,정확,1.00,확정,jaccard score=1.00 freq=1
+스탠리데일리텀블러,굿즈명,STLD,정확,1.00,확정,jaccard score=1.00 freq=45
+스탠리슬림보틀,굿즈명,STLS,정확,1.00,확정,jaccard score=1.00 freq=21
+스탠바이 빅팬선풍기,굿즈명,FANB,정확,1.00,확정,name2code score=1.00 freq=6
+스테이 텀블러,굿즈명,TMBS,정확,1.00,확정,name2code score=1.00 freq=13
+스테이 텀블러1,굿즈명,TMBS,정확,1.00,확정,jaccard score=1.00 freq=1
+스테이쿨넥쿨러,굿즈명,STCN,정확,1.00,확정,jaccard score=1.00 freq=8
+스테이텀블러,굿즈명,TMBS,정확,1.00,확정,jaccard score=1.00 freq=3
+스텐머그1,굿즈명,UMUG,유사,0.50,미검증,jaccard score=0.50 freq=1
+스텐머그1),굿즈명,UMUG,유사,0.50,미검증,jaccard score=0.50 freq=1
+스트랩,굿즈명,MSST,유사,0.50,미검증,jaccard score=0.50 freq=1
+스트랩1,굿즈명,MSST,유사,0.50,미검증,jaccard score=0.50 freq=1
+스트랩302,굿즈명,MSST,유사,0.50,미검증,jaccard score=0.50 freq=1
+스트랩4,굿즈명,MSST,유사,0.50,미검증,jaccard score=0.50 freq=1
+스트레치 사원증 홀더,굿즈명,STHD,정확,1.00,확정,name2code score=1.00 freq=1
+스트레치사원증홀더,굿즈명,STHD,정확,1.00,확정,jaccard score=1.00 freq=9
+스티커,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=13
+스티커(1)1,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커1,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커100,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=2
+스티커12,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커12),굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커2,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=2
+스티커29,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커3,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커3),굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커300,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커4,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커4),굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커5,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=3
+스티커5),굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=2
+스티커50,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=5
+스티커6,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커6),굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커7,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커8,굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스티커8),굿즈명,DECO,유사,0.50,미검증,jaccard score=0.50 freq=1
+스파클링유리컵,굿즈명,SPKL,정확,1.00,확정,jaccard score=1.00 freq=6
+스페이스차량용청소기,굿즈명,SPAC,정확,1.00,확정,jaccard score=1.00 freq=16
+스펙트럼 컬러펜,굿즈명,SPCP,정확,1.00,확정,name2code score=1.00 freq=26
+스펙트럼 컬러펜 (미포장),굿즈명,SPCP,정확,1.00,확정,name2code score=1.00 freq=1
+스펙트럼 컬러펜 (포장),굿즈명,SPCP,정확,1.00,확정,name2code score=1.00 freq=1
+스펙트럼 컬러펜1,굿즈명,SPCP,정확,1.00,확정,jaccard score=1.00 freq=1
+스펙트럼 컬러펜1),굿즈명,SPCP,정확,1.00,확정,jaccard score=1.00 freq=1
+스펙트럼 컬러펜2,굿즈명,SPCP,정확,1.00,확정,jaccard score=1.00 freq=1
+스펙트럼컬러펜,굿즈명,SPCP,정확,1.00,확정,jaccard score=1.00 freq=286
+스펙트럼컬러펜 (단품),굿즈명,SPCP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+스펙트럼컬러펜 (벌크),굿즈명,SPCP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+스펙트럼컬러펜(벌크),굿즈명,SPCP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+스펙트럼컬러펜(블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+스펙트럼컬러펜(블루)(배경지+opp),굿즈명,SPCP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+스포츠타월,굿즈명,SPTS,유사,0.50,미검증,jaccard score=0.50 freq=1
+스프링노트1),굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=1
+스프링노트2),굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=1
+스프링노트3,굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=3
+스프링노트3),굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=1
+스프링노트4,굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=1
+스프링노트5,굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=1
+스프링노트5),굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=1
+스프링노트6),굿즈명,FCSP,유사,0.50,미검증,jaccard score=0.50 freq=1
+슬라이드 지퍼백 스티커,굿즈명,SLZB,유사,0.50,미검증,jaccard score=0.50 freq=1
+슬라이드 지퍼백+스티커 -,굿즈명,SLZB,유사,0.50,미검증,jaccard score=0.50 freq=1
+슬라이드지퍼백,굿즈명,HLST,유사,0.50,미검증,jaccard score=0.50 freq=5 ambiguous-name:HLST|HLSZ
+슬라이드지퍼백20),굿즈명,HLST,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:HLST|HLSZ
+슬라이드지퍼백5),굿즈명,HLST,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:HLST|HLSZ
+슬라이드지퍼백6),굿즈명,HLST,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:HLST|HLSZ
+슬로건 다이어리,굿즈명,SLGN,정확,1.00,확정,name2code score=1.00 freq=14
+슬로건 다이어리 (블랙),굿즈명,SLGN,정확,1.00,확정,name2code score=1.00 freq=1
+슬로건 다이어리1),굿즈명,SLGN,유사,0.67,미검증,jaccard score=0.67 freq=1
+슬로건 다이어리3),굿즈명,SLGN,유사,0.67,미검증,jaccard score=0.67 freq=1
+슬로건 다이어리300,굿즈명,SLGN,유사,0.67,미검증,jaccard score=0.67 freq=1
+슬로건 맨투맨,굿즈명,SMTM,정확,1.00,확정,name2code score=1.00 freq=1
+슬로건다이어리(표준),굿즈명,SLGN,정확,1.00,확정,jaccard score=1.00 freq=224
+슬로건맨투맨,굿즈명,SMTM,정확,1.00,확정,jaccard score=1.00 freq=6
+슬림 터보선풍기,굿즈명,FANC,정확,1.00,확정,jaccard score=1.00 freq=12
+슬림 터보선풍기 (올리브),굿즈명,FANC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+슬림 터보선풍기 (화이트),굿즈명,FANC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+슬림터보 선풍기,굿즈명,FANC,정확,1.00,확정,jaccard score=1.00 freq=1
+시그니처 다이어리,굿즈명,SGND,정확,1.00,확정,name2code score=1.00 freq=6
+시그니처 다이어리 밴드,굿즈명,SGND,유사,0.67,미검증,jaccard score=0.67 freq=1
+시그니처 다이어리1),굿즈명,SGND,정확,1.00,확정,jaccard score=1.00 freq=1
+시그니처다이어리,굿즈명,SGND,정확,1.00,확정,jaccard score=1.00 freq=21
+시그니처다이어리(그레이),굿즈명,SGNG,정확,1.00,확정,jaccard score=1.00 freq=24
+시그니처다이어리(미각인),굿즈명,SGND,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+시그니처다이어리(블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=40
+시그니처다이어리(블랙)20,굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+시그니처다이어리(커스텀),굿즈명,SGND,정확,1.00,확정,jaccard_norm score=1.00 freq=4
+시그니처다이어리(표준),굿즈명,SGND,정확,1.00,확정,jaccard_norm score=1.00 freq=33
+실크(MiiR 텀블러),굿즈명,MIRT,유사,0.50,미검증,jaccard score=0.50 freq=1
+실크(Two-way 에코 쇼핑백),굿즈명,TWOX,유사,0.75,미검증,jaccard score=0.75 freq=1
+심볼 NFC 키링,굿즈명,NFCA,정확,1.00,확정,name2code score=1.00 freq=4
+심볼 아크릴 트로피,굿즈명,ACTP,정확,1.00,확정,name2code score=1.00 freq=4
+심볼아크릴트로피,굿즈명,ACTP,정확,1.00,확정,jaccard score=1.00 freq=24
+썸네일캘린더,굿즈명,TNCL,정확,1.00,확정,jaccard score=1.00 freq=25
+씨드키트,굿즈명,SEED,유사,0.50,미검증,jaccard score=0.50 freq=2
+씨드키트1,굿즈명,SEED,유사,0.50,미검증,jaccard score=0.50 freq=2
+씨드키트1),굿즈명,SEED,유사,0.50,미검증,jaccard score=0.50 freq=2
+아너월넛트로피,굿즈명,HNWT,정확,1.00,확정,jaccard score=1.00 freq=2
+아이덴티티 스티커팩,굿즈명,IDTT,정확,1.00,확정,name2code score=1.00 freq=6
+아이덴티티스티커팩,굿즈명,IDTT,정확,1.00,확정,jaccard score=1.00 freq=3
+아이콘 케이블홀더 세트,굿즈명,MGNC,정확,1.00,확정,name2code score=1.00 freq=11
+아이콘 콜드컵,굿즈명,ICCC,정확,1.00,확정,name2code score=1.00 freq=1
+아이콘 펜,굿즈명,IIKP,정확,1.00,확정,name2code score=1.00 freq=8
+아이콘콜드컵,굿즈명,ICCC,정확,1.00,확정,jaccard score=1.00 freq=11
+아이콘펜,굿즈명,IIKP,정확,1.00,확정,jaccard score=1.00 freq=85
+아이콘펜 -,굿즈명,IIKP,정확,1.00,확정,jaccard score=1.00 freq=1
+아이콘펜 바디150,굿즈명,IIKP,유사,0.50,미검증,jaccard score=0.50 freq=1
+아이콘펜(바디_화이트),굿즈명,IIKP,유사,0.50,미검증,jaccard score=0.50 freq=1
+아이콘펜(유광파우치 미포장),굿즈명,IIKP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+아이콘펜(유광파우치 포장),굿즈명,IIKP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+아이콘펜1),굿즈명,IIKP,정확,1.00,확정,jaccard score=1.00 freq=1
+아이콘펜2,굿즈명,IIKP,정확,1.00,확정,jaccard score=1.00 freq=1
+아이콘펜2),굿즈명,IIKP,정확,1.00,확정,jaccard score=1.00 freq=1
+아이콘펜3),굿즈명,IIKP,정확,1.00,확정,jaccard score=1.00 freq=1
+아임낫어페이퍼컵,굿즈명,ICUP,정확,1.00,확정,jaccard score=1.00 freq=3
+아임히어 리플렉터 키링,굿즈명,IMHE,정확,1.00,확정,name2code score=1.00 freq=4
+아임히어리플렉터키링,굿즈명,IMHE,정확,1.00,확정,jaccard score=1.00 freq=9
+아쿠아 스노클링 마스크,굿즈명,ISKM,정확,1.00,확정,jaccard score=1.00 freq=1
+아쿠아스노클링마스크,굿즈명,ISKM,정확,1.00,확정,jaccard score=1.00 freq=3
+아크릴 트로피,굿즈명,ACTP,유사,0.67,미검증,jaccard score=0.67 freq=1
+아트워크 레더 다이어리,굿즈명,ATWK,정확,1.00,확정,name2code score=1.00 freq=6
+아트워크 타월,굿즈명,AWTW,정확,1.00,확정,name2code score=1.00 freq=3
+아트워크 타월 세트(2입),굿즈명,AWTW,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:AWTW|SOLE
+아트워크 타월 키트,굿즈명,AWTW,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:AWTW|SOLE
+아트워크레더다이어리,굿즈명,ATWK,정확,1.00,확정,jaccard score=1.00 freq=50
+애드온 뱃지,굿즈명,AOBG,정확,1.00,확정,name2code score=1.00 freq=23
+애드온뱃지,굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=54
+애드온뱃지 (파우치 X),굿즈명,AOBG,유사,0.50,미검증,jaccard score=0.50 freq=1
+애드온뱃지 (파우치X),굿즈명,AOBG,유사,0.50,미검증,jaccard score=0.50 freq=1
+애드온뱃지 _가챠용 뱃지,굿즈명,AOBG,정확,1.00,확정,jaccard_norm score=1.00 freq=8
+애드온뱃지+,굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=1
+애드온뱃지1,굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=2
+애드온뱃지2),굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=1
+애드온뱃지3,굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=2
+애드온뱃지3),굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=1
+애드온뱃지300,굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=1
+애드온뱃지4,굿즈명,AOBG,정확,1.00,확정,jaccard score=1.00 freq=1
+액티브 스포츠 타월,굿즈명,SPTS,정확,1.00,확정,jaccard score=1.00 freq=10
+액티브 스포츠타월,굿즈명,SPTS,정확,1.00,확정,name2code score=1.00 freq=1
+액티브스포츠타월,굿즈명,SPTS,정확,1.00,확정,jaccard score=1.00 freq=158
+액티브스포츠타월 (1),굿즈명,SPTS,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+액티브스포츠타월 (2),굿즈명,SPTS,정확,1.00,확정,jaccard_norm score=1.00 freq=5
+양우산1,굿즈명,ALUM,유사,0.50,미검증,jaccard score=0.50 freq=1
+양우산1),굿즈명,ALUM,유사,0.50,미검증,jaccard score=0.50 freq=3
+어드벤스 3단 자동우산,굿즈명,ATAU,정확,1.00,확정,name2code score=1.00 freq=6
+어드벤스3단자동우산,굿즈명,ATAU,정확,1.00,확정,jaccard score=1.00 freq=23
+어반 스텐 런치박스,굿즈명,USLB,정확,1.00,확정,name2code score=1.00 freq=2
+어썸그립,굿즈명,AXGR,정확,1.00,확정,name2code score=1.00 freq=42
+어썸그립 (326개입),굿즈명,AXGR,정확,1.00,확정,name2code score=1.00 freq=1
+어웨이블루투스스피커,굿즈명,AWAY,정확,1.00,확정,jaccard score=1.00 freq=1
+어태치 보조배터리,굿즈명,ATCB,정확,1.00,확정,jaccard score=1.00 freq=1
+어태치보조배터리,굿즈명,ATCB,정확,1.00,확정,name2code score=1.00 freq=138
+어태치보조배터리(8PIN타입),굿즈명,ATCB,정확,1.00,확정,name2code score=1.00 freq=1
+어태치보조배터리(8pin),굿즈명,ATCB,정확,1.00,확정,name2code score=1.00 freq=2
+어태치보조배터리(8핀),굿즈명,ATCB,정확,1.00,확정,name2code score=1.00 freq=2
+어태치보조배터리(Ctype),굿즈명,ATCB,정확,1.00,확정,name2code score=1.00 freq=2
+어태치보조배터리(C타입),굿즈명,ATCB,정확,1.00,확정,name2code score=1.00 freq=2
+어태치보조배터리(c타입),굿즈명,ATCB,정확,1.00,확정,name2code score=1.00 freq=1
+어텐션 스포츠 보틀,굿즈명,ATSB,정확,1.00,확정,name2code score=1.00 freq=4
+어텐션스포츠보틀,굿즈명,ATSB,정확,1.00,미검증,jaccard score=1.00 freq=54 ambiguous-name:ATSB|ATSS
+어텐션스포츠보틀1,굿즈명,ATSB,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:ATSB|ATSS
+에너제틱목마사지기,굿즈명,ENGT,정확,1.00,확정,jaccard score=1.00 freq=12
+에디션 골프공,굿즈명,EDGB,정확,1.00,확정,jaccard score=1.00 freq=1
+에디션 골프공 6구,굿즈명,EDGB,정확,1.00,확정,jaccard score=1.00 freq=3
+에디션 골프공 6구(틴케이스),굿즈명,EDGB,유사,0.67,미검증,jaccard score=0.67 freq=2
+에디션골프공6구,굿즈명,EDGB,정확,1.00,확정,jaccard score=1.00 freq=34
+에디트 캘린더,굿즈명,EDCD,정확,1.00,확정,name2code score=1.00 freq=2
+에디트 캘린더 샘플,굿즈명,EDCD,유사,0.67,미검증,jaccard score=0.67 freq=1
+에디트캘린더,굿즈명,EDCD,정확,1.00,확정,jaccard score=1.00 freq=45
+에브리 폴더블 멀티충전기,굿즈명,CHTW,정확,1.00,확정,name2code score=1.00 freq=7
+에센셜 와인오프너 단품박스,굿즈명,ESWO,유사,0.50,미검증,jaccard score=0.50 freq=1
+에센셜 와인오프너 세트,굿즈명,ESWO,정확,1.00,확정,name2code score=1.00 freq=11
+에센셜 와인오프너 스티카,굿즈명,ESWO,유사,0.50,미검증,jaccard score=0.50 freq=1
+에센셜 장우산,굿즈명,GENH,정확,1.00,확정,name2code score=1.00 freq=7
+에센셜와인오프너세트,굿즈명,ESWO,정확,1.00,확정,jaccard score=1.00 freq=30
+에센셜와인오프너세트 (웰컴페이퍼1),굿즈명,ESWO,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+에센셜와인오프너세트(웰컴페이퍼2),굿즈명,ESWO,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+에센셜장우산,굿즈명,GENH,유사,0.50,미검증,jaccard score=0.50 freq=2
+에센셜장우산(실버),굿즈명,GENH,정확,1.00,확정,jaccard score=1.00 freq=14
+에센셜장우산(풀컬러),굿즈명,GENC,정확,1.00,확정,jaccard score=1.00 freq=3
+에코백 1개),굿즈명,GPEB,유사,0.50,미검증,jaccard score=0.50 freq=1
+에코백1,굿즈명,GPEB,유사,0.50,미검증,jaccard score=0.50 freq=1
+에코백1),굿즈명,GPEB,유사,0.50,미검증,jaccard score=0.50 freq=3
+에코백100,굿즈명,GPEB,유사,0.50,미검증,jaccard score=0.50 freq=1
+에코백3,굿즈명,GPEB,유사,0.50,미검증,jaccard score=0.50 freq=1
+에코백3),굿즈명,GPEB,유사,0.50,미검증,jaccard score=0.50 freq=1
+에코컵(커스텀박스),굿즈명,MKEC,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+에폭시스티커(리마커블 칫솔살균기),굿즈명,RMKB,유사,0.50,미검증,jaccard score=0.50 freq=14
+에폭시스티커(리마커블 칫솔살균기) (1),굿즈명,RMKB,유사,0.50,미검증,jaccard score=0.50 freq=1
+에폭시스티커(리마커블 칫솔살균기) (2),굿즈명,RMKB,유사,0.50,미검증,jaccard score=0.50 freq=1
+에폭시스티커(리마커블UV칫솔살균기),굿즈명,RMKB,유사,0.75,미검증,jaccard score=0.75 freq=12
+에폭시스티커(리마커블UV칫솔살균기) 3종,굿즈명,RMKB,유사,0.75,미검증,jaccard score=0.75 freq=1
+여권케이스1,굿즈명,VCIT,유사,0.50,미검증,jaccard score=0.50 freq=3
+여권케이스2,굿즈명,VCIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+여권케이스2),굿즈명,VCIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+여권케이스3,굿즈명,VCIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+여권케이스3),굿즈명,VCIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+여권케이스34,굿즈명,VCIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+여분) 메시지캐리어파우치,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+여유분 블랙,굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=2
+여유수량(Solid스탠다드G형박스(L사이즈)1,굿즈명,SOLD,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:SCGB|SOLD
+오디너리후드집업(블랙) 2XL(15),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+오디너리후드집업(블랙) L(24),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+오디너리후드집업(블랙) XL(25),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+오아시스 미니 마사지건,굿즈명,OMMG,정확,1.00,확정,name2code score=1.00 freq=9
+오아시스미니마사지건,굿즈명,OMMG,정확,1.00,확정,jaccard score=1.00 freq=6
+오토매틱와인오프너,굿즈명,ATWO,정확,1.00,확정,jaccard score=1.00 freq=34
+오토매틱와인오프너(stock),굿즈명,ATWO,정확,1.00,확정,jaccard_norm score=1.00 freq=18
+오프너4),굿즈명,MOPN,유사,0.50,미검증,jaccard score=0.50 freq=1
+오픈박스(블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+오픈스트로우 세트,굿즈명,OSTR,정확,1.00,확정,jaccard score=1.00 freq=1
+오픈스트로우세트,굿즈명,OSTR,정확,1.00,확정,jaccard score=1.00 freq=9
+오피스 마우스패드,굿즈명,OFMW,유사,0.67,미검증,jaccard score=0.67 freq=4
+오피스 마우스패드 1),굿즈명,OFMW,유사,0.67,미검증,jaccard score=0.67 freq=1
+오피스마우스패드 (스탠다드),굿즈명,OFMS,정확,1.00,확정,jaccard score=1.00 freq=1
+오피스마우스패드(스탠다드),굿즈명,OFMS,정확,1.00,확정,jaccard score=1.00 freq=21
+올데이 텀블러,굿즈명,ADYT,정확,1.00,확정,name2code score=1.00 freq=2
+올데이 텀블러1,굿즈명,ADYT,정확,1.00,확정,jaccard score=1.00 freq=1
+올데이 텀블러1),굿즈명,ADYT,정확,1.00,확정,jaccard score=1.00 freq=1
+올데이텀블러,굿즈명,ADYT,정확,1.00,확정,jaccard score=1.00 freq=58
+올데이텀블러 (기성패키지),굿즈명,ADYT,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+올데이핸즈프리선풍기,굿즈명,AHFF,정확,1.00,확정,name2code score=1.00 freq=2
+올블랙펜,굿즈명,ALBP,정확,1.00,확정,jaccard score=1.00 freq=93
+올웨이즈 양우산,굿즈명,ALUM,정확,1.00,확정,name2code score=1.00 freq=11
+올웨이즈 양우산1),굿즈명,ALUM,정확,1.00,확정,jaccard score=1.00 freq=1
+올웨이즈 양우산2,굿즈명,ALUM,정확,1.00,확정,jaccard score=1.00 freq=1
+올웨이즈양우산,굿즈명,ALUM,정확,1.00,확정,jaccard score=1.00 freq=133
+올웨이즈양우산 (스티커 부착 O),굿즈명,ALUM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+올웨이즈양우산 (스티커 부착 X),굿즈명,ALUM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+올웨이즈양우산(stock),굿즈명,ALUM,정확,1.00,확정,jaccard_norm score=1.00 freq=12
+올웨이즈양우산(스티커 x),굿즈명,ALUM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+올웨이즈양우산(스티커 부착),굿즈명,ALUM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+올웨이즈양우산+Passion더스트백(블랙M),굿즈명,DBAG,유사,0.75,미검증,jaccard score=0.75 freq=1
+와이드 클립펜,굿즈명,WIDC,정확,1.00,확정,jaccard score=1.00 freq=1
+와이드클립 펜,굿즈명,WIDC,정확,1.00,확정,name2code score=1.00 freq=7
+와이드클립 펜2,굿즈명,WIDC,정확,1.00,확정,jaccard score=1.00 freq=1
+와이드클립 펜300,굿즈명,WIDC,정확,1.00,확정,jaccard score=1.00 freq=1
+와이드클립펜,굿즈명,WIDC,정확,1.00,확정,jaccard score=1.00 freq=94
+와이드클립펜 (박스에 삽입),굿즈명,WIDC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+와이드클립펜_재제작100,굿즈명,WIDC,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+우드사인(스타트 씨드키트),굿즈명,SEED,유사,0.67,미검증,jaccard score=0.67 freq=2
+워터보틀,굿즈명,MIST,유사,0.50,미검증,jaccard score=0.50 freq=1
+워터보틀),굿즈명,MIST,유사,0.50,미검증,jaccard score=0.50 freq=1
+월드오브피규어Set,굿즈명,WOFS,정확,1.00,확정,jaccard score=1.00 freq=113
+월드오브피규어Set (남자),굿즈명,WOFS,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+월드오브피규어Set (여자),굿즈명,WOFS,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+월드오브피규어Set (웰컴페이퍼X),굿즈명,WOFS,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+월드오브피규어Set(일시품절),굿즈명,WOFS,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+월드오브피규어set,굿즈명,WOFS,정확,1.00,확정,jaccard score=1.00 freq=4
+월드와이드 멀티어댑터,굿즈명,WWMA,정확,1.00,확정,name2code score=1.00 freq=7
+월드와이드멀티어댑터,굿즈명,WWMA,정확,1.00,확정,jaccard score=1.00 freq=57
+월드와이드멀티어댑터(블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+웜업 스트링 후드집업,굿즈명,WZIP,정확,1.00,확정,name2code score=1.00 freq=1
+웜업 스트링 후드집업  2XL : 20장,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업  3XL : 10장,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업  L,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업 2XL,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업 3XL,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업 4XL,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업 4XL : 7장,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업 M : 3장,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업 스트링 후드집업 XL,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=1
+웜업스트링후드집업,굿즈명,WZIP,정확,1.00,확정,jaccard score=1.00 freq=31
+웜업스트링후드집업 (M),굿즈명,WZIP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+웜업스트링후드집업(L),굿즈명,WZIP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+웹캠 커버,굿즈명,WCV,정확,1.00,확정,name2code score=1.00 freq=1
+웹캠커버,굿즈명,WCV,정확,1.00,확정,jaccard score=1.00 freq=14
+위시오브제캔들,굿즈명,OJCD,정확,1.00,확정,jaccard score=1.00 freq=8
+위시오브제캔들(컬러),굿즈명,OJCD,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+유니크 디퓨저,굿즈명,UNDF,정확,1.00,확정,name2code score=1.00 freq=2
+유니크디퓨저,굿즈명,UNDF,정확,1.00,확정,jaccard score=1.00 freq=58
+유니크디퓨저(재임가공),굿즈명,UNDF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인마이백 피크닉매트,굿즈명,KRDJ,정확,1.00,확정,name2code score=1.00 freq=6
+인쇄(매트블랙 텀블러_레이저,굿즈명,MTTB,유사,0.67,미검증,jaccard_norm score=0.67 freq=6
+인쇄된 아이콘펜,굿즈명,IIKP,유사,0.50,미검증,jaccard score=0.50 freq=1
+인스타 피규어 (남자),굿즈명,CPLG,정확,1.00,확정,name2code score=1.00 freq=1
+인스타 피규어 (여자),굿즈명,CPLG,정확,1.00,확정,name2code score=1.00 freq=1
+인스타가드닝키트,굿즈명,ISGK,정확,1.00,확정,jaccard score=1.00 freq=5
+인스타가드닝키트 (괴마옥 O),굿즈명,ISGK,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인스타가드닝키트 (괴마옥 X),굿즈명,ISGK,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인스타가드닝키트 (식물제외),굿즈명,ISGK,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인스타가드닝키트(용신목),굿즈명,ISGK,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인스타피규어,굿즈명,CPLG,정확,1.00,확정,jaccard score=1.00 freq=100
+인스타피규어(갈생머리),굿즈명,CPLG,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인스타피규어(검정머리),굿즈명,CPLG,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인스타피규어(나머지 부품),굿즈명,CPLG,정확,1.00,확정,jaccard_norm score=1.00 freq=3
+인스타피규어(얼굴+모자(남자헤어),굿즈명,CPLG,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인스타피규어(얼굴+모자(오렌지),굿즈명,CPLG,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+인스타피규어(키링),굿즈명,CPLK,정확,1.00,확정,jaccard score=1.00 freq=108
+인스타피규어_키링,굿즈명,CPLG,정확,1.00,확정,jaccard_norm score=1.00 freq=10
+인앤아웃캠핑폴딩박스,굿즈명,IAOU,정확,1.00,확정,jaccard score=1.00 freq=8
+인앤아웃캠핑폴딩박스 (기존),굿즈명,IAOU,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인앤아웃캠핑폴딩박스 (블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+인앤아웃캠핑폴딩박스 (화이트),굿즈명,IAOU,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+인앤아웃캠핑폴딩박스+펠트백,굿즈명,FTBG,유사,0.50,미검증,jaccard score=0.50 freq=2
+일러스트손수건,굿즈명,ILHC,정확,1.00,확정,jaccard score=1.00 freq=6
+임팩트 슬로건타월,굿즈명,IPST,정확,1.00,확정,name2code score=1.00 freq=12
+임팩트 슬로건타월(단품),굿즈명,IPST,정확,1.00,확정,name2code score=1.00 freq=1
+임팩트 슬로건타월(벌크),굿즈명,IPST,정확,1.00,확정,name2code score=1.00 freq=1
+임팩트슬로건타월,굿즈명,IPST,정확,1.00,확정,jaccard score=1.00 freq=38
+자동우산,굿즈명,ATAU,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(HighLight슬라이드지퍼백1),굿즈명,HLST,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:HLST|HLSZ
+잔여분(Passion더스트백(반투명M)1,굿즈명,DBAM,유사,0.75,미검증,jaccard score=0.75 freq=1
+잔여분(Passion더스트백1,굿즈명,DBAM,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(그립잇2,굿즈명,GRIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(그립잇2),굿즈명,GRIT,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(내추럴 노트2),굿즈명,NTRN,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(노트북스탠드패드1,굿즈명,NSTP,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(데스크테리어 매트1,굿즈명,DSKS,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(디자이너 노트10,굿즈명,DSGN,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(라이트 샤오미펜3,굿즈명,LXMP,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(레더스킨 다이어리1,굿즈명,LSKF,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(리마커블 칫솔살균기2,굿즈명,RMKB,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(메시지캐리어파우치1,굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(메시지캐리어파우치1),굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=2
+잔여분(메시지캐리어파우치2),굿즈명,MSGC,유사,0.50,미검증,jaccard score=0.50 freq=5
+잔여분(미니멀스텐머그2,굿즈명,MSTM,유사,0.50,미검증,jaccard score=0.50 freq=2
+잔여분(미니멀스텐머그2),굿즈명,MSTM,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(미니어처NFC키링,굿즈명,MNFC,유사,0.75,미검증,jaccard score=0.75 freq=1
+잔여분(미니어처NFC키링2,굿즈명,MNFC,유사,0.75,미검증,jaccard score=0.75 freq=1
+잔여분(미르(MiiR) 텀블러1,굿즈명,MIRT,유사,0.75,미검증,jaccard score=0.75 freq=1
+잔여분(미르(MiiR)텀블러1,굿즈명,MIRT,유사,0.75,미검증,jaccard score=0.75 freq=4
+잔여분(밸류메모큐브(M)2),굿즈명,VMCM,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(밸류메모큐브2,굿즈명,VMCM,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(버티컬 무선충전패드,굿즈명,VWPD,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(브랜드-잇1,굿즈명,BRDT,유사,0.50,미검증,jaccard score=0.50 freq=2
+잔여분(브랜드-잇2,굿즈명,BRDT,유사,0.50,미검증,jaccard score=0.50 freq=2
+잔여분(브랜드-잇3),굿즈명,BRDT,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(브랜디드 피규어 키링1,굿즈명,BRPK,유사,0.75,미검증,jaccard score=0.75 freq=1
+잔여분(브랜디드 피규어 키링2,굿즈명,BRPK,유사,0.75,미검증,jaccard score=0.75 freq=1
+잔여분(브랜디드 피규어2,굿즈명,BRPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(브랜디드피규어키링2,굿즈명,BRPK,유사,0.50,미검증,jaccard score=0.50 freq=2
+잔여분(브랜디드피규어키링3,굿즈명,BRPK,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(스타일 수면안대2,굿즈명,STSM,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(스테이 텀블러1,굿즈명,TMBS,유사,0.67,미검증,jaccard score=0.67 freq=2
+잔여분(시그니처 다이어리1,굿즈명,SGND,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(아이콘펜1,굿즈명,IIKP,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(아이콘펜1),굿즈명,IIKP,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(애드온뱃지1,굿즈명,AOBG,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(애드온뱃지5,굿즈명,AOBG,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(애드온뱃지7,굿즈명,AOBG,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(어텐션스포츠보틀1,굿즈명,ATSB,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:ATSB|ATSS
+잔여분(어텐션스포츠보틀2),굿즈명,ATSB,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:ATSB|ATSS
+잔여분(컴포트 스텐머그1,굿즈명,UMUG,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(컴포트 스텐머그2,굿즈명,UMUG,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(페이퍼샤쉐1),굿즈명,PSCH,유사,0.50,미검증,jaccard score=0.50 freq=2
+잔여분(페이퍼샤쉐2,굿즈명,PSCH,유사,0.50,미검증,jaccard score=0.50 freq=1
+잔여분(포시즌 티셔츠L,굿즈명,FTSH,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(풀커버 스프링노트4,굿즈명,FCSP,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(프라우드 메모패드1,굿즈명,PMPC,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:PMPB|PMPC
+잔여분(플레인USB1,굿즈명,PUSB,유사,0.67,미검증,jaccard score=0.67 freq=1
+잔여분(헬로 카드형 USB 1),굿즈명,HUSB,유사,0.75,미검증,jaccard score=0.75 freq=1
+전사(레터링 유리머그),굿즈명,LTLU,유사,0.67,미검증,jaccard score=0.67 freq=1
+전사(스파클링 유리컵),굿즈명,SPKL,유사,0.67,미검증,jaccard score=0.67 freq=1
+전사(프리미엄 린넨샤쉐) 2종,굿즈명,LSCH,유사,0.67,미검증,jaccard score=0.67 freq=1
+젠틀차량용청소기,굿즈명,GTVC,정확,1.00,확정,jaccard score=1.00 freq=6
+주차번호판 피규어 세트,굿즈명,FGPS,유사,0.67,미검증,jaccard score=0.67 freq=2
+주차번호판 피규어 키트,굿즈명,FGPS,유사,0.67,미검증,jaccard score=0.67 freq=2
+짐색,굿즈명,DLYG,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:DLYG|DLYK
+짐색 1),굿즈명,DLYG,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:DLYG|DLYK
+짐색1),굿즈명,DLYG,유사,0.50,미검증,jaccard score=0.50 freq=2 ambiguous-name:DLYG|DLYK
+짐색2 ),굿즈명,DLYG,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:DLYG|DLYK
+짐색3),굿즈명,DLYG,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:DLYG|DLYK
+차량용 청소기,굿즈명,SPAC,유사,0.67,미검증,jaccard score=0.67 freq=1
+챔피언 피규어 트로피,굿즈명,CFTP,정확,1.00,확정,name2code score=1.00 freq=9
+챔피언 피규어 트로피 (User Financial Data Team ),굿즈명,CFTP,정확,1.00,확정,name2code score=1.00 freq=1
+챔피언 피규어 트로피35,굿즈명,CFTP,정확,1.00,확정,jaccard score=1.00 freq=1
+챔피언 피규어 트로피36,굿즈명,CFTP,정확,1.00,확정,jaccard score=1.00 freq=1
+챔피언 피규어 트로피4,굿즈명,CFTP,정확,1.00,확정,jaccard score=1.00 freq=1
+챔피언피규어트로피,굿즈명,CFTP,정확,1.00,확정,jaccard score=1.00 freq=25
+챔피언피규어트로피 (헤드A),굿즈명,CFTP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+챔피언피규어트로피 (헤드B),굿즈명,CFTP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+챔피언피규어트로피(남자),굿즈명,CFTP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+챔피언피규어트로피(여자),굿즈명,CFTP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+충전기(Lite모델),굿즈명,PDCX,유사,0.50,미검증,jaccard score=0.50 freq=1
+칠링패드 냉각선풍기,굿즈명,CPNF,정확,1.00,확정,name2code score=1.00 freq=21
+칠링패드냉각선풍기,굿즈명,CPNF,정확,1.00,확정,jaccard score=1.00 freq=51
+칠링패드냉각선풍기 (스티커 미부착),굿즈명,CPNF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+칠링패드냉각선풍기 (스티커부착),굿즈명,CPNF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+칫솔,굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=2
+칫솔(단품)2),굿즈명,STNB,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+칫솔1,굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=7
+칫솔1),굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=2
+칫솔2,굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=3
+칫솔2),굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=1
+칫솔3,굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=2
+칫솔3),굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=1
+칫솔5),굿즈명,STNB,유사,0.50,미검증,jaccard score=0.50 freq=2
+카드트레이 피규어 세트,굿즈명,CTPS,정확,1.00,확정,name2code score=1.00 freq=18
+캔버스피크닉매트(1인용),굿즈명,PCMT,정확,1.00,확정,jaccard score=1.00 freq=17
+캔버스피크닉매트(2인용),굿즈명,PCMU,정확,1.00,확정,jaccard score=1.00 freq=7
+캘린더,굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=3
+캘린더1,굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=1
+캘린더10),굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=1
+캘린더2,굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=1
+캘린더2),굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=2
+캘린더3),굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=3
+캘린더4),굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=1
+캘린더5,굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=1
+캘린더5),굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=2
+캘린더7),굿즈명,LTCL,유사,0.50,미검증,jaccard score=0.50 freq=1
+캠핑체어,굿즈명,LTLB,유사,0.50,미검증,jaccard score=0.50 freq=1
+캠핑쿨러,굿즈명,VBCC,유사,0.50,미검증,jaccard score=0.50 freq=1
+커넥트 6in1  케이블 키트,굿즈명,CCKT,정확,1.00,확정,jaccard score=1.00 freq=1
+커넥트 6in1 케이블 키트,굿즈명,CCKT,정확,1.00,확정,jaccard score=1.00 freq=5
+커넥트 6in1 케이블키트,굿즈명,CCKT,정확,1.00,확정,name2code score=1.00 freq=19
+커넥트 6in1 케이블키트1,굿즈명,CCKT,정확,1.00,확정,jaccard score=1.00 freq=1
+커넥트6in1케이블키트,굿즈명,CCKT,정확,1.00,확정,jaccard score=1.00 freq=29
+커스텀박스,굿즈명,MBCS,유사,0.50,미검증,jaccard score=0.50 freq=1
+커피드립백(빈브라더스),굿즈명,BEAN,정확,1.00,확정,jaccard score=1.00 freq=5
+커피펜슬,굿즈명,CFPC,정확,1.00,확정,jaccard score=1.00 freq=1
+컬러펜,굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=1
+컬러펜1,굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=1
+컬러펜1),굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=3
+컬러펜2,굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=1
+컬러펜21,굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=1
+컬러펜3,굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=1
+컬러펜3),굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=1
+컬러펜4),굿즈명,SPCP,유사,0.50,미검증,jaccard score=0.50 freq=1
+컬러풀 노트패드,굿즈명,CNPD,정확,1.00,확정,name2code score=1.00 freq=5
+컬러풀노트패드,굿즈명,CNPD,정확,1.00,확정,jaccard score=1.00 freq=17
+컬러풀노트패드(블랙),굿즈명,CNPG,정확,1.00,확정,jaccard score=1.00 freq=19
+컴포트 스텐머그,굿즈명,UMUG,정확,1.00,확정,name2code score=1.00 freq=4
+컴포트스텐머그,굿즈명,UMUG,정확,1.00,확정,jaccard score=1.00 freq=1
+콜드컵,굿즈명,ICCC,유사,0.50,미검증,jaccard score=0.50 freq=2
+콜드컵2),굿즈명,ICCC,유사,0.50,미검증,jaccard score=0.50 freq=1
+콜드컵3),굿즈명,ICCC,유사,0.50,미검증,jaccard score=0.50 freq=1
+크릴아이콘(아이콘 펜) 1+아이콘펜,굿즈명,IIKP,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+클래시 차량용 방향제,굿즈명,CCAF,정확,1.00,확정,name2code score=1.00 freq=4
+클래시차량용방향제,굿즈명,CCAF,정확,1.00,확정,jaccard score=1.00 freq=52
+클로저 휴대폰 스트랩,굿즈명,CHST,정확,1.00,확정,name2code score=1.00 freq=5
+클로저 휴대폰 스트랩(아크릴참),굿즈명,CHST,정확,1.00,확정,name2code score=1.00 freq=1
+클로저휴대폰스트랩,굿즈명,CHST,정확,1.00,확정,jaccard score=1.00 freq=3
+클로저휴대폰스트랩(블리스터),굿즈명,CHSB,정확,1.00,확정,jaccard score=1.00 freq=7
+클로저휴대폰스트랩(실버팩),굿즈명,CHST,정확,1.00,확정,jaccard score=1.00 freq=1
+클리어 리유저블컵,굿즈명,CLRU,정확,1.00,확정,name2code score=1.00 freq=5
+클리어리유저블(스트로우) + Passion더스트백(반투명M),굿즈명,DBAM,유사,0.60,미검증,jaccard score=0.60 freq=1
+클리어리유저블컵,굿즈명,CLRU,정확,1.00,확정,name2code score=1.00 freq=4
+클리어리유저블컵(스탠다드),굿즈명,CLRU,정확,1.00,확정,name2code score=1.00 freq=40
+클리어리유저블컵_스탠다드,굿즈명,CLRU,정확,1.00,확정,name2code score=1.00 freq=2
+클리어리유저블컵_스탠다드 113+여분수량,굿즈명,CLRU,정확,1.00,확정,name2code score=1.00 freq=1
+클립 아트펜,굿즈명,CLIP,정확,1.00,확정,name2code score=1.00 freq=5
+클립 아트펜 UV,굿즈명,CLIP,유사,0.67,미검증,jaccard score=0.67 freq=1
+클립아트펜,굿즈명,CLIP,정확,1.00,확정,jaccard score=1.00 freq=94
+클립아트펜 (단품),굿즈명,CLIP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+클립아트펜 (벌크),굿즈명,CLIP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+클립아트펜(펜노란색-배경지노란색),굿즈명,CLIP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+클립아트펜(펜하늘색-배경지 하늘색),굿즈명,CLIP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+클립아트펜_재재제작,굿즈명,CLIP,정확,1.00,확정,jaccard_norm score=1.00 freq=9
+키링,굿즈명,GKEY,유사,0.50,미검증,jaccard score=0.50 freq=1
+키링1,굿즈명,GKEY,유사,0.50,미검증,jaccard score=0.50 freq=1
+키링2),굿즈명,GKEY,유사,0.50,미검증,jaccard score=0.50 freq=4
+키링3),굿즈명,GKEY,유사,0.50,미검증,jaccard score=0.50 freq=1
+키트 (블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+키트 블랙,굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=5
+킵세이프 마그넷 배터리,굿즈명,MGNB,정확,1.00,확정,name2code score=1.00 freq=12
+킵세이프 마그넷 배터리 100개(B1비전35스티커부착),굿즈명,KSMB,유사,0.75,미검증,jaccard score=0.75 freq=1 ambiguous-name:KSMB|MGNB
+킵세이프 마그넷 배터리 150개(스티커부착없음),굿즈명,KSMB,유사,0.75,미검증,jaccard score=0.75 freq=1 ambiguous-name:KSMB|MGNB
+킵세이프 마그넷 배터리 Lite,굿즈명,KSMB,유사,0.75,미검증,jaccard score=0.75 freq=3 ambiguous-name:KSMB|MGNB
+킵세이프 마그넷 배터리 Ma,굿즈명,KSBM,정확,1.00,확정,jaccard score=1.00 freq=14
+킵세이프 마그넷 배터리 Max,굿즈명,KSBM,정확,1.00,확정,name2code score=1.00 freq=1
+킵세이프 마그넷 배터리 Max (B1 비전35 스티커),굿즈명,KSBM,정확,1.00,확정,name2code score=1.00 freq=1
+킵세이프 마그넷 배터리 Max (B2 앳킨스 로고 스티커),굿즈명,KSBM,정확,1.00,확정,name2code score=1.00 freq=1
+킵세이프 마그넷 배터리 Max (B3 CANDU 로고 스티커),굿즈명,KSBM,정확,1.00,확정,name2code score=1.00 freq=1
+킵세이프 마그넷 배터리 Slim,굿즈명,KSMB,정확,1.00,확정,name2code score=1.00 freq=14
+킵세이프 마그넷 배터리 Slim1),굿즈명,KSBS,정확,1.00,확정,jaccard score=1.00 freq=1
+킵세이프 마그넷 배터리 슬림,굿즈명,KSMB,유사,0.75,미검증,jaccard score=0.75 freq=1 ambiguous-name:KSMB|MGNB
+킵세이프 마그넷 지그,굿즈명,KSMB,유사,0.50,미검증,jaccard score=0.50 freq=1 ambiguous-name:KSMB|MGNB
+킵세이프마그넷배터리,굿즈명,KSMB,정확,1.00,미검증,jaccard score=1.00 freq=130 ambiguous-name:KSMB|MGNB
+킵세이프마그넷배터리(ver1),굿즈명,KSMB,정확,1.00,미검증,jaccard_norm score=1.00 freq=1 ambiguous-name:KSMB|MGNB
+킵세이프마그넷배터리Slim,굿즈명,KSBS,정확,1.00,확정,jaccard score=1.00 freq=24
+타투스티커3,굿즈명,TTSK,유사,0.50,미검증,jaccard score=0.50 freq=1
+텀블러,굿즈명,SGCN,유사,0.50,미검증,jaccard score=0.50 freq=4
+텀블러1,굿즈명,SGCN,유사,0.50,미검증,jaccard score=0.50 freq=4
+텀블러1),굿즈명,SGCN,유사,0.50,미검증,jaccard score=0.50 freq=5
+텀블러1)),굿즈명,SGCN,유사,0.50,미검증,jaccard score=0.50 freq=1
+텀블러2,굿즈명,SGCN,유사,0.50,미검증,jaccard score=0.50 freq=2
+텀블러2),굿즈명,SGCN,유사,0.50,미검증,jaccard score=0.50 freq=2
+테크 미니 파우치,굿즈명,TCMP,정확,1.00,확정,name2code score=1.00 freq=13
+테크미니파우치,굿즈명,TCMP,정확,1.00,확정,jaccard score=1.00 freq=121
+테크미니파우치 (1),굿즈명,TCMP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+테크미니파우치 (2),굿즈명,TCMP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+테크미니파우치 (Microsoft),굿즈명,TCMP,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+톤앤톤 쿨러백,굿즈명,TTCB,정확,1.00,확정,name2code score=1.00 freq=9
+톤앤톤 쿨러백 키트,굿즈명,TTCC,정확,1.00,확정,jaccard score=1.00 freq=1
+톤앤톤쿨러백 (키트),굿즈명,TTCC,정확,1.00,확정,jaccard score=1.00 freq=1
+톤앤톤쿨러백(단품),굿즈명,TTCB,정확,1.00,확정,jaccard score=1.00 freq=61
+톤앤톤쿨러백(키트),굿즈명,TTCC,정확,1.00,확정,jaccard score=1.00 freq=26
+투마일 오피스 슬리퍼 (240),굿즈명,TMLO,정확,1.00,확정,name2code score=1.00 freq=1
+투마일 오피스 슬리퍼 (260),굿즈명,TMLO,정확,1.00,확정,name2code score=1.00 freq=1
+투마일 오피스 슬리퍼 (270),굿즈명,TMLO,정확,1.00,확정,name2code score=1.00 freq=1
+투마일 오피스 슬리퍼 (280),굿즈명,TMLO,정확,1.00,확정,name2code score=1.00 freq=1
+투마일오피스슬리퍼,굿즈명,TMLO,정확,1.00,확정,jaccard score=1.00 freq=26
+투마일오피스슬리퍼 (보수 + 재임가공),굿즈명,TMLO,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+투마일오피스슬리퍼(240),굿즈명,TMLO,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+투마일오피스슬리퍼(250),굿즈명,TMLO,정확,1.00,확정,jaccard_norm score=1.00 freq=3
+투마일오피스슬리퍼(260),굿즈명,TMLO,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+투마일오피스슬리퍼(270),굿즈명,TMLO,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+투마일오피스슬리퍼(280),굿즈명,TMLO,정확,1.00,확정,jaccard_norm score=1.00 freq=2
+투마일오피스슬리퍼(여분),굿즈명,TMLO,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+트래블2in1목베개,굿즈명,NKPL,정확,1.00,확정,jaccard score=1.00 freq=36
+트리플 컬러펜,굿즈명,TRPC,유사,0.67,미검증,jaccard score=0.67 freq=4
+트리플컬러펜∣JETSTREAM,굿즈명,TRPC,정확,1.00,확정,jaccard score=1.00 freq=55
+티셔츠 L,굿즈명,FTSH,유사,0.50,미검증,jaccard score=0.50 freq=1
+티셔츠 M,굿즈명,FTSH,유사,0.50,미검증,jaccard score=0.50 freq=1
+티셔츠 XL,굿즈명,FTSH,유사,0.50,미검증,jaccard score=0.50 freq=1
+틴케이스,굿즈명,TNCS,유사,0.50,미검증,jaccard score=0.50 freq=2
+틴케이스1,굿즈명,TNCS,유사,0.50,미검증,jaccard score=0.50 freq=1
+틴케이스2,굿즈명,TNCS,유사,0.50,미검증,jaccard score=0.50 freq=1
+파우치,굿즈명,FSPC,유사,0.50,미검증,jaccard score=0.50 freq=1
+파우치 키트,굿즈명,LSPH,유사,0.67,미검증,jaccard score=0.67 freq=1
+파우치1,굿즈명,FSPC,유사,0.50,미검증,jaccard score=0.50 freq=2
+파우치1),굿즈명,FSPC,유사,0.50,미검증,jaccard score=0.50 freq=11
+파우치102 ),굿즈명,FSPC,유사,0.50,미검증,jaccard score=0.50 freq=1
+파우치2,굿즈명,FSPC,유사,0.50,미검증,jaccard score=0.50 freq=3
+파우치2),굿즈명,FSPC,유사,0.50,미검증,jaccard score=0.50 freq=2
+파우치3),굿즈명,FSPC,유사,0.50,미검증,jaccard score=0.50 freq=1
+파워업 PD 충전기 65W,굿즈명,PUPD,정확,1.00,확정,name2code score=1.00 freq=9
+파워업 PD 충전기 65W1),굿즈명,PUPD,정확,1.00,확정,jaccard score=1.00 freq=1
+파워업PD충전기65W,굿즈명,PUPD,정확,1.00,확정,jaccard score=1.00 freq=36
+파카조터XL볼펜,굿즈명,PKJT,정확,1.00,확정,jaccard score=1.00 freq=2
+팝업스토어 피규어 세트,굿즈명,MSFG,정확,1.00,확정,name2code score=1.00 freq=3
+팝업스토어 피규어 세트  A2,굿즈명,BRPH,유사,0.50,미검증,jaccard score=0.50 freq=1
+팝업스토어 피규어 세트 A1,굿즈명,BRPH,유사,0.50,미검증,jaccard score=0.50 freq=1
+패드(레디고 런치박스),굿즈명,RDGL,유사,0.67,미검증,jaccard score=0.67 freq=6
+퍼 블랭킷,굿즈명,FUBL,정확,1.00,확정,name2code score=1.00 freq=1
+퍼블랭킷(무릎담요),굿즈명,FUBL,정확,1.00,확정,jaccard score=1.00 freq=35
+퍼블랭킷(일반담요),굿즈명,FUBM,정확,1.00,확정,jaccard score=1.00 freq=22
+펄프박스_리드,굿즈명,STPB,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+펄프박스_바디,굿즈명,STPB,유사,0.50,미검증,jaccard_norm score=0.50 freq=2
+페이머스 캡슐보틀,굿즈명,FACB,정확,1.00,확정,name2code score=1.00 freq=2
+페이머스캡슐보틀,굿즈명,FACB,정확,1.00,확정,jaccard score=1.00 freq=15
+페이퍼 샤쉐,굿즈명,PSCH,정확,1.00,확정,name2code score=1.00 freq=9
+페이퍼링 캘린더,굿즈명,PIPR,정확,1.00,확정,name2code score=1.00 freq=4
+페이퍼링 캘린더 (단품) :,굿즈명,PIPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+페이퍼링 캘린더 키트,굿즈명,PIPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+페이퍼링 캘린더+opp,굿즈명,PIPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+페이퍼링 캘린더+덮개박스,굿즈명,PIPR,유사,0.67,미검증,jaccard score=0.67 freq=1
+페이퍼링캘린더,굿즈명,PIPR,정확,1.00,확정,jaccard score=1.00 freq=63
+페이퍼샤쉐,굿즈명,PSCH,정확,1.00,확정,jaccard score=1.00 freq=79
+페이퍼샤쉐 398+여분수량,굿즈명,PSCH,유사,0.50,미검증,jaccard score=0.50 freq=1
+페이퍼샤쉐+,굿즈명,PSCH,정확,1.00,확정,jaccard score=1.00 freq=1
+페이퍼샤쉐1),굿즈명,PSCH,정확,1.00,확정,jaccard score=1.00 freq=1
+펜홀더 피규어 세트,굿즈명,BRPH,정확,1.00,확정,name2code score=1.00 freq=1
+펠트백,굿즈명,FTBG,정확,1.00,확정,jaccard score=1.00 freq=12
+펠트백 (2개입 키트),굿즈명,FTBG,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+펠트백 +레더라벨캠핑체어,굿즈명,FTBG,유사,0.50,미검증,jaccard score=0.50 freq=7
+펠트백 키트,굿즈명,FTBG,유사,0.50,미검증,jaccard score=0.50 freq=3
+펠트백+ 레더라벨캠핑체어,굿즈명,FTBG,유사,0.50,미검증,jaccard score=0.50 freq=7
+펠트스트링파우치,굿즈명,FSPC,정확,1.00,확정,jaccard score=1.00 freq=3
+포시즌 블랭킷,굿즈명,FSBL,정확,1.00,확정,name2code score=1.00 freq=11
+포시즌 티셔츠,굿즈명,FTSH,정확,1.00,확정,name2code score=1.00 freq=3
+포시즌 티셔츠  2XL,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠  3XL,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠 (L),굿즈명,FTSH,정확,1.00,확정,name2code score=1.00 freq=1
+포시즌 티셔츠 (M),굿즈명,FTSH,정확,1.00,확정,name2code score=1.00 freq=1
+포시즌 티셔츠 (S),굿즈명,FTSH,정확,1.00,확정,name2code score=1.00 freq=1
+포시즌 티셔츠 (XL),굿즈명,FTSH,정확,1.00,확정,name2code score=1.00 freq=1
+포시즌 티셔츠 2XL,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠 L,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=2
+포시즌 티셔츠 L :,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠 M,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=2
+포시즌 티셔츠 M :,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠 S,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠 XL,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=2
+포시즌 티셔츠+인쇄,굿즈명,FTSH,유사,0.67,미검증,jaccard score=0.67 freq=1
+포시즌 티셔츠2XL,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠2XL :,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠2XL 수량:,굿즈명,FTSH,유사,0.67,미검증,jaccard score=0.67 freq=1
+포시즌 티셔츠3XL :,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠L,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=2
+포시즌 티셔츠L 수량:,굿즈명,FTSH,유사,0.67,미검증,jaccard score=0.67 freq=2
+포시즌 티셔츠M,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠M 수량:,굿즈명,FTSH,유사,0.67,미검증,jaccard score=0.67 freq=2
+포시즌 티셔츠S,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠S 수량:,굿즈명,FTSH,유사,0.67,미검증,jaccard score=0.67 freq=2
+포시즌 티셔츠XL,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠XL :,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=1
+포시즌 티셔츠XL 수량:,굿즈명,FTSH,유사,0.67,미검증,jaccard score=0.67 freq=2
+포시즌블랭킷(무릎담요),굿즈명,FSBL,정확,1.00,확정,jaccard score=1.00 freq=64
+포시즌블랭킷(일반담요),굿즈명,FSBM,정확,1.00,확정,jaccard score=1.00 freq=29
+포시즌티셔츠,굿즈명,FTSH,정확,1.00,확정,jaccard score=1.00 freq=24
+포인트업러그(반원형),굿즈명,PITU,정확,1.00,확정,jaccard score=1.00 freq=30
+포인트업러그(원형),굿즈명,PITC,정확,1.00,확정,jaccard score=1.00 freq=7
+포켓 마켓백,굿즈명,PKMK,정확,1.00,확정,name2code score=1.00 freq=12
+포켓마켓백,굿즈명,PKMK,정확,1.00,확정,jaccard score=1.00 freq=58
+포켓마켓백 블랙,굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+포터블 피크닉 롤테이블,굿즈명,PTBC,정확,1.00,확정,name2code score=1.00 freq=4
+폴더블 텀블러 실크,굿즈명,FOLC,유사,0.67,미검증,jaccard score=0.67 freq=1
+폴더블 텀블러 패키지 (스티커165,굿즈명,FOLC,유사,0.50,미검증,jaccard score=0.50 freq=1
+폴더블텀블러,굿즈명,FOLC,정확,1.00,확정,jaccard score=1.00 freq=15
+폴딩방석,굿즈명,HIKF,유사,0.50,미검증,jaccard score=0.50 freq=1
+풀커버 스티치 노트,굿즈명,FCSN,정확,1.00,확정,name2code score=1.00 freq=9
+풀커버 스프링노트,굿즈명,FCSP,정확,1.00,확정,name2code score=1.00 freq=3
+풀커버스티치노트(300개이하),굿즈명,FCSF,정확,1.00,확정,jaccard score=1.00 freq=8
+풀커버스티치노트(300개초과),굿즈명,FCSN,정확,1.00,확정,jaccard score=1.00 freq=1
+풀커버스프링노트,굿즈명,FCSP,정확,1.00,확정,jaccard score=1.00 freq=26
+프라우드 메모패드,굿즈명,PMPB,정확,1.00,확정,name2code score=1.00 freq=1
+프라우드 명함지갑,굿즈명,TWTO,유사,0.67,미검증,jaccard score=0.67 freq=1
+프라우드 투톤 명함지갑,굿즈명,TWTO,정확,1.00,확정,name2code score=1.00 freq=4
+프라우드메모패드,굿즈명,PMPB,정확,1.00,미검증,jaccard score=1.00 freq=1 ambiguous-name:PMPB|PMPC
+프라우드메모패드(블랙),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=27
+프라우드메모패드(블랙)1),굿즈명,ALBP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프라우드메모패드(컬러),굿즈명,PMPB,정확,1.00,미검증,jaccard_norm score=1.00 freq=4 ambiguous-name:PMPB|PMPC
+프라우드메모패드_커버,굿즈명,PMPB,정확,1.00,미검증,jaccard_norm score=1.00 freq=2 ambiguous-name:PMPB|PMPC
+프라우드투톤명함지갑,굿즈명,TWTO,정확,1.00,확정,jaccard score=1.00 freq=10
+프라우드투톤명함지갑(레디메이드),굿즈명,TWTB,정확,1.00,확정,jaccard score=1.00 freq=19
+프라임 폴더블 멀티충전기,굿즈명,PRMF,정확,1.00,확정,name2code score=1.00 freq=5
+프라임폴더블멀티충전기,굿즈명,PRMF,정확,1.00,확정,jaccard score=1.00 freq=45
+프라임폴더블멀티충전기 (기성패키지),굿즈명,PRMF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+프라임폴더블멀티충전기 (무지),굿즈명,PRMF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+프라임폴더블멀티충전기 (슬리브),굿즈명,PRMF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+프라임폴더블멀티충전기(무지),굿즈명,PRMF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+프라임폴더블멀티충전기(인쇄),굿즈명,PRMF,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+프레시캘린더,굿즈명,FRCL,정확,1.00,확정,jaccard score=1.00 freq=6
+프레젠트 골프공 3구,굿즈명,PSGB,정확,1.00,확정,name2code score=1.00 freq=3
+프레젠트골프공3구,굿즈명,PSGB,정확,1.00,확정,jaccard score=1.00 freq=22
+프로페셔널와인오프너,굿즈명,PWOP,정확,1.00,확정,jaccard score=1.00 freq=1
+프리미엄 린넨샤쉐,굿즈명,LSCH,정확,1.00,확정,name2code score=1.00 freq=2
+프리미엄 린넨샤쉐 set,굿즈명,LSCH,유사,0.67,미검증,jaccard score=0.67 freq=1
+프리미엄 스트링 후드집업,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄 스트링 후드집업 2XL,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄 스트링 후드집업 L,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄 스트링 후드집업 XL,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄 스트링 후드집업2,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄 스트링 후드집업L,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄 스트링 후드집업M,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=2
+프리미엄 스트링 후드집업S,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄 스트링 후드집업XL,굿즈명,WZIP,유사,0.50,미검증,jaccard score=0.50 freq=1
+프리미엄린넨샤쉐,굿즈명,LSCH,정확,1.00,확정,jaccard score=1.00 freq=14
+플러스 멀티충전 스테이션,굿즈명,PLSM,정확,1.00,확정,name2code score=1.00 freq=2
+플러스멀티충전스테이션,굿즈명,PLSM,정확,1.00,확정,jaccard score=1.00 freq=22
+플러스멀티충전스테이션(무지),굿즈명,PLSM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+플러스멀티충전스테이션(인쇄),굿즈명,PLSM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+플레인 USB,굿즈명,PUSB,정확,1.00,확정,name2code score=1.00 freq=3
+플레인 usb,굿즈명,PUSB,정확,1.00,확정,jaccard score=1.00 freq=1
+플레인USB,굿즈명,PUSB,정확,1.00,확정,jaccard score=1.00 freq=59
+플레인USB+인쇄,굿즈명,PUSB,유사,0.67,미검증,jaccard score=0.67 freq=10
+플레인USB1),굿즈명,PUSB,정확,1.00,확정,jaccard score=1.00 freq=3
+플레인usb2,굿즈명,PUSB,정확,1.00,확정,jaccard score=1.00 freq=1
+피규어,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=4
+피규어 키링,굿즈명,BRPK,유사,0.67,미검증,jaccard score=0.67 freq=1
+피규어(2)2),굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+피규어(2)3,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+피규어(블루)3,굿즈명,BRPR,유사,0.50,미검증,jaccard_norm score=0.50 freq=1
+피규어1,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=6
+피규어1),굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=3
+피규어10,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+피규어2,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=2
+피규어2),굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=5
+피규어3,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+피규어3),굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=5
+피규어4,굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+피규어4),굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+피규어5),굿즈명,BRPR,유사,0.50,미검증,jaccard score=0.50 freq=1
+피규어주차번호판,굿즈명,FGPS,정확,1.00,확정,jaccard score=1.00 freq=6
+피크닉 매트,굿즈명,PCMU,유사,0.50,미검증,jaccard score=0.50 freq=1
+핑거팬,굿즈명,FING,정확,1.00,확정,name2code score=1.00 freq=6
+하우스 핸드타월,굿즈명,HHTW,정확,1.00,확정,name2code score=1.00 freq=2
+하우스 핸드타월 키트+,굿즈명,HHTW,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:HHTK|HHTW
+하이업 노트북 폴딩스탠드,굿즈명,HIUN,정확,1.00,확정,name2code score=1.00 freq=4
+하이업노트북폴딩스탠드,굿즈명,HIUN,정확,1.00,확정,jaccard score=1.00 freq=22
+하이업노트북폴딩스탠드1,굿즈명,HIUN,정확,1.00,확정,jaccard score=1.00 freq=1
+하이업노트북폴딩스탠드2,굿즈명,HIUN,정확,1.00,확정,jaccard score=1.00 freq=1
+하이킹 폴딩 방석,굿즈명,HIKF,정확,1.00,확정,jaccard score=1.00 freq=1
+하이킹 폴딩방석,굿즈명,HIKF,정확,1.00,확정,name2code score=1.00 freq=15
+하이킹폴딩방석,굿즈명,HIKF,정확,1.00,확정,jaccard score=1.00 freq=137
+해피웨이 런치백,굿즈명,HWDG,정확,1.00,확정,name2code score=1.00 freq=4
+해피웨이 런치백 키트,굿즈명,HWDK,유사,0.67,미검증,jaccard score=0.67 freq=1 ambiguous-name:HWDG|HWDK
+해피웨이런치백,굿즈명,HWDG,정확,1.00,미검증,jaccard score=1.00 freq=4 ambiguous-name:HWDG|HWDK
+해피웨이런치백(단품),굿즈명,HWDG,정확,1.00,미검증,jaccard_norm score=1.00 freq=22 ambiguous-name:HWDG|HWDK
+해피웨이런치백(키트),굿즈명,HWDG,정확,1.00,미검증,jaccard_norm score=1.00 freq=8 ambiguous-name:HWDG|HWDK
+핸디링 미니 선풍기,굿즈명,HDRM,정확,1.00,확정,jaccard score=1.00 freq=25
+핸디링미니선풍기,굿즈명,HDRM,정확,1.00,확정,jaccard score=1.00 freq=116
+핸디링미니선풍기 (샘플),굿즈명,HDRM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+핸디링미니선풍기 (제작),굿즈명,HDRM,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+핸디파우더솝(1입),굿즈명,HDPS,정확,1.00,확정,jaccard score=1.00 freq=3
+허니콤보(워커비),굿즈명,HONY,정확,1.00,확정,name2code score=1.00 freq=1
+헬로 카드형 USB,굿즈명,HUSB,정확,1.00,확정,name2code score=1.00 freq=6
+헬로 카드형 USB1),굿즈명,HUSB,정확,1.00,확정,jaccard score=1.00 freq=1
+헬로카드형USB,굿즈명,HUSB,정확,1.00,확정,jaccard score=1.00 freq=30
+헬로카드형USB (벌크),굿즈명,HUSB,정확,1.00,확정,jaccard_norm score=1.00 freq=1
+홀리데이 네임택,굿즈명,HLDN,정확,1.00,확정,name2code score=1.00 freq=4
+홀리데이네임택,굿즈명,HLDN,정확,1.00,확정,jaccard score=1.00 freq=65
+홈카페 코스터,굿즈명,HCCO,정확,1.00,확정,name2code score=1.00 freq=4
+홈카페3,굿즈명,HCCO,유사,0.50,미검증,jaccard score=0.50 freq=1
+홈카페코스터,굿즈명,HCCO,정확,1.00,확정,jaccard score=1.00 freq=43
+히트업 손난로 보조배터리,굿즈명,HTUS,정확,1.00,확정,name2code score=1.00 freq=3
+히트업손난로보조배터리,굿즈명,HTUS,정확,1.00,확정,jaccard score=1.00 freq=37
