@@ -23,6 +23,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+from harness.dispatch.slot_decider import NEEDS_REVIEW_SLOT
+
 
 DRIVER_LIMITS: Dict[str, Dict] = {
     'W1': {'driver_id': 'CA-0002', 'name': '이장훈', 'max_cbm': 4.5, 'max_count': 3,
@@ -204,10 +206,12 @@ def assign_waves_greedy(shipments: List[Shipment], partner_autonomy: Dict[str, s
                 confident.append(s)
         active = confident
 
-    # NULL slot → 수동
+    # NULL slot → 수동. NEEDS_REVIEW_SLOT 도 동일 — 어떤 기사 preferred_slots 에도
+    # 없어 _slot_ok() 가 항상 거부하므로, 여기서 걸러주지 않으면 candidates=[] 로
+    # spillover 로 새어나가 '사람 확인 전 자동배차 금지'라는 플래그 취지를 어긴다.
     active_with_slot = []
     for s in active:
-        if s.slot is None:
+        if s.slot is None or s.slot == NEEDS_REVIEW_SLOT:
             plans['수동'].shipments.append(s)
         else:
             active_with_slot.append(s)

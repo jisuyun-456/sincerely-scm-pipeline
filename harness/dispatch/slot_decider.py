@@ -1,10 +1,12 @@
 """Stage A — 배송슬롯 자동 결정 (Sub-Spec 3).
 
-3단계 분기 (P3.5 Decision 2: 옵션 A method-aware default):
+우선순위 분기 (2026-08-19 개정 — 수령시간 카테고리 반영):
 1. 배송방식 ∈ PARCEL_METHODS → '무관' (confidence 1.0)
-2. 배송방식 ∈ QUICK_METHODS + 희망수령시간 텍스트 → parse_time_window → slot mapping
-3. 배송방식 ∈ QUICK_METHODS + 시간 NULL → '오전' default (퀵 historical 50%+)
-4. 그 외 (배송방식 NULL, 기타 method) → (None, 0.0) → 호출자가 '수동' wave로 라우팅
+2. 수령시간(카테고리, CX 선택) 이 오전/오후1/오후2/야간처럼 구체적이면 그대로 채택 (0.95)
+3. 희망수령시간 텍스트 → parse_time_window → slot mapping (0.7~0.9)
+4. 수령시간='오후'(1/2로 세분 안 됨) 인데 텍스트로도 못 좁히면 확인 플래그 (0.5)
+5. 배송방식 ∈ QUICK_METHODS + 위 정보 전무 → '오전' default (퀵 historical 50%+, 0.8)
+6. 그 외 (배송방식 NULL, 기타 method) → (None, 0.0) → 호출자가 '수동' wave로 라우팅
 
 Returns (slot_name | None, confidence float 0~1).
 """
@@ -19,6 +21,11 @@ QUICK_METHODS = frozenset({
     '퀵(수도권)', '퀵(지방)', '자체기사',
     '바로고', '고객직접퀵배차', '신시어리퀵',
 })
+
+# Airtable Shipment.배송슬롯 선택지가 후행 공백 포함 — 문자열 불일치 시 PATCH 422.
+# wave_assigner._slot_ok() 는 이 값을 어떤 기사의 preferred_slots 에도 포함하지 않으므로
+# 항상 '수동'으로 라우팅된다 (사람 확인 전 자동배차/spillover 금지) — wave_assigner.py 참조.
+NEEDS_REVIEW_SLOT = '특정시간 (희망수령시간 확인) '
 
 # 시각 범위: 숫자(+선택적 '시')(+선택적 :분) [~ - – 에서 부터] 숫자(+'시')(+:분).
 # 한글 표기('2시~4시'·'10시에서 12시사이')도 잡도록 '시?' + '에서/부터' 구분자 허용. (2026-06-22 #6 fix)
@@ -99,8 +106,7 @@ def map_window_to_slot(w: TimeWindow) -> str:
         return '오후 2 (오후 4시 - 6시)'
     if w.start_h >= 18:
         return '야간'
-    # Airtable Shipment.배송슬롯 선택지가 후행 공백 포함 — 문자열 불일치 시 PATCH 422
-    return '특정시간 (희망수령시간 확인) '
+    return NEEDS_REVIEW_SLOT
 
 
 def normalize_receipt_category(raw: Optional[str]) -> Optional[str]:
@@ -150,7 +156,7 @@ def decide_slot(method: Optional[str], hope_time_text: Optional[str],
             return slot, confidence
 
     if category == '오후':
-        return '특정시간 (희망수령시간 확인) ', 0.5
+        return NEEDS_REVIEW_SLOT, 0.5
 
     if method in QUICK_METHODS:
         return '오전', 0.8
