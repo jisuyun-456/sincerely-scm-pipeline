@@ -9,6 +9,7 @@ from harness.dispatch.slot_decider import (
     TimeWindow,
     decide_slot,
     map_window_to_slot,
+    normalize_receipt_category,
     parse_time_window,
 )
 
@@ -126,3 +127,90 @@ class TestDecideSlot:
     def test_method_null_but_time_parses(self):
         # method NULL이어도 시간 텍스트가 있으면 slot 결정
         assert decide_slot(None, '09:00~12:00') == ('오전', 0.9)
+
+
+class TestNormalizeReceiptCategory:
+    """'수령 시간' singleSelect(CX 선택) → 배송슬롯 canonical 값 정규화."""
+
+    @pytest.mark.parametrize('raw,expected', [
+        ('오전', '오전'),
+        ('야간', '야간'),
+        ('오후 1 ( 2시-4시 )', '오후 1 (오후 2시 - 4시)'),
+        ('오후1', '오후 1 (오후 2시 - 4시)'),
+        ('오후 2 ( 4시-6시 )', '오후 2 (오후 4시 - 6시)'),
+        ('오후2', '오후 2 (오후 4시 - 6시)'),
+        ('오후', '오후'),
+    ])
+    def test_recognized_values(self, raw, expected):
+        assert normalize_receipt_category(raw) == expected
+
+    @pytest.mark.parametrize('raw', [
+        None, '', '무관',
+        '09~11:30/ 13:00~17:30',  # CX가 select 대신 자유 텍스트를 직접 타이핑한 케이스
+    ])
+    def test_unrecognized_or_blank_returns_none(self, raw):
+        assert normalize_receipt_category(raw) is None
+
+
+class TestMapWindowToSlotAmbiguous:
+    """Boundary-straddling window (2h<=span<6h, 어느 버킷에도 안 맞음) → 무관 대신 확인 플래그."""
+
+    @pytest.mark.parametrize('w', [
+        TimeWindow(14.0, 17.0),   # 오후1(13-16)/오후2(16-18) 경계 걸침
+        TimeWindow(10.0, 14.0),   # 오전(~12)/오후1(13~) 경계 걸침
+    ])
+    def test_straddling_window_flags_for_review(self, w):
+        assert map_window_to_slot(w) == '특정시간 (희망수령시간 확인) '
+
+
+class TestDecideSlotWithReceiptCategory:
+    """수령시간(카테고리) 우선순위 반영 — 2026-08-19 라이브 데이터 불일치 10건 재현."""
+
+    def test_category_specific_wins_over_wide_split_text(self):
+        # rec8CUTlMLvGnBDf4 패턴: 텍스트가 오전/오후 걸쳐 split 되지만 카테고리가 명확
+        assert decide_slot(
+            '퀵(수도권)', '09:00 ~ 11:00 / 13:00 ~ 16:00', '오전',
+        ) == ('오전', 0.95)
+
+    def test_broad_pm_category_with_straddling_text_flags_for_review(self):
+        # recCMF6bJlLat1VzO 패턴
+        assert decide_slot(
+            '퀵(수도권)', '오후 14시 ~ 17시 사이', '오후',
+        ) == ('특정시간 (희망수령시간 확인) ', 0.9)
+
+    def test_specific_pm1_category_wins_over_straddling_text(self):
+        # recCsaq1VaKJ7a0mu 패턴: 카테고리가 이미 오후1 인데 텍스트가 애매
+        assert decide_slot(
+            '퀵(수도권)', '오후 2시~5시 사이', '오후 1 ( 2시-4시 )',
+        ) == ('오후 1 (오후 2시 - 4시)', 0.95)
+
+    def test_category_specific_wins_over_full_day_text(self):
+        # recLb6L5x3eKkT6HS 패턴
+        assert decide_slot('퀵(수도권)', '09:00 ~ 17:00', '오전') == ('오전', 0.95)
+
+    def test_parcel_still_always_무관_regardless_of_category(self):
+        # recN0OUiKBB53KIQu 패턴 — 택배는 카테고리 무시하고 항상 무관
+        assert decide_slot('택배(일반)', None, '오후') == ('무관', 1.0)
+
+    def test_specific_pm2_category_wins_over_wide_text(self):
+        # recT6HrZnGchPqDI7 패턴
+        assert decide_slot(
+            '퀵(지방)', '09:00~18:00', '오후 2 ( 4시-6시 )',
+        ) == ('오후 2 (오후 4시 - 6시)', 0.95)
+
+    def test_category_specific_with_no_text_still_wins_over_method_default(self):
+        # recUNZ51lMAFlgcl9 / recuYjqaalSqoWfwb 패턴
+        assert decide_slot('퀵(수도권)', None, '오전') == ('오전', 0.95)
+
+    def test_unrecognized_freetyped_category_falls_back_to_text_parse(self):
+        # recYLp1VfikJ27l13 패턴 — CX가 select 대신 자유 텍스트 직접 입력
+        raw = '09~11:30/ 13:00~17:30'
+        assert decide_slot('퀵(수도권)', raw, raw) == ('무관', 0.7)
+
+    def test_broad_pm_category_no_text_at_all_flags_for_review(self):
+        assert decide_slot('퀵(수도권)', None, '오후') == ('특정시간 (희망수령시간 확인) ', 0.5)
+
+    def test_two_arg_call_unaffected_backward_compat(self):
+        # scripts/analysis/{wave_backfill_analysis,wave_debug}.py 는 여전히 2-arg 호출
+        assert decide_slot('퀵(수도권)', None) == ('오전', 0.8)
+        assert decide_slot('퀵(수도권)', '14:00~16:00') == ('오후 1 (오후 2시 - 4시)', 0.9)

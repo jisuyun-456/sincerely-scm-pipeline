@@ -26,6 +26,8 @@ HHMM_RANGE = re.compile(
     r'(\d{1,2})\s*시?(?::(\d{2}))?\s*(?:[~\-–]|에서|부터)\s*(\d{1,2})\s*시?(?::(\d{2}))?'
 )
 _SINGLE_HOUR = re.compile(r'(\d{1,2})\s*시')
+_PM1_MARKER = re.compile(r'오후\s*1\b')
+_PM2_MARKER = re.compile(r'오후\s*2\b')
 
 
 @dataclass(frozen=True)
@@ -97,16 +99,48 @@ def map_window_to_slot(w: TimeWindow) -> str:
         return '오후 2 (오후 4시 - 6시)'
     if w.start_h >= 18:
         return '야간'
-    if span < 2:
-        # Airtable Shipment.배송슬롯 선택지가 후행 공백 포함 — 문자열 불일치 시 PATCH 422
-        return '특정시간 (희망수령시간 확인) '
-    return '무관'
+    # Airtable Shipment.배송슬롯 선택지가 후행 공백 포함 — 문자열 불일치 시 PATCH 422
+    return '특정시간 (희망수령시간 확인) '
 
 
-def decide_slot(method: Optional[str], hope_time_text: Optional[str]) -> Tuple[Optional[str], float]:
-    """Stage A 메인 entry. (slot, confidence) 반환. (None, 0.0) → '수동' wave."""
+def normalize_receipt_category(raw: Optional[str]) -> Optional[str]:
+    """'수령 시간'(singleSelect, CX 선택) → 배송슬롯 canonical 값 정규화.
+
+    CX가 다양한 표기로 입력 가능('오후 1 ( 2시-4시 )' 등) — 배송슬롯 select
+    옵션 문자열과 정확히 일치해야 PATCH 가능하므로 canonical 형태로 변환.
+    '오후'(1/2로 세분 안 됨)는 별도 마커로 반환해 decide_slot 이 고객
+    희망수령시간으로 세분화를 시도하도록 한다.
+    """
+    if not raw:
+        return None
+    text = raw.strip()
+    if text == '오전':
+        return '오전'
+    if text == '야간':
+        return '야간'
+    if _PM1_MARKER.search(text):
+        return '오후 1 (오후 2시 - 4시)'
+    if _PM2_MARKER.search(text):
+        return '오후 2 (오후 4시 - 6시)'
+    if text == '오후':
+        return '오후'
+    return None
+
+
+def decide_slot(method: Optional[str], hope_time_text: Optional[str],
+                receipt_category: Optional[str] = None) -> Tuple[Optional[str], float]:
+    """Stage A 메인 entry. (slot, confidence) 반환. (None, 0.0) → '수동' wave.
+
+    우선순위: 택배(1.0) > 수령시간 카테고리가 구체적이면 그대로(0.95) >
+    고객희망수령시간 파싱(0.7~0.9) > 수령시간='오후'(광범위)인데 텍스트로도
+    못 좁히면 확인 플래그(0.5) > 배송방식 기본값(퀵=오전, 0.8) > (None, 0.0).
+    """
     if method in PARCEL_METHODS:
         return '무관', 1.0
+
+    category = normalize_receipt_category(receipt_category)
+    if category and category != '오후':
+        return category, 0.95
 
     if hope_time_text:
         window = parse_time_window(hope_time_text)
@@ -114,6 +148,9 @@ def decide_slot(method: Optional[str], hope_time_text: Optional[str]) -> Tuple[O
             slot = map_window_to_slot(window)
             confidence = 0.7 if window.is_split else 0.9
             return slot, confidence
+
+    if category == '오후':
+        return '특정시간 (희망수령시간 확인) ', 0.5
 
     if method in QUICK_METHODS:
         return '오전', 0.8
