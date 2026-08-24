@@ -118,6 +118,60 @@ def test_render_markdown_no_prev_week(tmp_path):
     assert "📥 입하" in md
 
 
+def test_render_markdown_includes_breakdown_section(tmp_path):
+    reports_dir = _copy_seeds(tmp_path / "reports")
+    p = R.render_markdown("2026-W32", reports_dir=reports_dir, out_dir=reports_dir)
+    md = p.read_text(encoding="utf-8")
+    # HTML의 build_operational_section 6개 차트에 대응하는 MD 섹션 — 전에는 누락돼 있었음
+    assert "### 📊 추이 · 구성" in md
+    assert "일별 입고 건수" in md
+    assert "일별 출고 CBM" in md
+    assert "입고 목적별 구성" in md
+    assert "CBM 채널별 구성" in md
+    assert "배송방식별 구성" in md
+    assert "기사별 차량이용률" in md
+    # 2026-W32.json 실제 값 일부가 그대로 반영되는지
+    assert "신시어리 기사님 (조희선)" in md
+    assert "54.2%" in md   # 이장훈 적재율
+    # 다음주 예측 + 피킹 목적별도 기존 표에 병합됨
+    assert "다음주 예측 볼륨" in md
+    assert "조립 376" in md
+    # 구성 breakdown도 WoW(직전주 대비) 표 — 이전엔 이번주 값만 보여줬음
+    assert "| 요일 | 2026-W31 | 2026-W32 | Δ |" in md
+    assert "| 목적 | 2026-W31 | 2026-W32 | Δ |" in md
+    assert "| 기사 | 2026-W31 | 2026-W32 | Δ |" in md
+
+
+def test_daily_wow_table_aligns_by_weekday_not_position():
+    cur = [{"date": "2026-08-04", "cnt": 10}]     # 화요일만 존재
+    prev = [{"date": "2026-07-28", "cnt": 4}]     # 화요일만 존재 (다른 주)
+    md = R._daily_wow_table("t", "s", cur, prev, "cnt", "CUR", "PREV",
+                             lambda v: f"{v}건", "pct", 15.0)
+    assert "| 화 | 4건 | 10건 | ▲+150%" in md
+    assert "| 월 | – | – | – |" in md   # 데이터 없는 요일은 공백 처리, 크래시 없음
+
+
+def test_daily_wow_table_flags_low_baseline_and_skips_misleading_delta():
+    # W33->W34 실사례: 0.08m³ -> 10.03m³ 처럼 근거리 0 분모 탓에 ▲+12437% 처럼 오독되는 delta가
+    # 나오면 안 됨 — CBM_유효 미입력 하한값 가능성을 ⚠️로 표시하고 Δ는 "–" 처리.
+    cur = [{"date": "2026-08-19", "cbm": 10.03}]   # 수요일
+    prev = [{"date": "2026-08-12", "cbm": 0.08}]   # 수요일 (전주), 1.0 미만 하한값
+    md = R._daily_wow_table("일별 출고 CBM", "s", cur, prev, "cbm", "CUR", "PREV",
+                             lambda v: f"{v:.2f}m³", "pct", 20.0, low_thresh=1.0)
+    assert "| 수 | 0.08m³ ⚠️ | 10.03m³ | – |" in md   # Δ 미표시, 오독 방지
+    assert "1.0 미만은 CBM_유효 등 실측 미입력" in md    # 캐비엇 안내 노출
+
+
+def test_category_wow_table_unmatched_key_shows_dash():
+    cur = [{"name": "신규채널", "cbm": 5.0, "cnt": 2}]
+    prev = [{"name": "기존채널", "cbm": 3.0, "cnt": 1}]
+    md = R._category_wow_table("t", "s", cur, prev, "name", "채널", "cbm", "CUR", "PREV",
+                                lambda v: f"{v}m³" if v else "미기재", "pct", 20.0,
+                                note_fn=lambda x: f'({x["cnt"]}건)')
+    assert "신규채널" in md and "기존채널" not in md   # prev에만 있던 채널은 행에 안 나옴(현재 기준 순회)
+    assert "| 신규채널 | – | 5.0m³ (2건) | – |" in md   # 매칭 안 되면 prev=–, Δ=–
+
+
 def test_render_all_archive_emits_markdown(tmp_path):
     reports_dir = _copy_seeds(tmp_path / "reports")
     R.render_all_archive(reports_dir=reports_dir, out_dir=tmp_path / "out")

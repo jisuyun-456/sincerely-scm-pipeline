@@ -381,6 +381,121 @@ def _prev_week_id(week_id, reports_dir=REPORTS_DIR):
     return weeks[i - 1] if i > 0 else None
 
 
+_WD = ["월", "화", "수", "목", "금", "토", "일"]
+
+
+def _weekday_map(items, val_key):
+    m = {}
+    for it in items:
+        try:
+            d = date.fromisoformat(it["date"])
+        except (KeyError, ValueError):
+            continue
+        m[_WD[d.weekday()]] = it[val_key]
+    return m
+
+
+def _breakdown_table(title, sub, rows, cols):
+    """구성 breakdown을 마크다운 표로 (HTML hbar_chart의 MD 대응). rows: list of tuple, cols: (헤더, 정렬키워드) 목록."""
+    if not rows:
+        return f"**{title}** — {sub}\n\n(데이터 없음)"
+    hdr = "| " + " | ".join(c for c, _ in cols) + " |\n" + "|" + "|".join(
+        (":--" if a == "l" else "--:") for _, a in cols) + "|"
+    body = "\n".join("| " + " | ".join(str(v) for v in r) + " |" for r in rows)
+    return f"**{title}** — {sub}\n\n{hdr}\n{body}"
+
+
+def _daily_wow_table(title, sub, cur_items, prev_items, val_key, cur_label, prev_label, fmt, delta_kind, thresh,
+                      low_thresh=None):
+    """일별 추이를 요일 정렬 WoW 표로 (날짜가 아닌 요일로 정렬해야 주간끼리 비교 가능).
+
+    low_thresh: HTML vbar_chart의 dim_below와 동일한 의도 — 값이 이 미만이면 CBM_유효 미입력 등으로
+    실제보다 낮게 잡힌 하한값일 가능성이 커, ⚠️ 표시하고 Δ%를 계산하지 않는다(근거리 0 대비 수천% 변화로
+    분모가 왜곡되는 것을 방지 — 2026-08-24 W33→W34 CBM 0.08→10.03(▲+12437%) 오독 사례로 확인).
+    """
+    cm = _weekday_map(cur_items, val_key)
+    pm = _weekday_map(prev_items or [], val_key)
+    rows, flagged = [], False
+
+    def _cell(v):
+        nonlocal flagged
+        if v is None:
+            return "–", False
+        low = low_thresh is not None and v < low_thresh
+        flagged = flagged or low
+        return fmt(v) + (" ⚠️" if low else ""), low
+
+    for wd in _WD[:5]:
+        c, p = cm.get(wd), pm.get(wd)
+        c_disp, c_low = _cell(c)
+        p_disp, p_low = _cell(p)
+        if c is not None and p is not None and not c_low and not p_low:
+            dd, _ = _delta(c, p, delta_kind, thresh=thresh)
+        else:
+            dd = "–"
+        rows.append((wd, p_disp, c_disp, dd))
+    tbl = _breakdown_table(title, sub, rows, [("요일", "l"), (prev_label, "r"), (cur_label, "r"), ("Δ", "r")])
+    if flagged:
+        tbl += f"\n\n> ⚠️ {low_thresh} 미만은 CBM_유효 등 실측 미입력으로 실제보다 낮게 잡힌 하한값일 수 있어 Δ% 계산 제외."
+    return tbl
+
+
+def _category_wow_table(title, sub, cur_items, prev_items, key_field, key_label, val_field, cur_label,
+                         prev_label, val_fmt, delta_kind, thresh, note_fn=None):
+    """목적/채널/방식/기사 등 카테고리 breakdown을 key_field 기준 매칭해 WoW 표로."""
+    prev_map = {p[key_field]: p[val_field] for p in (prev_items or [])}
+    rows = []
+    for c in cur_items:
+        k = c[key_field]
+        p = prev_map.get(k)
+        dd, _ = _delta(c[val_field], p, delta_kind, thresh=thresh) if p is not None else ("–", False)
+        cur_disp = val_fmt(c[val_field])
+        if note_fn:
+            cur_disp = f"{cur_disp} {note_fn(c)}"
+        rows.append((k, val_fmt(p) if p is not None else "–", cur_disp, dd))
+    return _breakdown_table(title, sub, rows, [(key_label, "l"), (prev_label, "r"), (cur_label, "r"), ("Δ", "r")])
+
+
+def _breakdown_section(cur, prev, week_id, prev_id, wr):
+    """⑴ 운영 KPI 상단 '추이 · 구성' — HTML build_operational_section의 6개 차트를 WoW 비교 표로 대응."""
+    blocks = []
+    cl, pl = week_id, (prev_id or "직전주")
+
+    ib, pib = cur.get("chart_inbound_by_date") or [], prev.get("chart_inbound_by_date") or []
+    blocks.append(_daily_wow_table("일별 입고 건수", f'합계 {cur.get("inbound_count")}건 · {wr}',
+                                    ib, pib, "cnt", cl, pl, lambda v: f"{v}건", "pct", 15.0))
+
+    ob, pob = cur.get("chart_outbound_cbm_by_date") or [], prev.get("chart_outbound_cbm_by_date") or []
+    blocks.append(_daily_wow_table("일별 출고 CBM", f'주간 Total {cur.get("weekly_cbm")} m³',
+                                    ob, pob, "cbm", cl, pl, lambda v: f"{v:.2f}m³", "pct", 20.0,
+                                    low_thresh=1.0))
+
+    pr, pprv = cur.get("chart_inbound_by_purpose") or [], prev.get("chart_inbound_by_purpose") or []
+    blocks.append(_category_wow_table(
+        "입고 목적별 구성", f'총 {cur.get("inbound_count")}건 · 수량 {cur.get("inbound_total_qty", 0):,} ea',
+        pr, pprv, "purpose", "목적", "cnt", cl, pl, lambda v: f"{v}건", "pct", 20.0,
+        note_fn=lambda x: f'({x["qty"]:,}ea)'))
+
+    ch, pch = cur.get("chart_cbm_by_channel") or [], prev.get("chart_cbm_by_channel") or []
+    blocks.append(_category_wow_table(
+        "CBM 채널별 구성", f'주간 Total {cur.get("weekly_cbm")} m³ · {cur.get("outbound_count")}건 · Shipment 배송파트너 기준',
+        ch, pch, "name", "채널", "cbm", cl, pl, lambda v: f"{v}m³" if v else "미기재", "pct", 20.0,
+        note_fn=lambda x: f'({x["cnt"]}건)'))
+
+    mt, pmt = cur.get("chart_by_method") or [], prev.get("chart_by_method") or []
+    blocks.append(_category_wow_table(
+        "배송방식별 구성", f'{cur.get("outbound_count")}건 기준 · 협력사는 파트너명 우선 분류',
+        mt, pmt, "method", "방식", "cbm", cl, pl, lambda v: f"{v}m³", "pct", 20.0))
+
+    du, pdu = cur.get("chart_driver_util") or [], prev.get("chart_driver_util") or []
+    blocks.append(_category_wow_table(
+        "기사별 차량이용률(%)", f'배차일지 median · {week_id} 실측',
+        du, pdu, "driver", "기사", "pct", cl, pl, lambda v: f"{v}%", "pp", 10.0,
+        note_fn=lambda x: f'({x["days"]}일)'))
+
+    return "\n\n".join(b for b in blocks if b)
+
+
 def _delta(cur, prev, kind="pp", lower_better=False, thresh=0.0):
     """(Δ표시, 이탈여부). kind: pp(%p차)·pct(%변화)·abs(절대차)·none."""
     if cur is None or prev is None or kind == "none":
@@ -498,8 +613,10 @@ ssot: pages/weekly_report_data.py · history/reports/{week_id}.json
         M("입고", "DTS 목표달성", "dts_target_pct", _pct, "pp", False, 5.0),
     ]
     # 자재
+    pk = cur.get("material_picking_by_purpose") or {}
+    pick_note = f'(조립 {pk.get("조립투입", 0)} · 생산 {pk.get("생산투입", 0)})' if pk else ""
     mt = [
-        M("자재", "자재 피킹수", "material_picking_count", _cnt, "pct", False, 15.0),
+        M("자재", "자재 피킹수", "material_picking_count", _cnt, "pct", False, 15.0, pick_note),
         M("자재", "피킹 취소", "material_picking_cancelled", _cnt, "abs", True, 5.0),
     ]
     # 출하
@@ -513,6 +630,8 @@ ssot: pages/weekly_report_data.py · history/reports/{week_id}.json
         M("출하", "In-Full", "otif_infull_pct", _pct, "pp", False, 2.0),
         M("출하", "약속납기 전환", "promise_conversion_pct", _pct, "pp", False, 2.0),
         M("출하", "배송 클레임(미결)", "claim_open", _cnt, "abs", True, 1.0),
+        M("출하", "다음주 예측 볼륨", "forecast_count", _cnt, "none",
+          note=f'(피크 {cur.get("forecast_peak_day", "-")}요일 · {cur.get("forecast_cbm", "-")}m³ · {cur.get("forecast_data_weeks", "-")}주 패턴)'),
     ]
 
     # 이탈 신호(BLUF 아래) — 예외중심
@@ -525,6 +644,13 @@ ssot: pages/weekly_report_data.py · history/reports/{week_id}.json
 
     L.append("## ⑴ 운영 KPI — 프로세스 단계별  〔자동〕")
     L.append("> 입하 → 검수 → 입고 → 자재 → 출하. 정상(`–`)은 넘기고 **굵은 이탈(▲▼)만 토론**.\n")
+
+    bd = _breakdown_section(cur, prev, week_id, prev_id, wr)
+    if bd:
+        L.append("### 📊 추이 · 구성  〔자동〕")
+        L.append(bd)
+        L.append("")
+
     for title, rows in [("📥 입하 (Inbound Arrival)", ib), ("🔎 검수 (Inspection / QC)", qc),
                         ("📦 입고 (GR / Putaway)", gr), ("🧰 자재 (Materials)", mt),
                         ("🚚 출하 (Outbound / Shipping)", ob)]:
