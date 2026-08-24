@@ -138,3 +138,75 @@ def compute_week_kpis(start: date, end: date, week_label: str) -> dict:
         "promised_conversion_rate": promised_conversion_rate,
         "otif_n": len(week_otif),
     }
+
+
+def _parse_saved_report(path: Path, week_label: str, date_range: str) -> dict:
+    """CI가 리포트를 생성했던 주(W31, W34)는 재조회 대신 저장된 .md에서
+    파싱 — tms_weekly_runner._load_prior_kpis와 동일한 정규식 패턴을 사용."""
+    text = path.read_text(encoding="utf-8")
+
+    def _pct(pattern):
+        m = re.search(pattern, text)
+        return float(m.group(1)) if m else None
+
+    m_ships = re.search(r"분석 대상:\s*(\d+)건", text)
+    m_util = re.search(r"적재율 median.*?\*\*([\d.]+)%\*\*", text)
+    return {
+        "week_label": week_label,
+        "date_range": date_range,
+        "total_shipments": int(m_ships.group(1)) if m_ships else None,
+        "internal_rate": _pct(r"내부 소화율.*?\|\s*([\d.]+)%"),
+        "gogox_rate": _pct(r"고고엑스 비중:\s*([\d.]+)%"),
+        "on_time_rate": _pct(r"OTIF On-Time율.*?\|\s*([\d.]+)%"),
+        "in_full_rate": _pct(r"In-Full율.*?\|\s*([\d.]+)%"),
+        "util_median": m_util and float(m_util.group(1)),
+        "promised_conversion_rate": _pct(r"약속납기일 실측 전환율.*?\|\s*([\d.]+)%"),
+    }
+
+
+def _row(k: dict) -> str:
+    util = f"{k['util_median']}%" if k["util_median"] is not None else "N/A"
+    ships = k["total_shipments"] if k["total_shipments"] is not None else "N/A"
+    return (
+        f"| {k['week_label']} ({k['date_range']}) | {ships}건 | "
+        f"{k['internal_rate']}% | {k['gogox_rate']}% | {k['on_time_rate']}% | "
+        f"{k['in_full_rate']}% | {util} | {k['promised_conversion_rate']}% |"
+    )
+
+
+def build_comparison(weeks: list[dict]) -> str:
+    header = (
+        "# TMS 주간 KPI 비교 — W31~W34\n\n"
+        f"> 자동 생성: {date.today().isoformat()} | "
+        "W32·W33은 CI 실패로 당시 리포트 미생성 — 현재 Airtable 데이터를 "
+        "해당 주 날짜범위로 재조회해 재구성한 값 (아래 '주의' 참고)\n\n"
+        "---\n\n"
+        "| 주차 | 총 볼륨 | 내부 소화율 | 고고엑스 | OTIF On-Time | In-Full | "
+        "차량적재율 median | 약속납기 전환율 |\n"
+        "|---|---|---|---|---|---|---|---|\n"
+    )
+    rows = "\n".join(_row(k) for k in weeks)
+    footer = (
+        "\n\n---\n\n"
+        "## 주의사항 (재구성 데이터 한계)\n\n"
+        "- **W32·W33**: 당시 CI가 리포트를 생성하지 못해 로그·리포트가 존재하지 않았음. "
+        "이번에 현재 Airtable 상태를 해당 주 날짜범위로 필터링해 재구성한 값 — "
+        "Immutable Ledger 원칙상 과거 레코드는 보존되어 있으나, 사후 보정 레코드가 "
+        "있었다면 당시 실측치와 미세하게 다를 수 있음.\n"
+        "- **차량한도**는 재구성/원본 리포트 공통으로 *현재* 라이브 값을 사용 — "
+        "W31 시점 차량한도가 달랐다면 W31 적재율 median은 당시 실제값과 다를 수 있음.\n"
+        "- W31·W34는 기존 저장된 리포트에서 파싱한 값 (재조회 아님).\n"
+    )
+    return header + rows + footer
+
+
+if __name__ == "__main__":
+    w31 = _parse_saved_report(OUTPUTS_DIR / "TMS-2026-W31.md", "2026-W31", "07/28~08/01")
+    w32 = compute_week_kpis(date(2026, 8, 3), date(2026, 8, 7), "2026-W32")
+    w33 = compute_week_kpis(date(2026, 8, 10), date(2026, 8, 14), "2026-W33")
+    w34 = _parse_saved_report(OUTPUTS_DIR / "TMS-2026-W34.md", "2026-W34", "08/17~08/21")
+
+    report = build_comparison([w31, w32, w33, w34])
+    out_path = OUTPUTS_DIR / "TMS-Comparison-W31-W34.md"
+    out_path.write_text(report, encoding="utf-8")
+    print(f"저장: {out_path}")
