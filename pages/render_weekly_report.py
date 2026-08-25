@@ -384,6 +384,11 @@ def _prev_week_id(week_id, reports_dir=REPORTS_DIR):
 _WD = ["월", "화", "수", "목", "금", "토", "일"]
 
 
+def _week_monday(week_id):
+    y, w = week_id.split("-W")
+    return date.fromisocalendar(int(y), int(w), 1)
+
+
 def _weekday_map(items, val_key):
     m = {}
     for it in items:
@@ -393,6 +398,38 @@ def _weekday_map(items, val_key):
             continue
         m[_WD[d.weekday()]] = it[val_key]
     return m
+
+
+def _weekday_item_map(items):
+    m = {}
+    for it in items:
+        try:
+            d = date.fromisoformat(it["date"])
+        except (KeyError, ValueError):
+            continue
+        m[_WD[d.weekday()]] = it
+    return m
+
+
+def _weekday_date_map(items):
+    m = {}
+    for it in items:
+        try:
+            d = date.fromisoformat(it["date"])
+        except (KeyError, ValueError):
+            continue
+        m[_WD[d.weekday()]] = d
+    return m
+
+
+def _coverage_suffix(it):
+    """CBM_유효 등 일부 건만 반영된 경우 (n_valid/n건) 표기 — 값이 작게 나온 이유를 셀 옆에서 바로 확인 가능하게."""
+    if not it:
+        return ""
+    n, nv = it.get("n"), it.get("n_valid")
+    if n is not None and nv is not None and nv < n:
+        return f" ({nv}/{n}건)"
+    return ""
 
 
 def _breakdown_table(title, sub, rows, cols):
@@ -406,34 +443,46 @@ def _breakdown_table(title, sub, rows, cols):
 
 
 def _daily_wow_table(title, sub, cur_items, prev_items, val_key, cur_label, prev_label, fmt, delta_kind, thresh,
-                      low_thresh=None):
+                      low_thresh=None, week_id=None):
     """일별 추이를 요일 정렬 WoW 표로 (날짜가 아닌 요일로 정렬해야 주간끼리 비교 가능).
 
     low_thresh: HTML vbar_chart의 dim_below와 동일한 의도 — 값이 이 미만이면 CBM_유효 미입력 등으로
     실제보다 낮게 잡힌 하한값일 가능성이 커, ⚠️ 표시하고 Δ%를 계산하지 않는다(근거리 0 대비 수천% 변화로
     분모가 왜곡되는 것을 방지 — 2026-08-24 W33→W34 CBM 0.08→10.03(▲+12437%) 오독 사례로 확인).
+
+    week_id: 요일 라벨에 병기할 실제 날짜의 기준 주. 지정하면 그 주의 월요일부터 계산해 데이터
+    유무와 무관하게 항상 "이번 주(cur_label)" 날짜를 보여준다 — 없으면(단위 테스트 등) cur_items의
+    날짜로 추정 폴백(그마저 없으면 prev_items). 이게 없으면 그 요일에 데이터가 없는 쪽 주의 날짜가
+    잘못 라벨에 붙을 수 있음(예: 이번 주 월요일 출고가 0건이면 지난주 월요일 날짜가 표시됨).
     """
     cm = _weekday_map(cur_items, val_key)
     pm = _weekday_map(prev_items or [], val_key)
+    cim = _weekday_item_map(cur_items)
+    pim = _weekday_item_map(prev_items or [])
+    mon = _week_monday(week_id) if week_id else None
+    cdm = _weekday_date_map(cur_items)
+    pdm = _weekday_date_map(prev_items or [])
     rows, flagged = [], False
 
-    def _cell(v):
+    def _cell(v, it):
         nonlocal flagged
         if v is None:
             return "–", False
         low = low_thresh is not None and v < low_thresh
         flagged = flagged or low
-        return fmt(v) + (" ⚠️" if low else ""), low
+        return fmt(v) + _coverage_suffix(it) + (" ⚠️" if low else ""), low
 
-    for wd in _WD[:5]:
+    for i, wd in enumerate(_WD[:5]):
         c, p = cm.get(wd), pm.get(wd)
-        c_disp, c_low = _cell(c)
-        p_disp, p_low = _cell(p)
+        c_disp, c_low = _cell(c, cim.get(wd))
+        p_disp, p_low = _cell(p, pim.get(wd))
         if c is not None and p is not None and not c_low and not p_low:
             dd, _ = _delta(c, p, delta_kind, thresh=thresh)
         else:
             dd = "–"
-        rows.append((wd, p_disp, c_disp, dd))
+        dref = (mon + timedelta(days=i)) if mon else (cdm.get(wd) or pdm.get(wd))
+        wd_label = f"{wd} ({dref.strftime('%m-%d')})" if dref else wd
+        rows.append((wd_label, p_disp, c_disp, dd))
     tbl = _breakdown_table(title, sub, rows, [("요일", "l"), (prev_label, "r"), (cur_label, "r"), ("Δ", "r")])
     if flagged:
         tbl += f"\n\n> ⚠️ {low_thresh} 미만은 CBM_유효 등 실측 미입력으로 실제보다 낮게 잡힌 하한값일 수 있어 Δ% 계산 제외."
@@ -463,12 +512,13 @@ def _breakdown_section(cur, prev, week_id, prev_id, wr):
 
     ib, pib = cur.get("chart_inbound_by_date") or [], prev.get("chart_inbound_by_date") or []
     blocks.append(_daily_wow_table("일별 입고 건수", f'합계 {cur.get("inbound_count")}건 · {wr}',
-                                    ib, pib, "cnt", cl, pl, lambda v: f"{v}건", "pct", 15.0))
+                                    ib, pib, "cnt", cl, pl, lambda v: f"{v}건", "pct", 15.0,
+                                    week_id=week_id))
 
     ob, pob = cur.get("chart_outbound_cbm_by_date") or [], prev.get("chart_outbound_cbm_by_date") or []
     blocks.append(_daily_wow_table("일별 출고 CBM", f'주간 Total {cur.get("weekly_cbm")} m³',
                                     ob, pob, "cbm", cl, pl, lambda v: f"{v:.2f}m³", "pct", 20.0,
-                                    low_thresh=1.0))
+                                    low_thresh=1.0, week_id=week_id))
 
     pr, pprv = cur.get("chart_inbound_by_purpose") or [], prev.get("chart_inbound_by_purpose") or []
     blocks.append(_category_wow_table(

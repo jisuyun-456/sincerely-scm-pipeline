@@ -318,6 +318,8 @@ def kpi_tms(mon, fri):
     """
     ships = G.fetch_shipments_tms(mon, fri)
     by_date = defaultdict(float)
+    by_date_n = defaultdict(int)
+    by_date_nvalid = defaultdict(int)
     ch_cbm = defaultdict(float)
     ch_cnt = defaultdict(int)
     total_cbm = 0.0
@@ -329,9 +331,12 @@ def kpi_tms(mon, fri):
             continue
         count += 1
         cbm_raw = float(f.get(G.TF_CBM_VALID) or 0)
-        cbm = cbm_raw if CBM_MIN <= cbm_raw <= CBM_OUTLIER_CAP else 0.0   # 이상치 제외
+        valid = CBM_MIN <= cbm_raw <= CBM_OUTLIER_CAP
+        cbm = cbm_raw if valid else 0.0   # 이상치 제외
         total_cbm += cbm
         by_date[d] += cbm
+        by_date_n[d] += 1
+        by_date_nvalid[d] += 1 if valid else 0
         display = G.PARTNER_GROUP.get(_ship_partner(f), _ship_partner(f)) or "미기재"
         ch_cbm[display] += cbm
         ch_cnt[display] += 1
@@ -357,7 +362,10 @@ def kpi_tms(mon, fri):
         "outbound_count": count,
         "weekly_cbm": total_cbm,
         "warehouse_util_pct": round(total_cbm / WAREHOUSE_CBM * 100, 1),
-        "chart_outbound_cbm_by_date": [{"date": d, "cbm": round(v, 2)} for d, v in sorted(by_date.items())],
+        "chart_outbound_cbm_by_date": [
+            {"date": d, "cbm": round(v, 2), "n": by_date_n[d], "n_valid": by_date_nvalid[d]}
+            for d, v in sorted(by_date.items())
+        ],
         "chart_cbm_by_channel": channels,
         "chart_by_method": method_chart,
     }

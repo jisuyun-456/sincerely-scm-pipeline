@@ -150,7 +150,7 @@ def test_daily_wow_table_aligns_by_weekday_not_position():
     prev = [{"date": "2026-07-28", "cnt": 4}]     # 화요일만 존재 (다른 주)
     md = R._daily_wow_table("t", "s", cur, prev, "cnt", "CUR", "PREV",
                              lambda v: f"{v}건", "pct", 15.0)
-    assert "| 화 | 4건 | 10건 | ▲+150%" in md
+    assert "| 화 (08-04) | 4건 | 10건 | ▲+150%" in md   # 요일 라벨에 실제 날짜(현재주 기준) 병기
     assert "| 월 | – | – | – |" in md   # 데이터 없는 요일은 공백 처리, 크래시 없음
 
 
@@ -161,7 +161,7 @@ def test_daily_wow_table_flags_low_baseline_and_skips_misleading_delta():
     prev = [{"date": "2026-08-12", "cbm": 0.08}]   # 수요일 (전주), 1.0 미만 하한값
     md = R._daily_wow_table("일별 출고 CBM", "s", cur, prev, "cbm", "CUR", "PREV",
                              lambda v: f"{v:.2f}m³", "pct", 20.0, low_thresh=1.0)
-    assert "| 수 | 0.08m³ ⚠️ | 10.03m³ | – |" in md   # Δ 미표시, 오독 방지
+    assert "| 수 (08-19) | 0.08m³ ⚠️ | 10.03m³ | – |" in md   # Δ 미표시, 오독 방지
     assert "1.0 미만은 CBM_유효 등 실측 미입력" in md    # 캐비엇 안내 노출
 
 

@@ -76,6 +76,7 @@ L1 `~/.claude/CLAUDE.md` "Always respond in English" 정책을 **상속**. 예�
 > - **TMS 한정 전략 프레임워크** (5 Forces·SWOT·BCG·3 Horizons·MECE·Issue Tree·Pyramid) → D-TMS1 / **범 프로젝트 PM 프레임워크** → D3 consulting-pm-expert
 > - **Lane·CBM·노선 비용** → SK-09 tms-cost-lane (전술) / **거점·소싱·네트워크 재설계** → D1 scm-logistics-expert (전략)
 > - **회의 메모·텍스트·PDF 입력 → 마크다운 회의록** → SK-08 meeting-analysis / **미션 Sprint 결과 합성** → harness meeting-coordinator (미션 모드 한정)
+> - **물류팀 위클리 리포트(WMS+TMS 통합 서사형, `history/reports/`)** → SK-10 scm-weekly-report / **TMS 단독 raw 분석 덤프(`_AutoResearch/SCM/outputs/TMS-*.md`, AutoResearch)** → SK-06 tms-otif-kpi (2026-08-25 확정, 서로 다른 산출물이니 혼동 금지)
 >
 > **모델 할당 (L1 기본 sonnet override):** 세밀한 운영 SK-01~05/07~09는 sonnet 준수. SK-06 + 모든 D-* (D-TMS1/2, D1~D3)는 깊은 추론·전략 산출이므로 opus 정당화됨.
 
@@ -91,6 +92,7 @@ L1 `~/.claude/CLAUDE.md` "Always respond in English" 정책을 **상속**. 예�
 | 피킹, 패킹, Wave, SSCC, 출고지시, 박스라벨, Packing List, Shipping Mark | wms-outbound (SK-04) | sonnet |
 | 운송장, 택배, 로젠, POD, 배차, 드라이버 | tms-shipment (SK-05) | sonnet |
 | OTIF, KPI, Dock-to-Stock 분석, 소화율, 약속납기, 차량이용률, AutoResearch | tms-otif-kpi (SK-06) | **opus** |
+| 위클리 리포트, 물류팀 리포트, 주간 리포트(물류팀 발행용) | scm-weekly-report (SK-10) — WMS+TMS 통합 5단계 서사형 WoW 리포트(`history/reports/`). TMS 단독 raw 덤프(AutoResearch)는 SK-06 소관 — 헷갈리면 사용자 확인 | sonnet |
 | 운임 비용, lane, 노선, CBM당 비용, 발송 모드, 통합 ROI, 비용 이상, 물류비, lane 수익성, 배송비 분석 | tms-cost-lane (SK-09) | sonnet |
 | 반품, 역물류, RESTOCK, DISPOSE, NCR, 불량 | wms-return (SK-07) | sonnet |
 | 회의록, 미팅노트, 주간 운영 회의, 회의 분석 | meeting-analysis (SK-08) | sonnet |
