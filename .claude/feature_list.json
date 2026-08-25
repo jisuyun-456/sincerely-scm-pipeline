@@ -1045,50 +1045,50 @@
       "title": "위클리 리포트 ⑴운영KPI — 9개 지표가 주차 스코프 없이 date.today() 상대 롤링/전체누적으로 계산됨 (WoW Δ 항상 무의미)",
       "priority": "high",
       "domain": "weekly-report",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-08-25",
       "source": "scm-weekly-kpi-audit workflow (16 findings, 21 agents, 전건 adversarial verify 통과)",
-      "notes": "kpi_inspection_quality(days=90)/kpi_shipping_unit_cost(days=30)/kpi_order_cycle(days=90)/kpi_otif_claims(OTIF부분=필터없이 테이블 전체 무기한 pull, claims부분=days=90) 모두 compute(week_id)에서 week_id 미전달, date.today() 기준 계산 — 영향 행: FPY(1차합격)·AQL 합격률·검수 처리(중위)·CBM당 배송비(중위)·오더 사이클(중위)·OTIF 정시·In-Full·약속납기 전환(전부 high) + 다음주 예측 볼륨(medium, kpi_next_week_forecast도 today 기준). W33/W34 재동결 시 8개 필드 byte-identical로 실측 확인. 수정 시 OTIF/오더사이클처럼 원래 전사 누적/구조적 지표로 의도된 것과 진짜 주간 지표로 의도된 것 구분 필요 — 사용자 확인 후 착수."
+      "notes": "kpi_inspection_quality(days=90)/kpi_shipping_unit_cost(days=30)/kpi_order_cycle(days=90)/kpi_otif_claims(OTIF부분=필터없이 테이블 전체 무기한 pull, claims부분=days=90) 모두 compute(week_id)에서 week_id 미전달, date.today() 기준 계산 — 영향 행: FPY(1차합격)·AQL 합격률·검수 처리(중위)·CBM당 배송비(중위)·오더 사이클(중위)·OTIF 정시·In-Full·약속납기 전환(전부 high) + 다음주 예측 볼륨(medium, kpi_next_week_forecast도 today 기준). W33/W34 재동결 시 8개 필드 byte-identical로 실측 확인. 수정 시 OTIF/오더사이클처럼 원래 전사 누적/구조적 지표로 의도된 것과 진짜 주간 지표로 의도된 것 구분 필요 — 사용자 확인 후 착수. [2026-08-25 해결] kpi_inspection_quality/kpi_shipping_unit_cost/kpi_order_cycle/kpi_otif_claims 전부 mon/fri 주차 스코프로 전환(사용자 결정: 주차 스코프 채택). 재동결 검증: order_cycle_count 11640(동일)->512/799(주별로 실제 다름), otif_total 2507(동일)->54/62, ship_cost_per_cbm_median 59499(동일)->77959/59611 — WoW Δ가 이제 실제 신호를 담음."
     },
     {
       "id": "WKPI-AUDIT-B-NOARRIVAL-SEMANTICS",
       "title": "위클리 리포트 미입하 발생 KPI — sticky 체크박스라 이미 도착한 건도 \"납기 재확인\" 후속조치로 노출",
       "priority": "high",
       "domain": "weekly-report",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-08-25",
       "source": "scm-weekly-kpi-audit workflow",
-      "notes": "kpi_no_arrival()이 미입하 발생이력(sticky, 한번 켜지면 계속 true) 체크박스로 카운트 — 180일 실측 134건 중 131건(97.8%)이 이미 실제입하일 존재, 그중 54건(40%)은 정시/조기 도착. render_weekly_report.py 743행 \"미입하 후속 → 조치: 납기 재확인\"이 이미 배송완료된 건에 대해 잘못된 액션 권고. \"진짜 미도착\"(실제입하일 blank) 기준으로 재정의 필요."
+      "notes": "kpi_no_arrival()이 미입하 발생이력(sticky, 한번 켜지면 계속 true) 체크박스로 카운트 — 180일 실측 134건 중 131건(97.8%)이 이미 실제입하일 존재, 그중 54건(40%)은 정시/조기 도착. render_weekly_report.py 743행 \"미입하 후속 → 조치: 납기 재확인\"이 이미 배송완료된 건에 대해 잘못된 액션 권고. \"진짜 미도착\"(실제입하일 blank) 기준으로 재정의 필요. [2026-08-25 해결] 미입하발생이력(sticky) 대신 실제입하일 blank(현재도 미도착) 기준으로 재정의(사용자 결정). W33 4->1, W34 4->0으로 재계산 — 이미 도착한 건에 납기재확인 액션 노출되던 문제 해결. 예외표 0건 시 상세 \"없음\" 표기 폴리시도 같이 정리."
     },
     {
       "id": "WKPI-AUDIT-C-PNA-SUBSTRING",
       "title": "자재 피킹수 — PNA 문자열매칭이 다영기획(외주) 건을 내부피킹으로 오카운트 (~10% 과대)",
       "priority": "high",
       "domain": "weekly-report",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-08-25",
       "source": "scm-weekly-kpi-audit workflow",
-      "notes": "kpi_material_picking() 281행 \"PNA\" in outitem 체크가 실제 장소가 아니라 출고자재 문자열 중간의 고객 프로젝트코드(PNA53458_...)에 매칭 — 진짜 내부위치는 \"에이원지식산업센터\" 하나뿐, PNA 포함 위치는 존재하지 않음. W34 라이브검증: matched 436 중 42건이 실제 목적지=다영기획(오탐), 보정후 count 378 vs 리포트 420(+11%). W33은 1건 오탐(353→352). WoW 성장률도 실제보다 부풀려짐(리포트 +19~20% vs 실제 +7.4%). 픽스: PNA 매칭 제거하고 에이원지식산업센터 단일 조건 또는 실제 || 구분 마지막 세그먼트(진짜 장소)만 검사."
+      "notes": "kpi_material_picking() 281행 \"PNA\" in outitem 체크가 실제 장소가 아니라 출고자재 문자열 중간의 고객 프로젝트코드(PNA53458_...)에 매칭 — 진짜 내부위치는 \"에이원지식산업센터\" 하나뿐, PNA 포함 위치는 존재하지 않음. W34 라이브검증: matched 436 중 42건이 실제 목적지=다영기획(오탐), 보정후 count 378 vs 리포트 420(+11%). W33은 1건 오탐(353→352). WoW 성장률도 실제보다 부풀려짐(리포트 +19~20% vs 실제 +7.4%). 픽스: PNA 매칭 제거하고 에이원지식산업센터 단일 조건 또는 실제 || 구분 마지막 세그먼트(진짜 장소)만 검사. [2026-08-25 해결] \"PNA\" 문자열매칭 조건 제거, 에이원지식산업센터 단일 조건으로 수정. 재동결 검증: W33 353->352, W34 420->378 (다영기획 외주건 오카운트 제거)."
     },
     {
       "id": "WKPI-AUDIT-D-DRIVER-UTIL-OUTLIER",
       "title": "기사별 차량이용률 — 오버부킹 이상치 미처리로 박종성 271.1%(n=2) 왜곡",
       "priority": "high",
       "domain": "weekly-report",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-08-25",
       "source": "scm-weekly-kpi-audit workflow",
-      "notes": "kpi_driver_util() 374-393행, CBM처럼 CBM_MIN/CBM_OUTLIER_CAP 클리핑 없음 + Airtable 자체 오버부킹 플래그(🚨 1일 오버부킹)도 미fetch. W33 박종성 271.1%는 108.7%·433.5%(오버부킹 플래그 있음, 4.3배 초과, 번들 다회전 추정) 단 2건의 median. utils/vehicle_util.py(SK-06 tms_weekly_runner가 사용)에 이미 median(loaded)+n_over/mean_capped 방식으로 해결된 로직 존재 — SK-10 위클리 리포트 파이프라인에 이식 안 됨. 이식 또는 outlier cap 추가 필요."
+      "notes": "kpi_driver_util() 374-393행, CBM처럼 CBM_MIN/CBM_OUTLIER_CAP 클리핑 없음 + Airtable 자체 오버부킹 플래그(🚨 1일 오버부킹)도 미fetch. W33 박종성 271.1%는 108.7%·433.5%(오버부킹 플래그 있음, 4.3배 초과, 번들 다회전 추정) 단 2건의 median. utils/vehicle_util.py(SK-06 tms_weekly_runner가 사용)에 이미 median(loaded)+n_over/mean_capped 방식으로 해결된 로직 존재 — SK-10 위클리 리포트 파이프라인에 이식 안 됨. 이식 또는 outlier cap 추가 필요. [2026-08-25 해결] 오버부킹 필드(fldwrsxDL2VFdmUKo) fetch 추가, driver별 n_over 카운트 반환+렌더 note에 노출(median 자체는 미클리핑 — CBM처럼 뭉개면 108.7%/433.5% 구분이 사라져서 투명성으로 대응). 박종성 W33 271.1%(2일, 오버부킹 2건)로 표시."
     },
     {
       "id": "WKPI-AUDIT-E-LATENT-EDGE-CASES",
       "title": "위클리 리포트 — 현재 /usr/bin/bash 영향이나 재현 가능한 4건 엣지케이스 (입하완료상태·취소건·미기재파트너·공란출고자재)",
       "priority": "medium",
       "domain": "weekly-report",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-08-25",
       "source": "scm-weekly-kpi-audit workflow",
-      "notes": "1) generate_scm_report.analyze_inbound()이 \"입하완료\" 정확매치만 완료로 인정, \"입하완료(협력사)\" 등 비공란 상태는 완료/미확인 어느쪽에도 안 잡히고 분모에는 포함 → 완료율 왜곡(2026-06-19 마지막 발생, W33/W34엔 없음). 2) analyze_inbound()이 취소(F_CANCEL=취소) 건 미제외 — 같은 테이블 쓰는 analyze_qc()는 제외함(비대칭). 8주 윈도우에서 취소 1건 확인, W33/W34엔 0건. 3) kpi_tms() 배송방식별 구성 — 미기재(배송파트너 링크 없음) 건이 else분기로 퀵(수도권)에 조용히 합산(현재 CBM=0/이상치제외라 영향없음). 4) kpi_material_picking() 공란 출고자재(W33 5건/W34 2건) 조용히 제외, \"확인된 타목적지\" vs \"미입력\" 구분 불가."
+      "notes": "1) generate_scm_report.analyze_inbound()이 \"입하완료\" 정확매치만 완료로 인정, \"입하완료(협력사)\" 등 비공란 상태는 완료/미확인 어느쪽에도 안 잡히고 분모에는 포함 → 완료율 왜곡(2026-06-19 마지막 발생, W33/W34엔 없음). 2) analyze_inbound()이 취소(F_CANCEL=취소) 건 미제외 — 같은 테이블 쓰는 analyze_qc()는 제외함(비대칭). 8주 윈도우에서 취소 1건 확인, W33/W34엔 0건. 3) kpi_tms() 배송방식별 구성 — 미기재(배송파트너 링크 없음) 건이 else분기로 퀵(수도권)에 조용히 합산(현재 CBM=0/이상치제외라 영향없음). 4) kpi_material_picking() 공란 출고자재(W33 5건/W34 2건) 조용히 제외, \"확인된 타목적지\" vs \"미입력\" 구분 불가. [2026-08-25 해결] analyze_inbound(): 취소건 제외 + 입하완료 prefix 매칭(입하완료(협력사) 포함)으로 수정. kpi_tms 배송방식별: 미기재 파트너 별도 버킷 분리(퀵 흡수 방지). kpi_material_picking 공란 출고자재는 docstring에 blind spot으로 문서화만(수정 보류, 근거 부족)."
     }
   ]
 }

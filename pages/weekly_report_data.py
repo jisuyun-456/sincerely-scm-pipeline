@@ -87,6 +87,7 @@ TBL_PARTNER = "tblI4ZXrte7WyhXyd"
 F_D_DATE = "fldZh2mZDIPQXfOcO"           # 날짜
 F_D_PARTNER = "fldIQqaoj2CYlCSFH"        # 배송파트너 (link)
 F_D_UTIL = "fldyQAoRZFn6oeQ0E"           # 차량이용률(%) = Total_CBM/차량한도 (A3 권위)
+F_D_OVERBOOK = "fldwrsxDL2VFdmUKo"       # 오버부킹 flag (Airtable 자체 판정, formula)
 F_PARTNER_NAME = "fldUCl2kD890FqRkt"     # 배송파트너 이름
 CBM_OUTLIER_CAP = 15.0                   # CBM_유효 이상치 상한 (출하단가 per-CBM 왜곡 방지)
 CBM_MIN = 0.1                            # 미소 CBM 제외 (per-CBM ratio 폭주 방지)
@@ -97,6 +98,7 @@ TBL_CLAIM = "tblIZ9kco1QDpUz0u"
 F_OTIF_ONTIME = "fldoUQOue0umGJ2xk"      # On_Time
 F_OTIF_INFULL = "fldiFhyU1k9YsnoGh"      # In_Full
 F_OTIF_DELAY = "fldZJD4YRYg8Mr6yi"       # 납기차이일
+F_OTIF_DELIVERED = "fldLKPPns5EXUJZ8y"   # 실제배송일 (lookup — list 또는 scalar ISO문자열 혼재)
 F_CLAIM_DATE = "fldiNGNqgmQH1MFB7"       # 발생일
 F_CLAIM_STATUS = "fldevAs6IBB0rN2MY"     # 처리상태
 
@@ -242,9 +244,14 @@ def kpi_inbound(mon, fri):
 
 
 def kpi_no_arrival(mon, fri):
-    """미입하 발생 — 미입하발생이력=TRUE ∩ 입하예상일 W31, 협력사별."""
+    """미입하 발생 — 입하예상일 보고 주차 ∩ 실제입하일 아직 미기재(현재도 미도착), 협력사별.
+
+    2026-08-25까지 미입하발생이력(sticky — 한번 플래그되면 실제 도착해도 계속 TRUE) 기준이라
+    이미 도착(97.8%, 그중 40%는 정시/조기)한 건도 "납기 재확인" 후속조치로 계속 노출되던 버그.
+    실제입하일 blank(=현재도 진짜 미도착)로 재정의 — 이력 카운트가 아니라 살아있는 미해결 큐.
+    """
     formula = (
-        f"AND({{미입하 발생이력}}=TRUE(), {{입하예상일}}!='', "
+        f"AND({{실제입하일}}='', {{입하예상일}}!='', "
         f"IS_AFTER({{입하예상일}}, '{(mon - timedelta(days=1)).isoformat()}'), "
         f"IS_BEFORE({{입하예상일}}, '{(fri + timedelta(days=1)).isoformat()}'))"
     )
@@ -261,10 +268,18 @@ def kpi_no_arrival(mon, fri):
 
 
 def kpi_material_picking(mon, fri):
-    """자재 피킹수 328 = 이동목적∈{조립투입,생산투입} ∩ 출고자재에 '에이원지식산업센터' 또는 'PNA' 포함, 취소 제외.
+    """자재 피킹수 = 이동목적∈{조립투입,생산투입} ∩ 출고자재에 '에이원지식산업센터' 포함, 취소 제외.
 
-    출고자재 필드는 'PT코드-품명 || 장소' 형식으로 장소가 에이원지식산업센터/PNA(내부 조립·생산 투입 경로).
-    매칭 340(조립320+생산20) 중 취소 12 제외 → 328. (project 필드가 아니라 출고자재 문자열 안에 존재 — 실측 확인)
+    출고자재 필드는 'PT코드-품명 || 장소' 또는 'PT코드-품명 || PNA내부과제코드_품명 || 장소' 형식.
+    2026-08-25까지는 'PNA' 포함 여부도 내부 매칭 조건으로 썼으나, 2026-08-25 감사에서 'PNA'가
+    실제 장소가 아니라 3세그먼트 형식의 중간 세그먼트(고객 프로젝트코드, 예: 'PNA53458_...')에
+    매칭되어 다영기획 등 외주처 건을 내부 피킹으로 오카운트하는 것으로 확인(W34 기준 42/420건,
+    약 10% 과대). 4,985건(W31~W34) 전수 스캔 결과 진짜 장소값 중 'PNA'를 포함하는 값은 하나도
+    없고 내부 장소는 '에이원지식산업센터' 단일값뿐이라 PNA 조건을 제거해도 누락 없음.
+    (project 필드가 아니라 출고자재 문자열 안에 장소가 존재 — 실측 확인)
+
+    출고자재가 완전 공란인 레코드(드묾, 주당 한 자릿수)는 매칭에서 제외되며 '확인된 타목적지'와
+    '미입력'을 구분할 방법이 없다 — 알려진 blind spot, 별도 필드가 없어 현재는 수정 보류.
     """
     formula = (
         f"AND(OR({{이동목적}}='조립투입', {{이동목적}}='생산투입'), "
@@ -274,11 +289,11 @@ def kpi_material_picking(mon, fri):
     recs = fetch(BASE_WMS, TBL_MOV, PAT_WMS, byid=True,
                  fields=[F_MOV_PURPOSE, F_MOV_OUTITEM, F_MOV_CANCEL], formula=formula)
     matched, cancelled = 0, 0
-    by_purpose = Counter()          # 매칭 건수 (취소 포함) — 리포트 '조립 320 · 생산 20'
+    by_purpose = Counter()          # 매칭 건수 (취소 포함)
     for r in recs:
         f = r["fields"]
         outitem = f.get(F_MOV_OUTITEM) or ""
-        if "에이원지식산업센터" not in outitem and "PNA" not in outitem:
+        if "에이원지식산업센터" not in outitem:
             continue
         matched += 1
         by_purpose[_sel(f.get(F_MOV_PURPOSE))] += 1
@@ -348,12 +363,16 @@ def kpi_tms(mon, fri):
     )
 
     # 배송방식별 = 파트너 CBM 을 배송수단으로 묶음 (리포트 규칙: 협력사는 파트너명 우선)
+    # 미기재(배송파트너 링크 없음)는 퀵(수도권) 기본값으로 흡수하지 않고 별도 집계 —
+    # 2026-08-25: else 분기가 미기재까지 삼켜 실제 배송방식 없이 CBM만 잡힐 수 있던 버그 수정
     method = defaultdict(float)
     for k, cbm in ch_cbm.items():
         if "로젠" in k or "택배" in k:
             method["택배"] += cbm
         elif "고객" in k:
             method["기타(고객직접)"] += cbm
+        elif k == "미기재":
+            method["미기재"] += cbm
         else:
             method["퀵(수도권)"] += cbm
     method_chart = [{"method": k, "cbm": round(v, 2)} for k, v in sorted(method.items(), key=lambda x: -x[1])]
@@ -372,14 +391,22 @@ def kpi_tms(mon, fri):
 
 
 def kpi_driver_util(week_id):
-    """기사별 차량이용률(%) = 배차일지 차량이용률% median (W31, 리포트 정의)."""
+    """기사별 차량이용률(%) = 배차일지 차량이용률% median (W31, 리포트 정의).
+
+    median 자체는 클리핑하지 않는다(CBM처럼 상한 적용 시 108.7%/433.5% 같은 서로 다른 이상
+    정도가 뭉개짐) — 대신 Airtable 자체 오버부킹 판정(오버부킹 필드)을 fetch해 건수를 n_over로
+    같이 반환, 렌더 레이어가 "271.1%(2일, 오버부킹 2건)"처럼 근거리 n에 이상치가 낀 경우를
+    투명하게 드러내도록 한다 (2026-08-25 감사: 박종성 W33 271.1%가 n=2 median이고 그중 2건
+    모두 오버부킹 플래그였는데 이를 표시할 방법이 없었음).
+    """
     mon, fri = week_bounds(week_id)
     pc = fetch(BASE_TMS, TBL_PARTNER, PAT_TMS, byid=True, fields=[F_PARTNER_NAME])
     cache = {r["id"]: r["fields"].get(F_PARTNER_NAME, "") for r in pc}
     formula = f"AND({{날짜}}>='{mon.isoformat()}', {{날짜}}<='{fri.isoformat()}')"
     recs = fetch(BASE_TMS, TBL_DISPATCH, PAT_TMS, byid=True,
-                 fields=[F_D_DATE, F_D_PARTNER, F_D_UTIL], formula=formula)
+                 fields=[F_D_DATE, F_D_PARTNER, F_D_UTIL, F_D_OVERBOOK], formula=formula)
     by_driver = defaultdict(list)
+    over_driver = defaultdict(int)
     for r in recs:
         f = r["fields"]
         u = f.get(F_D_UTIL)
@@ -388,7 +415,9 @@ def kpi_driver_util(week_id):
             continue
         nm = cache.get(pids[0], pids[0]).replace("신시어리 ", "").strip("() ")
         by_driver[nm].append(float(u))
-    chart = [{"driver": k, "pct": round(statistics.median(v), 1), "days": len(v)}
+        if "오버부킹" in str(f.get(F_D_OVERBOOK) or ""):
+            over_driver[nm] += 1
+    chart = [{"driver": k, "pct": round(statistics.median(v), 1), "days": len(v), "n_over": over_driver.get(k, 0)}
              for k, v in sorted(by_driver.items(), key=lambda x: -statistics.median(x[1]))]
     return {"chart_driver_util": chart}
 
@@ -458,10 +487,16 @@ def kpi_supplier_ontime(week_id):
     }
 
 
-def kpi_inspection_quality(days=90):
-    """FPY·AQL·검수 처리시간 — IBSA 표본검수결과 + 입하완료처리시간→시안검수완료시간 (최근 90일)."""
-    cutoff = (date.today() - timedelta(days=days)).isoformat()
-    formula = f"IS_AFTER({{입하완료처리시간}}, '{cutoff}')"
+def kpi_inspection_quality(mon, fri):
+    """FPY·AQL·검수 처리시간 — IBSA 표본검수결과 + 입하완료처리시간→시안검수완료시간, 보고 주차 스코프.
+
+    2026-08-25까지 date.today() 기준 최근 90일 롤링이라 WoW Δ가 항상 무의미(주차 무관 동일값)했던
+    버그 — kpi_dock_to_stock과 동일하게 mon/fri 주차 윈도우로 스코프.
+    """
+    formula = (
+        f"AND(IS_AFTER({{입하완료처리시간}}, DATEADD('{mon.isoformat()}', -1, 'days')), "
+        f"IS_BEFORE({{입하완료처리시간}}, DATEADD('{fri.isoformat()}', 1, 'days')))"
+    )
     recs = fetch(BASE_IBSA, TBL_SYNC, PAT_IBSA, byid=True,
                  fields=[F_IBSA_SAMPLE, F_IBSA_ARRIVE, F_IBSA_INSPECT], formula=formula)
 
@@ -505,11 +540,16 @@ def kpi_inspection_quality(days=90):
     }
 
 
-def kpi_shipping_unit_cost(days=30):
-    """출하 단가 = TMS 물류비(합계) ÷ CBM_유효, median 오더당·CBM당 (최근 30일)."""
-    cutoff = (date.today() - timedelta(days=days)).isoformat()
+def kpi_shipping_unit_cost(mon, fri):
+    """출하 단가 = TMS 물류비(합계) ÷ CBM_유효, median 오더당·CBM당, 보고 주차 스코프.
+
+    2026-08-25까지 date.today() 기준 최근 30일 롤링이라 WoW Δ가 항상 무의미했던 버그 — mon/fri로 스코프.
+    """
     # 필드명(공백 변종) 대신 field ID 참조 — 생성기 fetch_shipments_tms 와 동일 패턴(검증됨).
-    formula = f"IS_AFTER({{{F_SHP_DATE}}}, '{cutoff}')"
+    formula = (
+        f"AND(IS_AFTER({{{F_SHP_DATE}}}, DATEADD('{mon.isoformat()}', -1, 'days')), "
+        f"IS_BEFORE({{{F_SHP_DATE}}}, DATEADD('{fri.isoformat()}', 1, 'days')))"
+    )
     recs = fetch(BASE_TMS, TBL_SHIP, PAT_TMS, byid=True,
                  fields=[F_SHP_COST, F_SHP_CBM, F_SHP_DATE], formula=formula)
     per_order, per_cbm = [], []
@@ -529,10 +569,16 @@ def kpi_shipping_unit_cost(days=30):
     }
 
 
-def kpi_order_cycle(days=90):
-    """오더 사이클타임 = order Created time→최종 출고일, median days, 0≤d≤180 (최근 90일)."""
-    cutoff = (date.today() - timedelta(days=days)).isoformat()
-    formula = f"AND({{최종 출고일}}!='', IS_AFTER({{최종 출고일}}, '{cutoff}'))"
+def kpi_order_cycle(mon, fri):
+    """오더 사이클타임 = order Created time→최종 출고일, median days, 0≤d≤180, 보고 주차(최종 출고일) 스코프.
+
+    2026-08-25까지 date.today() 기준 최근 90일 롤링이라 WoW Δ가 항상 무의미했던 버그 — mon/fri로 스코프.
+    """
+    formula = (
+        f"AND({{최종 출고일}}!='', "
+        f"IS_AFTER({{최종 출고일}}, DATEADD('{mon.isoformat()}', -1, 'days')), "
+        f"IS_BEFORE({{최종 출고일}}, DATEADD('{fri.isoformat()}', 1, 'days')))"
+    )
     recs = fetch(BASE_WMS, TBL_ORDER, PAT_WMS, byid=True,
                  fields=[F_ORD_START, F_ORD_SHIP], formula=formula)
     days_list = []
@@ -552,23 +598,38 @@ def kpi_order_cycle(days=90):
     }
 
 
-def kpi_otif_claims(days=90):
-    """OTIF On-Time·In-Full·약속납기 전환율 (전체 누적) + 배송 클레임 (90일 롤링)."""
+def kpi_otif_claims(mon, fri):
+    """OTIF On-Time·In-Full·약속납기 전환율 + 배송 클레임, 보고 주차(실제배송일/발생일) 스코프.
+
+    2026-08-25까지 OTIF는 formula 없이 테이블 전체(전체 누적, 필터 자체가 없었음), 클레임은
+    date.today() 기준 90일 롤링이라 WoW Δ가 항상 무의미했던 버그 — 둘 다 mon/fri로 스코프.
+    OTIF는 실제배송일(F_OTIF_DELIVERED)이 lookup이라 list/scalar 혼재 — Airtable 필터가 아닌
+    파이썬 필터링(전체 pull 후 주차 매칭, 테이블 크기 작아 성능 문제 없음 — 실측 2500여건).
+    """
     def _truthy(v):
         return bool(v) and v not in (0, "0", "No", "false", False)
 
-    otif = fetch(BASE_TMS, TBL_OTIF, PAT_TMS, byid=True,
-                 fields=[F_OTIF_ONTIME, F_OTIF_INFULL, F_OTIF_DELAY])
+    def _first_date(v):
+        if isinstance(v, list):
+            v = v[0] if v else None
+        return _parse_d(v)
+
+    otif_all = fetch(BASE_TMS, TBL_OTIF, PAT_TMS, byid=True,
+                      fields=[F_OTIF_ONTIME, F_OTIF_INFULL, F_OTIF_DELAY, F_OTIF_DELIVERED])
+    otif = [r for r in otif_all
+            if (d := _first_date(r["fields"].get(F_OTIF_DELIVERED))) and mon <= d <= fri]
     n = len(otif)
     on = sum(1 for r in otif if _truthy(r["fields"].get(F_OTIF_ONTIME)))
     full = sum(1 for r in otif if _truthy(r["fields"].get(F_OTIF_INFULL)))
     delays = [r["fields"].get(F_OTIF_DELAY) for r in otif if r["fields"].get(F_OTIF_DELAY) is not None]
     promised = len(delays)
 
-    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    formula = (
+        f"AND(IS_AFTER({{{F_CLAIM_DATE}}}, DATEADD('{mon.isoformat()}', -1, 'days')), "
+        f"IS_BEFORE({{{F_CLAIM_DATE}}}, DATEADD('{fri.isoformat()}', 1, 'days')))"
+    )
     claims = fetch(BASE_TMS, TBL_CLAIM, PAT_TMS, byid=True,
-                   fields=[F_CLAIM_DATE, F_CLAIM_STATUS],
-                   formula=f"IS_AFTER({{{F_CLAIM_DATE}}}, '{cutoff}')")
+                   fields=[F_CLAIM_DATE, F_CLAIM_STATUS], formula=formula)
     open_claims = sum(1 for r in claims if _sel(r["fields"].get(F_CLAIM_STATUS)) not in ("완료", "처리완료", "종결"))
     return {
         "otif_ontime_pct": round(on / n * 100, 1) if n else None,
@@ -634,10 +695,10 @@ def compute(week_id):
     d.update(kpi_driver_util(week_id))
     d.update(kpi_dock_to_stock(week_id))
     d.update(kpi_supplier_ontime(week_id))
-    d.update(kpi_inspection_quality())
-    d.update(kpi_shipping_unit_cost())
-    d.update(kpi_order_cycle())
-    d.update(kpi_otif_claims())
+    d.update(kpi_inspection_quality(mon, fri))
+    d.update(kpi_shipping_unit_cost(mon, fri))
+    d.update(kpi_order_cycle(mon, fri))
+    d.update(kpi_otif_claims(mon, fri))
     d.update(kpi_next_week_forecast())
     d["conversion_kpi"] = CONVERSION_KPI
     d["label"] = f'W{week_id.split("-W")[1]} ({d["week_range"].split("~")[0].strip().replace("-", "/")}~)'

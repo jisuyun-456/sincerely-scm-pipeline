@@ -1,7 +1,7 @@
 {
   "week_id": "2026-W33",
   "week_range": "08-10 ~ 08-14",
-  "generated_at": "2026-08-25T15:54:23",
+  "generated_at": "2026-08-25T17:00:07",
   "inbound_count": 295,
   "inbound_completed": 295,
   "inbound_unconfirmed": 0,
@@ -68,22 +68,18 @@
     "운영이슈": 4,
     "수량이슈": 2
   },
-  "no_arrival_count": 2,
+  "no_arrival_count": 1,
   "no_arrival_by_supplier": [
     [
-      "주식회사 모아패키지",
-      1
-    ],
-    [
-      "미기재",
+      "(주)아이아트텍스",
       1
     ]
   ],
-  "material_picking_count": 353,
-  "material_picking_matched": 359,
+  "material_picking_count": 352,
+  "material_picking_matched": 358,
   "material_picking_cancelled": 6,
   "material_picking_by_purpose": {
-    "조립투입": 339,
+    "조립투입": 338,
     "생산투입": 20
   },
   "outbound_count": 60,
@@ -190,23 +186,30 @@
     {
       "method": "기타(고객직접)",
       "cbm": 0.66
+    },
+    {
+      "method": "미기재",
+      "cbm": 0.0
     }
   ],
   "chart_driver_util": [
     {
       "driver": "박종성",
       "pct": 271.1,
-      "days": 2
+      "days": 2,
+      "n_over": 2
     },
     {
       "driver": "조희선",
       "pct": 29.0,
-      "days": 4
+      "days": 4,
+      "n_over": 0
     },
     {
       "driver": "이장훈",
       "pct": 28.4,
-      "days": 4
+      "days": 4,
+      "n_over": 1
     }
   ],
   "dts_count": 193,
@@ -221,27 +224,27 @@
   "supplier_late": 0,
   "supplier_avg_diff_days": -2.8,
   "fpy_pct": 99.1,
-  "fpy_pass": 2508,
-  "fpy_total": 2532,
-  "aql_pct": 99.8,
-  "aql_unresolved": 5,
+  "fpy_pass": 229,
+  "fpy_total": 231,
+  "aql_pct": 100.0,
+  "aql_unresolved": 0,
   "aql_sample_fail": 0,
-  "inspect_time_median_min": 3.1,
-  "inspect_time_mean_min": 10.3,
-  "inspect_time_p90_min": 23.0,
-  "inspect_time_count": 2198,
-  "ship_cost_per_order_median": 80000,
-  "ship_cost_per_cbm_median": 59499,
-  "ship_cost_count": 160,
-  "ship_cost_cbm_count": 124,
-  "order_cycle_median_days": 18,
+  "inspect_time_median_min": 3.2,
+  "inspect_time_mean_min": 10.1,
+  "inspect_time_p90_min": 41.1,
+  "inspect_time_count": 223,
+  "ship_cost_per_order_median": 90000,
+  "ship_cost_per_cbm_median": 77959,
+  "ship_cost_count": 29,
+  "ship_cost_cbm_count": 24,
+  "order_cycle_median_days": 15,
   "order_cycle_p25_days": 14.0,
-  "order_cycle_p75_days": 22.0,
-  "order_cycle_count": 11640,
-  "otif_ontime_pct": 99.9,
+  "order_cycle_p75_days": 20.0,
+  "order_cycle_count": 512,
+  "otif_ontime_pct": 100.0,
   "otif_infull_pct": 100.0,
-  "otif_total": 2507,
-  "promise_conversion_pct": 99.9,
+  "otif_total": 54,
+  "promise_conversion_pct": 100.0,
   "promise_avg_delay_days": 0.0,
   "claim_count": 0,
   "claim_open": 0,

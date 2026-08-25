@@ -146,6 +146,8 @@ def grp_tag(text, style):
 
 # ── 미입하 협력사 캡션 ────────────────────────────────────────────────────────
 def _noarrive_caption(by_sup):
+    if not by_sup:
+        return "없음"
     top = by_sup[:3]
     rest = sum(n for _, n in by_sup[3:])
     parts = [f"{_short_sup(s)} {n}" for s, n in top]
@@ -541,7 +543,7 @@ def _breakdown_section(cur, prev, week_id, prev_id, wr):
     blocks.append(_category_wow_table(
         "기사별 차량이용률(%)", f'배차일지 median · {week_id} 실측',
         du, pdu, "driver", "기사", "pct", cl, pl, lambda v: f"{v}%", "pp", 10.0,
-        note_fn=lambda x: f'({x["days"]}일)'))
+        note_fn=lambda x: f'({x["days"]}일{", 오버부킹 " + str(x["n_over"]) + "건" if x.get("n_over") else ""})'))
 
     return "\n\n".join(b for b in blocks if b)
 

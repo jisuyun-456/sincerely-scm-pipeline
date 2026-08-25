@@ -1,7 +1,7 @@
 {
   "week_id": "2026-W34",
   "week_range": "08-17 ~ 08-21",
-  "generated_at": "2026-08-25T15:57:51",
+  "generated_at": "2026-08-25T17:01:34",
   "inbound_count": 275,
   "inbound_completed": 275,
   "inbound_unconfirmed": 0,
@@ -62,26 +62,13 @@
     "품질이슈": 4,
     "수량이슈": 2
   },
-  "no_arrival_count": 4,
-  "no_arrival_by_supplier": [
-    [
-      "주식회사 피앤더블유인터네셔널",
-      2
-    ],
-    [
-      "주식회사 프래그(PRAG C",
-      1
-    ],
-    [
-      "성우스크린",
-      1
-    ]
-  ],
-  "material_picking_count": 420,
-  "material_picking_matched": 436,
+  "no_arrival_count": 0,
+  "no_arrival_by_supplier": [],
+  "material_picking_count": 378,
+  "material_picking_matched": 394,
   "material_picking_cancelled": 16,
   "material_picking_by_purpose": {
-    "조립투입": 408,
+    "조립투입": 366,
     "생산투입": 28
   },
   "outbound_count": 76,
@@ -182,23 +169,30 @@
     {
       "method": "기타(고객직접)",
       "cbm": 11.85
+    },
+    {
+      "method": "미기재",
+      "cbm": 0.0
     }
   ],
   "chart_driver_util": [
     {
       "driver": "이장훈",
       "pct": 53.7,
-      "days": 3
+      "days": 3,
+      "n_over": 0
     },
     {
       "driver": "조희선",
       "pct": 53.2,
-      "days": 3
+      "days": 3,
+      "n_over": 1
     },
     {
       "driver": "박종성",
       "pct": 25.1,
-      "days": 3
+      "days": 3,
+      "n_over": 1
     }
   ],
   "dts_count": 168,
@@ -212,28 +206,28 @@
   "supplier_ontime": 168,
   "supplier_late": 12,
   "supplier_avg_diff_days": -2.3,
-  "fpy_pct": 99.1,
-  "fpy_pass": 2508,
-  "fpy_total": 2532,
-  "aql_pct": 99.8,
-  "aql_unresolved": 5,
+  "fpy_pct": 98.7,
+  "fpy_pass": 223,
+  "fpy_total": 226,
+  "aql_pct": 100.0,
+  "aql_unresolved": 0,
   "aql_sample_fail": 0,
-  "inspect_time_median_min": 3.1,
-  "inspect_time_mean_min": 10.3,
-  "inspect_time_p90_min": 23.0,
-  "inspect_time_count": 2198,
-  "ship_cost_per_order_median": 80000,
-  "ship_cost_per_cbm_median": 59499,
-  "ship_cost_count": 160,
-  "ship_cost_cbm_count": 124,
-  "order_cycle_median_days": 18,
-  "order_cycle_p25_days": 14.0,
-  "order_cycle_p75_days": 22.0,
-  "order_cycle_count": 11640,
-  "otif_ontime_pct": 99.9,
+  "inspect_time_median_min": 2.4,
+  "inspect_time_mean_min": 5.5,
+  "inspect_time_p90_min": 18.3,
+  "inspect_time_count": 216,
+  "ship_cost_per_order_median": 73500,
+  "ship_cost_per_cbm_median": 59611,
+  "ship_cost_count": 49,
+  "ship_cost_cbm_count": 38,
+  "order_cycle_median_days": 17,
+  "order_cycle_p25_days": 15.0,
+  "order_cycle_p75_days": 21.0,
+  "order_cycle_count": 799,
+  "otif_ontime_pct": 100.0,
   "otif_infull_pct": 100.0,
-  "otif_total": 2507,
-  "promise_conversion_pct": 99.9,
+  "otif_total": 62,
+  "promise_conversion_pct": 100.0,
   "promise_avg_delay_days": 0.0,
   "claim_count": 0,
   "claim_open": 0,

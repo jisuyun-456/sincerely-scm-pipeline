@@ -457,6 +457,9 @@ def _sel(val):
     return str(val) if val else ""
 
 def analyze_inbound(records):
+    # 취소 레코드 사전 제외 (analyze_qc와 동일 규칙 — 같은 movement 테이블을 읽는 두 함수의 취소 처리가
+    # 어긋나면 완료율·목적별 집계가 취소건까지 분모에 섞여 왜곡된다)
+    records = [r for r in records if not _sel(_c(r).get(F_CANCEL, {}))]
     total_cnt=total_in_qty=total_stock_qty=completed=unconfirmed=0
     by_date=defaultdict(lambda:{"cnt":0,"in_qty":0})
     by_week=defaultdict(lambda:{"cnt":0,"in_qty":0})
@@ -470,7 +473,9 @@ def analyze_inbound(records):
         stat=_sel(c.get(F_IN_STATUS,{}))
         purpose=_sel(c.get(F_PURPOSE,{})) or "미분류"
         total_in_qty+=in_qty; total_stock_qty+=stock_qty; total_cnt+=1
-        if stat=="입하완료": completed+=1
+        # "입하완료(협력사)" 등 협력사 처리 변형도 완료로 인정 (2026-08-25: 정확매치만 인정하다
+        # 두 버킷 어디에도 안 잡히고 분모에만 남아 완료율을 왜곡하던 버그 수정)
+        if stat.startswith("입하완료"): completed+=1
         elif not stat: unconfirmed+=1
         if c.get(F_NOT_RECV_HIST):
             ship_from = c.get(F_SHIP_FROM) or ("고객물품(직접입고)" if purpose == "고객물품" else "미상")
