@@ -98,10 +98,13 @@ def test_render_markdown_structure(tmp_path):
     for stage in ["📥 입하", "🔎 검수", "📦 입고", "🧰 자재", "🚚 출하"]:
         assert stage in md
     assert md.index("📥 입하") < md.index("🔎 검수") < md.index("📦 입고") < md.index("🧰 자재") < md.index("🚚 출하")
-    # WoW 비교대상 + 실제 계산 (미입하 10→2 ▼8, 주간 CBM +54%)
+    # WoW 비교대상 + 실제 계산 (미입하 10→2 ▼8)
+    # 주간 CBM 값은 2026-08-25 CBM_유효 소스 전환(구 Total_CBM 미입력 다수 버그 수정)으로
+    # 42.24→38.89(▼7.9%)로 갱신 — freeze_week() 재실행 시 Airtable 실측이 바뀌면 이 값도 같이
+    # 바뀔 수 있는 fixture라는 점 유의 (하드코딩 스냅샷, 라이브 재계산 아님).
     assert "compare_to: 2026-W31" in md
     assert "▼8 개선" in md
-    assert "▲+54%" in md
+    assert "▼7.9%" in md
     # 예외중심 신호 테이블
     assert "이번 주 이탈·특이 신호" in md
     # 전환 KPI = 라이브 상수 (다영 86.5 · 프리패키징 12.1/88.6)
@@ -133,9 +136,9 @@ def test_render_markdown_includes_breakdown_section(tmp_path):
     # 2026-W32.json 실제 값 일부가 그대로 반영되는지
     assert "신시어리 기사님 (조희선)" in md
     assert "54.2%" in md   # 이장훈 적재율
-    # 다음주 예측 + 피킹 목적별도 기존 표에 병합됨
+    # 다음주 예측 + 피킹 목적별도 기존 표에 병합됨 (조립투입 수는 라이브 재계산 시 드리프트 가능한 fixture 값)
     assert "다음주 예측 볼륨" in md
-    assert "조립 376" in md
+    assert "조립 354" in md
     # 구성 breakdown도 WoW(직전주 대비) 표 — 이전엔 이번주 값만 보여줬음
     assert "| 요일 | 2026-W31 | 2026-W32 | Δ |" in md
     assert "| 목적 | 2026-W31 | 2026-W32 | Δ |" in md
