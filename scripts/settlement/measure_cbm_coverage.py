@@ -2,8 +2,12 @@
 
 Spec: docs/superpowers/specs/2026-08-11-shipment-cbm-parse-match-design.md §7
 
-실행: python scripts/settlement/measure_cbm_coverage.py
+실행: python scripts/settlement/measure_cbm_coverage.py [--no-name2code]
 필요 env: AIRTABLE_PAT (TMS), AIRTABLE_WMS_PAT (sync_item name2code)
+
+--no-name2code: name2code={} 강제 (2단 스킵). tms_settlement.yml은 AIRTABLE_WMS_PAT를
+  설정하지 않으므로(7개 워크플로 중 유일) 실제 운영은 이 모드로 돈다. 기본값(플래그 없음)은
+  name2code를 채워 예전 실행과 비교 가능하게 유지한다.
 """
 from __future__ import annotations
 
@@ -22,8 +26,8 @@ load_dotenv()
 
 from harness.backbone.keys import is_service
 from harness.backbone.product_alias import inject_synthetic
-from harness.settlement.cbm_calc import (calc_from_products, load_product_lookup,
-                                         match_product)
+from harness.settlement.cbm_calc import (BOX_FEE_RULES, MAX_UNLOAD_FEE, calc_from_products,
+                                         load_product_lookup, match_product)
 from harness.tms_settlement.config import (DRIVER_PARK, F_BOX_QTY, F_BOX_QTY_DIRECT,
                                            F_BOX_TEXT, F_ITEMS_MFG, F_PARTNER,
                                            F_PRODUCT_FINAL, F_PROJECT_CODE)
@@ -66,14 +70,46 @@ def fetch_shipments(headers: dict) -> list[dict]:
             return out
 
 
+def unload_fee_excl_jaccard_norm(matched: list[dict]) -> int:
+    """calc_from_products의 matched[]에서 method=='jaccard_norm'(신규 4단, 정규화 재시도)
+    라인을 뺀 뒤 상하차비를 재계산 — cbm_calc.calc_from_products와 동일한 버킷 산식
+    (box_type→bucket→(count // unit_size) * fee, MAX_UNLOAD_FEE cap)을 재사용한다.
+    """
+    buckets: dict[str, int] = {"heavy": 0, "large": 0, "xlarge": 0}
+    for m in matched:
+        if m.get("method") == "jaccard_norm":
+            continue
+        rule = BOX_FEE_RULES.get(m["box_type"])
+        if rule:
+            bucket_name, _, _ = rule
+            buckets[bucket_name] += m["n_boxes"]
+    unload = 0
+    for _, (bucket_name, unit_size, fee) in BOX_FEE_RULES.items():
+        unload += (buckets[bucket_name] // unit_size) * fee
+    return min(unload, MAX_UNLOAD_FEE)
+
+
 def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-name2code", action="store_true",
+                        help="name2code={} 강제 — tms_settlement.yml이 실제로 도는 "
+                             "구성(AIRTABLE_WMS_PAT 미설정)을 측정한다.")
+    args = parser.parse_args()
+
     tp = os.environ["AIRTABLE_PAT"]
     headers = {"Authorization": f"Bearer {tp}"}
     lookup = load_product_lookup(headers)
     inject_synthetic(lookup)   # SYNTHETIC SKU(TWKF 등) 코드 해소 경로 parity
                                 # (harness/tms_settlement/fetch.py:load_cbm_lookup)
-    name2code = load_name2code(os.environ.get("AIRTABLE_WMS_PAT"))
+    if args.no_name2code:
+        name2code = {}
+        mode = "production (--no-name2code: AIRTABLE_WMS_PAT 미설정 재현, 2단 스킵)"
+    else:
+        name2code = load_name2code(os.environ.get("AIRTABLE_WMS_PAT"))
+        mode = "full name2code (default — 기존 실행과 비교 가능하게 유지)"
     recs = fetch_shipments(headers)
+    print(f"=== 실행 모드: {mode} ===")
     print(f"shipments: {len(recs)} / product lookup: {len(lookup)} / "
           f"name2code: {len(name2code)}")
 
@@ -174,13 +210,20 @@ def main() -> None:
             continue
         exp_out = calc_from_products(items_text, lookup, name2code=name2code)
         exposed.append({"sc": f.get(FLD_SC), "cbm_unload": exp_out["unload_fee"],
-                        "total_cbm": exp_out["total_cbm"]})
+                        "total_cbm": exp_out["total_cbm"],
+                        "cbm_unload_excl_jaccard_norm":
+                            unload_fee_excl_jaccard_norm(exp_out["matched"])})
 
     exposed_fee = sum(e["cbm_unload"] for e in exposed)
+    exposed_fee_excl_jn = sum(e["cbm_unload_excl_jaccard_norm"] for e in exposed)
     print(f"\n=== 실제 정산 노출 (박종성 calc_park 게이팅 미러 — 진짜 delta 후보) ===")
     print(f"  박종성 배정 전체건            : {len(park_recs)}")
     print(f"  box_text 없음 & CBM 폴백 노출 : {len(exposed)}")
-    print(f"  cbm_unload 합계               : {exposed_fee:,}원")
+    print(f"  cbm_unload 합계 (전체 매칭)          : {exposed_fee:,}원")
+    print(f"  cbm_unload 합계 (jaccard_norm 제외)  : {exposed_fee_excl_jn:,}원")
+    print(f"  ※ 차액({exposed_fee - exposed_fee_excl_jn:,}원)은 신규 4단(jaccard_norm, "
+          f"정규화 재시도) 매처가 새로 만들어낸 몫 — 4단은 이전엔 미매칭이던 라인에서만")
+    print(f"    발동하므로 항상 fee를 늘리는 방향으로만 기여한다. 나머지는 파서(v2) 개선분.")
 
     top = sorted(per_ship, key=lambda p: p["unload_fee"], reverse=True)[:20]
     print(f"\n=== 상하차비 상위 20건 (표본 확인용) ===")
@@ -194,9 +237,10 @@ def main() -> None:
         print(f"  [{s['method']} {s['score']}] {s['name']!r} -> {s['key']} x{s['qty']}")
 
     os.makedirs("outputs", exist_ok=True)
-    dest = f"outputs/cbm-coverage-{date.today().isoformat()}.json"
+    suffix = "-no-name2code" if args.no_name2code else ""
+    dest = f"outputs/cbm-coverage-{date.today().isoformat()}{suffix}.json"
     with open(dest, "w", encoding="utf-8") as fh:
-        json.dump({"lines": lines, "matched": matched, "cbm_able": cbm_able,
+        json.dump({"mode": mode, "lines": lines, "matched": matched, "cbm_able": cbm_able,
                    "by_method": dict(by_method), "score_hist": dict(score_hist),
                    "total_unload_fee_upper_bound": tot_fee,
                    "total_cbm_upper_bound": round(tot_cbm, 3),
@@ -207,6 +251,10 @@ def main() -> None:
                        "park_assigned": len(park_recs),
                        "exposed_count": len(exposed),
                        "exposed_cbm_unload_total": exposed_fee,
+                       "exposed_cbm_unload_total_excl_jaccard_norm": exposed_fee_excl_jn,
+                       "excl_jaccard_norm_note": (
+                           "jaccard_norm(신규 4단, 정규화 재시도)으로 매칭된 라인만 빼고 "
+                           "재계산한 상하차비 — 두 값의 차이가 4단이 새로 만든 fee 증분이다."),
                        "exposed_samples": exposed[:50],
                    },
                    "fuzzy_samples": fuzzy[:100], "per_shipment": per_ship},

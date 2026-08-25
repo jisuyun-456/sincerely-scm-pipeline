@@ -79,7 +79,6 @@ F_ORD_SHIP = "fldNeMqU5r8sYGGT1"         # 최종 출고일
 # shipment 필드 ID
 F_SHP_DATE = "fldQvmEwwzvQW95h9"         # 출하확정일
 F_SHP_CBM = "fldRQxI4HOWydlwEh"          # CBM_유효 (formula) — 출하단가 per-CBM 분모
-F_SHP_TOTAL_CBM = "fldJ9DHjwoRyeUEqE"    # Total_CBM (수동 입력) — 리포트 주간 출고 CBM 소스
 F_SHP_COST = "fldGhFPbJzMToeGg7"         # 물류비(합계) (formula)
 
 # TMS 배차일지 (기사별 차량이용률 median 소스 — 리포트 정의)
@@ -310,8 +309,12 @@ def _ship_partner(f):
 def kpi_tms(mon, fri):
     """출고 건수·주간 CBM·창고가동율·일별 CBM·CBM채널별·배송방식별.
 
-    CBM 소스 = Total_CBM(수동, fldJ9DHjwoRyeUEqE) — 리포트 '주간 Total_CBM 18.86'.
-    (analyze_tms 는 box-parse fallback 으로 22.06 이 나와 리포트와 불일치 → 순수 Total_CBM 집계.)
+    CBM 소스 = CBM_유효(formula, fldRQxI4HOWydlwEh). Total_CBM(수동입력)은 과거 소스였으나
+    2026-08-25 Airtable 실측 대조에서 미입력 다수로 확인 (예: 8/12 그룹 Total_CBM 합계 0.08
+    vs CBM_유효 합계 13.28 — 같은 날 8건 중 4건이 Total_CBM 공란). CBM_유효는 estimated_cbm
+    제품매칭 오류로 단일 건이 100배+ 튀는 이상치가 있어(tms_weekly_runner.FORECAST_CBM_OUTLIER_CAP과
+    동일 근거) [CBM_MIN, CBM_OUTLIER_CAP] 범위 밖은 합계·채널·방식 breakdown에서 제외.
+    (건수 count는 이상치 여부와 무관하게 실제 출하 건 전체를 센다 — 제외되는 건 CBM 금액만.)
     """
     ships = G.fetch_shipments_tms(mon, fri)
     by_date = defaultdict(float)
@@ -325,7 +328,8 @@ def kpi_tms(mon, fri):
         if not d:
             continue
         count += 1
-        cbm = float(f.get(F_SHP_TOTAL_CBM) or 0)   # Total_CBM only (미입력=0)
+        cbm_raw = float(f.get(G.TF_CBM_VALID) or 0)
+        cbm = cbm_raw if CBM_MIN <= cbm_raw <= CBM_OUTLIER_CAP else 0.0   # 이상치 제외
         total_cbm += cbm
         by_date[d] += cbm
         display = G.PARTNER_GROUP.get(_ship_partner(f), _ship_partner(f)) or "미기재"
@@ -592,14 +596,15 @@ CONVERSION_KPI = {
     "cbm_pending": 310,
     "cbm_box_only_pct": 90.4,
     "cbm_cbm_only_pct": 84.1,
-    "cbm_a1_pct": 89.6,
-    "cbm_dayoung_pct": 1.9,
+    "cbm_a1_pct": 89.3,
+    "cbm_dayoung_pct": 86.5,
     "cbm_bottleneck_note": "미확정 310건 중 다영기획 156건(50.3%)",
     "mh_inbound_pct": 100.0,
     "mh_inspect_pct": 99.8,
     "mh_putaway_pct": 99.9,
     "mh_full_cycle_pct": 99.7,
     "mh_prepkg_pct": 12.1,
+    "mh_prepkg_est_pct": 88.6,
     "mh_timestamp_count": 3808,
 }
 

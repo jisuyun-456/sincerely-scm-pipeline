@@ -22,6 +22,7 @@ SHIPMENT_TABLE = "tbllg1JoHclGYer7m"
 
 FLD_METHOD = "flduzH5tS7orqGG3o"
 FLD_HOPE_TIME = "fldFweNu3dASPv93N"
+FLD_RECEIPT_CATEGORY = "fldqHPpgLRSIf7Aic"
 FLD_SLOT = "fldcSrlxCngYQHtSV"
 FLD_PROJECT_CODE = "fldTs3FzaSdGYEiKX"
 
@@ -81,10 +82,11 @@ def main() -> None:
         if method in PARCEL_METHODS:
             continue  # 택배는 슬롯 비교 제외
         hope_time = _first(f.get(FLD_HOPE_TIME))
+        receipt_category = _first(f.get(FLD_RECEIPT_CATEGORY))
         actual_slot = _first(f.get(FLD_SLOT))
         if not actual_slot:
             continue
-        predicted_slot, _ = decide_slot(method, hope_time)
+        predicted_slot, _ = decide_slot(method, hope_time, receipt_category)
         per_slot[actual_slot]["total"] += 1
         if predicted_slot == actual_slot:
             tp += 1

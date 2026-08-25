@@ -133,7 +133,8 @@ TF_DATE        = "fldQvmEwwzvQW95h9"
 TF_ITEM        = "fldgSupj5XLjJXYQo"
 TF_BOX_PARSED  = "fldTjLDmw5sNGszeD"
 TF_BOX_MANUAL  = "fldRjMaXa5TdSsGDL"
-TF_TOTAL_CBM   = "fldJ9DHjwoRyeUEqE"
+TF_TOTAL_CBM   = "fldJ9DHjwoRyeUEqE"    # 수동 입력 — 미입력 다수, 주간 CBM 집계에 부적합 (2026-08-25 확인)
+TF_CBM_VALID   = "fldRQxI4HOWydlwEh"    # CBM_유효 (formula) — 완결도 높음, weekly_report_data.kpi_tms 소스
 TF_STATUS      = "fldOhibgxg6LIpRTi"
 TF_ITEM_DETAIL = "fldXXnGOXkm90snKn"
 TF_REVENUE     = "fldOFuvqBT0iXItcT"
@@ -145,7 +146,7 @@ TF_ADDRESS     = "fldyJHUh9gN44Ggnh"
 TF_WISH_TIME   = "fldFweNu3dASPv93N"
 TF_VEHICLE_CAP = "fld9ZixilQySf9taF"   # 차량한도 (lookup, m³) — A3 라이브 정원 SSOT
 
-TMS_SHIP_FIELDS = [TF_DATE,TF_ITEM,TF_BOX_PARSED,TF_BOX_MANUAL,TF_TOTAL_CBM,
+TMS_SHIP_FIELDS = [TF_DATE,TF_ITEM,TF_BOX_PARSED,TF_BOX_MANUAL,TF_TOTAL_CBM,TF_CBM_VALID,
                    TF_STATUS,TF_ITEM_DETAIL,TF_REVENUE,TF_COST,TF_PARTNER,TF_DEPARTURE,
                    TF_ADDRESS,TF_SLOT,TF_WISH_TIME,TF_VEHICLE_CAP]  # +차량한도(A3)
 TMS_BOX_FIELDS  = ["fldELrd8bBVjQCHnp","fldgvlGjLb4FTlQ0v","fldjFaXiYzeJ2Zt7M"]

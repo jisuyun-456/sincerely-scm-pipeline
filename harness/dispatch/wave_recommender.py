@@ -45,6 +45,7 @@ FLD_METHOD = "flduzH5tS7orqGG3o"            # rollup
 FLD_SLOT = "fldcSrlxCngYQHtSV"              # singleSelect (배송슬롯)
 FLD_ADDRESS = "fldyJHUh9gN44Ggnh"           # rollup (수령인주소)
 FLD_HOPE_TIME = "fldFweNu3dASPv93N"         # rollup (고객 희망 수령 시간)
+FLD_RECEIPT_CATEGORY = "fldqHPpgLRSIf7Aic"  # rollup (수령 시간 — CX 선택 singleSelect)
 FLD_PARTNER = "fldHZ7yMT3KEu2gSj"          # lookup (배송파트너명)
 FLD_STATUS = "fldOhibgxg6LIpRTi"            # singleSelect (발송상태_TMS)
 FLD_SHIP_DATE = "fldQvmEwwzvQW95h9"         # date (출하확정일)
@@ -210,6 +211,7 @@ def _build_shipment(rec: dict) -> Optional[Shipment]:
     project_code = _first(f.get(FLD_PROJECT_CODE)) or ""
     method = _first(f.get(FLD_METHOD)) or ""
     hope_time = _first(f.get(FLD_HOPE_TIME)) or ""
+    receipt_category = _first(f.get(FLD_RECEIPT_CATEGORY)) or ""
     address = _first(f.get(FLD_ADDRESS)) or ""
     partner = _first(f.get(FLD_PARTNER)) or ""
 
@@ -224,7 +226,7 @@ def _build_shipment(rec: dict) -> Optional[Shipment]:
     else:
         cbm, cbm_conf = 0.5, 0.3  # unknown fallback
 
-    slot, slot_conf = decide_slot(method, hope_time)
+    slot, slot_conf = decide_slot(method, hope_time, receipt_category)
     region = classify_region(address)
 
     return Shipment(

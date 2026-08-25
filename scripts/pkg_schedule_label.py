@@ -125,7 +125,9 @@ def _parse_qtys(raw) -> list[str]:
 
 
 def fetch_movement_data(mm_ref: str) -> tuple:
-    """movement 레코드에서 item과 qty 조회. Airtable rec ID(recXXX) 또는 MM_ID 모두 처리."""
+    """movement 레코드에서 item과 qty 조회. Airtable rec ID(recXXX) 또는 MM_ID 모두 처리.
+    취소된 이동(취소 여부='취소')은 실제 수량이 아니므로 제외 — 그대로 두면 취소건의 0이
+    같은 품목의 실제 이동 수량보다 먼저 잡혀 피킹 라벨 수량이 0으로 나온다."""
     BASE_URL = f"https://api.airtable.com/v0/{BASE_ID}/tblsG3x3gCSZGPVB9"
     try:
         if mm_ref.startswith("rec"):
@@ -145,6 +147,8 @@ def fetch_movement_data(mm_ref: str) -> tuple:
 
         if records:
             f = records[0].get("fields", {})
+            if f.get("취소 여부") == "취소":
+                return ("", "")
             item_raw = f.get("이동물품", "")
             # '출고수량' 필드는 SERPA movement table에 없음 — '이동수량_예정'이 실제 필드
             qty_raw = (f.get("이동수량_예정")
